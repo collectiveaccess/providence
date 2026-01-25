@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,7 +40,7 @@ $footer_color = $this->request->config->get('footer_color');
 					print caNavLink($this->request, _t('Login'), '', 'system', 'auth', 'login');
 				}
 ?>
-				&nbsp;&nbsp;|&nbsp;&nbsp; &copy; 2025 Whirl-i-Gig, <a href="http://www.collectiveaccess.org" target="_blank" rel="noopener noreferrer">CollectiveAccess</a> <?php _p("is a trademark of"); ?> <a href="http://www.whirl-i-gig.com" target="_blank" rel="noopener noreferrer">Whirl-i-Gig</a>
+				&nbsp;&nbsp;|&nbsp;&nbsp; &copy; 2026 Whirl-i-Gig, <a href="http://www.collectiveaccess.org" target="_blank" rel="noopener noreferrer">CollectiveAccess</a> <?php _p("is a trademark of"); ?> <a href="http://www.whirl-i-gig.com" target="_blank" rel="noopener noreferrer">Whirl-i-Gig</a>
 				[<?= Session::elapsedTime(4).'s'; ?>/<?= caGetMemoryUsage(); ?>]
 			</div></div><!-- end footer -->
 		</div><!-- end footerContainer -->

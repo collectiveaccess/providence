@@ -639,6 +639,7 @@ create table ca_object_lots
 (
    lot_id                         int unsigned                   not null AUTO_INCREMENT,
    type_id                        int unsigned                   not null,
+   parent_id                      int unsigned,
    lot_status_id                  int unsigned                   not null,
    idno_stub                      varchar(255)                   not null,
    idno_stub_sort                 varchar(255)                   not null,
@@ -665,13 +666,16 @@ create table ca_object_lots
    deaccession_type_id            int unsigned                   null,
    source_id                      int unsigned,
    source_info                    longtext                       not null,
+   hier_lot_id                    int unsigned                   not null,
+   hier_left                      decimal(30,20) unsigned        not null,
+   hier_right                     decimal(30,20) unsigned        not null,
    deleted                        tinyint unsigned               not null default 0,
-   `rank`                           int unsigned                   not null default 0,
-   acl_inherit_from_parent         tinyint unsigned              not null default 0,
-   access_inherit_from_parent      tinyint unsigned              not null default 0,
-   submission_user_id               int unsigned                   null,
+   `rank`                         int unsigned                   not null default 0,
+   acl_inherit_from_parent        tinyint unsigned               not null default 0,
+   access_inherit_from_parent     tinyint unsigned               not null default 0,
+   submission_user_id             int unsigned                   null,
    submission_group_id            int unsigned                   null,
-   submission_status_id              int unsigned                   null,
+   submission_status_id           int unsigned                   null,
    submission_via_form            varchar(100)                   null,
    submission_session_id          int unsigned                   null,
    primary key (lot_id),
@@ -679,6 +683,9 @@ create table ca_object_lots
    constraint fk_ca_object_lots_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
       
+   constraint fk_ca_object_lots_parent_id foreign key (parent_id)
+      references ca_object_lots (lot_id) on delete restrict on update restrict,
+         
     constraint fk_ca_object_lots_source_id foreign key (source_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
       
@@ -726,6 +733,9 @@ create index i_submission_group_id on ca_object_lots(submission_group_id);
 create index i_submission_status_id on ca_object_lots(submission_status_id);
 create index i_submission_via_form on ca_object_lots(submission_via_form);
 create index i_submission_session_id on ca_object_lots(submission_session_id);
+create index i_parent_id on ca_object_lots(parent_id);
+create index i_hier_left on ca_object_lots(hier_left);
+create index i_hier_right on ca_object_lots(hier_right);
 
 
 /*==========================================================================*/
@@ -7990,4 +8000,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (208, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (209, unix_timestamp());

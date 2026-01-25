@@ -5276,7 +5276,7 @@ function caFileIsIncludable($ps_file) {
 		
 		if(!is_array($headers = @get_headers($url))) { return false; }
 	
-		if(preg_match("!([\d]{3}) OK$!i", $headers[0], $m)) {
+		if(preg_match("!([\d]{3}) (OK|MOVED)!i", $headers[0], $m)) {
 			$sc = (int)$m[1];
 			if(($sc >= 200) && ($sc <= 299)) { return true; }
 			if($allow_redirects && ($sc >= 300) && ($sc <= 399)) { return true; }

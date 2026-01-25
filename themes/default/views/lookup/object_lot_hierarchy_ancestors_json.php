@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * lookup/ajax_taxonomy_list_html.php :
+ * lookup/object_lot_hierarchy_ancestors_json.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,4 +25,4 @@
  *
  * ----------------------------------------------------------------------
  */
-	print json_encode($this->getVar('taxonomy_list'));
+print json_encode($this->getVar('ancestors'));

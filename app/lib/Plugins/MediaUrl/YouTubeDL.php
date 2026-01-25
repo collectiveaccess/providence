@@ -226,16 +226,22 @@ class YouTubeDL Extends BaseMediaUrlPlugin {
 			$preview_path = null;
 			$format = null;
 			
-			$login_opts = ($p['username'] ?? null) ? "--username {$p['username']} --password {$p['password']}" : null;
-			$cookie_opts = ($p['cookies'] ?? null) ? "--cookies {$p['cookies']}" : null;
-			
-			foreach($formats as $format) {
-				$tmp_file = $dest ? $dest : caGetTempDirPath().'/YOUTUBEDL_TMP'.uniqid(rand(), true);
-				$output = $ret = null;
-				caExec($this->youtube_dl_path.' '.caEscapeShellArg($url)." -q --skip-download --write-thumbnail --convert-thumbnails {$format} -o ".caEscapeShellArg($tmp_file)." {$login_opts} {$cookie_opts} ".(caIsPOSIX() ? " 2> /dev/null" : ""), $output, $ret);
-				if($ret <= 1) {
-					$preview_path = "{$tmp_file}.{$format}";
-					break;	
+			$tmp_file = $dest ? $dest : caGetTempDirPath().'/YOUTUBEDL_TMP'.uniqid(rand(), true);
+			if($p['service'] === 'YouTube') {
+				$purl = "https://img.youtube.com/vi/{$p['code']}/0.jpg";
+				$img = file_get_contents($purl);
+				file_put_contents($preview_path = "{$tmp_file}.jpg", $img);
+			} else {
+				$login_opts = ($p['username'] ?? null) ? "--username {$p['username']} --password {$p['password']}" : null;
+				$cookie_opts = ($p['cookies'] ?? null) ? "--cookies {$p['cookies']}" : null;
+				
+				foreach($formats as $format) {
+					$output = $ret = null;
+					caExec($this->youtube_dl_path.' '.caEscapeShellArg($url)." -q --skip-download --write-thumbnail --convert-thumbnails {$format} -o ".caEscapeShellArg($tmp_file)." {$login_opts} {$cookie_opts} ".(caIsPOSIX() ? " 2> /dev/null" : ""), $output, $ret);
+					if($ret <= 1) {
+						$preview_path = "{$tmp_file}.{$format}";
+						break;	
+					}
 				}
 			}
 

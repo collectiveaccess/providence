@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -450,7 +450,7 @@ class ca_users extends BaseModel {
 	/**
 	 *
 	 */
-	static public function applyPasswordPolicy(string $password) : bool {
+	static public function applyPasswordPolicy(?string $password) : bool {
 		$auth_config = Configuration::load('authentication.conf');
 		if(strtolower($auth_config->get('auth_adapter')) !== 'causers') { return true; }	// password policies only apply to integral auth system
 		
@@ -490,7 +490,7 @@ class ca_users extends BaseModel {
 	/**
 	 * 
 	 */
-	static public function checkPasswordComplexity(string $password) : bool {
+	static public function checkPasswordComplexity(?string $password) : bool {
 		$auth_config = Configuration::load('authentication.conf');
 		if(strtolower($auth_config->get('auth_adapter')) !== 'causers') { return true; }	// password policies only apply to integral auth system
 	

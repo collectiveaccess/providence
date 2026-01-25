@@ -119,6 +119,7 @@
 1240 = Invalid table specification
 1250 = Could not save ACL inheritance settings
 1260 = No user interface is available for this editor
+1270 = Invalid type
 
 # --- File errors
 1500 = File not found

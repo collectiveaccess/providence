@@ -35,6 +35,7 @@ require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__.'/Parsers/DisplayTemplateParser.php');
 require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
+require_once(__CA_APP_DIR__.'/helpers/externalMediaHelpers.php');
 
 # ------------------------------------------------------------------------------------------------
 /**
@@ -5621,7 +5622,7 @@ function caProcessReferenceTags($request, $text, $options=null) {
 	) {
 		if (preg_match_all("!\[{$ref_tag} ([^\]]+)\]([^\[]+)\[/{$ref_tag}\]!", $text, $matches)) {
 			foreach($matches[1] as $i => $attr_string) {
-				if (sizeof($vals = caParseAttributes($attr_string, ['id', 'idno', 'class', 'version', 'mode'])) > 0) {
+				if (sizeof($vals = caParseAttributes($attr_string, ['id', 'idno', 'class', 'version', 'mode', 'target'])) > 0) {
 					$vals['content'] = $matches[2][$i];
 					$idnos[$ref_type][$matches[0][$i]] = array_filter($vals, function($v) { return !is_null($v); });
 				}
@@ -5629,7 +5630,7 @@ function caProcessReferenceTags($request, $text, $options=null) {
 		}
 		if (preg_match_all("!\[{$ref_tag} ([^\]]+)/\]!", $text, $matches)) {
 			foreach($matches[1] as $i => $attr_string) {
-				if (sizeof($vals = caParseAttributes($attr_string, ['id', 'idno', 'class', 'version', 'mode'])) > 0) {
+				if (sizeof($vals = caParseAttributes($attr_string, ['id', 'idno', 'class', 'version', 'mode', 'target'])) > 0) {
 					$idnos[$ref_type][$matches[0][$i]] = array_filter($vals, function($v) { return !is_null($v); });
 				}
 			}
@@ -5780,8 +5781,7 @@ function caProcessReferenceTags($request, $text, $options=null) {
 							if (!($idno = trim($qr_m->get('idno')))) { $idno = null; }
 
 							$alt_text = caGetOption(['caption', 'title', 'idno'], ['caption' => $caption, 'title' => $title, 'idno' => $idno], null);
-
-							if ($template = $va_l['content']) {
+							if (($template = $va_l['content']) && ($return !== 'link')) {
 								$template = str_replace("^title", $title, $template);
 								$template = str_replace("^caption", $caption, $template);
 								$template = str_replace("^idno", $idno, $template);
@@ -5789,6 +5789,12 @@ function caProcessReferenceTags($request, $text, $options=null) {
 								$text = str_replace($tag, $template, $text);
 							} elseif($return === 'url') {
 								$text = str_replace($tag, $qr_m->getMediaUrl('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media'))), ['alt' => $alt_text]), $text);
+							} elseif($return === 'link') {
+								$url = $qr_m->getMediaUrl('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media'))), ['alt' => $alt_text]);
+								$link_text = $va_l['content'] ?? $url;
+								$target = $va_l['target'] ?? null;
+								$link = "<a href='{$url}'".($target ? " target='{$target}'" : '').">{$link_text}</a>";
+								$text = str_replace($tag, $link, $text);
 							} else {
 								$text = str_replace($tag, $qr_m->getMediaTag('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media'))), ['alt' => $alt_text]), $text);
 							}

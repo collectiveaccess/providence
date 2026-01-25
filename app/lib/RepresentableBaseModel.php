@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2025 Whirl-i-Gig
+ * Copyright 2013-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -108,27 +108,57 @@ class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
+		$acl_join = $acl_where = null;
+		if (caACLIsEnabled(Datamodel::getInstance('ca_object_representations', true))) {
+			$show_if_no_acl = (bool)(Configuration::load()->get('default_item_access_level') > __CA_ACL_NO_ACCESS__);
+
+			$user_id = $AUTH_CURRENT_USER_ID;
+			$t_user = new ca_users($user_id);
+			if(!$t_user->canDoAction('is_administrator')) {
+				if (is_array($groups = $t_user->getUserGroups()) && sizeof($groups)) {
+					$group_ids = array_keys($groups);
+				} else {
+					$group_ids = [];
+				}
+				
+				// Join to limit what browse table items are used to generate facet
+				$acl_join = 'LEFT JOIN ca_acl ON caor.representation_id = ca_acl.row_id AND ca_acl.table_num = 56';
+				$acl_where = " AND (
+					((
+						(ca_acl.user_id = ".(int)$user_id.")
+						".((sizeof($group_ids) > 0) ? "OR
+						(ca_acl.group_id IN (".join(",", $group_ids)."))" : "")."
+						OR
+						(ca_acl.user_id IS NULL and ca_acl.group_id IS NULL)
+					) AND ca_acl.access >= ".__CA_ACL_READONLY_ACCESS__.")
+					".(($show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
+				)";
+			}
+		}
+		
 		
 		$va_type_restriction_filters = $this->_getRestrictionSQL($linking_table, (int)$vn_id, $pa_options);
 	
 		$qr_reps = $o_db->query($vs_sql = "
-			SELECT 	caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, caor.is_transcribable,
+			SELECT 	DISTINCT caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, caor.is_transcribable,
 					l.name, caor.locale_id, caor.media_metadata, caor.type_id, caor.idno, caor.idno_sort, 
 					caor.md5, caor.mimetype, caor.original_filename, caoor.`rank`, caoor.relation_id".($t_link->hasField('type_id') ? ', caoor.type_id rel_type_id' : '')."
 			FROM ca_object_representations caor
 			INNER JOIN {$linking_table} AS caoor ON caor.representation_id = caoor.representation_id
 			LEFT JOIN ca_locales AS l ON caor.locale_id = l.locale_id
+			{$acl_join}
 			WHERE
 				caoor.{$vs_pk} = ? AND deleted = 0
 				{$vs_is_primary_sql}
 				{$vs_access_sql}
 				{$va_type_restriction_filters['sql']}
+				{$acl_where}
 			ORDER BY
 				caoor.`rank`, caoor.is_primary DESC
 			{$vs_limit_sql}
 		", $va_type_restriction_filters['params']);
 		
-		$reps = array();
+		$reps = [];
 		$t_rep = new ca_object_representations();
 		
 		if($AUTH_CURRENT_USER_ID) {
@@ -136,7 +166,6 @@ class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 		} else {
 			$va_can_read = $qr_reps->getAllFieldValues('representation_id');
 		}
-		
 		// re-execute query as pdo doesn't support seek()
 		$qr_reps = $o_db->query($vs_sql, $va_type_restriction_filters['params']);
 		while($qr_reps->nextRow()) {

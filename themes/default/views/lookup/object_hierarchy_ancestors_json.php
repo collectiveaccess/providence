@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * lookup/place_hierarchy_ancestors_json.php : 
+ * lookup/object_hierarchy_ancestors_json.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,6 +25,4 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	print json_encode($this->getVar('ancestors'));
-?>
+print json_encode($this->getVar('ancestors'));

@@ -170,8 +170,19 @@ class BaseEditorController extends ActionController {
 		// get default screen
 		//
 		if (!($type_id = $t_subject->getTypeID())) {
-			$type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger);
+			if (!($type_ids = caMakeTypeIDList($this->ops_table_name, [$type = $this->request->getParameter($t_subject->getTypeFieldName(), pString)]))) {
+				$type_id = null;
+			} else {
+				$type_id = array_shift($type_ids);
+			}
+			if(!$type_id && $t_subject->hasField('type_id') && !$t_subject->getFieldInfo('type_id', 'IS_NULL')) {
+				$this->notification->addNotification(_t('Invalid type: %1', $type), __NOTIFICATION_TYPE_ERROR__);
+
+				$this->postError(1270, _t('Invalid type: %1', $type),"BaseEditorController->Edit()");
+				return;
+			}
 		}
+		$this->request->setParameter('type_id', $type_id, 'POST');
 
 		if (!$t_ui || !$t_ui->getPrimaryKey()) {
 			$this->notification->addNotification(_t('There is no configuration available for this editor. Check your system configuration and ensure there is at least one valid configuration for this type of editor.'), __NOTIFICATION_TYPE_ERROR__);
