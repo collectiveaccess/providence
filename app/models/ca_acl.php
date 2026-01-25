@@ -452,6 +452,8 @@ class ca_acl extends BaseModel {
 		$subject = is_object($subject) ? $subject : Datamodel::getInstance($subject_table_num, false, $row_id);
 		if(!$subject->isLoaded()) { return null; }
 		
+		if(!is_array($rel_types = caGetObjectCollectionHierarchyRelationshipTypes()) || !sizeof($rel_types)) { $rel_types = null; }
+		
 		$statistics = [
 			'subRecordCount' => 0,
 			'inheritingSubRecordCount' => 0,
@@ -484,14 +486,14 @@ class ca_acl extends BaseModel {
 					$is_root = ($qr_sub_records->get('collection_id') == $row_id);
 					if(!($t_coll = ca_collections::findAsInstance(['collection_id' => $qr_sub_records->get('ca_collections.collection_id')]))) { continue; }
 					
-					$statistics['relatedObjectCount'] += ($c = $t_coll->getRelatedItems('ca_objects', ['returnAs' => 'count', 'limit' => 50000]));
+					$statistics['relatedObjectCount'] += ($c = $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => $rel_types, 'returnAs' => 'count', 'limit' => 50000]));
 					
 					if($is_root || (bool)$t_coll->get('acl_inherit_from_parent')) {
-						$statistics['inheritingRelatedObjectCount'] += $t_coll->getRelatedItems('ca_objects', ['returnAs' => 'count', 'limit' => 50000, 'criteria' => ['ca_objects.acl_inherit_from_ca_collections']]);
+						$statistics['inheritingRelatedObjectCount'] += $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => $rel_types, 'returnAs' => 'count', 'limit' => 50000, 'criteria' => ['ca_objects.acl_inherit_from_ca_collections']]);
 						$statistics['potentialInheritingRelatedObjectCount'] += $c;
 					}
 					if($is_root || (bool)$t_coll->get('access_inherit_from_parent')) {
-						$statistics['inheritingAccessRelatedObjectCount'] += $t_coll->getRelatedItems('ca_objects', ['returnAs' => 'count', 'limit' => 50000, 'criteria' => ['ca_objects.access_inherit_from_parent']]);
+						$statistics['inheritingAccessRelatedObjectCount'] += $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => $rel_types, 'returnAs' => 'count', 'limit' => 50000, 'criteria' => ['ca_objects.access_inherit_from_parent']]);
 						$statistics['potentialInheritingAccessRelatedObjectCount'] += $c;
 					}
 				}
