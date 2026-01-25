@@ -501,6 +501,93 @@ class ca_acl extends BaseModel {
 		}
 		return $statistics;
 	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function getStatisticsForBatch(RecordSelection $rs) : ?array {
+		$db = new Db();
+		if(!($subject_table_num = $rs->tableNum())) { return null; }
+		$subject_table_name = $rs->tableName();
+		
+		$subject = Datamodel::getInstance($subject_table_num);
+		$pk = $subject->primaryKey();
+		
+		if(!is_array($rel_types = caGetObjectCollectionHierarchyRelationshipTypes()) || !sizeof($rel_types)) { $rel_types = null; }
+		$rel_type_ids = caMakeRelationshipTypeIDList('ca_objects_x_collections', $rel_types);
+		
+		$statistics = [
+			'subRecordCount' => 0,
+			'inheritingSubRecordCount' => 0,
+			'inheritingAccessSubRecordCount' => 0,
+			'relatedObjectCount' => 0,
+			'inheritingRelatedObjectCount' => 0,
+			'inheritingAccessRelatedObjectCount' => 0,
+			'potentialInheritingRelatedObjectCount' => 0,
+			'potentialInheritingAccessRelatedObjectCount' => 0,
+		];
+		
+		$row_ids = $rs->getItemRowIDs();
+		
+		// Number of sub-records and inherited entries
+		$qr = $db->query("
+			SELECT {$pk}, hier_left, hier_right
+			FROM {$subject_table_name} 
+			WHERE 
+				{$pk} IN (?) AND deleted = 0
+		", [$row_ids]);
+		
+		$acc = [];
+		while($qr->nextRow()) {
+			$row = $qr->getRow();
+			$acc[$row[$pk]] = $row;
+		}
+		
+		$c = $a = $x = 0;
+		$ids = array_keys($acc);
+		foreach($acc as $id => $h) {
+			$qr_cc = $db->query("
+				SELECT {$pk}, acl_inherit_from_parent, access_inherit_from_parent
+				FROM {$subject_table_name}
+				WHERE 
+					{$pk} = ? AND hier_left >= ? AND hier_right <= ? AND deleted = 0
+			",[$id, $h['hier_left'], $h['hier_right']]);
+			if($qr_cc->nextRow()) {
+				$c++;
+				if((bool)$qr_cc->get('acl_inherit_from_parent')) { $x++; }
+				if((bool)$qr_cc->get('access_inherit_from_parent')) { $a++; }
+				$ids[] = $qr_cc->get($pk);
+			}
+		}
+		$ids = array_unique($ids);
+		
+		$statistics['subRecordCount'] = $c;
+		$statistics['inheritingSubRecordCount'] = $x;
+		$statistics['inheritingAccessSubRecordCount'] = $a;
+
+		// Number of related objects and inherited entries
+		if($subject_table_name === 'ca_collections') {
+			$qr_oc = $db->query("
+				SELECT o.object_id, o.acl_inherit_from_ca_collections, o.access_inherit_from_parent
+				FROM ca_objects_x_collections oxc
+				INNER JOIN ca_objects AS o ON oxc.object_id = o.object_id
+				WHERE
+					oxc.collection_id IN (?) AND oxc.type_id IN (?) AND o.deleted = 0
+			", [$ids, $rel_type_ids]);
+			while($qr_oc->nextRow()) {
+				if($qr_oc->get('acl_inherit_from_parent')) {
+					$statistics['inheritingRelatedObjectCount']++;
+				}
+				if($qr_oc->get('access_inherit_from_parent')) {
+					$statistics['inheritingAccessRelatedObjectCount']++;
+				}
+				$statistics['potentialInheritingRelatedObjectCount']++;
+				$statistics['potentialInheritingAccessRelatedObjectCount']++;
+			}
+		}
+		
+		return $statistics;
+	}
 	# --------------------------------------------------------------------------------------------		
 	# ACL world access
 	# --------------------------------------------------------------------------------------------		

@@ -2319,6 +2319,27 @@ function caEditorACLEditor(View $view, BaseModel $t_instance, ?array $options=nu
 }
 # ------------------------------------------------------------------------------------------------
 /**
+ * Generates access control list (ACL) editor for batch editor
+ *
+ * @param View $view Inspector view object
+ * @param RecordSelection $rs 
+ * @param array $options None implemented yet
+ *
+ * @return string HTML implementing the inspector
+ */
+function caBatchEditorACLEditor(View $view, RecordSelection $rs, ?array $options=null) : ?string {
+	$view_path = (isset($options['viewPath']) && $options['viewPath']) ? $options['viewPath'] : $view->request->getViewsDirectoryPath();
+	$o_view = new View($view->request, "{$view_path}/bundles/");
+
+	$o_view->setVar('rs', $rs);
+	
+	// Get inheritance usage stats
+	$o_view->setVar('statistics', ca_acl::getStatisticsForBatch($rs));
+	
+	return $o_view->render('ca_acl_batch_access.php');
+}
+# ------------------------------------------------------------------------------------------------
+/**
  * Generates standard-format inspector panels for editors
  *
  * @param View $po_view Inspector view object
