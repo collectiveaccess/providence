@@ -168,8 +168,8 @@ if($acl_enabled || $pawtucket_only_acl_enabled) {
 			<?= _t('Exceptions'); ?>
 		</div>
 		<div class='control'>
-			<?= $t_instance->getACLGroupHTMLFormBundle($this->request, 'caAccessControlList'); ?>	
-			<?= $t_instance->getACLUserHTMLFormBundle($this->request, 'caAccessControlList'); ?>
+			<?= $t_instance->getACLBatchGroupHTMLFormBundle($this->request, 'caAccessControlList', $stats['groups']); ?>	
+			<?= $t_instance->getACLBatchUserHTMLFormBundle($this->request, 'caAccessControlList', $stats['users']); ?>
 		</div>
 <?php
 	if(!$pawtucket_only_acl_enabled) { 
@@ -276,6 +276,7 @@ if($acl_enabled || $pawtucket_only_acl_enabled) {
 <?php
 }
 ?>
+		<?= caHTMLHiddenInput('id', ['value' => $this->getVar('id')]); ?>
 	</form>	
 	<div class="editorBottomPadding"><!-- empty --></div>
 </div>

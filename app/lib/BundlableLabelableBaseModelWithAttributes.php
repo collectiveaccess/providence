@@ -7912,8 +7912,6 @@ $pa_options["display_form_field_tips"] = true;
 	 * 
 	 */
 	public function getACLUserHTMLFormBundle($po_request, $ps_form_name, $pa_options=null) {
-		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
-		
 		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 		
@@ -7928,15 +7926,35 @@ $pa_options["display_form_field_tips"] = true;
 		
 		return $o_view->render('ca_acl_users.php');
 	}
+	# --------------------------------------------------------------------------------------------		
+	/**
+	 * 
+	 */
+	public function getACLBatchUserHTMLFormBundle(RequestHTTP $request, string $form_name, array $users, ?array $options=null) {
+		$vs_view_path = (isset($options['viewPath']) && $options['viewPath']) ? $options['viewPath'] : $request->getViewsDirectoryPath();
+		$o_view = new View($request, "{$vs_view_path}/bundles/");
+		
+		$t_user = new ca_users();
+		
+		$o_view->setVar('t_instance', $this);
+		$o_view->setVar('table_num', $this->tableNum());
+		$o_view->setVar('id_prefix', $form_name);		
+		$o_view->setVar('request', $request);	
+		$o_view->setVar('t_user', $t_user);
+		$o_view->setVar('initialValues', $users);
+		
+		return $o_view->render('ca_acl_batch_users.php');
+	}
 	# --------------------------------------------------------------------------------------------	
 	/**
 	 *
 	 */
-	public function setACLAccessFromForm(RequestHTTP $request) : ?bool {
+	public function setACLAccessFromForm(RequestHTTP $request, ?array $options=null) : ?bool {
 		if ((!$this->isSaveable($request)) || (!$request->user->canDoAction('can_change_acl_'.$this->tableName()))) {
 			$this->postError(2570, _t('Cannot set access'), 'BundleableLabelableBaseModelWithAttributes->setACLAccessFromForm()');
 			return false;
 		}
+		$is_batch = caGetOption('batch', $options, false);
 		$save_access = $this->getAppConfig()->get('acl_show_public_access_controls');
 		
 		$pawtucket_only_acl_enabled = caACLIsEnabled($this, ['forPawtucket' => true]);
@@ -8040,30 +8058,60 @@ $pa_options["display_form_field_tips"] = true;
 			if($this->get('acl_inherit_from_parent')) { $preserve_inherited[] = $this->tableNum(); }
 	
 			// Save user ACL's
-			$users_to_set = [];
+			$users_to_set = $users_to_remove =  [];
 			foreach($_REQUEST as $key => $val) {
 				if (preg_match("!^{$form_prefix}_user_id(.*)$!", $key, $matches)) {
 					$user_id = (int)$request->getParameter($form_prefix.'_user_id'.$matches[1], pInteger);
 					$access = $request->getParameter($form_prefix.'_user_access_'.$matches[1], pInteger);
-					if ($access >= 0) {
-						$users_to_set[$user_id] = $access;
+					$action = $is_batch ? $request->getParameter($form_prefix.'_user_action_'.$matches[1], pString) : null;
+					
+					if($is_batch) {
+						if($action === 'ADD') {
+							$users_to_set[$user_id] = $access;
+						} elseif($action === 'REMOVE') {
+							$users_to_remove[] = $user_id;
+						}
+					} else {
+						if ($access >= 0) {
+							$users_to_set[$user_id] = $access;
+						}
 					}
 				}
 			}
-			$this->setACLUsers($users_to_set, ['preserveInherited' => $preserve_inherited]);
+			if($is_batch) {
+				if(sizeof($users_to_set)) { $this->addACLUsers($users_to_set); }
+				if(sizeof($users_to_remove)) { $this->removeACLUsers($users_to_remove); }
+			} else {
+				$this->setACLUsers($users_to_set, ['preserveInherited' => $preserve_inherited]);
+			}
 	
 			// Save group ACL's
-			$groups_to_set = [];
+			$groups_to_set = $groups_to_remove = [];
 			foreach($_REQUEST as $key => $val) {
 				if (preg_match("!^{$form_prefix}_group_id(.*)$!", $key, $matches)) {
 					$group_id = (int)$request->getParameter($form_prefix.'_group_id'.$matches[1], pInteger);
 					$access = $request->getParameter($form_prefix.'_group_access_'.$matches[1], pInteger);
-					if ($access >= 0) {
-						$groups_to_set[$group_id] = $access;
+					$action = $is_batch ? $request->getParameter($form_prefix.'_group_action_'.$matches[1], pString) : null;
+					
+					if($is_batch) {
+						if($action === 'ADD') {
+							$groups_to_set[$group_id] = $access;
+						} elseif($action === 'REMOVE') {
+							$groups_to_remove[] = $group_id;
+						}
+					} else {
+						if ($access >= 0) {
+							$groups_to_set[$group_id] = $access;
+						}
 					}
 				}
 			}
-			$this->setACLUserGroups($groups_to_set, ['preserveInherited' => $preserve_inherited]);
+			if($is_batch) {
+				if(sizeof($groups_to_set)) { $this->addACLUserGroups($groups_to_set); }
+				if(sizeof($groups_to_remove)) { $this->removeACLUserGroups($groups_to_remove); }
+			} else {
+				$this->setACLUserGroups($groups_to_set, ['preserveInherited' => $preserve_inherited]);
+			}
 	
 			// Save "world" ACL
 			if($pawtucket_only_acl_enabled) {
@@ -8338,6 +8386,25 @@ $pa_options["display_form_field_tips"] = true;
 		$o_view->setVar('initialValues', $this->getACLUserGroups(['returnAsInitialValuesForBundle' => true]));
 		
 		return $o_view->render('ca_acl_user_groups.php');
+	}
+	# --------------------------------------------------------------------------------------------		
+	/**
+	 * 
+	 */
+	public function getACLBatchGroupHTMLFormBundle(RequestHTTP $request, string $form_name, array $groups, ?array $options=null) {
+		$view_path = (isset($options['viewPath']) && $options['viewPath']) ? $options['viewPath'] : $request->getViewsDirectoryPath();
+		$o_view = new View($request, "{$view_path}/bundles/");
+		
+		$t_group = new ca_user_groups();
+		
+		$o_view->setVar('t_instance', $this);
+		$o_view->setVar('table_num', $this->tableNum());
+		$o_view->setVar('id_prefix', $form_name);		
+		$o_view->setVar('request', $request);	
+		$o_view->setVar('t_group', $t_group);
+		$o_view->setVar('initialValues', $groups);
+		
+		return $o_view->render('ca_acl_batch_user_groups.php');
 	}
 	# ------------------------------------------------------------------
 	/**

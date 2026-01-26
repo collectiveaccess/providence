@@ -2332,6 +2332,7 @@ function caBatchEditorACLEditor(View $view, RecordSelection $rs, ?array $options
 	$o_view = new View($view->request, "{$view_path}/bundles/");
 
 	$o_view->setVar('rs', $rs);
+	$o_view->assignVars($view->getAllVars());	// copy vars from parent view
 	
 	// Get inheritance usage stats
 	$o_view->setVar('statistics', ca_acl::getStatisticsForBatch($rs));

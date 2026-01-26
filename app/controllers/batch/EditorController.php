@@ -230,179 +230,22 @@ class EditorController extends ActionController {
 	    }
 		list($rs, $t_subject, $t_ui) = $this->_initView($options);
 		
-		$config = Configuration::load();
-		$save_access = $config->get('acl_show_public_access_controls');
-		$pawtucket_only_acl_enabled 	= caACLIsEnabled($t_subject, ['forPawtucket' => true]);
-		if(!$save_access && !caACLIsEnabled($t_subject, ['anywhere' => true])) { throw new ApplicationException(_t('ACL not enabled')); }
-		if(!$this->verifyAccess($t_subject)) { return; }
-
-		if ((!$t_subject->isSaveable($this->request)) || (!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) {
-			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2570?r='.urlencode($this->request->getFullUrlPath()));
-			return;
-		}
+		$ids = $rs->getItemRowIDs();
 		
-		$can_save_acl = ((!method_exists($t_subject, 'supportsACL') || $t_subject->supportsACL())) || $pawtucket_only_acl_enabled;
-	
-		$subject_table = $t_subject->tableName();
-		$subject_pk = $t_subject->primaryKey();
-		$form_prefix = $this->request->getParameter('_formName', pString);
-
-		$this->opo_app_plugin_manager->hookBeforeSaveItem([
-			'id' => $subject_id,
-			'table_num' => $t_subject->tableNum(),
-			'table_name' => $subject_table, 
-			'instance' => &$t_subject,
-			'is_insert' => false
-		]);
-		
-		// Set Pawtucket access
-		$orig_access = $t_subject->get('access');
-		if($save_access && !is_null($this->request->parameterExists('access')) && $t_subject->hasField('access')) {
-			$t_subject->set('access', $this->request->getParameter('access', pInteger) );
-			$t_subject->update();
-		}
-		if($pawtucket_only_acl_enabled) {
-			$set_all = $this->request->getParameter('set_all_access_inherit_from_parent', pInteger);
-			$this->request->setParameter('set_all_acl_inherit_from_parent', $set_all);
-			
-			$set_all = $this->request->getParameter('set_all_objects_access_inherit_from_parent', pInteger);
-			$this->request->setParameter('set_all_acl_inherit_from_ca_collections', $set_all);
-			
-			$set_none = $this->request->getParameter('set_none_access_inherit_from_parent', pInteger);
-			$this->request->setParameter('set_none_acl_inherit_from_parent', $set_none);
-			
-			$set_none = $this->request->getParameter('set_none_objects_access_inherit_from_parent', pInteger);
-			$this->request->setParameter('set_none_acl_inherit_from_ca_collections', $set_none);
-			
-			$inherit = $this->request->getParameter('access_inherit_from_parent', pInteger);
-			$this->request->setParameter('acl_inherit_from_ca_collections', $inherit);
-			$this->request->setParameter('acl_inherit_from_parent', $inherit);
-		}
-	
-		if($can_save_acl) {
-			// Force all?
-			if(($set_all = $this->request->getParameter('set_all_acl_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_acl_inherit_from_parent', pInteger))) {
-				if(!ca_acl::setACLInheritanceSettingForAllChildRows($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
-					$t_subject->postError(1250, _t('Could not set ACL inheritance settings on child items'),"BaseEditorController->SetAccess()");
-				}
-				$_REQUEST['form_timestamp'] = time();
-			}
-			if(
-				($subject_table === 'ca_collections')
-				&&
-				($set_all = $this->request->getParameter('set_all_acl_inherit_from_ca_collections', pInteger)) || ($set_none = $this->request->getParameter('set_none_acl_inherit_from_ca_collections', pInteger))
-			) {
-				if(!ca_acl::setACLInheritanceSettingForRelatedObjects($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
-					$t_subject->postError(1250, _t('Could not set ACL inheritance settings on related objects'),"BaseEditorController->SetAccess()");
-				}
-				$_REQUEST['form_timestamp'] = time();
+		$qr = caMakeSearchResult($rs->tableName(), $ids);
+		while($qr->nextHit()) {
+			$t = $qr->getInstance();
+			if(!$t->setACLAccessFromForm($this->request, ['batch' => true]) && ($t->numErrors() > 0)) {
+				$error = array_shift($t_subject->errors);
+				$error_num = $error->getErrorNumber();
+				print "ERROR!";print_r($t->getErrors());
+				//$this->response->setRedirect($this->request->config->get('error_display_url')."/n/{$error_num}?r=".urlencode($this->request->getFullUrlPath()));
 			}
 		}
-		if(
-			($set_all = $this->request->getParameter('set_all_access_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_access_inherit_from_parent', pInteger))
-		) {
-			if(!ca_acl::setAccessInheritanceSettingForChildrenFromRow($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
-				$t_subject->postError(1250, _t('Could not set public access inheritance settings on related objects'),"BaseEditorController->SetAccess()");
-			}
-			$_REQUEST['form_timestamp'] = time();
-		}
-		if(
-			($subject_table === 'ca_collections')
-			&&
-			($set_all = $this->request->getParameter('set_all_objects_access_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_objects_access_inherit_from_parent', pInteger))
-		) {
-			if(!ca_acl::setAccessInheritanceSettingToRelatedObjectsFromCollection($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
-				$t_subject->postError(1250, _t('Could not set public access inheritance settings on related objects'),"BaseEditorController->SetAccess()");
-			}
-			$_REQUEST['form_timestamp'] = time();
-		}
-		// Set ACL-related intrinsic fields
-		if ($t_subject->hasField('acl_inherit_from_ca_collections') || $t_subject->hasField('acl_inherit_from_parent') || $t_subject->hasField('access_inherit_from_parent')) {
-			if($can_save_acl) {
-				if ($t_subject->hasField('acl_inherit_from_ca_collections')) {
-					$t_subject->set('acl_inherit_from_ca_collections', $this->request->getParameter('acl_inherit_from_ca_collections', pInteger));
-				}
-				if ($t_subject->hasField('acl_inherit_from_parent')) {
-					$t_subject->set('acl_inherit_from_parent', $this->request->getParameter('acl_inherit_from_parent', pInteger));
-				}
-			}
-			if ($t_subject->hasField('access_inherit_from_parent')) {
-				$t_subject->set('access_inherit_from_parent', $this->request->getParameter('access_inherit_from_parent', pInteger));
-			}
-			$t_subject->update();
-
-			//if ($t_subject->numErrors()) {
-			//	$this->postError(1250, _t('Could not set ACL inheritance settings: %1', join("; ", $t_subject->getErrors())),"BaseEditorController->SetAccess()");
-			//}
-		}
-		if($can_save_acl) {
-			$preserve_inherited = [];
-			if($t_subject->hasField('acl_inherit_from_ca_collections') && $t_subject->get('acl_inherit_from_ca_collections')) { $preserve_inherited[] = 13; }
-			if($t_subject->get('acl_inherit_from_parent')) { $preserve_inherited[] = $t_subject->tableNum(); }
-	
-			// Save user ACL's
-			$users_to_set = [];
-			foreach($_REQUEST as $key => $val) {
-				if (preg_match("!^{$form_prefix}_user_id(.*)$!", $key, $matches)) {
-					$user_id = (int)$this->request->getParameter($form_prefix.'_user_id'.$matches[1], pInteger);
-					$access = $this->request->getParameter($form_prefix.'_user_access_'.$matches[1], pInteger);
-					if ($access >= 0) {
-						$users_to_set[$user_id] = $access;
-					}
-				}
-			}
-			$t_subject->setACLUsers($users_to_set, ['preserveInherited' => $preserve_inherited]);
-	
-			// Save group ACL's
-			$groups_to_set = [];
-			foreach($_REQUEST as $key => $val) {
-				if (preg_match("!^{$form_prefix}_group_id(.*)$!", $key, $matches)) {
-					$group_id = (int)$this->request->getParameter($form_prefix.'_group_id'.$matches[1], pInteger);
-					$access = $this->request->getParameter($form_prefix.'_group_access_'.$matches[1], pInteger);
-					if ($access >= 0) {
-						$groups_to_set[$group_id] = $access;
-					}
-				}
-			}
-			$t_subject->setACLUserGroups($groups_to_set, ['preserveInherited' => $preserve_inherited]);
-	
-			// Save "world" ACL
-			if($pawtucket_only_acl_enabled) {
-				// Set world access to public access value in "front-end only" mode
-				
-				$access_to_acl_map = caGetACLItemLevelMap();
-				$t_subject->setACLWorldAccess($access_to_acl_map[$this->request->getParameter('access', pInteger) ?? 0], ['preserveInherited' => $preserve_inherited]);
-			} else {
-				$t_subject->setACLWorldAccess($this->request->getParameter("{$form_prefix}_access_world", pInteger));
-			}
-			
-			ca_acl::updateACLInheritanceForRow($t_subject);
-		}
-		
-		SearchResult::clearCaches();
-		ca_acl::applyAccessInheritance($t_subject);
-		SearchResult::clearCaches();
-		ca_acl::applyAccessInheritanceToChildrenFromRow($t_subject);
-		SearchResult::clearCaches();
-		if($t_subject->tableName() === 'ca_collections') {
-			ca_acl::applyAccessInheritanceToRelatedObjectsFromCollection($t_subject);
-		}
-		$this->opo_app_plugin_manager->hookSaveItem(
-			[
-				'id' => $subject_id,
-				'table_num' => $t_subject->tableNum(),
-				'table_name' => $subject_table,
-				'instance' => &$t_subject,
-				'is_insert' => false,
-				'request' => $this->request
-			]
-		);
-
 		$this->notification->addNotification(_t('Saved settings'), __NOTIFICATION_TYPE_INFO__);
 		ca_acl::removeRedundantACLEntries($t_subject->getDb());
 		$this->Access();
 	}
-	# -------------------------------------------------------
 	# -------------------------------------------------------
 	/**
 	 * Initializes editor view with core set of values, loads model with record to be edited and selects user interface to use.
