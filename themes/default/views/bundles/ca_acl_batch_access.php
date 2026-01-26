@@ -45,7 +45,7 @@ $show_public_access_controls 	= ($config->get('acl_show_public_access_controls')
 	if ($can_edit) {
 		print $vs_control_box = caFormControlBox(
 			caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'caAccessControlList').' '.
-			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', $this->request->getModulePath(), $this->request->getController(), 'Access/'.$this->request->getActionExtra(), [$t_instance->primaryKey() => $t_instance->getPrimaryKey()]),
+			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', $this->request->getModulePath(), $this->request->getController(), 'Access/'.$this->request->getActionExtra(), [$t_instance->primaryKey() => $t_instance->getPrimaryKey(), 'id' => $this->getVar('id')]),
 			'',
 			''
 		);
