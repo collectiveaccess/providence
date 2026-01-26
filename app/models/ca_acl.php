@@ -525,11 +525,13 @@ class ca_acl extends BaseModel {
 			'inheritingAccessRelatedObjectCount' => 0,
 			'potentialInheritingRelatedObjectCount' => 0,
 			'potentialInheritingAccessRelatedObjectCount' => 0,
+			'groups' => [],
+			'users' => []
 		];
 		
 		$row_ids = $rs->getItemRowIDs();
 		
-		// Number of sub-records and inherited entries
+		// Get hierarchy indices for items in set
 		$qr = $db->query("
 			SELECT {$pk}, hier_left, hier_right
 			FROM {$subject_table_name} 
@@ -543,6 +545,7 @@ class ca_acl extends BaseModel {
 			$acc[$row[$pk]] = $row;
 		}
 		
+		// Expand to include all sub-records
 		$c = $a = $x = 0;
 		$ids = array_keys($acc);
 		foreach($acc as $id => $h) {
@@ -564,8 +567,55 @@ class ca_acl extends BaseModel {
 		$statistics['subRecordCount'] = $c;
 		$statistics['inheritingSubRecordCount'] = $x;
 		$statistics['inheritingAccessSubRecordCount'] = $a;
+		
+		// Get user and groups
+		$users = [];
+		$qr_acl = $db->query("
+			SELECT u.user_id, u.user_name, u.fname, u.lname, u.email, a.access, count(*) refcount
+			FROM ca_acl a
+			INNER JOIN ca_users AS u ON u.user_id = a.user_id
+			WHERE 
+				a.table_num = ? AND a.row_id IN (?) AND u.userclass <> 255
+			GROUP BY u.user_id, u.user_name, u.fname, u.lname, u.email, a.access
+		", [$subject_table_num, $ids]);
+		while($qr_acl->nextRow()) {
+			$row = $qr_acl->getRow();
+			
+			if(!isset($users[$row['user_id']])) {
+				$row['label'] = $row['fname'].' '.$row['lname'].' ('.$row['email'].')';
+				$row['id'] = $row['user_id'];
+				$row['refcount_display'] = ($row['refcount'] == 1) ? _t('Referenced %1 time', $row['refcount']) : _t('Referenced %1 times', $row['refcount']);
+				$users[$row['user_id']] = $row;
+			} else {
+			
+			}
+		}
+		
+		$groups = [];
+		$qr_acl = $db->query("
+			SELECT g.group_id, g.name, g.code, a.access, count(*) refcount
+			FROM ca_acl a
+			INNER JOIN ca_user_groups AS g ON g.group_id = a.group_id
+			WHERE 
+				a.table_num = ? AND a.row_id IN (?) 
+			GROUP BY g.group_id, g.name, g.code, a.access
+		", [$subject_table_num, $ids]);
+		while($qr_acl->nextRow()) {
+			$row = $qr_acl->getRow();
+		
+			if(!isset($groups[$row['group_id']])) {
+				$row['label'] = $row['name'];
+				$row['id'] = $row['group_id'];
+				$row['refcount_display'] = ($row['refcount'] == 1) ? _t('Referenced %1 time', $row['refcount']) : _t('Referenced %1 times', $row['refcount']);
+				$groups[$row['group_id']] = $row;
+			} else {
+			
+			}
+		}
+		$statistics['users'] = $users;
+		$statistics['groups'] = $groups;
 
-		// Number of related objects and inherited entries
+		// Get related objects for collections
 		if($subject_table_name === 'ca_collections') {
 			$qr_oc = $db->query("
 				SELECT o.object_id, o.acl_inherit_from_ca_collections, o.access_inherit_from_parent
@@ -585,7 +635,6 @@ class ca_acl extends BaseModel {
 				$statistics['potentialInheritingAccessRelatedObjectCount']++;
 			}
 		}
-		
 		return $statistics;
 	}
 	# --------------------------------------------------------------------------------------------		
