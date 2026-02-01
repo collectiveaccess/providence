@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2025 Whirl-i-Gig
+ * Copyright 2007-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -113,6 +113,9 @@ define('__CA_NAV_ICON_TRASH__', 75);
 define('__CA_NAV_ICON_AUTO_DELETE__', 76);
 define('__CA_NAV_ICON_NO_AUTO_DELETE__', 77);
 define('__CA_NAV_ICON_SET_ACCESS__', 78);
+define('__CA_NAV_ICON_PACK__', 79);
+define('__CA_NAV_ICON_UNPACK__', 80);
+
 /**
  * Icon position constants
  */ 
@@ -932,7 +935,13 @@ function _caNavIconTypeToName($pn_type) {
 			break;				
 		case __CA_NAV_ICON_SET_ACCESS__:
 			$vs_fa_class = 'fas fa-broadcast-tower';
-			break;														
+			break;				
+		case __CA_NAV_ICON_PACK__:
+			$vs_fa_class = 'fas fa-box';
+			break;				
+		case __CA_NAV_ICON_UNPACK__:
+			$vs_fa_class = 'fas fa-box-open';
+			break;												
 		default:
 			print "INVALID CONSTANT $pn_type<br>\n";
 			return null;
