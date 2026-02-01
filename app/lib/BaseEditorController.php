@@ -185,7 +185,7 @@ class BaseEditorController extends ActionController {
 			} else {
 				$type_id = array_shift($type_ids);
 			}
-			if(!$type_id && $t_subject->hasField('type_id') && !$t_subject->getFieldInfo('type_id', 'IS_NULL')) {
+			if(($this->ops_table_name !== 'ca_relationship_types') && !$type_id && $t_subject->hasField('type_id') && !$t_subject->getFieldInfo('type_id', 'IS_NULL')) {
 				$this->notification->addNotification(_t('Invalid type: %1', $type), __NOTIFICATION_TYPE_ERROR__);
 
 				$this->postError(1270, _t('Invalid type: %1', $type),"BaseEditorController->Edit()");
