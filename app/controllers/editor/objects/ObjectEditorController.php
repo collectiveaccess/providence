@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 
+
 require_once(__CA_MODELS_DIR__."/ca_objects.php"); 
 require_once(__CA_MODELS_DIR__."/ca_object_lots.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representation_multifiles.php");
@@ -77,6 +77,28 @@ class ObjectEditorController extends BaseEditorController {
 			}
 			$t_object->isChild();
 		}
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function pack() {
+		list($subject_id, $t_subject, $t_ui, $parent_id, $above_id, $after_id) = $this->_initView();
+
+		$c = $t_subject->packCrate();
+		$this->notification->addNotification(_t("Packed crate with %1 items", $c), __NOTIFICATION_TYPE_INFO__);
+		$this->Edit();
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function unpack() {
+		list($subject_id, $t_subject, $t_ui, $parent_id, $above_id, $after_id) = $this->_initView();
+
+		$c = $t_subject->unpackCrate();
+		$this->notification->addNotification(_t("Unpacked %1 items", $c), __NOTIFICATION_TYPE_INFO__);
+		$this->Edit();
 	}
 	# -------------------------------------------------------
 	# Sidebar info handler

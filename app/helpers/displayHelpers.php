@@ -1454,7 +1454,15 @@ function caEditorInspector($view, $options=null) {
 	</script>\n";
 			TooltipManager::add('#inspectorSetAutoDeleteButton', _t("Auto-delete set when older than %1 days?", 10));
 		}
-
+		
+		// Packing
+		if(method_exists($t_item, 'isCrate') && $t_item->isCrate()) {
+			if($t_item->crateIsPacked()) {
+				$tools [] = "<div id='inspectorPack' class='inspectorActionButton'>".caNavLink($view->request, caNavIcon(__CA_NAV_ICON_UNPACK__, '20px'), "button", '*', '*', 'unpack', [$t_item->primaryKey() => $t_item->getPrimaryKey()],[])."</div>\n";
+			} else {
+				$tools [] = "<div id='inspectorPack' class='inspectorActionButton'>".caNavLink($view->request, caNavIcon(__CA_NAV_ICON_PACK__, '20px'), "button", '*', '*', 'pack', [$t_item->primaryKey() => $t_item->getPrimaryKey(),],[])."</div>\n";
+			}
+		}
 
 		$more_info = '';
 

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1147,5 +1147,144 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 				break;
 		}
 	}	
+	# ------------------------------------------------------
+	# Crate management
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function isCrate() : ?bool {
+		if(!$this->isLoaded()) { return null; }
+		$crate_conf = Configuration::load('crate_management.conf');
+		$crate_types = $crate_conf->getList('crate_types');
+		if(!is_array($crate_types)) { return false; }
+		return in_array($this->getTypeCode(), $crate_types);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getCrateStatus() : ?array {
+		if(!$this->isLoaded()) { return null; }
+		if(!$this->isCrate()) { return null; }
+		$crate_conf = Configuration::load('crate_management.conf');
+		$statuses = $crate_conf->getAssoc('packing_statuses');
+		if(!($statuses['assigned']['relationship_type'] ?? null)) { return null; }
+		if(!($statuses['packed']['relationship_type'] ?? null)) { return null; }
+		
+		$assigned = $this->get('ca_objects.related.object_id', ['returnAsArray' => true, 'restrictToRelationshipTypes' => [$statuses['assigned']['relationship_type']]]);
+		$packed = $this->get('ca_objects.related.object_id', ['returnAsArray' => true, 'restrictToRelationshipTypes' => [$statuses['packed']['relationship_type']]]);
+		$packed_relation_ids = $this->get('ca_objects_x_objects.relation_id', ['returnAsArray' => true, 'restrictToRelationshipTypes' => [$statuses['packed']['relationship_type']]]);
+		
+		$packed_relations = $this->get('ca_objects_x_objects', ['returnWithStructure' => true, 'restrictToRelationshipTypes' => [$statuses['packed']['relationship_type']]]);
+		
+		$packed_rel_info = [];
+		foreach($packed_relations as $rel) {
+			$packed_rel_info[] = [
+				'relation_id' => $rel['relation_id'],
+				'relationship_type_id' => $rel['relationship_type_id'],
+				'relationship_type_code' => $rel['relationship_type_code'],
+				'start_date' => caGetLocalizedHistoricDate($rel['sdatetime'], ['dateFormat' => 'iso8601']),
+				'end_date' =>  caGetLocalizedHistoricDate($rel['edatetime'], ['dateFormat' => 'iso8601']),
+				'effective_date' => caGetLocalizedHistoricDateRange($rel['sdatetime'], $rel['edatetime'], ['dateFormat' => 'iso8601'])
+			];
+		}
+		
+		return ['assigned' => $assigned, 'packed' => $packed, 'packed_relation_info' => $packed_rel_info, 'config' => $statuses];
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function crateIsPacked() : ?bool {
+		if(!$this->isLoaded()) { return null; }
+		if(!$this->isCrate()) { return null; }
+		$crate_conf = Configuration::load('crate_management.conf');
+		
+		$status = $this->getCrateStatus();
+		if(!is_array($status)) { return null; }
+		if(sizeof($status['packed'] ?? []) > 0) {
+			return true;
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function packCrate(?array $options=null) {
+		if(!$this->isLoaded()) { return null; }
+		if(!$this->isCrate()) { return null; }
+		
+		$status = $this->getCrateStatus();
+		if(!is_array($status)) { return null; }
+		$to_pack = caGetOption('packList', $options, array_diff($status['assigned'], $status['packed']));
+		
+		$crate_conf = Configuration::load('crate_management.conf');
+		$crate_pack_date_element_code = $crate_conf->get('crate_pack_date_element_code');
+		$c = 0;
+		if(sizeof($to_pack)) {
+			if(!($pack_rel_type = $status['config']['packed']['relationship_type'] ?? null)) { return null; }
+			foreach($to_pack as $id) {
+				if($rel = $this->addRelationship('ca_objects', $id, $pack_rel_type, _t('now'))) { 
+					if($crate_pack_date_element_code) {
+						$rel->replaceAttribute([$crate_pack_date_element_code => date('c')], $crate_pack_date_element_code);
+						$rel->update();
+					}
+					$c++; 
+				}
+			}
+		}
+		
+		return $c;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function unpackCrate(?array $options=null) {
+		if(!$this->isLoaded()) { return null; }
+		if(!$this->isCrate()) { return null; }
+		
+		$status = $this->getCrateStatus();
+		if(!is_array($status)) { return null; }
+		$to_unpack = caGetOption('unpackList', $options, $status['packed_relation_info']);
+		
+		$crate_conf = Configuration::load('crate_management.conf');
+		$crate_unpack_date_element_code = $crate_conf->get('crate_unpack_date_element_code');
+	
+		$c = 0;
+		if(sizeof($to_unpack)) {
+			if(!($unpack_rel_type = $status['config']['previous']['relationship_type'] ?? null)) { return null; }
+			foreach($to_unpack as $info) {
+				$d = date('c');
+				$date = $info['start_date'].' - '.$d;
+				if($rel = $this->editRelationship('ca_objects', $info['relation_id'], null, $unpack_rel_type, $date)) { 
+					if($crate_unpack_date_element_code) {
+						$rel->replaceAttribute([$crate_unpack_date_element_code => $d], $crate_unpack_date_element_code);
+						$rel->update();
+					}
+					$c++; 
+				}
+			}
+		}
+		
+		return $c;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getCrateRelationshipTypeConfig() : ?array {
+		$crate_conf = Configuration::load('crate_management.conf');
+		$statuses = $crate_conf->getAssoc('packing_statuses');
+		if(!is_array($statuses)) { return null; }
+		
+		$ret = array_map(function($v) {
+			return $v['relationship_type'] ?? null;
+		}, $statuses);
+		
+		return $ret;
+	}
 	# ------------------------------------------------------
 }

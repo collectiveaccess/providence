@@ -6309,15 +6309,57 @@ if (!$batch) {
 			return false;
 		}
 		
+		// Crates?
+		$is_crate = (method_exists($this, 'isCrate') && $this->isCrate());
+		$crate_rel_type_config = $is_crate ? $this->getCrateRelationshipTypeConfig() : null;
+		$crate_pack_rel_type_ids = caMakeRelationshipTypeIDList('ca_objects_x_objects', [$crate_rel_type_config['packed']]);
+		
 		// Process relationships
+		
+		$unpack_list = [];
 		foreach($va_rels_to_delete as $va_rel_to_delete) {
+			if($is_crate) {
+				$rel = ca_objects_x_objects::findAsInstance(['relation_id' => $va_rel_to_delete['relation_id']]);
+			
+				$rel_type_id = $rel->get('type_id');
+				if(in_array($rel_type_id, $crate_pack_rel_type_ids)) {
+					$unpack_list[] = [
+						'relation_id' => $va_rel_to_delete['relation_id'],
+						'relationship_type_id' => $rel_type_id,
+						'relationship_type_code' => $rel_type_id,
+						'start_date' => caGetLocalizedHistoricDate($rel->get('sdatetime'), ['dateFormat' => 'iso8601']),
+						'end_date' =>  caGetLocalizedHistoricDate($rel->get('edatetime'), ['dateFormat' => 'iso8601']),
+						'effective_date' => $rel->get('effective_date', ['dateFormat' => 'iso8601'])
+					];
+					continue;	
+				}
+			}
 			$this->removeRelationship($va_rel_to_delete['bundle'], $va_rel_to_delete['relation_id']);
 			if ($this->numErrors()) {
 				$po_request->addActionErrors($this->errors(), $ps_bundle_name);
 			}
 		}
+		if($is_crate && sizeof($unpack_list)) {
+			print_R($unpack_list);
+			$ret = $this->unpackCrate(['unpackList' => $unpack_list]);
+			if ($this->numErrors()) {
+				$po_request->addActionErrors($this->errors(), $ps_bundle_name);
+			}
+		}
+		
+		$pack_list = [];
 		foreach($va_rels_to_add as $va_rel_to_add) {
-			$this->addRelationship($va_rel_to_add['bundle'], $va_rel_to_add['row_id'], $va_rel_to_add['type_id'], _t(caGetOption('effectiveDateDefault', $pa_settings, null)), null, $va_rel_to_add['direction']);
+			if($is_crate && in_array($va_rel_to_add['type_id'], $crate_pack_rel_type_ids)) {
+				$pack_list[] = $va_rel_to_add['row_id'];
+			} else {
+				$this->addRelationship($va_rel_to_add['bundle'], $va_rel_to_add['row_id'], $va_rel_to_add['type_id'], _t(caGetOption('effectiveDateDefault', $pa_settings, null)), null, $va_rel_to_add['direction']);
+			}
+			if ($this->numErrors()) {
+				$po_request->addActionErrors($this->errors(), $ps_bundle_name);
+			}
+		}
+		if($is_crate && sizeof($pack_list)) {
+			$ret = $this->packCrate(['packList' => $pack_list]);
 			if ($this->numErrors()) {
 				$po_request->addActionErrors($this->errors(), $ps_bundle_name);
 			}
@@ -6506,7 +6548,7 @@ if (!$batch) {
 		$pb_return_labels_as_array = (isset($options['returnLabelsAsArray']) && $options['returnLabelsAsArray']) ? true : false;
 		$pn_limit = (isset($options['limit']) && ((int)$options['limit'] > 0)) ? (int)$options['limit'] : 4000;
 		$pn_start = (isset($options['start']) && ((int)$options['start'] > 0)) ? (int)$options['start'] : 0;
-		
+
 
 		if (is_numeric($pm_rel_table_name_or_num)) {
 			if(!($vs_related_table_name = Datamodel::getTableName($pm_rel_table_name_or_num))) { return null; }
@@ -6579,15 +6621,16 @@ if (!$batch) {
 		}
 
 		// check for self relationship
-		$vb_self_relationship = false;
+		$is_self_relationship_traversal = false;
 		if($vs_subject_table_name == $vs_related_table_name) {
-			$vb_self_relationship = true;
+			$is_self_relationship_traversal = true;
 			$t_item_rel = Datamodel::getInstance($va_path[1], true);
 			$vs_item_rel_table_name = $va_path[1];
 			
 			$t_rel_item = Datamodel::getInstance($va_path[0], true);
 			$vs_rel_item_table_name = $va_path[0];
 		}
+		$target_is_self_relation = method_exists($t_rel_item, 'isSelfRelationship') ? $t_rel_item->isSelfRelationship() : false;
 
 		$va_wheres = [];
 		$va_selects = [];
@@ -6806,7 +6849,7 @@ if (!$batch) {
 			}
 		}
 
-		if($vb_self_relationship) {
+		if($is_self_relationship_traversal) {
 			//
 			// START - traverse self relation
 			//
@@ -6827,10 +6870,10 @@ if (!$batch) {
 					$va_joins[] = "INNER JOIN ".$vs_label_table_name." ON ".$vs_label_table_name.'.'.$va_label_rel_info[$va_path[0]][$vs_label_table_name][0][1].' = '.$va_path[0].'.'.$va_label_rel_info[$va_path[0]][$vs_label_table_name][0][0]."\n";
 				}
 
-				$vs_other_field = ($vn_i == 0) ? $va_rel_info[$va_path[0]][$va_path[1]][1][1] : $va_rel_info[$va_path[0]][$va_path[1]][0][1];
-				$vs_direction =  (preg_match('!left!', $vs_other_field)) ? 'ltor' : 'rtol';
+				$other_field = ($vn_i == 0) ? $va_rel_info[$va_path[0]][$va_path[1]][1][1] : $va_rel_info[$va_path[0]][$va_path[1]][0][1];
+				$vs_direction =  (preg_match('!left!', $other_field)) ? 'ltor' : 'rtol';
 
-				$va_selects['row_id'] = $va_path[1].'.'.$vs_other_field.' AS row_id';
+				$va_selects['row_id'] = $va_path[1].'.'.$other_field.' AS row_id';
 
 				$vs_order_by = '';
 				$vs_sort_fld = '';
@@ -6865,7 +6908,7 @@ if (!$batch) {
 					FROM ".$va_path[0]."
 					".join("\n", array_merge($va_joins, $va_joins_post_add))."
 					WHERE
-						".join(' AND ', array_merge($va_wheres, array('('.$va_path[1].'.'.$vs_other_field .' IN ('.join(',', $pa_row_ids).'))')))."
+						".join(' AND ', array_merge($va_wheres, array('('.$va_path[1].'.'.$other_field .' IN ('.join(',', $pa_row_ids).'))')))."
 					{$vs_order_by}";
 
 				$qr_res = $o_db->query($vs_sql);
@@ -7105,10 +7148,10 @@ if (!$batch) {
 			
 			//
 			// END - from self relation itself
-			//
+			//	
 		} else {
 			//
-			// BEGIN - non-self relation
+			// BEGIN - non-self relation (or case where target is self-relation)
 			//
 			$va_wheres[] = "({$vs_subject_table_name}.".$this->primaryKey()." IN (".join(",", $pa_row_ids)."))";
 			$vs_cur_table = array_shift($va_path);
@@ -7222,8 +7265,14 @@ if (!$batch) {
 			    $vb_use_is_primary = true;
 			}
 
+			$self_left_fld = $self_right_fld = null;
+			if($target_is_self_relation) {
+				$rel_info = Datamodel::getRelationships($vs_subject_table_name, $vs_related_table_name);
+				$va_selects[] = "{$vs_related_table_name}.".($self_left_fld = $rel_info[$vs_subject_table_name][$vs_related_table_name][0][1]);
+				$va_selects[] = "{$vs_related_table_name}.".($self_right_fld = $rel_info[$vs_subject_table_name][$vs_related_table_name][1][1]);
+			}
 			$va_selects[] = $vs_subject_table_name.'.'.$this->primaryKey().' AS row_id';
-
+			
 			$vs_order_by = '';
 			if ($t_item_rel && $t_item_rel->hasField('rank')) {
 				$vs_order_by = " ORDER BY {$vs_item_rel_table_name}.`rank`";
@@ -7282,6 +7331,7 @@ if (!$batch) {
 			";
 			
 			$qr_res = $o_db->query($vs_sql);
+			//print $vs_sql."\n";
 			
 			if($ps_return_as === 'count') {
 				$qr_res->nextRow();
@@ -7313,6 +7363,16 @@ if (!$batch) {
 				}
 
 				$va_row = $qr_res->getRow();
+				
+                
+                if($target_is_self_relation) {
+                	if(in_array($va_row[$self_left_fld], $pa_row_ids)) {
+                		$va_row['related_row_id'] = $va_row[$self_right_fld];
+                	} else {
+                		$va_row['related_row_id'] = $va_row[$self_left_fld];
+                	}
+                }
+                
 				$vs_v = (sizeof($va_path) <= 2) ? $va_row['row_id'].'/'.$va_row[$vs_key] : $va_row[$vs_key];
 
 				$vs_display_label = $va_row[$vs_label_display_field] ?? null;
@@ -7376,7 +7436,6 @@ if (!$batch) {
 			if ($ps_return_as !== 'data') {
 				$va_rels = caExtractArrayValuesFromArrayOfArrays($va_rels, ($ps_return_as === 'relationids') ? 'relation_id' : $t_rel_item->primaryKey());
 			}
-			
 
 			if ($ps_return_as === 'data') {
 				// Set 'label' entry - display label in current user's locale
