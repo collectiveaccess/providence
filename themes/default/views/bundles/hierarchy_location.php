@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -148,7 +148,7 @@ $strict_type_hierarchy = $this->request->config->get("{$subject_table}_enforce_s
 $type_selector 	= trim($t_subject->getTypeListAsHTMLFormElement(
 	"{$id_prefix}type_id", 
 	['id' => "{$id_prefix}typeList"], 
-	['enforceStrictTypeHierarchy' => $strict_type_hierarchy]
+	['enforceStrictTypeHierarchy' => $strict_type_hierarchy, 'restrictToTypes' => $bundle_settings['restrict_to_types'] ?: null]
 ));
 
 $show_add = !$is_new && (!$read_only && $has_privs && !$batch) && (!$strict_type_hierarchy || ($strict_type_hierarchy && $type_selector));
@@ -673,12 +673,13 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 				currentSelectionIDID: '<?= $id_prefix; ?>_new_parent_id',
 				currentSelectionDisplayID: '<?= $id_prefix; ?>HierarchyBrowserSelectionMessage',
 				currentSelectionDisplayFormat: <?= json_encode($is_new ? _t('Will be placed under <em>^current</em> after save') : _t('Will be moved under <em>^current</em> after next save.')); ?>,
+				setInitItemIDAsCurrentSelection: true,
 				
-				allowExtractionFromHierarchy: <?= (($t_subject->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_ADHOC_MONO__) && !$batch && !$read_only) ? 'true' : 'false'; ?>,
+				allowExtractionFromHierarchy: <?= (($t_subject->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_ADHOC_MONO__) && !$batch && !$read_only && !$is_new) ? 'true' : 'false'; ?>,
 				extractFromHierarchyButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_EXTRACT__, 1); ?>",
 				extractFromHierarchyMessage: <?= json_encode(_t('Will be placed at the top of its own hierarchy after next save.')); ?>,
 				
-				allowSecondarySelection: true,
+				allowSecondarySelection: <?= (!$is_new) ? 'true' : 'false'; ?>,
 				secondarySelectionID: '<?= $id_prefix; ?>_move_selection',
 				defaultSecondarySelection: [<?= $t_subject->getPrimaryKey() ?>],
 				

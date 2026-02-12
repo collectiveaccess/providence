@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2024 Whirl-i-Gig
+ * Copyright 2016-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -133,6 +133,66 @@ class PawtucketController extends ActionController {
 		
 		$this->editGlobalValues();
 	}
+	# -------------------------------------------------------
+	# Analytics integration
+	# -------------------------------------------------------
+	/** 
+	 * 
+	 */
+	public function editAnalyticsIntegration() {
+		if(!$this->request->getUser()->canDoAction('can_edit_theme_global_values')) { throw new ApplicationException("No access"); }
+		
+		$o_appvars = new ApplicationVars();
+		
+		if (!is_array($toolbar_config = $this->request->config->getAssoc('wysiwyg_editor_toolbar'))) { $toolbar_config = array(); }
+			
+		$form_elements = [];
+		$template_values = caGetAnalyticsIntegrationValueList();
+		
+		foreach($template_values as $name => $info) {
+			$width = caGetOption('width', $info, '300px');
+			$height = caGetOption('height', $info, '120px');
+			
+		
+			$element = caHTMLTextInput($name, 
+				['value' => $o_appvars->getVar("pawtucket_analytics_{$name}"), "width" => $width, "height" => $height, 'class' => 'form-control', 'id' => "pawtucket_analytics_{$name}"],
+				['usewysiwygeditor' => false]
+			);
+			
+			$form_elements[$name] = [
+				'label' => $info['name'],
+				'tooltip' => $info['description'],
+				'element' => $element
+			];
+		}
+		$this->view->setVar('form_elements', $form_elements);
+		
+		
+		$this->render("Pawtucket/edit_analytics_integration_html.php");
+	}
+	# ------------------------------------------------------
+	/** 
+	 * 
+	 */
+	public function saveAnalyticsIntegration() {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+			$this->editAnalyticsIntegration();
+			return;
+		}
+		if(!$this->request->getUser()->canDoAction('can_edit_theme_global_values')) { throw new ApplicationException("No access"); }
+		
+		$o_appvars = new ApplicationVars();
+		
+		$template_values = caGetAnalyticsIntegrationValueList();
+		foreach($template_values as $name => $info) {
+			$o_appvars->setVar("pawtucket_analytics_{$name}", $this->request->getParameter($name, pString, null, ['purify' => false]));
+		}
+		$o_appvars->save();
+		
+		$this->notification->addNotification(_t('Saved settings'), __NOTIFICATION_TYPE_INFO__);
+		
+		$this->editAnalyticsIntegration();
+	}
 	# ------------------------------------------------------
 	/**
 	 * 
@@ -148,5 +208,4 @@ class PawtucketController extends ActionController {
 		}
 		return $this->render('Pawtucket/widget_pawtucket_info_html.php', true);
 	}
-	# -------------------------------------------------------
 }

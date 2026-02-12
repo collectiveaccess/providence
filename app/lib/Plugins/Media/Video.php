@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2025 Whirl-i-Gig
+ * Copyright 2004-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -61,6 +61,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"video/mpeg" 						=> "mpeg",
 			"video/mp4" 						=> "m4v",
 			"video/MP2T"						=> "mts",
+			"video/mxf"							=> "mxf",
 			"video/x-matroska"					=> "mkv",
 			"video/x-dv"						=> "dv",
 		),
@@ -72,7 +73,9 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"video/avi" 						=> "avi",
 			"video/x-flv"						=> "flv",
 			"video/mp4" 						=> "mp4",
+			"video/mpeg" 						=> "mpg",
 			"video/MP2T"						=> "mts",
+			"video/mxf"							=> "mxf",
 			"audio/mpeg"						=> "mp3",
 			"image/jpeg"						=> "jpg",
 			"image/png"							=> "png",
@@ -142,6 +145,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"image/png"							=> "PNG",
 		"video/mp4" 						=> "MPEG-4",
 		"video/MP2T"						=> "MTS",
+		"video/mxf"							=> "MXF",
 		"video/x-matroska"					=> "Matroska",
 		"video/x-dv"						=> "DIF (DV)"
 	);
@@ -396,6 +400,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				case 'video/quicktime':
 				case 'video/mp4':
 				case 'video/MP2T':
+				case 'video/mxf':
 					$this->properties["has_video"] = (isset($this->media_metadata["video"]["bitrate"]) && ($this->media_metadata["video"]["bitrate"]) ? 1 : 0);
 					$this->properties["has_audio"] = (isset($this->media_metadata["audio"]["bitrate"]) && ($this->media_metadata["audio"]["bitrate"]) ? 1 : 0);
 
@@ -1042,6 +1047,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			case 'audio/mpeg':
 			case 'video/mp4':
 			case 'video/MP2T':
+			case 'video/mxf':
 			case 'video/quicktime':
 				$poster_frame_url =	$options["poster_frame_url"];
 				

@@ -72,6 +72,14 @@ class WLPlugBanHammerUserAgent Extends BaseBanHammerPlugin  {
 				$banned_useragents = array_merge($banned_useragents, $banned_useragents_list);
 			}
 		}
+		if(is_array($exclude_list = $config['exclude_useragents'] ?? []) && sizeof($exclude_list)) {
+			foreach($exclude_list as $u) {
+				if (preg_match("!{$u}!i", $request_useragent)) {
+					return 0;
+				}
+			}
+		}
+		
 		foreach($banned_useragents as $u) {
 			if (preg_match("!{$u}!i", $request_useragent)) {
 				if($log) { $log->logInfo(_t('[BanHammer::UserAgent] Banned ip %1 because user agent %2 is on ban list', $ip, $request_useragent)); }

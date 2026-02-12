@@ -44,6 +44,13 @@ meridianTable = {
 	p.m. = pm
 }
 
+intervalPastIndicator = [past]
+intervalFutureIndicator = [future, next]
+intervalDaysIndicator = [day, days, d]
+intervalWeeksIndicator = [week, weeks, w]
+intervalMonthsIndicator = [month, months, m]
+intervalYearsIndicator = [year, years, yr, y]
+
 # ???
 dateCircaIndicator = [circa, c, c., ca, ca.]
 dateProbablyIndicator = [probablement]

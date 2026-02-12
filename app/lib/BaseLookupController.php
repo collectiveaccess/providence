@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,37 +43,51 @@ class BaseLookupController extends ActionController {
 	 * bundle specs; array values are *array* lists of values. If an item is not equal to a value in the array it will not be 
 	 * returned. Leave set to null or empty array if you don't want to filter.
 	 */
-	protected $opa_filters = array(); 
+	protected $opa_filters = []; 
 	# -------------------------------------------------------
-	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+	/**
+	 *
+	 */
+	public function __construct(&$po_request, &$po_response, $view_paths=null) {
 		if ($this->ops_search_class) { require_once(__CA_LIB_DIR__."/Search/".$this->ops_search_class.".php"); }
 		require_once(__CA_MODELS_DIR__."/".$this->ops_table_name.".php");
-		parent::__construct($po_request, $po_response, $pa_view_paths);
+		parent::__construct($po_request, $po_response, $view_paths);
 		$this->opo_item_instance = new $this->ops_table_name();
 	}
 	# -------------------------------------------------------
 	# AJAX handlers
 	# -------------------------------------------------------
-	public function Get($pa_additional_query_params=null, $pa_options=null) {
+	/**
+	 *
+	 */
+	public function Get(?array $additional_query_params=null, ?array $options=null) {
 		$this->response->setContentType("application/json");
 		if (!ca_user_roles::isValidAction('can_search_'.$this->ops_table_name) || ($this->request->user->canDoAction('can_search_'.$this->ops_table_name))) { 
 			$o_config = Configuration::load();
 			$o_search_config = caGetSearchConfig();
 			
 			if (!$this->ops_search_class) { return null; }
-			$ps_query = $ps_query_proc = $this->request->getParameter('term', pString);
+			$query = $query_proc = $this->request->getParameter('term', pString);
+			
+			$max_auto_quote_length = (bool)$o_config->getScalar($this->ops_table_name.'_auto_quote_lookup_maximimum_length') ?: (int)$o_config->getScalar('auto_quote_lookup_maximimum_length');
+			$auto_quote_require_whitespace = (bool)$o_config->getScalar($this->ops_table_name.'_auto_quote_lookup_require_whitespace') ?: (bool)$o_config->getScalar('auto_quote_lookup_require_whitespace');
+			
+			if(($max_auto_quote_length > 0) && (mb_strlen($query) <= $max_auto_quote_length) && (!$auto_quote_require_whitespace || (strpos($query, ' ') !== false)) && (strpos($query, '"') === false)){
+				$query = $query_proc = '"'.$query.'"';
+				$exact = true;
+			}
 		
-			$pb_exact = $this->request->getParameter('exact', pInteger);
-			$ps_exclude = $this->request->getParameter('exclude', pString);
-			$va_excludes = explode(";", $ps_exclude);
-			$ps_type = $this->request->getParameter('type', pString);
-			$ps_types = $this->request->getParameter('types', pString);
-			$ps_restrict_to_access_point = trim($this->request->getParameter('restrictToAccessPoint', pString));
-			$ps_restrict_to_search = trim($this->request->getParameter('restrictToSearch', pString));
-			$pb_no_subtypes = (bool)$this->request->getParameter('noSubtypes', pInteger);
-			$pb_quickadd = (bool)$this->request->getParameter('quickadd', pInteger);
-			$pb_no_inline = (bool)$this->request->getParameter('noInline', pInteger);
-			$pb_quiet = (bool)$this->request->getParameter('quiet', pInteger);
+			$exact = $this->request->getParameter('exact', pInteger);
+			$exclude = $this->request->getParameter('exclude', pString);
+			$va_excludes = explode(";", $exclude);
+			$type = $this->request->getParameter('type', pString);
+			$types = $this->request->getParameter('types', pString);
+			$restrict_to_access_point = trim($this->request->getParameter('restrictToAccessPoint', pString));
+			$restrict_to_search = trim($this->request->getParameter('restrictToSearch', pString));
+			$no_subtypes = (bool)$this->request->getParameter('noSubtypes', pInteger);
+			$quickadd = (bool)$this->request->getParameter('quickadd', pInteger);
+			$no_inline = (bool)$this->request->getParameter('noInline', pInteger);
+			$quiet = (bool)$this->request->getParameter('quiet', pInteger);
 			$self = explode(':', $this->request->getParameter('self', pString));		// table:id of calling record
 			
 			if((!(bool)$o_config->get('allow_duplicate_items_in_sets')) && ($set_id = $this->request->getParameter('set_id', pInteger))) {
@@ -81,15 +95,15 @@ class BaseLookupController extends ActionController {
 				$va_excludes = array_keys($t_set->getItemRowIDs());
 			}
 			
-			if (!($pn_limit = $this->request->getParameter('limit', pInteger))) { $pn_limit = 100; }
+			if (!($limit = $this->request->getParameter('limit', pInteger))) { $limit = 100; }
 			$va_items = array();
-			if (($vn_str_len = mb_strlen($ps_query)) > 0) {
-				if ($vn_str_len < 3) { $pb_exact = true; }		// force short strings to be an exact match (using a very short string as a stem would perform badly and return too many matches in most cases)
+			if (($vn_str_len = mb_strlen($query)) > 0) {
+				if ($vn_str_len < 3) { $exact = true; }		// force short strings to be an exact match (using a very short string as a stem would perform badly and return too many matches in most cases)
 			
 				if (is_array($va_asis_regexes = $o_search_config->getList('asis_regexes'))) {
 					foreach($va_asis_regexes as $vs_asis_regex) {
-						if (preg_match("!{$vs_asis_regex}!", $ps_query)) {
-							$pb_exact = true;
+						if (preg_match("!{$vs_asis_regex}!", $query)) {
+							$exact = true;
 							break;
 						}
 					}
@@ -98,28 +112,28 @@ class BaseLookupController extends ActionController {
 			
 				$o_search = new $this->ops_search_class();
 			
-				$pa_types = array();
-				if ($ps_types) {
-					$pa_types = explode(';', $ps_types);
+				$types = array();
+				if ($types) {
+					$types = explode(';', $types);
 				} else {
-					if ($ps_type) {
-						$pa_types = array($ps_type);
+					if ($type) {
+						$types = array($type);
 					}
 				}
 			
 				// Get type_ids
 				$va_ids = array();
-				if (sizeof($pa_types)) {
+				if (sizeof($types)) {
 					$va_types = $this->opo_item_instance->getTypeList();
 					$va_types_proc = array();
 					foreach($va_types as $vn_type_id => $va_type) {
 						$va_types_proc[$vn_type_id] = $va_types_proc[$va_type['idno']] = $vn_type_id;
 					}
-					foreach($pa_types as $ps_type) {
-						if (isset($va_types_proc[$ps_type])) {
-							$va_ids[$va_types_proc[$ps_type]] = true;
-						} elseif (is_numeric($ps_type)) {
-							$va_ids[(int)$ps_type] = true;
+					foreach($types as $type) {
+						if (isset($va_types_proc[$type])) {
+							$va_ids[$va_types_proc[$type]] = true;
+						} elseif (is_numeric($type)) {
+							$va_ids[(int)$type] = true;
 						}
 					}
 					$va_ids = array_keys($va_ids);
@@ -127,7 +141,7 @@ class BaseLookupController extends ActionController {
 					if (sizeof($va_ids) > 0) {
 						$t_list = new ca_lists();
 					
-						if (!$pb_no_subtypes) {
+						if (!$no_subtypes) {
 							foreach($va_ids as $vn_id) {
 								if (is_array($va_children = $t_list->getItemsForList($this->opo_item_instance->getTypeListCode(), array('item_id' => $vn_id, 'idsOnly' => true)))) {
 									$va_ids = array_merge($va_ids, $va_children);
@@ -141,18 +155,18 @@ class BaseLookupController extends ActionController {
 		
 				// add any additional search elements
 				$vs_additional_query_params = '';
-				if (is_array($pa_additional_query_params) && sizeof($pa_additional_query_params)) {
-					$vs_additional_query_params = ' AND ('.join(' AND ', $pa_additional_query_params).')';
+				if (is_array($additional_query_params) && sizeof($additional_query_params)) {
+					$vs_additional_query_params = ' AND ('.join(' AND ', $additional_query_params).')';
 				}
 
 				$vs_restrict_to_access_point = '';
-				if((strlen($ps_restrict_to_access_point) > 0) && $ps_query) {
-					$ps_query_proc = $ps_restrict_to_access_point.":\"".str_replace('"', '', $ps_query)."\"";
+				if((strlen($restrict_to_access_point) > 0) && $query) {
+					$query_proc = $restrict_to_access_point.":\"".str_replace('"', '', $query)."\"";
 				}
 			
 				$vs_restrict_to_search = '';
-				if(strlen($ps_restrict_to_search) > 0) {
-					$vs_restrict_to_search .= ' AND ('.$ps_restrict_to_search.')';
+				if(strlen($restrict_to_search) > 0) {
+					$vs_restrict_to_search .= ' AND ('.$restrict_to_search.')';
 				}
 			
 				// get sort field
@@ -166,8 +180,8 @@ class BaseLookupController extends ActionController {
 				}
 			
 				// add filters
-				if (isset($pa_options['filters']) && is_array($pa_options['filters']) && sizeof($pa_options['filters'])) {
-					foreach($pa_options['filters'] as $va_filter) {
+				if (isset($options['filters']) && is_array($options['filters']) && sizeof($options['filters'])) {
+					foreach($options['filters'] as $va_filter) {
 						$o_search->addResultFilter($va_filter[0], $va_filter[1], $va_filter[2]);
 					}
 				}
@@ -177,37 +191,37 @@ class BaseLookupController extends ActionController {
 					}
 				}
 	
-				if (preg_match("![\/\.\-]!", $ps_query)) { $pb_exact = true; }
+				if (preg_match("![\/\.\-]!", $query)) { $exact = true; }
 			
 				// do search
 				if($vs_additional_query_params || $vs_restrict_to_search) {
-					$vs_search = '('.trim($ps_query_proc).(intval($pb_exact) ? '' : '*').')'.$vs_additional_query_params.$vs_restrict_to_search;
+					$vs_search = '('.trim($query_proc).(intval($exact) ? '' : '*').')'.$vs_additional_query_params.$vs_restrict_to_search;
 				} else {
-					$vs_search = trim($ps_query_proc).(intval($pb_exact) ? '' : '*');
+					$vs_search = trim($query_proc).(intval($exact) ? '' : '*');
 				}
 			
 				$qr_res = $o_search->search($vs_search, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
 			
-				$qr_res->setOption('prefetch', $pn_limit);
+				$qr_res->setOption('prefetch', $limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
 			
-				$va_opts = array('exclude' => $va_excludes, 'limit' => $pn_limit, 'request' => $this->getRequest());
-				if(!$pb_no_inline && ($pb_quickadd || (!strlen($pb_quickadd) && $this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName()) && !((bool) $o_config->get($this->opo_item_instance->tableName().'_disable_quickadd'))))) {
+				$va_opts = array('exclude' => $va_excludes, 'limit' => $limit, 'request' => $this->getRequest());
+				if(!$no_inline && ($quickadd || (!strlen($quickadd) && $this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName()) && !((bool) $o_config->get($this->opo_item_instance->tableName().'_disable_quickadd'))))) {
 					// if the lookup was restricted by search, try the lookup without the restriction
 					// so that we can notify the user that he might be about to create a duplicate
-					if((strlen($ps_restrict_to_search) > 0)) {
-						$o_no_filter_result = $o_search->search(trim($ps_query_proc) . (intval($pb_exact) ? '' : '*') . $vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
+					if((strlen($restrict_to_search) > 0)) {
+						$o_no_filter_result = $o_search->search(trim($query_proc) . (intval($exact) ? '' : '*') . $vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
 						if ($o_no_filter_result->numHits() != $qr_res->numHits()) {
-							$va_opts['inlineCreateMessageDoesNotExist'] = _t("<em>%1</em> doesn't exist with this filter but %2 record(s) match overall. Create <em>%1</em>?", $ps_query, $o_no_filter_result->numHits());
-							$va_opts['inlineCreateMessage'] = _t('<em>%1</em> matches %2 more record(s) without the current filter. Create <em>%1</em>?', $ps_query, ($o_no_filter_result->numHits() - $qr_res->numHits()));
+							$va_opts['inlineCreateMessageDoesNotExist'] = _t("<em>%1</em> doesn't exist with this filter but %2 record(s) match overall. Create <em>%1</em>?", $query, $o_no_filter_result->numHits());
+							$va_opts['inlineCreateMessage'] = _t('<em>%1</em> matches %2 more record(s) without the current filter. Create <em>%1</em>?', $query, ($o_no_filter_result->numHits() - $qr_res->numHits()));
 						}
 					}
-					if(!isset($va_opts['inlineCreateMessageDoesNotExist'])) { $va_opts['inlineCreateMessageDoesNotExist'] = _t('<em>%1</em> does not exist. Create?', $ps_query); }
-					if(!isset($va_opts['inlineCreateMessage'])) { $va_opts['inlineCreateMessage'] = _t('Create <em>%1</em>?', $ps_query); }
-					$va_opts['inlineCreateQuery'] = $ps_query;
-				} elseif(!$pb_quiet) {
-					$va_opts['emptyResultQuery'] = $ps_query;
-					$va_opts['emptyResultMessage'] = _t('No matches found for "%1"', $ps_query);
+					if(!isset($va_opts['inlineCreateMessageDoesNotExist'])) { $va_opts['inlineCreateMessageDoesNotExist'] = _t('<em>%1</em> does not exist. Create?', $query); }
+					if(!isset($va_opts['inlineCreateMessage'])) { $va_opts['inlineCreateMessage'] = _t('Create <em>%1</em>?', $query); }
+					$va_opts['inlineCreateQuery'] = $query;
+				} elseif(!$quiet) {
+					$va_opts['emptyResultQuery'] = $query;
+					$va_opts['emptyResultMessage'] = _t('No matches found for "%1"', $query);
 				}
 			
 				if(isset($self[0]) && ($self[0] === $this->ops_table_name) && isset($self[1]) && ($self[1] > 0)) {
@@ -237,20 +251,20 @@ class BaseLookupController extends ActionController {
 		
 		$qr_children = null;
 
-		$ps_bundle = (string)$this->request->getParameter('bundle', pString);
-		$pa_ids = explode(";", $ps_ids = $this->request->getParameter('id', pString));
-		if (!sizeof($pa_ids)) { $pa_ids = array(null); }
+		$bundle = (string)$this->request->getParameter('bundle', pString);
+		$ids = explode(";", $ids = $this->request->getParameter('id', pString));
+		if (!sizeof($ids)) { $ids = array(null); }
 		$t_item = $this->opo_item_instance;
 		if (!$t_item->isHierarchical()) { return; }
 
 		$va_level_data = array();
-		foreach($pa_ids as $pn_id) {
-			$va_tmp = explode(":", $pn_id);
+		foreach($ids as $id) {
+			$va_tmp = explode(":", $id);
 			$vn_id = $va_tmp[0];
 			$vn_start = (int)$va_tmp[1];
 			if($vn_start < 0) { $vn_start = 0; }
 			if(sizeof($va_tmp) < 2) {
-				$pn_id = '0:0';
+				$id = '0:0';
 			}
 
 			$va_items_for_locale = array();
@@ -359,7 +373,7 @@ class BaseLookupController extends ActionController {
 			$va_items_for_locale['_sortOrder'] = array_keys($va_items_for_locale);
 			$va_items_for_locale['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
 			$va_items_for_locale['_itemCount'] = $qr_children ? $qr_children->numHits() : 0;
-			$va_level_data[$pn_id] = $va_items_for_locale;
+			$va_level_data[$id] = $va_items_for_locale;
 		}
 
 		if (!$this->request->getParameter('init', pInteger)) {
@@ -370,7 +384,7 @@ class BaseLookupController extends ActionController {
 			//
 			// ... so the hierbrowser passes an extra 'init' parameters set to 1 if the GetHierarchyLevel() call
 			// is part of a browser initialization
-			Session::setVar($this->ops_table_name.'_'.$ps_bundle.'_browse_last_id', array_pop($pa_ids));
+			Session::setVar($this->ops_table_name.'_'.$bundle.'_browse_last_id', array_pop($ids));
 		}
 
 		$this->view->setVar(str_replace(' ', '_', $this->ops_name_singular).'_list', $va_level_data);
@@ -385,8 +399,8 @@ class BaseLookupController extends ActionController {
 	public function GetHierarchyAncestorList() {
 		$this->response->setContentType("application/json");
 		
-		$pn_id = $this->request->getParameter('id', pInteger);
-		$t_item = new $this->ops_table_name($pn_id);
+		$id = $this->request->getParameter('id', pInteger);
+		$t_item = new $this->ops_table_name($id);
 		
 		$va_ancestors = array();
 		if ($t_item->getPrimaryKey()) {
@@ -466,17 +480,17 @@ class BaseLookupController extends ActionController {
 	public function Intrinsic() {
 		$this->response->setContentType("application/json");
 		
-		$pn_table_num 	=  $this->request->getParameter('table_num', pInteger);
-		$ps_field 				=  $this->request->getParameter('field', pString);
-		$ps_val 				=  $this->request->getParameter('n', pString);
-		$pn_id 					=  $this->request->getParameter('id', pInteger);
-		$pa_within_fields	=  $this->request->getParameter('withinFields', pArray); 
+		$table_num 	=  $this->request->getParameter('table_num', pInteger);
+		$field 				=  $this->request->getParameter('field', pString);
+		$val 				=  $this->request->getParameter('n', pString);
+		$id 					=  $this->request->getParameter('id', pInteger);
+		$within_fields	=  $this->request->getParameter('withinFields', pArray); 
 		
-		if (!($t_instance = Datamodel::getInstanceByTableNum($pn_table_num, true))) {
+		if (!($t_instance = Datamodel::getInstanceByTableNum($table_num, true))) {
 			return null;	// invalid table number
 		}
 		
-		if (!$t_instance->hasField($ps_field)) {
+		if (!$t_instance->hasField($field)) {
 			return null;	// invalid field
 		}
 		
@@ -486,16 +500,16 @@ class BaseLookupController extends ActionController {
 		
 		// If "unique within" fields are specified then we limit our query to values that have those fields
 		// set similarly to the row we're checking.
-		$va_unique_within = $t_instance->getFieldInfo($ps_field, 'UNIQUE_WITHIN');
+		$va_unique_within = $t_instance->getFieldInfo($field, 'UNIQUE_WITHIN');
 		
 		$va_extra_wheres = array();
 		if ($t_instance->hasField('deleted')) { $va_extra_wheres[] = "(deleted = 0)"; }
 		$vs_extra_wheres = '';
-		$va_params = array((string)$ps_val, (int)$pn_id);
+		$va_params = array((string)$val, (int)$id);
 		if (sizeof($va_unique_within)) {
 			foreach($va_unique_within as $vs_within_field) {
 				$va_extra_wheres[] = "({$vs_within_field} = ?)";
-				$va_params[] = $pa_within_fields[$vs_within_field];
+				$va_params[] = $within_fields[$vs_within_field];
 			}
 		}
 		if (sizeof($va_extra_wheres) > 0) {
@@ -506,7 +520,7 @@ class BaseLookupController extends ActionController {
 			SELECT {$vs_pk}
 			FROM ".$t_instance->tableName()."
 			WHERE
-				({$ps_field} = ?) AND ({$vs_pk} <> ?)
+				({$field} = ?) AND ({$vs_pk} <> ?)
 				{$vs_extra_wheres}
 		", $va_params);
 		$va_ids = array();
@@ -523,16 +537,16 @@ class BaseLookupController extends ActionController {
 	 * specified value. Can be used to determine if a value that needs to be unique is actually unique.
 	 */
 	public function Attribute() {
-		$pn_element_id 	=  $this->getRequest()->getParameter('element_id', pInteger);
-		$ps_val 		=  $this->getRequest()->getParameter('n', pString);
+		$element_id 	=  $this->getRequest()->getParameter('element_id', pInteger);
+		$val 			=  $this->getRequest()->getParameter('n', pString);
 
-		if(!ca_metadata_elements::getElementCodeForId($pn_element_id)) {
+		if(!ca_metadata_elements::getElementCodeForId($element_id)) {
 			return null;
 		}
 
 		$o_db = new Db();
-		if(mb_strlen($ps_val) > 0) {
-			$qr_values = $o_db->query('SELECT value_id FROM ca_attribute_values WHERE element_id=? AND value_longtext1=?', $pn_element_id, $ps_val);
+		if(mb_strlen($val) > 0) {
+			$qr_values = $o_db->query('SELECT value_id FROM ca_attribute_values WHERE element_id=? AND value_longtext1=?', $element_id, $val);
 			$va_value_list = $qr_values->getAllFieldValues('value_id');
 		} else {
 			$va_value_list = [];
@@ -547,15 +561,15 @@ class BaseLookupController extends ActionController {
 	 * 
 	 */
 	public function SetSortOrder() {
-		$pn_after_id 	=  $this->getRequest()->getParameter('after_id', pInteger);
-		$pn_id 			=  $this->getRequest()->getParameter('id', pInteger);
+		$after_id 	=  $this->getRequest()->getParameter('after_id', pInteger);
+		$id 		=  $this->getRequest()->getParameter('id', pInteger);
 		
 		$vn_return = 0;
 		$va_errors = [];
 		
 		try {	
 			// Is user allowed to sort?
-			$t_item = new $this->ops_table_name($pn_id);
+			$t_item = new $this->ops_table_name($id);
 			if (!$t_item->isLoaded()) { throw new ApplicationException(_t('Could not load %1', $t_item->getProperty('NAME_PLURAL'))); }
 		
 			$vs_rank_fld = $t_item->getProperty('RANK');
@@ -616,7 +630,7 @@ class BaseLookupController extends ActionController {
 			}
 		
 		// manipulate ranks to place "id" row after "after_id"
-			$t_item->setRankAfter($pn_after_id);
+			$t_item->setRankAfter($after_id);
 			if ($t_item->numErrors()) { throw new ApplicationException(_t('Could not update rank: %1', join('; ', $t_item->getErrors()))); }
 			$vn_return = 1;
 		} catch (Exception $e) {

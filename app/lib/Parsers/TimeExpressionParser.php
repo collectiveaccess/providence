@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2025 Whirl-i-Gig
+ * Copyright 2006-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -72,6 +72,8 @@ define("TEP_TOKEN_EARLY", 29);
 define("TEP_TOKEN_MID", 30);
 define("TEP_TOKEN_LATE", 31);
 define("TEP_TOKEN_ACADEMIC_DATE", 32);
+define("TEP_TOKEN_PAST", 33);
+define("TEP_TOKEN_FUTURE", 34);
 
 # --- Meridian types
 define("TEP_MERIDIAN_AM", 0);
@@ -161,6 +163,11 @@ class TimeExpressionParser {
 	 * Cached word lists converted to lower case
 	 */
 	static $s_language_settings_list_cache = array();
+	
+	/** 
+	 *
+	 */
+	public $opa_parsed_values = null;
 	
 	/** 
 	 * Lengths of early/mid/late qualified intervals for decades and centuries
@@ -411,6 +418,51 @@ class TimeExpressionParser {
 					} else {
 						switch($va_token['type']) {
 							# ----------------------
+							case TEP_TOKEN_PAST:
+								if($interval = $this->parseIntervalExpression()) {
+									$t = time();
+									$va_past = $this->gmgetdate($t - $interval['seconds']);
+									$va_dates['start'] = array(
+										'month' => $va_past['mon'], 'day' => $va_past['mday'], 'year' => $va_past['year'],
+										'hours' => $va_past['hours'], 'minutes' => $va_past['minutes'], 'seconds' => $va_past['seconds'],
+										'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
+									);
+									
+									$va_now = $this->gmgetdate($t);
+									$va_dates['end'] = array(
+										'month' => $va_now['mon'], 'day' => $va_now['mday'], 'year' => $va_now['year'],
+										'hours' => $va_now['hours'], 'minutes' => $va_now['minutes'], 'seconds' => $va_now['seconds'],
+										'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
+									);
+									$vn_state = TEP_STATE_ACCEPT;
+									$vb_can_accept = true;
+								} else {
+									$this->setParseError($va_token, TEP_ERROR_INVALID_EXPRESSION);
+								}
+								break;
+							# ----------------------
+							case TEP_TOKEN_FUTURE:
+								if($interval = $this->parseIntervalExpression()) {
+									$t = time();
+									$va_now = $this->gmgetdate($t);
+									$va_dates['start'] = array(
+										'month' => $va_now['mon'], 'day' => $va_now['mday'], 'year' => $va_now['year'],
+										'hours' => $va_now['hours'], 'minutes' => $va_now['minutes'], 'seconds' => $va_now['seconds'],
+										'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
+									);
+									$va_next = $this->gmgetdate($t + $interval['seconds']);
+									$va_dates['end'] = array(
+										'month' => $va_next['mon'], 'day' => $va_next['mday'], 'year' => $va_next['year'],
+										'hours' => $va_next['hours'], 'minutes' => $va_next['minutes'], 'seconds' => $va_next['seconds'],
+										'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => false, 'is_probably' => false
+									);
+									$vn_state = TEP_STATE_ACCEPT;
+									$vb_can_accept = true;
+								} else {
+									$this->setParseError($va_token, TEP_ERROR_INVALID_EXPRESSION);
+								}
+								break;
+							# ----------------------
 							case TEP_TOKEN_SEASON_WINTER:
 							case TEP_TOKEN_SEASON_SPRING:
 							case TEP_TOKEN_SEASON_SUMMER:
@@ -494,6 +546,8 @@ class TimeExpressionParser {
 										$vn_state = TEP_STATE_BEGIN;
 										$this->skipToken();	// skip range conjunction
 										$vb_is_range = true;
+										
+										$va_dates['start']['is_decade'] = 1;
 										break;
 									} else {
 										$va_decade_dates['start']['year'] = self::applyPartOfRangeQualifier($part_of_range_qualifier, 'start', 'decade', $va_decade_dates['start']['year']);
@@ -503,6 +557,8 @@ class TimeExpressionParser {
 										$va_dates['end'] = $va_decade_dates['end'];
 										$vn_state = TEP_STATE_ACCEPT;
 										$vb_can_accept = true;
+										
+										$va_dates['end']['is_decade'] = 1;
 										break;
 									}
 								}
@@ -517,6 +573,8 @@ class TimeExpressionParser {
 									} else {
 										$va_dates['end'] = $d['end'];
 									}
+									
+									$va_dates['start']['is_century'] = $va_dates['end']['is_century'] = 1;
 									break;
 								}
 								
@@ -769,6 +827,7 @@ class TimeExpressionParser {
 			
 				if (sizeof($va_decade_dates) > 0) { // found decade
 					$va_dates['end'] = $va_decade_dates['end'];
+					$va_dates['end']['is_decade'] = 1;
 					$vn_state = TEP_STATE_ACCEPT;
 					$vb_can_accept = true;
 					
@@ -943,6 +1002,8 @@ class TimeExpressionParser {
 		
 		# convert dd-mm-yyyy dates to dd/mm/yyyy to prevent our range conjunction code below doesn't mangle it
 		$ps_expression = preg_replace("/([\d]{1,2})-([\d]{1,2})-([\d]{4})/", "$1/$2/$3", $ps_expression);
+		$ps_expression = preg_replace("/([\d]{1,2})-([\d]{1,2})-([\d]{2})/", "$1/$2/$3", $ps_expression);
+		$ps_expression = preg_replace("/([\d]{1,2})-([\d]{2})-([\d]{2})/", "$1/$2/$3", $ps_expression);
 		$ps_expression = preg_replace("/([\d]{2})-([\d]{2})-([\d]{2})/", "$1/$2/$3", $ps_expression);
 		
 		if (preg_match("/([\d]{4})-([\d]{2})(\/|$)/", $ps_expression, $va_matches)) {
@@ -964,7 +1025,7 @@ class TimeExpressionParser {
 			$ps_expression = preg_replace('!([\d]{3})[\-]{1}[\D]+!', '\1_', $ps_expression);
 		}
 		
-		if (preg_match("!([\d]+)[ ]*[\-]{1}[ ]*([\d]+)!", $ps_expression, $m)) {	
+		if (preg_match("!([\d]+)[ ]*[\-]{1}[ ]*([\d]+)!", $ps_expression, $m) && !preg_match("!^([\d]+)[ ]*[\-]{1}[ ]*([\d]+)$!", $ps_expression, $m)) {	
 			$ps_expression = preg_replace("!([\d]+)[ ]*[\-]{1}[ ]*([\d]+)!", "$1 - $2", $ps_expression);
 		}
 		
@@ -1681,11 +1742,11 @@ class TimeExpressionParser {
 				if ($vb_is_bc) { $vn_start_year *= -1; }
 				$va_dates['start'] = array(
 					'month' => 1, 'day' => 1, 'year' => $vn_start_year,
-					'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa, 'is_probably' => false
+					'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa, 'is_probably' => false, 'is_decade' => true
 				);
 				$va_dates['end'] = array(
 					'month' => 12, 'day' => 31, 'year' => $vb_is_bc ? ($vn_end_year - 9) : ($vn_end_year + 9),
-					'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa, 'is_probably' => false
+					'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa, 'is_probably' => false, 'is_decade' => true
 				);
 			}
 		}
@@ -1917,6 +1978,16 @@ class TimeExpressionParser {
 		// range conjunction
 		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("rangeConjunctions"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_RANGE_CONJUNCTION);
+		}
+		
+		// past
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("intervalPastIndicator"))) {
+			return array('value' => $vs_token, 'type' => TEP_TOKEN_PAST);
+		}
+		
+		// future
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("intervalFutureIndicator"))) {
+			return array('value' => $vs_token, 'type' => TEP_TOKEN_FUTURE);
 		}
 		
 		// multiword range conjunction?
@@ -2261,6 +2332,8 @@ class TimeExpressionParser {
 	# -------------------------------------------------------------------
 	private function _processParseResults($pa_dates, $pa_options) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
+		
+		$this->opa_parsed_values = $pa_dates;
 		
 		if (!is_array($pa_dates['end'] ?? null)) { 
 			if (($pa_dates['start']['hours'] == 0) && ($pa_dates['start']['minutes'] == 0) && ($pa_dates['start']['seconds'] == 0)) {
@@ -4041,7 +4114,7 @@ class TimeExpressionParser {
 	}
 	# -------------------------------------------------------------------
 	/**
-	 * Return current date/time 
+	 * Return interval in specific units represented by the currently parsed date/time
 	 *
 	 * @param array $pa_options Options include:
 	 *		returnAs = time units of return value. Valid values are: days, hours, minutes, seconds. [Default is seconds]
@@ -4404,6 +4477,135 @@ class TimeExpressionParser {
  			$i++;
  		}
  		return $toks;
+ 	}
+ 	# ------------------------------------------------------------------- 	
+ 	/**
+ 	 *
+ 	 * @param 
+ 	 * @return array
+ 	 */
+ 	public function parseIntervalExpression()  {
+ 		$days = $this->getLanguageSettingsWordList("intervalDaysIndicator");
+ 		$weeks = $this->getLanguageSettingsWordList("intervalWeeksIndicator");
+ 		$months = $this->getLanguageSettingsWordList("intervalMonthsIndicator");
+ 		$years = $this->getLanguageSettingsWordList("intervalYearsIndicator");
+ 		$i = 1;
+ 		
+ 		$n = $u = null;
+ 		$t = $this->peekToken($i);
+ 		while($t = $this->peekToken($i)) {
+ 			$token = $t['value'];
+ 			if(preg_match("!^([\d]+)([^\d])+$!", $token, $m)) {
+ 				array_shift($m);
+ 				$stokens = $m;
+ 			} else {
+ 				$stokens = [$token];
+ 			}
+ 			foreach($stokens as $st) {
+				if(preg_match("!^[\d]+$!", $st)) {
+					$n = (float)$st;
+				} elseif(in_array($st, $days)) {
+					$u = 'D';
+				} elseif(in_array($st, $weeks)) {
+					$u = 'W';
+				} elseif(in_array($st, $months)) {
+					$u = 'M';
+				} elseif(in_array($st, $years)) {
+					$u = 'Y';
+				}
+				
+				if(!is_null($n) && !is_null($u)) {
+					break;
+				}
+			}
+ 			$i++;
+ 		}
+ 		if(!is_null($n) && !is_null($u)) {	
+			for($x=0; $x <= $i; $x++) {
+				$this->skipToken();
+			}
+			
+			$offset = 0;
+			switch($u) {
+				case 'D':
+					$offset = $n * 60 * 60 * 24;
+					break;
+				case 'W':
+					$offset = $n * 60 * 60 * 24 * 7;
+					break;
+				case 'M':
+					$offset = $n * 60 * 60 * 24 * 31;
+					break;
+				case 'Y':
+					$offset = $n * 60 * 60 * 24 * 365;
+					break;
+			}
+			
+ 			return ['n' => $n, 'units' => $u, 'seconds' => $offset];
+		}
+		return null;
+ 	}
+ 	# ------------------------------------------------------------------- 	
+ 	/** 
+ 	 *
+ 	 */
+ 	public function specificity() : ?array {
+ 		if(is_array($this->opa_parsed_values)) {
+ 			//print_r($this->opa_parsed_values);
+ 			$is_circa = $is_probably = $is_range  = $is_decade = $is_century = false;
+ 			$spec = null;
+ 			if(!isset($this->opa_parsed_values['end'])) {
+ 				$is_circa = $this->opa_parsed_values['start']['is_circa'] ?? false;
+ 				$is_probably = $this->opa_parsed_values['start']['is_probably'] ?? false;
+ 				$is_decade = $this->opa_parsed_values['start']['is_decade'] ?? false;
+ 				$is_century = $this->opa_parsed_values['start']['is_century'] ?? false;
+ 				if(isset($this->opa_parsed_values['start']['day'])) {
+ 					$spec = 'DAY';
+ 				} elseif(isset($this->opa_parsed_values['start']['month'])) {
+ 					$spec = 'MONTH';
+ 				} elseif(isset($this->opa_parsed_values['start']['year'])) {
+ 					$spec = 'YEAR';
+ 				}
+ 			} elseif(isset($this->opa_parsed_values['start'])) {
+ 				if($this->opa_parsed_values['end']['is_decade'] ?? false) {
+ 					$is_decade = true;
+ 					if(($this->opa_parsed_values['end']['year'] - $this->opa_parsed_values['start']['year']) > 9) {
+ 						$is_range = true;
+ 					}
+ 				} elseif($this->opa_parsed_values['end']['is_century'] ?? false) {
+ 					$is_century = true;
+ 					if(($this->opa_parsed_values['end']['year'] - $this->opa_parsed_values['start']['year']) > 99) {
+ 						$is_range = true;
+ 					}
+ 				} elseif($this->opa_parsed_values['start']['is_undated'] ?? false) {
+ 					$spec = 'UNDATED';
+ 				} elseif(isset($this->opa_parsed_values['start']['day'])) {
+ 					$is_range = true;
+ 					$spec = 'DAY';
+ 				} elseif(isset($this->opa_parsed_values['start']['month'])) {
+ 					$is_range = true;
+ 					$spec =  'MONTH';
+ 				} elseif(isset($this->opa_parsed_values['start']['year'])) {
+ 					$is_range = true;
+ 					$spec = 'YEAR';
+ 				}
+ 			} else {
+ 				return null;
+ 			}
+ 			
+ 			if($is_decade) { 
+ 				$spec = 'DECADE'; 
+ 			}
+ 			if($is_century) { $spec = 'CENTURY'; }
+ 			
+ 			return [
+ 				'specificity' => $spec,
+ 				'circa' => $is_circa,
+ 				'probably' => $is_probably,
+ 				'range' => $is_range
+ 			];
+ 		}
+ 		return null;
  	}
  	# ------------------------------------------------------------------- 	
 }

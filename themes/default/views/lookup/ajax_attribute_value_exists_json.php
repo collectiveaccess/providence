@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,4 +25,4 @@
  *
  * ----------------------------------------------------------------------
  */
- 	print json_encode(['exists' => $this->getVar('exists')]);
+print json_encode(['exists' => $this->getVar('exists')]);

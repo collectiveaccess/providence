@@ -543,6 +543,42 @@ function caPDFMinerInstalled($ps_pdfminer_path=null, $options=null) {
 }
 # ------------------------------------------------------------------------------------------------
 /**
+ * Detects if curl-impersonate (https://github.com/lwthiker/curl-impersonate) is installed in the given path.
+ *
+ * @param string $$path path to curl-impersonate client
+ * @param array $options Options include:
+ *		noCache = Don't cached path value. [Default is false]
+ *
+ * @return mixed Path to executable if installed, false if not installed
+ */
+function caCurlImpersonateInstalled(?string $path=null, ?array $options=null) {
+	if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_curl_impersonate_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_curl_impersonate_installed", "mediaPluginInfo"); }
+	if(!$path) { $path = caGetExternalApplicationPath('curl_impersonate'); }
+
+	if (!caIsValidFilePath($path)) { 
+		CompositeCache::save("mediahelper_curl_impersonate_installed", false, "mediaPluginInfo");
+		return false; 
+	}
+
+	if (!@is_readable($path)) { 
+		CompositeCache::save("mediahelper_curl_impersonate_installed", false, "mediaPluginInfo");
+		return false; 
+	}
+	if ((caGetOSFamily() == OS_WIN32) && $path) { 
+		CompositeCache::save("mediahelper_curl_impersonate_installed", $ps_pdfminer_path, "mediaPluginInfo");
+		return $path; 
+	} // don't try exec test on Windows
+
+	caExec($path." --version > /dev/null",$output, $return);
+	
+	$ret = ($return == 0);
+
+	CompositeCache::save("mediahelper_curl_impersonate_installed", $path, "mediaPluginInfo");
+	
+	return $ret ? $path : false;
+}
+# ------------------------------------------------------------------------------------------------
+/**
  * Extracts media metadata using ExifTool
  *
  * @param string $filepath file path

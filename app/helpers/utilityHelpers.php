@@ -4879,11 +4879,28 @@ function caFileIsIncludable($ps_file) {
 			throw new UrlFetchException(_t("Cannot open temporary file for media fetched from URL [%1]", $url));
 		}
 		
+		if($curl_path = caCurlImpersonateInstalled()) {
+			$ch = new CurlImpersonate\CurlImpersonate();
+			$ch->setopt(CURLCMDOPT_URL, $url);
+			$ch->setopt(CURLCMDOPT_METHOD, 'GET');
+			$ch->setopt(CURLCMDOPT_HEADER, false);
+			$ch->setopt(CURLCMDOPT_ENGINE, $curl_path);
+			
+			$ch->execStream();
+			
+			while ($data = $ch->readStream(1024*128)) {
+				fputs($r_outgoing_fp, $data);
+			}
+			fclose($r_outgoing_fp);
+			return $tmp_file;
+		}
+
+
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_FILE, $r_outgoing_fp);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 240);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-		curl_exec($ch);
+		curl_exec($ch);	
  
 		if(curl_errno($ch)){
 			throw new UrlFetchException(_t('Media fetch from URL [%1] failed: %2', $url, curl_error($ch)));
@@ -5274,9 +5291,22 @@ function caFileIsIncludable($ps_file) {
 	function caUrlExists(string $url, ?array $options=null) : bool { 
 		$allow_redirects = caGetOption('allowRedirects', $options, true);
 		
-		if(!is_array($headers = @get_headers($url))) { return false; }
-	
-		if(preg_match("!([\d]{3}) OK$!i", $headers[0], $m)) {
+		if($curl_path = caCurlImpersonateInstalled()) {
+			$ch = new CurlImpersonate\CurlImpersonate();
+			$ch->setopt(CURLCMDOPT_URL, $url);
+			$ch->setopt(CURLCMDOPT_METHOD, 'GET');
+			$ch->setopt(CURLCMDOPT_HEADER, false);
+			$ch->setopt(CURLCMDOPT_ENGINE, $curl_path);
+			
+			$headers = explode("\n", $ch->execStandard(['head' => true]));
+		} else {
+			if(!is_array($headers = @get_headers($url))) { return false; }
+		}
+		if(
+			preg_match("!([\d]{3}) (OK|MOVED)!i", $headers[0], $m)
+			||
+			preg_match("!HTTP/[\d]{1} ([\d]{3})!i", $headers[0], $m)
+		) {
 			$sc = (int)$m[1];
 			if(($sc >= 200) && ($sc <= 299)) { return true; }
 			if($allow_redirects && ($sc >= 300) && ($sc <= 399)) { return true; }

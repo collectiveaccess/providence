@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1157,6 +1157,14 @@ class ca_acl extends BaseModel {
 				// noop - is unrecoverable
 			}
 		}
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function clearAccessValueCache() {
+		ca_acl::$s_acl_access_value_cache = [];
+		return true;
 	}
 	# ------------------------------------------------------
 }

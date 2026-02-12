@@ -873,19 +873,41 @@ function caTranslateBundlesForAccessChecking($ps_table_name, $ps_bundle_name) {
 }
 # ---------------------------------------------------------------------------------------------
 /**
- * Determine if ACL is enabled system wide, or for a specific row
+ * Determine if ACL is enabled system wide, or for a specific row. Default to returning back-end ACL availability only.
+ * To check if ACL is enabled for front-end (Pawtucket) use set the 'forPawtucket' option.
  *
  * @param BaseModel|string $t_item A model instance or model name to test. If null system-wide ACL status is returned. [Default is null]
- * @param array $options Array of options from caller. If 'dontFilterByACL' key is set to true then ACL will be returned as disabled.
- * 
+ * @param array $options Array of options. Options include:
+ *		dontFilterByACL = If set to true then ACL will be returned as disabled even if configured to be active. [Default is false]
+ *		forPawtucket = Check if ACL is enabled for front-end only use. Will return true if set, even if back-end ACL is disabled. [Default is false]
+ * 		anywhere = Check if ACL is enabled for front-end or back-end use. [Default is false]
  * @return bool
  */
 function caACLIsEnabled($t_item=null, ?array $options=null) : bool {
 	if(defined("__CA_DISABLE_ACL__") && __CA_DISABLE_ACL__) { return false; }
 	if($options['dontFilterByACL'] ?? false) { return false; }
 	$config = Configuration::load();
-	if(!$config->get('perform_item_level_access_checking')) { return false; } 
+	
+	if(($options['forPawtucket'] ?? false) || ($options['anywhere'] ?? false)) { 
+		if(!is_a($t_item, 'BaseModel')) { 
+			if(is_a($t_item, 'SearchResult')) {
+				$t_item = Datamodel::getInstance($t_item->tableName(), true); 
+			} elseif(is_string($t_item) || is_numeric($t_item)) {
+				$t_item = Datamodel::getInstance($t_item, true); 
+			} else {
+				return false;
+			}
+		}
+		$paw_only = ($config->get('pawtucket_only_acl') || ($t_item && $config->get($t_item->tableName().'_pawtucket_only_acl')) || $config->get('perform_item_level_access_checking'));
+		if(($options['anywhere'] ?? false) && $paw_only) { 	
+			return true; 
+		} elseif($options['forPawtucket'] ?? false) {
+			return $paw_only;
+		}
+	}
 	if(!is_a($t_item, 'BaseModel')) { $t_item = Datamodel::getInstance($t_item, true); }
+	
+	if(!$config->get('perform_item_level_access_checking') || ($t_item && $config->get($t_item->tableName().'_dont_do_item_level_access_control'))) { return false; } 
 	if($t_item && method_exists($t_item, "supportsACL")) {
 		return (bool)$t_item->supportsACL();
 	}
@@ -893,6 +915,40 @@ function caACLIsEnabled($t_item=null, ?array $options=null) : bool {
 }
 # ---------------------------------------------------------------------------------------------
 /**
+ * 
+ *
+ * @param BaseModel|string $t_item A model instance or model name to test. If null system-wide ACL status is returned. [Default is null]
+ * @param array $options Array of options from caller. If 'dontFilterByACL' key is set to true then ACL will be returned as disabled.
+ * 
+ * @return bool
+ */
+function caShowAccessControlScreen($t_item=null, ?array $options=null) : bool {
+	if(caACLIsEnabled($t_item, $options)) { return true; }
+	
+	$config = Configuration::load();
+	if($config->get('acl_show_public_access_controls')) { return true; }
+	
+	if(!is_a($t_item, 'BaseModel')) { $t_item = Datamodel::getInstance($t_item, true); }
+	
+	if($t_item) {
+		if($config->get($t_item->tableName().'_acl_show_public_access_controls')) { return true; }
+	}
+	
+	return false;
+}
+# ---------------------------------------------------------------------------------------------
+/**
+ * 
+ *
+ * 
+ * @return bool
+ */
+function caSuspendCheckAccessChecks($t_item) : bool {
+	$acl_is_enabled = caACLIsEnabled($t_item, ['forPawtucket' => true]);
+	return (caAppIsPawtucket() && $acl_is_enabled);
+}
+# ---------------------------------------------------------------------------------------------
+/*
  * Determine if source access control is enabled system wide, or for a specific row
  *
  * @param BaseModel|string $t_item A model instance or model name to test. If null system-wide ACL status is returned. [Default is null]

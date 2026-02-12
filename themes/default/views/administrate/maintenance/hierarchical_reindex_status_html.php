@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,10 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
-	AssetLoadManager::register("sortableUI");
+AssetLoadManager::register("sortableUI");
 ?>
 <h1><?= _t('Rebuild hierarchical indices'); ?></h1>
-
 
 <div class="searchReindexTableProgressGroup">
 	<div id="searchReindexTableStatus" class="searchReindexStatus"> </div>
@@ -41,22 +40,19 @@
 			value: 0
 		});
 </script>
-
-
 <?php
-	function caIncrementHierachicalReindexProgress($ps_table_message, $pn_elapsed_time, $pn_memory_used, $pa_table_list, $pn_table_num, $ps_display_name, $pn_tables_processed) {
-		if (is_null($ps_table_message)) {
-			$ps_table_message = _t('Indexing %1 (%2/%3)', $ps_display_name, $pn_tables_processed, sizeof($pa_table_list));
-		}
-		$pn_table_percentage = ($pn_tables_processed / sizeof($pa_table_list)) * 100;
-		
-		print "<script type='text/javascript'>";
-		print "jQuery('#progressbarTables').progressbar('value',{$pn_table_percentage}); jQuery('#searchReindexTableStatus').html('{$ps_table_message}');";
-		print "jQuery('#searchReindexElapsedTime').html('".caFormatInterval($pn_elapsed_time)."/".sprintf("%4.2f mb", ($pn_memory_used/ 1048576))."');"; 
-		print "</script>";
-		caFlushOutput();
+function caIncrementHierachicalReindexProgress($ps_table_message, $pn_elapsed_time, $pn_memory_used, $pa_table_list, $pn_table_num, $ps_display_name, $pn_tables_processed) {
+	if (is_null($ps_table_message)) {
+		$ps_table_message = _t('Indexing %1 (%2/%3)', $ps_display_name, $pn_tables_processed, sizeof($pa_table_list));
 	}
+	$pn_table_percentage = ($pn_tables_processed / sizeof($pa_table_list)) * 100;
 	
-	$app = AppController::getInstance();
-	$app->registerPlugin(new HierarchicalReindexingProgress());
-?>
+	print "<script type='text/javascript'>";
+	print "jQuery('#progressbarTables').progressbar('value',{$pn_table_percentage}); jQuery('#searchReindexTableStatus').html('{$ps_table_message}');";
+	print "jQuery('#searchReindexElapsedTime').html('".caFormatInterval($pn_elapsed_time)."/".sprintf("%4.2f mb", ($pn_memory_used/ 1048576))."');"; 
+	print "</script>";
+	caFlushOutput();
+}
+
+$app = AppController::getInstance();
+$app->registerPlugin(new HierarchicalReindexingProgress());

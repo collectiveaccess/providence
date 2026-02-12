@@ -1210,6 +1210,11 @@ class BrowseEngine extends BaseFindEngine {
 	public function execute($pa_options=null) {
 		$this->searched_terms = [];
 		$this->seach_result_desc = [];
+		$t_item = Datamodel::getInstanceByTableName($this->ops_browse_table_name, true);
+		
+		if(caACLIsEnabled($t_item, ['forPawtucket' => true])) {
+			unset($pa_options['checkAccess']);
+		}
 		
 		global $AUTH_CURRENT_USER_ID;
 		if (!is_array($this->opa_browse_settings)) { return null; }
@@ -1264,7 +1269,6 @@ class BrowseEngine extends BaseFindEngine {
 		}
 		$this->opb_criteria_have_changed = false;
 
-		$t_item = Datamodel::getInstanceByTableName($this->ops_browse_table_name, true);
 
 		$va_results = array();
 
@@ -3372,6 +3376,10 @@ class BrowseEngine extends BaseFindEngine {
 	 */
 	public function getFacetContent($ps_facet_name, $pa_options=null) {
 		global $AUTH_CURRENT_USER_ID;
+		$t_subject = $this->getSubjectInstance();
+		if(caACLIsEnabled($t_subject, ['forPawtucket' => true])) {
+			unset($pa_options['checkAccess']);
+		}
 
 		$vs_browse_table_name = $this->ops_browse_table_name;
 		$vs_browse_table_num = $this->opn_browse_table_num;
@@ -3402,7 +3410,6 @@ class BrowseEngine extends BaseFindEngine {
 			$pa_options['checkAccess'] = $force_access;
 		}
 
-		$t_subject = $this->getSubjectInstance();
 
 		$vb_is_relative_to_parent = false;
 		if ($va_facet_info['relative_to'] ?? null) {
@@ -4404,7 +4411,7 @@ class BrowseEngine extends BaseFindEngine {
 						$va_params[] = $va_container_ids[$vs_container_code];
 					}
 					$vs_sql = "
-						SELECT COUNT(distinct ca_attributes.row_id) as _count, ca_attribute_values.value_longtext1, ca_attribute_values.value_decimal1, ca_attribute_values.value_longtext2, ca_attribute_values.value_integer1, ca_attribute_values.element_id
+						SELECT COUNT(".(($va_facet_info['relative_to'] ?? null) ? "*" : "distinct ca_attributes.row_id").") as _count, ca_attribute_values.value_longtext1, ca_attribute_values.value_decimal1, ca_attribute_values.value_longtext2, ca_attribute_values.value_integer1, ca_attribute_values.element_id
 						FROM ca_attributes
 
 						{$vs_join_sql}
@@ -7336,7 +7343,7 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 								$va_facet[$label_values['label_sort_']][$va_fetched_row[$vs_rel_pk]][$va_fetched_row['locale_id']] = $va_facet_item;
 							}
 						}
-						ksort($va_facet);
+						
 						$acc = [];
 						foreach($va_facet as $k => $x) {
 							$acc = array_merge($acc, $x);

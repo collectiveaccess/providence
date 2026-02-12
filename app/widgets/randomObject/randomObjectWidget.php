@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2025 Whirl-i-Gig
+ * Copyright 2010-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -62,7 +62,7 @@ class randomObjectWidget extends BaseWidget implements IWidget {
 		$t_object = new ca_objects();
 		# get a random object for display
 		$random_item = $t_object->getRandomItems(1, array('hasRepresentations' => 1));
-		if(is_array($random_item) || sizeof($random_item) > 0){
+		if(is_array($random_item) && (sizeof($random_item) > 0)){
 			foreach($random_item as $object_id => $object_info) {
 				$t_object->load($object_id);
 				$rep = $t_object->getPrimaryRepresentation(['medium']);
