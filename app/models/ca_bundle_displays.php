@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2025 Whirl-i-Gig
+ * Copyright 2010-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1221,7 +1221,16 @@ if (!$pb_omit_editing_info) {
 							),
 							'label' => _t('Sense'),
 							'description' => _t('Determines if value used is singular or plural version.')
-						)		
+						),
+						'bottom_line' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'width' => 35, 'height' => 5,
+							'takesLocale' => false,
+							'default' => '',
+							'label' => _t('Bottom line format'),
+							'description' => _t('Template to format aggregate data for display under this column. The template can include these aggregate data tags: ^PAGEAVG, ^AVG, ^PAGESUM, ^SUM, ^PAGEMin, ^MIN, ^PAGEMAX, ^MAX. For containers follow the tag with the element code of the subelement to aggregate. Ex. ^SUM:dimensions_width')
+						)			
 					);
 					break;
 				case __CA_ATTRIBUTE_VALUE_MEDIA__:
@@ -1244,6 +1253,7 @@ if (!$pb_omit_editing_info) {
 				case __CA_ATTRIBUTE_VALUE_TIMECODE__: 
 				case __CA_ATTRIBUTE_VALUE_INTEGER__: 
 				case __CA_ATTRIBUTE_VALUE_NUMERIC__: 
+				case __CA_ATTRIBUTE_VALUE_DATERANGE__: 
 					$va_even_more_settings = array(
 						'bottom_line' => array(
 							'formatType' => FT_TEXT,
