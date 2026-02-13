@@ -111,9 +111,6 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
 	 *
 	 */
     public function lookup($settings, $search, $options = null)  {
-   		// if(preg_match("!^http[s]{0,1}://page.nomenclature.info/parcourir-browse.app?id=([\d]+)!", $search, $m)) {
-//    			$search = $m[1];
-//    		}
    		$search = trim($search);
    		$scope = caGetOption('scope', $settings, 'allLabels');
    		$lang = caGetOption('language', $settings, 'en');
@@ -158,8 +155,54 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
 	 *
 	 */
     public function getExtendedInformation($settings, $url) {
-        return ['display' => "<p><a href='{$url}' target='_blank' rel='noopener noreferrer'>{$url}</a></p>"];
+    	$info = $this->getExtraInfo($settings, $url);
+    	$path = array_map(function($v) {
+    		return $v['label'];
+    	}, $info['hierarchy'] ?? []);
+        return ['display' => "<p>".join(" ➜ ", array_reverse($path))."<br><a href='{$url}' target='_blank' rel='noopener noreferrer'>{$url}</a></p>"];
     }
+    # ------------------------------------------------
+    /**
+     *
+     */
+	public function getExtraInfo($settings, $url) {
+   		if(!preg_match("!^http[s]{0,1}://page\.nomenclature\.info/parcourir\-browse\.app\?id=([\d]+)!i", trim($url), $m)) {
+   			return null;
+   		}
+   		$id = $m[1];
+   		$lang = caGetOption('language', $settings, 'en');
+   		
+   		$client = $this->getClient();
+   		$hier = [];
+   		do {
+       	 	$response = $client->request("GET", self::NOMENCLATURE_SERVICES_BASE_URL."/concepts/{$id}?lang={$lang}", [
+				'headers' => [
+					'Accept' => 'application/json'
+				]
+			]);
+	
+			$response_data = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
+			if(is_array($response_data)) {
+				foreach($response_data as $index => $data) {
+					$label = $data['prefLabel'][0]['literalForm']['value'] ?? null;
+					$id = $data['broader'][0]['id'] ?? null;
+					$url = $data['mainEntityOfPage'] ?? null;
+					if(!$label || !$id) { break; }
+					
+					$hier[] = [
+						'label' => $label,
+						'url' => $url
+					];
+					continue(2);
+				}
+			}
+			break;
+   		} while(true);
+		
+		return [
+			'hierarchy' => $hier
+		];
+	}
 	# ------------------------------------------------
 	/** 
 	 *
