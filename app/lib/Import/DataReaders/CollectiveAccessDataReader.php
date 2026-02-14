@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2019 Whirl-i-Gig
+ * Copyright 2013-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_LIB_DIR__.'/Import/BaseDataReader.php');
 use GuzzleHttp\Client;
 
@@ -85,8 +84,7 @@ class CollectiveAccessDataReader extends BaseDataReader {
 			$this->opo_client = new \GuzzleHttp\Client();
 			$this->ops_url_root = $vs_url_root = $va_url['scheme']."://".$va_url['user'].":".$va_url['pass']."@".$va_url['host'].(($va_url['port'] != 80) ? ":{$va_url['port']}": '');
 			
-			$response = $this->opo_client->request("GET", $vs_url_root.($vs_path ? "{$vs_path}" : "")."/service.php/find/{$vs_table}?".$va_url['query']);
-			
+			$response = $this->opo_client->request("GET", $z=$vs_url_root.($vs_path ? "{$vs_path}" : "")."/service.php/json/find/{$vs_table}?".$va_url['query']);
 			$data = json_decode($response->getBody(), true);
 			
 			if (isset($data['ok']) && ($data['ok'] == 1) && is_array($data['results'])) {
@@ -115,7 +113,7 @@ class CollectiveAccessDataReader extends BaseDataReader {
 			
 			$this->opn_current_row++;
 			try {
-				$response = $this->opo_client->request("GET", $this->ops_url_root.($this->ops_path ? $this->ops_path : "")."/service.php/item/{$this->ops_table}/id/{$vn_id}?pretty=1&format=import");
+				$response = $this->opo_client->request("GET", $this->ops_url_root.($this->ops_path ? $this->ops_path : "")."//json/item/{$this->ops_table}/id/{$vn_id}?pretty=1&format=import");
 				$data = json_decode($response->getBody(), true);
 				$this->opa_row_buf[$this->opn_current_row] = $data;
 			} catch (Exception $e) {
