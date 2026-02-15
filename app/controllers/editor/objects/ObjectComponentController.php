@@ -83,26 +83,6 @@ class ObjectComponentController extends ActionController {
 				$t_subject->set($vs_key, $vs_val);
 			}
 		}
-		
-		// Set "context" id from those editors that need to restrict idno lookups to within the context of another field value (eg. idno's for ca_list_items are only unique within a given list_id)
-		if ($vn_parent_id > 0) {
-			$t_parent = Datamodel::getInstanceByTableName($this->ops_table_name);
-			if ($t_parent->load($vn_parent_id)) {
-				if ($vs_idno_context_field = $t_subject->getProperty('ID_NUMBERING_CONTEXT_FIELD')) {
-					$this->view->setVar('_context_id', $t_parent->get($vs_idno_context_field));
-				}
-				$pidno = $t_parent->get('idno');
-				$subject_idno_instance = $t_subject->getIDNoPlugInInstance();
-				$subject_idno_element_count = sizeof($subject_idno_instance->getElements());
-				$parent_idno_instance = $t_parent->getIDNoPlugInInstance();
-				$parent_idno_element_count = sizeof($parent_idno_instance->getElements());
-				
-				if(!$subject_idno_instance || !$subject_idno_instance->isSerialFormat($subject_idno_instance->getFormat()) || ($subject_idno_element_count > $parent_idno_instance) && strlen($pidno)) {
-					$t_subject->set('idno', $pidno);
-				}
-			}
-		}
-		
 		// Get type
 		if (!($vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pString))) {
 			$vn_type_id =  array_shift(caMakeTypeIDList($t_subject->tableName(), $this->request->config->getList('ca_objects_component_types'), array('dontIncludeSubtypesInTypeRestriction' => true)));
@@ -117,6 +97,26 @@ class ObjectComponentController extends ActionController {
 		
 		$this->request->setParameter('type_id', $vn_type_id);
 		$t_subject->set('type_id', $vn_type_id);
+		
+		// Set "context" id from those editors that need to restrict idno lookups to within the context of another field value (eg. idno's for ca_list_items are only unique within a given list_id)
+		if ($vn_parent_id > 0) {
+			$t_parent = Datamodel::getInstanceByTableName($this->ops_table_name);
+			if ($t_parent->load($vn_parent_id)) {
+				if ($vs_idno_context_field = $t_subject->getProperty('ID_NUMBERING_CONTEXT_FIELD')) {
+					$this->view->setVar('_context_id', $t_parent->get($vs_idno_context_field));
+				}
+				$pidno = $t_parent->get('idno');
+				$subject_idno_instance = $t_subject->getIDNoPlugInInstance();
+				$subject_idno_instance->setType($t_subject->getTypecode());
+				$subject_idno_element_count = sizeof($subject_idno_instance->getElements() ?? []);
+				$parent_idno_instance = $t_parent->getIDNoPlugInInstance();
+				$parent_idno_element_count = sizeof($parent_idno_instance->getElements() ?? []);
+				if((!$subject_idno_instance || !$subject_idno_instance->isSerialFormat($subject_idno_instance->getFormat()) || ($parent_idno_instance && ($subject_idno_element_count > $parent_idno_element_count))) && strlen($pidno)) {
+					$t_subject->set('idno', $pidno);
+				}
+			}
+		}
+		
 		
 		$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $vn_type_id);
 		
