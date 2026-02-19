@@ -701,7 +701,7 @@ trait CLIUtilsMaintenance {
 			$params = array();
 			$sql_joins = '';
 
-			if (sizeof($ids)) {
+			if (is_array($ids) && sizeof($ids)) {
 				$sql_wheres[] = "o_r.representation_id IN (?)";
 				$params[] = $ids;
 			} else {
@@ -723,7 +723,7 @@ trait CLIUtilsMaintenance {
 					$object_ids[$i] = (int)$object_id;
 				}
 				
-				if (sizeof($object_ids)) { 
+				if (is_array($object_ids) && sizeof($object_ids)) { 
 					$sql_wheres[] = "(oxor.object_id IN (?))";
 					$sql_joins = "INNER JOIN ca_objects_x_object_representations AS oxor ON oxor.representation_id = o_r.representation_id";
 					$params[] = $object_ids;
@@ -861,7 +861,7 @@ trait CLIUtilsMaintenance {
 						}
 					}
 					
-					if ((sizeof($elements) > 0) && ($c > 0)) {
+					if (is_array($elements) && (sizeof($elements) > 0) && ($c > 0)) {
 						$counts[] = _t('%1 media in %2 metadata elements', sizeof($elements), $c);
 					}
 					if (!$quiet) { 
@@ -945,7 +945,7 @@ trait CLIUtilsMaintenance {
 						}
 					}
 					
-					if((sizeof($elements) > 0) && ($c > 0)) {
+					if(is_array($elements) && (sizeof($elements) > 0) && ($c > 0)) {
 						$counts[] = _t('%1 files in %2 metadata elements', $c, sizeof($elements));
 					}
 					if (!$quiet) { 
@@ -989,7 +989,7 @@ trait CLIUtilsMaintenance {
 				];
 			}
 			
-			if (sizeof($counts) > 0) {
+			if (is_array($counts) && (sizeof($counts) > 0)) {
 				if (!caSendMessageUsingView(
 					$o_request, 
 					[$email], 
@@ -1507,7 +1507,7 @@ trait CLIUtilsMaintenance {
 							
 							if ($url = caNavUrl($o_request, $module_path, $controller, $action)) {
 								// get ids
-								$ids = call_user_func_array(array($table, 'find'), array(['deleted' => 0, 'access' => sizeof($access) ? ['in', $access] : null], ['restrictToTypes' => $types, 'returnAs' => 'ids']));
+								$ids = call_user_func_array(array($table, 'find'), array(['deleted' => 0, 'access' => sizeof($access ?? []) ? ['in', $access] : null], ['restrictToTypes' => $types, 'returnAs' => 'ids']));
 							
 								if (is_array($ids) && sizeof($ids)) {
 									foreach($ids as $id) {
@@ -1710,7 +1710,7 @@ trait CLIUtilsMaintenance {
 		foreach ($tables as $t) {
 			if (class_exists($t) && method_exists($t, 'listPotentialDupes')) {
 				$dupes = $t::listPotentialDupes();
-				if (sizeof($dupes)) {
+				if (sizeof($dupes ?? [])) {
 					CLIUtils::addMessage(_t('Table %1 has %2 records that have potential duplicates.', $t, sizeof($dupes)), array('color' => 'red'));
 
 
