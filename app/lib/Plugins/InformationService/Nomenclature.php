@@ -111,14 +111,9 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
 	 *
 	 */
     public function lookup($settings, $search, $options = null)  {
-    	global $g_information_service_settings_nomenclature;
-    	
    		$search = trim($search);
    		$scope = caGetOption('scope', $settings, 'allLabels');
-   		$lang = caGetOption('language', $settings, 'en');
-   		$allowed_languages = $g_information_service_settings_nomenclature['language']['options'] ?? [];
-   		$lang = str_replace('_', '-', $lang);
-   		if(!in_array($lang, $allowed_languages)) { $lang = 'en'; }
+   		$lang = $this->validateLanguage(caGetOption('language', $settings, 'en'));
    		
    		$limit = caGetOption('limit', $options, caGetOption('limit', $settings, 100));
    		
@@ -176,7 +171,7 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
    			return null;
    		}
    		$id = $m[1];
-   		$lang = caGetOption('language', $settings, 'en');
+   		$lang = $this->validateLanguage(caGetOption('language', $settings, 'en'));
    		
    		$client = $this->getClient();
    		$hier = [];
@@ -225,6 +220,20 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
             $this->o_client->getConfig()->add('proxy', $proxy);
 
         return $this->o_client;
+    }
+    # ------------------------------------------------
+	/** 
+	 *
+	 */
+    private function validateLanguage(?string $lang) : string  {
+    	global $g_information_service_settings_nomenclature;
+    	
+    	$allowed_languages = $g_information_service_settings_nomenclature['language']['options'] ?? [];
+   		$lang = str_replace('_', '-', $lang);
+   		if(!in_array($lang, $allowed_languages)) { $lang = 'en'; }
+   		
+   		if(!$lang) { $lang = 'en'; }
+   		return $lang;
     }
 	# ------------------------------------------------
 }
