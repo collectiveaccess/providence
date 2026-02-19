@@ -1261,6 +1261,12 @@ trait CLIUtilsMaintenance {
 			false, null, null, true, false, false, array(__CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__)
 		);
 
+		/* reduce informationservices to the list of elements */
+		if($vs_element = $po_opts->getOption('id')) {
+			$va_elements =  preg_split('/\s*[,;]\s*/', $vs_element, -1, PREG_SPLIT_NO_EMPTY);
+			$va_infoservice_elements = array_intersect_key($va_infoservice_elements, array_flip($va_elements));
+		}
+
 		$o_db = new Db();
 
 		foreach($infoservice_elements as $element) {
@@ -1298,7 +1304,9 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function reload_service_valuesParamList() {
-		return array();
+		return [
+			"ids|i-s" => _t('Element id(s) to reload. Multiple entries are delimited by comma or semicolon. [Optional]'),
+		];
 	}
 	# -------------------------------------------------------
 	/**
