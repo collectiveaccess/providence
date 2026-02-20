@@ -43,6 +43,122 @@ $g_information_service_settings_GBIF = [
 		'width' => 90, 'height' => 1,
 		'label' => _t('Maximum number of matches to return'),
 		'description' => _t('Limit')
+	],
+	'dataset' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'default' => 'd7dddbf4-2cf0-4f39-9b2a-bb099caae36c',
+		'width' => 90, 'height' => 1,
+		'label' => _t('Data set'),
+		'description' => _t('Data set to query'),
+		'options' => [
+			_t('GBIF Backbone Taxonomy') => 'd7dddbf4-2cf0-4f39-9b2a-bb099caae36c',
+			_t('Catalogue of Life') => '7ddf754f-d193-4cc9-b351-99906754a03b',
+			_t('World Register of Marine Species') => '2d59e5db-57ad-41ff-97d6-11f5fb264527',
+			_t('Integrated Taxonomic Information System (ITIS)') => '9ca92552-f23a-41a8-a140-01abaa31c931'
+		]
+	],
+	'datasetKey' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'default' => '',
+		'width' => 90, 'height' => 1,
+		'label' => _t('Data set key'),
+		'description' => _t('GBIF data set key for data set to query. Overrides "data set" option.')
+	],
+	'nameType' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'default' =>  'SCIENTIFIC',
+		'width' => 90, 'height' => 2,
+		'label' => _t('Name types'),
+		'multiple' => true,
+		'description' => _t('Limit to specific types of name'),
+		'options' => [
+			_t('Scientific') => 'SCIENTIFIC',
+			_t('Informal') => 'INFORMAL'
+		]
+	],
+	'nameStatus' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'default' =>  'ACCEPTED',
+		'width' => 90, 'height' => 3,
+		'label' => _t('Name status'),
+		'multiple' => true,
+		'description' => _t('Limit to names with specific status'),
+		'options' => [
+			_t('Accepted') => 'ACCEPTED',
+			_t('Doubtful') => 'DOUBTFUL',
+			_t('Synonym') => 'SYNONYM',
+		]
+	],
+	'habitat' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'default' =>  'ACCEPTED',
+		'width' => 90, 'height' => 3,
+		'label' => _t('Habitat'),
+		'multiple' => true,
+		'description' => _t('Limit to specific habitats'),
+		'options' => [
+			_t('Marine') => 'MARINE',
+			_t('Freshwater') => 'FRESHWATER',
+			_t('Terrestrial') => 'TERRESTRIAL',
+		]
+	],
+	'taxonomicRank' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'default' =>  'ACCEPTED',
+		'width' => 90, 'height' => 4,
+		'label' => _t('Taxonomic ranks'),
+		'multiple' => true,
+		'description' => _t('Limit to taxonomic ranks'),
+		'options' => null
+	],
+	'showExtinctMarker' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_CHECKBOXES,
+		'default' => false,
+		'width' => 90, 'height' => 1,
+		'label' => _t('Mark extinct taxa'),
+		'multiple' => true,
+		'description' => _t('Mark extinct taxa with † symbol?'),
+		'options' => null
+	],
+	'showVernacularNames' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_CHECKBOXES,
+		'default' => false,
+		'width' => 90, 'height' => 1,
+		'label' => _t('Show vernacular names'),
+		'multiple' => true,
+		'description' => _t('Display vernacular names?'),
+		'options' => null
+	],
+	'showGBIFKey' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_CHECKBOXES,
+		'default' => false,
+		'width' => 90, 'height' => 1,
+		'label' => _t('Show GBIF key'),
+		'multiple' => true,
+		'description' => _t('Display GBIF key?'),
+		'options' => null
+	],
+	'display' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'default' =>  'SCIENTIFIC_NAME',
+		'width' => 90, 'height' => 1,
+		'label' => _t('Name status'),
+		'description' => _t('Display'),
+		'options' => [
+			_t('Scientific name') => 'SCIENTIFIC_NAME',
+			_t('Genus/Species') => 'GENUS_SPECIES',
+			_t('Full taxonomic hierarchy') => 'FULL',
+		]
 	]
 ];
 /**
@@ -63,6 +179,9 @@ class WLPlugInformationServiceGBIF extends BaseInformationServicePlugin implemen
     public function __construct() {
         global $g_information_service_settings_GBIF;
 
+		if(!is_array($g_information_service_settings_GBIF['taxonomicRank']['options'])) {
+			$g_information_service_settings_GBIF['taxonomicRank']['options'] = $this->_ranks();
+		}
         WLPlugInformationServiceGBIF::$s_settings = $g_information_service_settings_GBIF;
         parent::__construct();
         $this->info['NAME'] = 'GBIF';
@@ -77,22 +196,113 @@ class WLPlugInformationServiceGBIF extends BaseInformationServicePlugin implemen
         return WLPlugInformationServiceGBIF::$s_settings;
     }
 	# ------------------------------------------------
+	/**
+	 *
+	 */
+	private function _procParams(array $settings, array $param_names) {
+		foreach($param_names as $param) {
+			if(is_array($values = caGetOption($param, $settings, null)) && sizeof($values)) {
+				switch($param) {
+					case 'taxonomicRank':
+						$param = 'rank';
+						break;
+				}
+				foreach($values as $v) {
+					$params[] = "{$param}={$v}";
+				}
+			}
+		}
+   		return $params;
+	}
+	# ------------------------------------------------
+	/**
+	 *
+	 */
+	private function _ranks() {
+		return [
+			_t('Kingdom') => 'KINGDOM',
+			_t('Phylum') => 'PHYLUM',
+			_t('Class') => 'CLASS',
+			_t('Order') => 'ORDER',
+			_t('Family') => 'FAMILY',
+			_t('Genus') => 'GENUS',
+			_t('Species') => 'SPECIES',
+			_t('Subspecies') => 'SUBSPECIES',
+			_t('Variety') => 'VARIETY'
+		];
+	}
+	# ------------------------------------------------
 	/** 
 	 *
 	 */
     public function lookup($settings, $search, $options = null)  {
    		$search = trim($search);
    		
-   		$limit = caGetOption('limit', $options, caGetOption('limit', $settings, 100));
    		
-        $client = $this->getClient();
-        $response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_LOOKUP."/search?datasetKey=d7dddbf4-2cf0-4f39-9b2a-bb099caae36c&nameType=SCIENTIFIC&limit={$limit}&q=".urlencode($search), [
-            'headers' => [
-                'Accept' => 'application/json'
-            ]
-        ]);
+   		$limit = caGetOption('limit', $options, caGetOption('limit', $settings, 100));
+   		$show_extinct_marker = caGetOption('showExtinctMarker', $options, caGetOption('showExtinctMarker', $settings, false));
+		$show_vernacular_names = caGetOption('showVernacularNames', $options, caGetOption('showVernacularNames', $settings, false));
+		$show_gbif_key = caGetOption('showGBIFKey', $options, caGetOption('showGBIFKey', $settings, false));
+		
+   		$display = caGetOption('display', $options, caGetOption('display', $settings, 'SCIENTIFIC_NAME'));
+   		$dataset = caGetOption('datasetKey', $settings, caGetOption('dataset', $settings, 'd7dddbf4-2cf0-4f39-9b2a-bb099caae36c'));
+   		
+		$client = $this->getClient();
+   		if(is_numeric($search)) {
+   			// GBIF ID
+   			$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_LOOKUP."/{$search}", [
+				'headers' => [
+					'Accept' => 'application/json'
+				]
+			]);
+			$entry = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
+			
+			$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_LOOKUP."/{$search}/vernacularNames", [
+				'headers' => [
+					'Accept' => 'application/json'
+				]
+			]);
+			if(is_array($vernacular_names = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING)) && is_array($vernacular_names['results'])) {
+				$entry['vernacularNames'] = [];
+				foreach($vernacular_names['results'] as $v) {
+					$entry['vernacularNames'][] = [
+						'vernacularName' => $v['vernacularName'],
+						'language' => $v['language'],
+					];
+				}
+			}
+			
+			$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_LOOKUP."/{$search}/speciesProfiles", [
+				'headers' => [
+					'Accept' => 'application/json'
+				]
+			]);
+			if(is_array($profiles = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING)) && is_array($profiles['results'])) {
+				foreach($profiles['results'] as $v) {
+					$entry['extinct'] = $v['extinct'] ?? false;
+					break;
+				}
+			}
+			
+			$response_data = [
+				'results' => [
+					$entry
+				]
+			];
+   		} else {
+   			// Text query
+			$params = $this->_procParams($settings, ['nameType', 'nameStatus', 'habitat', 'taxonomicRank']);
+			$params[] = "limit={$limit}";
+			$params[] = "datasetKey={$dataset}";
+			$params[] = "q=".urlencode($search);
+			$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_LOOKUP."/search?".join("&", $params), [
+				'headers' => [
+					'Accept' => 'application/json'
+				]
+			]);
 
-		$response_data = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
+			$response_data = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
+		}
 
 		$return = [];
         if (is_array($response_data['results'] ?? null)) {
@@ -106,6 +316,42 @@ class WLPlugInformationServiceGBIF extends BaseInformationServicePlugin implemen
 			
 				$label = $scientific_name ?: "[{$genus}][{$species}]";
 				
+				switch($display) {
+					case 'SCIENTIFIC_NAME':
+						$label = $scientific_name ?? "{$genus} {$species}";
+						break;
+					case 'GENUS_SPECIES':
+						$label = "{$genus} {$species}" ?? $scientific_name;
+						break;
+					case 'FULL':
+						$ranks = array_values($this->_ranks());
+						
+						$acc = [];
+						foreach($ranks as $rank) {
+							$rank = strtolower($rank);
+							if(isset($data[$rank])) {
+								$acc[] = $data[$rank];
+							}
+						}
+						$label = join(' ➜ ', $acc);
+						break;
+				}
+				if($show_gbif_key && ($data['key'] ?? false)) {
+					$label .= " [{$data['key']}]";
+				}
+				if($show_vernacular_names && (is_array($data['vernacularNames'])) && sizeof($data['vernacularNames'])) {
+					$acc = [];
+					foreach($data['vernacularNames'] as $n) {
+						$acc[] = $n['vernacularName'];
+					}
+					$acc = array_unique($acc);
+					if($vlist = join("; ", $acc)) {
+						$label .= " ({$vlist})";
+					}
+				}
+				if($show_extinct_marker && ($data['extinct'] ?? false)) {
+					$label .= " †";
+				}
 				$entry = [
 					'label' => $label,
 					'url' => "https://www.gbif.org/species/{$gbif_key}",
@@ -133,14 +379,18 @@ class WLPlugInformationServiceGBIF extends BaseInformationServicePlugin implemen
      *
      */
 	public function getExtraInfo($settings, $url) {
-   		if(!preg_match("!https://www.gbif.org/species/([A-Za-z0-9\-]+)!", trim($url), $m)) {
+   		if(
+   			!preg_match("!^https://www.gbif.org/species/([A-Za-z0-9\-]+)!", trim($url), $m)
+   			&&
+   			!preg_match("!^https://api.gbif.org/v1/species/([A-Za-z0-9\-]+)!", trim($url), $m)
+   		) {
    			return null;
    		}
    		$id = $m[1];
    		
    		$client = $this->getClient();
    		$hier = [];
-		$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_LOOKUP."/{$id}/parents", [
+		$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_LOOKUP."/{$id}", [
 			'headers' => [
 				'Accept' => 'application/json'
 			]
@@ -148,11 +398,13 @@ class WLPlugInformationServiceGBIF extends BaseInformationServicePlugin implemen
 
 		$response_data = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
 		if(is_array($response_data)) {
-			foreach($response_data as $index => $data) {
-				$rank = strtolower($data['rank']);
-				$key = $data["{$rank}Key"] ?? null;
+			$ranks = array_values($this->_ranks());
+			foreach($ranks as $rank) {
+				$rank = strtolower($rank);
+				if(!($key = $response_data["{$rank}Key"] ?? null)) { continue; }
+				
 				$hier[] = [
-					'label' => $data[$rank] ?? '???',
+					'label' => $response_data[$rank] ?? '???',
 					'url' => "https://www.gbif.org/species/{$key}"
 				];
 			}
