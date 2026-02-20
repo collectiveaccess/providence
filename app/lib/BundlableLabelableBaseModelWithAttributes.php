@@ -8446,10 +8446,14 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 * Checks if model supports ACL item-based access control
 	 *
+	 * @param array $options Array of options. Options include:
+	 *		useSettingsOnly = Return ACL enabled status based upon configuration settings only, ignoring __CA_DISABLE_ACL__ constant. [Default is false]
+	 *
 	 * @return bool True if model supports ACL, false if not
 	 */
-	public function supportsACL() {
-		if(defined('__CA_DISABLE_ACL__') && __CA_DISABLE_ACL__) { return false; }
+	public function supportsACL(?array $options=null) {
+		$use_settings_only = caGetOption('useSettingsOnly', $options, false);
+		if(!$use_settings_only && defined('__CA_DISABLE_ACL__') && __CA_DISABLE_ACL__) { return false; }
 		if(property_exists($this,'disable_acl') && $this->disable_acl) { return false; }
 		if(!$this->getAppConfig()->get('perform_item_level_access_checking') || $this->getAppConfig()->get($this->tableName().'_dont_do_item_level_access_control')) { return false; }
 		return (bool)$this->getProperty('SUPPORTS_ACL');
