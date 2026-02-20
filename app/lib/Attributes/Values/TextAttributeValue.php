@@ -287,7 +287,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 		
 		// process reference tags
 		if ($g_request && caGetOption('doRefSubstitution', $options, __CA_APP_TYPE__ == 'PAWTUCKET')) {
-			return caProcessReferenceTags($g_request, $this->ops_text_value);
+			return caProcessReferenceTags($g_request, $this->ops_text_value, ['value_id' => $this->opn_value_id, 'context' => 'attribute']);
 		}
 		
 		if(caGetOption('stripEnclosingParagraphTags', $options, false)) {
