@@ -2522,7 +2522,6 @@ trait CLIUtilsMaintenance {
 				$idno = $qr->get("{$table}.{$idno_fld}");
 				print CLIProgressBar::next(1, _t('[%1] Checking %2', $name_plural, $idno));
 				$instance = $qr->getInstance();
-				#if(!$instance) { continue; }
 				$reps = $instance->getRepresentations();
 				if(sizeof($reps) === 0) { continue; }
 				
@@ -2577,6 +2576,97 @@ trait CLIUtilsMaintenance {
 	 */
 	public static function check_representation_primary_valuesHelp() {
 		return _t('Every record with related representations must have at least one of those representation relationships marked as the primary relationship. The primary representation will be used as the default media for the record. In some situations it is possible that one or more representations can be related to a record without any having the "is primary" designation. Records without primary representations may dispaly oddly, or not at all. This command will check all representations relationships and ensure that all records with related representations have at least one marked as primary.');
+	}
+	# -------------------------------------------------------
+	/**
+	 * @param Zend_Console_Getopt|null $opts
+	 * @return bool
+	 */
+	public static function check_hierarchy_ids($opts=null) {
+		if(!defined('__CA_DISABLE_ACL__')) { define('__CA_DISABLE_ACL__', true); }
+		$tables = $opts ? trim((string)$opts->getOption('table')) : null;
+		$repair = $opts ? (bool)$opts->getOption('repair') : false;
+		
+		if($tables) {
+			$tables = preg_split('![,;]+!', $tables);
+		} else {
+			$tables = [
+				'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_loans', 'ca_movements',
+				'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items'
+			];
+		}
+		
+		$c = 0;
+		foreach($tables as $table) {
+			if(is_numeric($table)) { continue; }
+			if(!($t_table = Datamodel::getInstance($table))) { continue; }
+			$qr = $table::findAsSearchResult('*');
+			$name_singular = caUcFirstUTF8Safe($t_table->getProperty('NAME_SINGULAR'));
+			$name_plural = caUcFirstUTF8Safe($t_table->getProperty('NAME_PLURAL'));
+			$idno_fld = $t_table->getProperty('ID_NUMBERING_ID_FIELD');
+			$hier_id_fld = $t_table->getProperty('HIERARCHY_ID_FLD');
+			
+			print CLIProgressBar::start($qr->numHits(), _t('[%1]', $name_plural));
+			
+			while($qr->nextHit()) {
+				$idno = $qr->get("{$table}.{$idno_fld}");
+				print CLIProgressBar::next(1, _t('[%1] Checking %2', $name_plural, $idno));
+				$instance = $qr->getInstance();
+				$id = $instance->getPrimaryKey();
+				
+				$ancestors = $instance->getHierarchyAncestors(null, ['idsOnly' => true]);
+				
+				if(!$ancestors || !sizeof($ancestors)) {
+					$root_id = $id;
+				} else {
+					$root_id = array_pop($ancestors);
+				}
+				if(($hier_id = $instance->get($hier_id_fld)) != $root_id) {
+					CLIUtils::addMessage(_t("%1 %2 has invalid hierarchy_id %3; root id was %4 ", $name_singular, $idno, $hier_id, $root_id));
+					
+					if($repair) {
+						$instance->set($hier_id_fld, $root_id);
+						$instance->update();
+						DataMigrationUtils::postError($instance, _t('While fixing hierarchy_id (%1) root value', $hier_id_fld));
+					}
+					$c++;
+				}
+			}
+			
+			print CLIProgressBar::finish();
+		}
+		print "\n";
+		CLIUtils::addMessage(_t("Found %1 invalid hierarchy ids", $c));
+
+		return true;
+	}
+	# -------------------------------------------------------
+	public static function check_hierarchy_idsParamList() {
+		return [
+			"table|t=s" => _t('Restrict checks to a comma-separated list of table names.'),
+			"repair|f=s" => _t('Fix invalid hierarchy id values.')
+		];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function check_hierarchy_idsUtilityClass() {
+		return _t('Maintenance');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function check_hierarchy_idsShortHelp() {
+		return _t('Check hierarchy id field values.');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function check_hierarchy_idsHelp() {
+		return _t('Each record includes a field containing the id of the root record of the hierarchy to which is belongs. In some situations these values may not accurately reflect the current root of the hierarchy, potentially causing issues with hierarchy display and navigation. This command will check all hierarchy values and, if the "repair" option is set, correct incorrectly stored values.');
 	}
 	# -------------------------------------------------------
 }
