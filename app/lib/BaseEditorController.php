@@ -110,7 +110,7 @@ class BaseEditorController extends ActionController {
 				'duplicate_children' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_children')
 			))) {
 				$this->notification->addNotification(_t('Duplicated %1 "%2" (%3)', $vs_type_name, $t_subject->getLabelForDisplay(), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
-
+				Session::save();
 				// Trigger duplicate hook
 				$this->opo_app_plugin_manager->hookDuplicateItem(
 					[
