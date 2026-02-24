@@ -44,6 +44,19 @@ $g_information_service_settings_GBIF = [
 		'label' => _t('Maximum number of matches to return'),
 		'description' => _t('Limit')
 	],
+	'mode' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'default' => 'ALL',
+		'width' => 90, 'height' => 1,
+		'label' => _t('Mode'),
+		'description' => _t('Data to query'),
+		'options' => [
+			_t('Species and occurrences') => 'ALL',
+			_t('Species') => 'SPECIES',
+			_t('Occurrences') => 'OCCURRENCE'
+		]
+	],
 	'dataset' => [
 		'formatType' => FT_TEXT,
 		'displayType' => DT_SELECT,
@@ -86,11 +99,30 @@ $g_information_service_settings_GBIF = [
 		'width' => 90, 'height' => 3,
 		'label' => _t('Name status'),
 		'multiple' => true,
-		'description' => _t('Limit to names with specific status'),
+		'description' => _t('Limit to names with specific status (species only)'),
 		'options' => [
 			_t('Accepted') => 'ACCEPTED',
 			_t('Doubtful') => 'DOUBTFUL',
 			_t('Synonym') => 'SYNONYM',
+		]
+	],
+	'continent' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'default' =>  'ACCEPTED',
+		'width' => 90, 'height' => 3,
+		'label' => _t('Habitat'),
+		'multiple' => true,
+		'description' => _t('Limit to continents (occurrences only)'),
+		'options' => [
+			_t('All') => '',
+			_t('Africa') => 'AFRICA',
+			_t('Antarctica') => 'ANTARCTICA',
+			_t('Asia') => 'ASIA',
+			_t('Oceania') => 'OCEANIA',
+			_t('Europe') => 'EUROPE',
+			_t('North America') => 'NORTH_AMERICA',
+			_t('South America') => 'SOUTH_AMERICA'
 		]
 	],
 	'habitat' => [
@@ -100,7 +132,7 @@ $g_information_service_settings_GBIF = [
 		'width' => 90, 'height' => 3,
 		'label' => _t('Habitat'),
 		'multiple' => true,
-		'description' => _t('Limit to specific habitats'),
+		'description' => _t('Limit to specific habitats (species only)'),
 		'options' => [
 			_t('Marine') => 'MARINE',
 			_t('Freshwater') => 'FRESHWATER',
@@ -114,7 +146,7 @@ $g_information_service_settings_GBIF = [
 		'width' => 90, 'height' => 4,
 		'label' => _t('Taxonomic ranks'),
 		'multiple' => true,
-		'description' => _t('Limit to taxonomic ranks'),
+		'description' => _t('Limit to taxonomic ranks (species only)'),
 		'options' => null
 	],
 	'showExtinctMarker' => [
@@ -124,7 +156,27 @@ $g_information_service_settings_GBIF = [
 		'width' => 90, 'height' => 1,
 		'label' => _t('Mark extinct taxa'),
 		'multiple' => true,
-		'description' => _t('Mark extinct taxa with † symbol?'),
+		'description' => _t('Mark extinct taxa with † symbol? (species only)'),
+		'options' => null
+	],
+	'showOccurrenceDate' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_CHECKBOXES,
+		'default' => true,
+		'width' => 90, 'height' => 1,
+		'label' => _t('Show occurrence date?'),
+		'multiple' => true,
+		'description' => _t('Show occurrence date? (occurrences only)'),
+		'options' => null
+	],
+	'showOccurrenceLocation' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_CHECKBOXES,
+		'default' => true,
+		'width' => 90, 'height' => 1,
+		'label' => _t('Show occurrence location?'),
+		'multiple' => true,
+		'description' => _t('Show occurrence location? (occurrences only)'),
 		'options' => null
 	],
 	'showVernacularNames' => [
@@ -134,7 +186,7 @@ $g_information_service_settings_GBIF = [
 		'width' => 90, 'height' => 1,
 		'label' => _t('Show vernacular names'),
 		'multiple' => true,
-		'description' => _t('Display vernacular names?'),
+		'description' => _t('Display vernacular names? (species only)'),
 		'options' => null
 	],
 	'showGBIFKey' => [
@@ -168,7 +220,8 @@ class WLPlugInformationServiceGBIF extends BaseInformationServicePlugin implemen
 {
     # ------------------------------------------------
     const GBIF_SERVICES_BASE_URL = 'https://api.gbif.org/v1';
-    const GBIF_LOOKUP = 'species';
+    const GBIF_SPECIES_LOOKUP = 'species';
+    const GBIF_OCCURRENCE_LOOKUP = 'occurrence';
     
     static $s_settings;
     private $o_client;
@@ -238,127 +291,280 @@ class WLPlugInformationServiceGBIF extends BaseInformationServicePlugin implemen
     public function lookup($settings, $search, $options = null)  {
    		$search = trim($search);
    		
+   		$mode = strtoupper(caGetOption('mode', $options, caGetOption('mode', $settings, 'ALL')));
+   		if(!in_array($mode, ['ALL', 'SPECIES', 'OCCURRENCE'])) { $mode = 'ALL'; }
    		
    		$limit = caGetOption('limit', $options, caGetOption('limit', $settings, 100));
    		$show_extinct_marker = caGetOption('showExtinctMarker', $options, caGetOption('showExtinctMarker', $settings, false));
 		$show_vernacular_names = caGetOption('showVernacularNames', $options, caGetOption('showVernacularNames', $settings, false));
 		$show_gbif_key = caGetOption('showGBIFKey', $options, caGetOption('showGBIFKey', $settings, false));
 		
+		$show_occurrence_date = caGetOption('showOccurrenceDate', $options, caGetOption('showOccurrenceDate', $settings, false));
+		$show_occurrence_location = caGetOption('showOccurrenceLocation', $options, caGetOption('showOccurrenceLocation', $settings, false));
+		
+		
    		$display = caGetOption('display', $options, caGetOption('display', $settings, 'SCIENTIFIC_NAME'));
    		$dataset = caGetOption('datasetKey', $settings, caGetOption('dataset', $settings, 'd7dddbf4-2cf0-4f39-9b2a-bb099caae36c'));
    		
 		$client = $this->getClient();
-   		if(is_numeric($search)) {
-   			// GBIF ID
-   			$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_LOOKUP."/{$search}", [
-				'headers' => [
-					'Accept' => 'application/json'
-				]
-			]);
-			$entry = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
-			
-			$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_LOOKUP."/{$search}/vernacularNames", [
-				'headers' => [
-					'Accept' => 'application/json'
-				]
-			]);
-			if(is_array($vernacular_names = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING)) && is_array($vernacular_names['results'])) {
-				$entry['vernacularNames'] = [];
-				foreach($vernacular_names['results'] as $v) {
-					$entry['vernacularNames'][] = [
-						'vernacularName' => $v['vernacularName'],
-						'language' => $v['language'],
+		
+		$show_mode = true;
+		
+		$return = [];
+		// ---------------------------------------------------------------------------
+		// Species API
+		// ---------------------------------------------------------------------------
+		if(in_array($mode, ['SPECIES', 'ALL'])) {
+			if(is_numeric($search)) {
+				// GBIF ID
+				try {
+					$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_SPECIES_LOOKUP."/{$search}", [
+						'headers' => [
+							'Accept' => 'application/json'
+						]
+					]);
+					$entry = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
+					
+					$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_SPECIES_LOOKUP."/{$search}/vernacularNames", [
+						'headers' => [
+							'Accept' => 'application/json'
+						]
+					]);
+				} catch(Exception $e) {
+					$response = null;
+				}
+				if($response) {
+					if(is_array($vernacular_names = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING)) && is_array($vernacular_names['results'])) {
+						$entry['vernacularNames'] = [];
+						foreach($vernacular_names['results'] as $v) {
+							$entry['vernacularNames'][] = [
+								'vernacularName' => $v['vernacularName'],
+								'language' => $v['language'],
+							];
+						}
+					}
+					
+					$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_SPECIES_LOOKUP."/{$search}/speciesProfiles", [
+						'headers' => [
+							'Accept' => 'application/json'
+						]
+					]);
+					if(is_array($profiles = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING)) && is_array($profiles['results'])) {
+						foreach($profiles['results'] as $v) {
+							$entry['extinct'] = $v['extinct'] ?? false;
+							break;
+						}
+					}
+					
+					$response_data = [
+						'results' => [
+							$entry
+						]
 					];
 				}
+			} else {
+				// Text query
+				$params = $this->_procParams($settings, ['nameType', 'nameStatus', 'habitat', 'taxonomicRank']);
+				$params[] = "limit={$limit}";
+				$params[] = "datasetKey={$dataset}";
+				$params[] = "q=".urlencode($search);
+				$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_SPECIES_LOOKUP."/search?".join("&", $params), [
+					'headers' => [
+						'Accept' => 'application/json'
+					]
+				]);
+	
+				$response_data = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
 			}
-			
-			$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_LOOKUP."/{$search}/speciesProfiles", [
-				'headers' => [
-					'Accept' => 'application/json'
-				]
-			]);
-			if(is_array($profiles = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING)) && is_array($profiles['results'])) {
-				foreach($profiles['results'] as $v) {
-					$entry['extinct'] = $v['extinct'] ?? false;
-					break;
+	
+			if (is_array($response_data['results'] ?? null)) {
+				foreach ($response_data['results'] as $index => $data){
+					
+					$gbif_key = (string)$data['key'];
+					
+					$genus = trim($data['genus'] ?? null);
+					$species = trim(preg_replace("!^".preg_quote($genus, '!')."[ ]*!i", "", $data['species'] ?? null));
+					$scientific_name = $data['scientificName'] ?? null;
+				
+					$label = $scientific_name ?: "[{$genus}][{$species}]";
+					
+					switch($display) {
+						case 'SCIENTIFIC_NAME':
+							$label = $scientific_name ?? "{$genus} {$species}";
+							break;
+						case 'GENUS_SPECIES':
+							$label = "{$genus} {$species}" ?? $scientific_name;
+							break;
+						case 'FULL':
+							$ranks = array_values($this->_ranks());
+							
+							$acc = [];
+							foreach($ranks as $rank) {
+								$rank = strtolower($rank);
+								if(isset($data[$rank])) {
+									$acc[] = $data[$rank];
+								}
+							}
+							$label = join(' ➜ ', $acc);
+							break;
+					}
+					if($show_gbif_key && ($data['key'] ?? false)) {
+						$label .= " [{$data['key']}]";
+					}
+					if($show_vernacular_names && (is_array($data['vernacularNames'])) && sizeof($data['vernacularNames'])) {
+						$acc = [];
+						foreach($data['vernacularNames'] as $n) {
+							$acc[] = $n['vernacularName'];
+						}
+						$acc = array_unique($acc);
+						if($vlist = join("; ", $acc)) {
+							$label .= " ({$vlist})";
+						}
+					}
+					if($show_extinct_marker && ($data['extinct'] ?? false)) {
+						$label .= " †";
+					}
+					
+					if($show_mode) {
+						$label = "["._t('Species')."] {$label}";
+					}
+					
+					$entry = [
+						'label' => $label,
+						'url' => "https://www.gbif.org/species/{$gbif_key}",
+						'idno' => $gbif_key
+					];
+					
+					$return['results'][] = $entry;
 				}
 			}
-			
-			$response_data = [
-				'results' => [
-					$entry
-				]
-			];
-   		} else {
-   			// Text query
-			$params = $this->_procParams($settings, ['nameType', 'nameStatus', 'habitat', 'taxonomicRank']);
-			$params[] = "limit={$limit}";
-			$params[] = "datasetKey={$dataset}";
-			$params[] = "q=".urlencode($search);
-			$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_LOOKUP."/search?".join("&", $params), [
-				'headers' => [
-					'Accept' => 'application/json'
-				]
-			]);
-
-			$response_data = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
 		}
-
-		$return = [];
-        if (is_array($response_data['results'] ?? null)) {
-			foreach ($response_data['results'] as $index => $data){
-				
-				$gbif_key = (string)$data['key'];
-				
-				$genus = trim($data['genus'] ?? null);
-				$species = trim(preg_replace("!^".preg_quote($genus, '!')."[ ]*!i", "", $data['species'] ?? null));
-				$scientific_name = $data['scientificName'] ?? null;
-			
-				$label = $scientific_name ?: "[{$genus}][{$species}]";
-				
-				switch($display) {
-					case 'SCIENTIFIC_NAME':
-						$label = $scientific_name ?? "{$genus} {$species}";
-						break;
-					case 'GENUS_SPECIES':
-						$label = "{$genus} {$species}" ?? $scientific_name;
-						break;
-					case 'FULL':
-						$ranks = array_values($this->_ranks());
-						
-						$acc = [];
-						foreach($ranks as $rank) {
-							$rank = strtolower($rank);
-							if(isset($data[$rank])) {
-								$acc[] = $data[$rank];
+		
+		// ---------------------------------------------------------------------------
+		// Occurrence API
+		// ---------------------------------------------------------------------------
+		if(in_array($mode, ['OCCURRENCE', 'ALL'])) {
+			if(is_numeric($search)) {
+				// GBIF ID
+				try {
+					$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_OCCURRENCE_LOOKUP."/{$search}", [
+						'headers' => [
+							'Accept' => 'application/json'
+						]
+					]);
+					$entry = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
+				} catch(Exception $e) {
+					$response = null;
+				}
+				if($response) {
+					$taxon_key = $entry['taxonKey'] ?? null;
+					if($taxon_key) {
+						$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_SPECIES_LOOKUP."/{$taxon_key}/vernacularNames", [
+							'headers' => [
+								'Accept' => 'application/json'
+							]
+						]);
+						if(is_array($vernacular_names = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING)) && is_array($vernacular_names['results'])) {
+							$entry['vernacularNames'] = [];
+							foreach($vernacular_names['results'] as $v) {
+								$entry['vernacularNames'][] = [
+									'vernacularName' => $v['vernacularName'],
+									'language' => $v['language'],
+								];
 							}
 						}
-						$label = join(' ➜ ', $acc);
-						break;
-				}
-				if($show_gbif_key && ($data['key'] ?? false)) {
-					$label .= " [{$data['key']}]";
-				}
-				if($show_vernacular_names && (is_array($data['vernacularNames'])) && sizeof($data['vernacularNames'])) {
-					$acc = [];
-					foreach($data['vernacularNames'] as $n) {
-						$acc[] = $n['vernacularName'];
+						
+						$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_SPECIES_LOOKUP."/{$taxon_key}/speciesProfiles", [
+							'headers' => [
+								'Accept' => 'application/json'
+							]
+						]);
+						if(is_array($profiles = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING)) && is_array($profiles['results'])) {
+							foreach($profiles['results'] as $v) {
+								$entry['extinct'] = $v['extinct'] ?? false;
+								break;
+							}
+						}
 					}
-					$acc = array_unique($acc);
-					if($vlist = join("; ", $acc)) {
-						$label .= " ({$vlist})";
-					}
+					
+					$response_data = [
+						'results' => [
+							$entry
+						]
+					];
 				}
-				if($show_extinct_marker && ($data['extinct'] ?? false)) {
-					$label .= " †";
-				}
-				$entry = [
-					'label' => $label,
-					'url' => "https://www.gbif.org/species/{$gbif_key}",
-					'idno' => $gbif_key
-				];
+			} else {
+				// Text query
+				$params = $this->_procParams($settings, ['continent']);
+				$params[] = "limit={$limit}";
+				$params[] = "datasetKey={$dataset}";
+				$params[] = "q=".urlencode($search);
+				$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_OCCURRENCE_LOOKUP."/search?".join("&", $params), [
+					'headers' => [
+						'Accept' => 'application/json'
+					]
+				]);
+	
+				$response_data = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
+			}
+
+			if (is_array($response_data['results'] ?? null)) {
+				foreach ($response_data['results'] as $index => $data){
+					
+					$gbif_key = (string)$data['key'];
+					
+					$genus = trim($data['genus'] ?? null);
+					$species = trim(preg_replace("!^".preg_quote($genus, '!')."[ ]*!i", "", $data['species'] ?? null));
+					$scientific_name = $data['scientificName'] ?? null;
 				
-				$return['results'][] = $entry;
+					$label = $scientific_name ?: "[{$genus}][{$species}]";
+					
+					switch($display) {
+						case 'SCIENTIFIC_NAME':
+							$label = $scientific_name ?? "{$genus} {$species}";
+							break;
+						case 'GENUS_SPECIES':
+							$label = "{$genus} {$species}" ?? $scientific_name;
+							break;
+						case 'FULL':
+							$ranks = array_values($this->_ranks());
+							
+							$acc = [];
+							foreach($ranks as $rank) {
+								$rank = strtolower($rank);
+								if(isset($data[$rank])) {
+									$acc[] = $data[$rank];
+								}
+							}
+							$label = join(' ➜ ', $acc);
+							break;
+					}
+					
+					
+					if($show_occurrence_location && ($data['country'] ?? null)) {
+						$label .= ", {$data['country']}";
+					}
+					if($show_occurrence_date && ($data['eventDate'] ?? null)) {
+						$d = caDateToHistoricTimestamp($data['eventDate']);
+						$label .= ", ".caGetLocalizedHistoricDate($d, ['timeOmit' => true, 'dateFormat' => 'yearOnly'])."";
+					}
+					
+					if($show_gbif_key && ($data['key'] ?? false)) {
+						$label .= " [{$data['key']}]";
+					}
+					
+					if($show_mode) {
+						$label = "["._t('Occurrence')."] {$label}";
+					}
+					
+					$entry = [
+						'label' => $label,
+						'url' => "https://www.gbif.org/occurrence/{$gbif_key}",
+						'idno' => $gbif_key
+					];
+					
+					$return['results'][] = $entry;
+				}
 			}
 		}
         return $return;
@@ -372,7 +578,20 @@ class WLPlugInformationServiceGBIF extends BaseInformationServicePlugin implemen
     	$path = array_map(function($v) {
     		return $v['label'];
     	}, $info['hierarchy'] ?? []);
-        return ['display' => "<p>".join(" ➜ ", array_reverse($path))."<br><a href='{$url}' target='_blank' rel='noopener noreferrer'>{$url}</a></p>"];
+    	
+    	if(
+   			preg_match("!^https://www.gbif.org/species/([A-Za-z0-9\-]+)!", trim($url), $m)
+   			||
+   			preg_match("!^https://api.gbif.org/v1/species/([A-Za-z0-9\-]+)!", trim($url), $m)
+   		) {
+        	return ['display' => "<p>".join(" ➜ ", array_reverse($path))."<br><a href='{$url}' target='_blank' rel='noopener noreferrer'>{$url}</a></p>"];
+        } else {
+        	$d = [];
+        	if($location = $info['location'] ?? null) { $d[] = $location; }
+        	if($date = $info['date'] ?? null) { $d[] = $date; }
+        	$date_loc = sizeof($d) ? ', '.join(', ', $d) : '';
+        	return ['display' => "<p>".join(" ➜ ", array_reverse($path))."{$date_loc}<br><a href='{$url}' target='_blank' rel='noopener noreferrer'>{$url}</a></p>"];
+        }
     }
     # ------------------------------------------------
     /**
@@ -380,39 +599,75 @@ class WLPlugInformationServiceGBIF extends BaseInformationServicePlugin implemen
      */
 	public function getExtraInfo($settings, $url) {
    		if(
-   			!preg_match("!^https://www.gbif.org/species/([A-Za-z0-9\-]+)!", trim($url), $m)
-   			&&
-   			!preg_match("!^https://api.gbif.org/v1/species/([A-Za-z0-9\-]+)!", trim($url), $m)
+   			preg_match("!^https://www.gbif.org/species/([A-Za-z0-9\-]+)!", trim($url), $m)
+   			||
+   			preg_match("!^https://api.gbif.org/v1/species/([A-Za-z0-9\-]+)!", trim($url), $m)
    		) {
-   			return null;
-   		}
-   		$id = $m[1];
-   		
-   		$client = $this->getClient();
-   		$hier = [];
-		$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_LOOKUP."/{$id}", [
-			'headers' => [
-				'Accept' => 'application/json'
-			]
-		]);
-
-		$response_data = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
-		if(is_array($response_data)) {
-			$ranks = array_values($this->_ranks());
-			foreach($ranks as $rank) {
-				$rank = strtolower($rank);
-				if(!($key = $response_data["{$rank}Key"] ?? null)) { continue; }
-				
-				$hier[] = [
-					'label' => $response_data[$rank] ?? '???',
-					'url' => "https://www.gbif.org/species/{$key}"
-				];
+			$id = $m[1];
+			
+			$client = $this->getClient();
+			$hier = [];
+			$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_SPECIES_LOOKUP."/{$id}", [
+				'headers' => [
+					'Accept' => 'application/json'
+				]
+			]);
+	
+			$response_data = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
+			if(is_array($response_data)) {
+				$ranks = array_values($this->_ranks());
+				foreach($ranks as $rank) {
+					$rank = strtolower($rank);
+					if(!($key = $response_data["{$rank}Key"] ?? null)) { continue; }
+					
+					$hier[] = [
+						'label' => $response_data[$rank] ?? '???',
+						'url' => "https://www.gbif.org/species/{$key}"
+					];
+				}
 			}
-		}
-		$hier = array_reverse($hier);
-		return [
-			'hierarchy' => $hier
-		];
+			$hier = array_reverse($hier);
+			return [
+				'hierarchy' => $hier
+			];
+		} elseif(
+   			preg_match("!^https://www.gbif.org/occurrence/([A-Za-z0-9\-]+)!", trim($url), $m)
+   			||
+   			preg_match("!^https://api.gbif.org/v1/occurrence/([A-Za-z0-9\-]+)!", trim($url), $m)
+   		) {
+   			$id = $m[1];
+			
+			$client = $this->getClient();
+			$hier = [];
+			$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_OCCURRENCE_LOOKUP."/{$id}", [
+				'headers' => [
+					'Accept' => 'application/json'
+				]
+			]);
+	
+			$response_data = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
+			if(is_array($response_data)) {
+				$ranks = array_values($this->_ranks());
+				foreach($ranks as $rank) {
+					$rank = strtolower($rank);
+					if(!($key = $response_data["{$rank}Key"] ?? null)) { continue; }
+					
+					$hier[] = [
+						'label' => $response_data[$rank] ?? '???',
+						'url' => "https://www.gbif.org/species/{$key}"
+					];
+				}
+			}
+			$location = $response_data['country'] ?? null;
+			$date = caGetLocalizedHistoricDate(caDateToHistoricTimestamp($response_data['eventDate']), ['timeOmit' => true, 'dateFormat' => 'yearOnly']);
+			$hier = array_reverse($hier);
+			return [
+				'hierarchy' => $hier,
+				'location' => $location,
+				'date' => $date
+			];
+   		}
+   		return null;
 	}
 	# ------------------------------------------------
 	/** 
@@ -423,7 +678,7 @@ class WLPlugInformationServiceGBIF extends BaseInformationServicePlugin implemen
      */
     public function getClient() {
         if (!isset ($this->o_client))
-            $this->o_client = new \GuzzleHttp\Client(['base_uri' => self::GBIF_SERVICES_BASE_URL."/".self::GBIF_LOOKUP]);
+            $this->o_client = new \GuzzleHttp\Client(['base_uri' => self::GBIF_SERVICES_BASE_URL]);
 
         $o_conf = Configuration::load();
         if($proxy = $o_conf->get('web_services_proxy_url')) /* proxy server is configured */
