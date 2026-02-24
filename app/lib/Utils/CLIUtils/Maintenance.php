@@ -2522,21 +2522,22 @@ trait CLIUtilsMaintenance {
 				$idno = $qr->get("{$table}.{$idno_fld}");
 				print CLIProgressBar::next(1, _t('[%1] Checking %2', $name_plural, $idno));
 				$instance = $qr->getInstance();
+				if(!$instance) { continue; }
 				$reps = $instance->getRepresentations();
 				if(sizeof($reps) === 0) { continue; }
 				
-				$rel_id = null;
-			
-				$set_rel_id = null;
+				$rel_id = $set_rel_id = null;
 				foreach($reps as $rep) {
 					if(!$rel_id) { $rel_id = $rep['relation_id']; }
 					if($rep['access'] > 0) { $set_rel_id = $rel_id; }
-					if ($rep['is_primary'] && ($rep['access'] > 0)) { continue(2); }
+					if ($rep['is_primary']) { continue(2); }
 				}
+				
+				if($set_rel_id) { $rel_id = $set_rel_id; }
 			
 				CLIUtils::addMessage(_t("%1 %2 has no primary representation", $name_singular, $idno));
-				if($rel_id) {
-					$rel = $linking_table::findAsInstance($rel_id);
+				if($set_rel_id) {
+					$rel = $linking_table::findAsInstance($set_rel_id);
 					$rel->set('is_primary', 1);
 					$rel->update();
 					$c++;
