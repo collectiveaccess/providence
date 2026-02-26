@@ -4057,7 +4057,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							break;
 						default:
 							// Look for fully qualified intrinsic
-							$vs_v = $po_request->parameterExists("{$vs_placement_code}{$vs_form_prefix}{$vs_f}") ? $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}{$vs_f}", pString) : null;
+							$vs_v = !is_null($po_request->parameterExists("{$vs_placement_code}{$vs_form_prefix}{$vs_f}")) ? $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}{$vs_f}", pString) : null;
+							
 							if(is_null($vs_v)) {
 								// fall back to simple field name intrinsic spec - still used for "mandatory" fields such as type_id and parent_id
 								$vs_v = $po_request->parameterExists("{$vs_f}") ? $po_request->getParameter("{$vs_f}", pString) : null;
@@ -8465,10 +8466,14 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 * Checks if model supports ACL item-based access control
 	 *
+	 * @param array $options Array of options. Options include:
+	 *		useSettingsOnly = Return ACL enabled status based upon configuration settings only, ignoring __CA_DISABLE_ACL__ constant. [Default is false]
+	 *
 	 * @return bool True if model supports ACL, false if not
 	 */
-	public function supportsACL() {
-		if(defined('__CA_DISABLE_ACL__') && __CA_DISABLE_ACL__) { return false; }
+	public function supportsACL(?array $options=null) {
+		$use_settings_only = caGetOption('useSettingsOnly', $options, false);
+		if(!$use_settings_only && defined('__CA_DISABLE_ACL__') && __CA_DISABLE_ACL__) { return false; }
 		if(property_exists($this,'disable_acl') && $this->disable_acl) { return false; }
 		if(!$this->getAppConfig()->get('perform_item_level_access_checking') || $this->getAppConfig()->get($this->tableName().'_dont_do_item_level_access_control')) { return false; }
 		return (bool)$this->getProperty('SUPPORTS_ACL');

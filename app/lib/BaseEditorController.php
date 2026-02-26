@@ -81,7 +81,7 @@ class BaseEditorController extends ActionController {
 		//
 		// Are we duplicating?
 		//
-		if (($vs_mode == 'dupe') && $this->request->user->canDoAction('can_duplicate_'.$t_subject->tableName())) {
+		if (($vs_mode == 'dupe') && $this->request->user->canDoAction('can_duplicate_'.$t_subject->tableName()) && $t_subject->isLoaded()) {
 			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
 				throw new ApplicationException(_t('CSRF check failed'));
 				return;
@@ -110,7 +110,6 @@ class BaseEditorController extends ActionController {
 				'duplicate_children' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_children')
 			))) {
 				$this->notification->addNotification(_t('Duplicated %1 "%2" (%3)', $vs_type_name, $t_subject->getLabelForDisplay(), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
-
 				// Trigger duplicate hook
 				$this->opo_app_plugin_manager->hookDuplicateItem(
 					[
@@ -122,7 +121,8 @@ class BaseEditorController extends ActionController {
 						'request' => $this->request
 					]
 				);
-
+				Session::save();
+				
 				// redirect to edit newly created dupe.
 				$this->response->setRedirect(caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), array($t_subject->primaryKey() => $t_dupe->getPrimaryKey())));
 				return;
@@ -185,7 +185,7 @@ class BaseEditorController extends ActionController {
 			} else {
 				$type_id = array_shift($type_ids);
 			}
-			if(!$type_id && $t_subject->hasField('type_id') && !$t_subject->getFieldInfo('type_id', 'IS_NULL')) {
+			if(($this->ops_table_name !== 'ca_relationship_types') && !$type_id && $t_subject->hasField('type_id') && !$t_subject->getFieldInfo('type_id', 'IS_NULL')) {
 				$this->notification->addNotification(_t('Invalid type: %1', $type), __NOTIFICATION_TYPE_ERROR__);
 
 				$this->postError(1270, _t('Invalid type: %1', $type),"BaseEditorController->Edit()");
@@ -1233,15 +1233,25 @@ class BaseEditorController extends ActionController {
 		AssetLoadManager::register('imageScroller');
 		AssetLoadManager::register('datePickerUI');
 
+
+		$t_subject = Datamodel::getInstanceByTableName($this->ops_table_name);
+		
+		// Load Rich Text Editor Assets based on which type is selected
+		if(strtolower($t_subject->getAppConfig()->get("wysiwyg_editor")) == 'ckeditor'){
+			AssetLoadManager::register('ck5');
+		}
+		else{
+			AssetLoadManager::register('quilljs');
+		}
+
 		$vn_above_id = $vn_after_id = null;
 		
-		$t_subject = Datamodel::getInstanceByTableName($this->ops_table_name);
 		$vn_subject_id = $this->request->getParameter($t_subject->primaryKey(), pInteger);
 
 		if (!$vn_subject_id || !$t_subject->load($vn_subject_id)) {
 			// empty (ie. new) rows don't have a type_id set, which means we'll have no idea which attributes to display
 			// so we get the type_id off of the request
-			if (!($type_ids = caMakeTypeIDList($this->ops_table_name, [$this->request->getParameter($t_subject->getTypeFieldName(), pString)]))) {
+			if (!($type_ids = caMakeTypeIDList($this->ops_table_name, [$this->request->getParameter($t_subject->getTypeFieldName(), pString)], ['includeSubtypes' => false]))) {
 				$type_id = null;
 			} else {
 				$type_id = array_shift($type_ids);

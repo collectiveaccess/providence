@@ -80,7 +80,7 @@ if ($is_new) {
 			}
 			break;
 		case __CA_HIER_TYPE_SIMPLE_MONO__:
-			$id = $t_subject->getHierarchyRootID();
+			$id = $parent_id ?? $t_subject->getHierarchyRootID();
 			break;
 	}
 } 

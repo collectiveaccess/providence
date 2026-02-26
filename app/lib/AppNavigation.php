@@ -606,6 +606,8 @@ class AppNavigation extends BaseObject {
 				}
 			} 
 			
+			$va_defaults = $this->_getFirstAccessibleItem($pa_navinfo[$vs_nav], $va_defaults);
+			
 			if (!isset($pa_navinfo)) { $pa_navinfo[$vs_nav] = array(); }
 			if (isset($pa_navinfo[$vs_nav]['type']) && ($pa_navinfo[$vs_nav]['type'] == 'dynamic')) {
 				$va_submenu_nav = $this->getDynamicSubmenu($pa_navinfo[$vs_nav]);
@@ -645,7 +647,7 @@ class AppNavigation extends BaseObject {
 						$vs_buf .= "<li class='disabled'>".$vs_display_name."<li>\n";
 					} elseif($vs_nav === 'spacer') {
 						$vs_buf .= "<li><a href='#' class='spacer'>{$vs_display_name}</a></li>";
-					} else {
+					} elseif(is_array($va_defaults)) {
 						$vs_buf .= "<li ".(($vs_last_selected_path_item == $vs_nav) ? 'class="sf-menu-selected"' : '').">".caNavLink($this->opo_request, $vs_display_name, (($vs_last_selected_path_item == $vs_nav) ? 'sf-menu-selected' : ''), $va_defaults['module'] ?? null, $va_defaults['controller'] ?? null, $va_defaults['action'] ?? null, $va_additional_params)."<li>\n";
 					}
 				}
@@ -654,6 +656,39 @@ class AppNavigation extends BaseObject {
 		}
 		
 		return $vs_buf;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Find configuration for first accessible item in menu
+	 *
+	 * @param array $menuinfo Menu configiration
+	 * @param array $default Default item for menu; if omitted item configured in the 'default' key of $menuinfo is used. [Default is null]
+	 *
+	 * @return array The default item for the menu, null if menu is entirely inaccessible
+	 */
+	private function _getFirstAccessibleItem(array $menuinfo, ?array $default=null) : ?array {
+		if(is_array($menuinfo['navigation'])) {
+			if(!is_array($default)) { $default = $menuinfo['default'] ?? null; }
+			
+			// Test requirements for default item
+			$d = array_filter($menuinfo['navigation'], function($item) use ($default) {
+				return (($item['default'] ?? []) == $default);
+			});
+			if(is_array($d) && sizeof($d) && is_array($d['default'])) {
+				if($this->_evaluateRequirements($req = ($d['requires'] ?? []))) {
+					return $d['default'];
+				}
+			}
+			$default = null;
+			
+			// If default item is not accessible, try to find something in the menu that is
+			foreach($menuinfo['navigation'] as $k => $m) {
+				if($this->_evaluateRequirements($req = ($m['requires'] ?? []))) {
+					return $m['default'];
+				}
+			}
+		}
+		return $default;
 	}
 	# -------------------------------------------------------
 	/**
@@ -877,7 +912,7 @@ class AppNavigation extends BaseObject {
 		return $ps_value;
 	}
 	# -------------------------------------------------------
-	private function _evaluateRequirements(&$pa_requirements, $options=null) {
+	private function _evaluateRequirements($pa_requirements, $options=null) {
 		if(!is_array($pa_requirements) || (is_array($pa_requirements) && (sizeof($pa_requirements) == 0))) { return true; }	// empty requirements means anyone may access the nav item
 		$vs_result = $vs_value = null;
 		

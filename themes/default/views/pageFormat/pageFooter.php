@@ -35,7 +35,11 @@ $footer_color = $this->request->config->get('footer_color');
 			<div id="footer" ><div style="position: relative;">
 <?php
 				if ($this->request->isLoggedIn()) {
-					print _p("User").': '.$this->request->user->getName().' &gt; '.caNavLink($this->request, _t('Preferences'), '', 'system', 'Preferences', 'EditUIPrefs').' &gt; '.caNavLink($this->request, _t('Logout'), '', 'system', 'auth', 'logout');
+					print _p("User").': '.$this->request->user->getName();
+					if($this->request->user->canDoAction('can_set_preferences')) { 
+						print ' &gt; '.caNavLink($this->request, _t('Preferences'), '', 'system', 'Preferences', 'EditUIPrefs');
+					}
+					print ' &gt; '.caNavLink($this->request, _t('Logout'), '', 'system', 'auth', 'logout');
 				} else {
 					print caNavLink($this->request, _t('Login'), '', 'system', 'auth', 'login');
 				}

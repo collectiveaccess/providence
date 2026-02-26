@@ -4475,11 +4475,14 @@ function caFileIsIncludable($ps_file) {
 		$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_have_seen_param_delimiter = $vb_is_ca_get_ref = false;
 		$vs_tag = '';
 		$vs_last_char = null;
+		
+		$chars = preg_split('//u', $ps_template, -1, PREG_SPLIT_NO_EMPTY);
 
-		for($i=0; $i < mb_strlen($ps_template); $i++) {
-			switch($vs_char = mb_substr($ps_template, $i, 1)) {
+		for($i=0; $i < sizeof($chars); $i++) {
+			$vs_char = $chars[$i];
+			switch($vs_char) {
 				case '{':
-				    if (!$vb_in_tag && !$vb_in_single_quote && (mb_substr($ps_template, $i+1, 1) === '^')) {
+				    if (!$vb_in_tag && !$vb_in_single_quote && (($chars[$i + 1] ?? null) === '^')) {
 				        continue(2);
 				    }
 				    break;
@@ -4544,7 +4547,7 @@ function caFileIsIncludable($ps_file) {
 						if (
 							($vb_is_ca_get_ref && !$vb_have_seen_param_delimiter && (!preg_match("![A-Za-z0-9_\-\.~:]!", $vs_char)))
 							||
-							(($vs_char === ':') && !preg_match("!^[:]*[A-Za-z0-9]+!", mb_substr($ps_template, $i + 1)))	// colon not followed by letters, numbers or another colon is not part of tag
+							(($vs_char === ':') && !preg_match("!^[:]*[A-Za-z0-9]+!", ($chars[$i + 1] ?? null)))	// colon not followed by letters, numbers or another colon is not part of tag
 						) {
 							if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
 							$vs_tag = '';
@@ -4557,7 +4560,6 @@ function caFileIsIncludable($ps_file) {
 			}
 			$vs_last_char = $vs_char;
 		}
-
 		if ($vb_in_tag) {
 			if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
 		}
@@ -4577,6 +4579,7 @@ function caFileIsIncludable($ps_file) {
 
 			$va_tags[$vn_i] = rtrim($vs_tag, ")/.,%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
 		}
+		
 		return array_filter($va_tags, "strlen");
 	}
 	# ----------------------------------------
