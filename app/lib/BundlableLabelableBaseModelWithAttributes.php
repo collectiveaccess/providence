@@ -3273,65 +3273,85 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$t_object = new ca_objects();
 		$t_rel = ca_relationship_types::findAsInstance(['table_num' => Datamodel::getTableNum('ca_objects_x_collections'), 'type_code' => $vs_object_collection_rel_type]);
 	
-		$o_view->setVar('objectTypeList', trim($t_object->getTypeListAsHTMLFormElement("{$ps_placement_code}{$ps_form_name}object_type_id", 
-			['id' => "{$ps_placement_code}{$ps_form_name}objectTypeList"], 
-			[	'childrenOfCurrentTypeOnly' => (bool)$vb_strict_type_hierarchy, 
-				'includeSelf' => !(bool)$vb_strict_type_hierarchy, 
-				'directChildrenOnly' => $vb_strict_type_hierarchy && ($vb_strict_type_hierarchy !== '~'),
-				'restrictToTypes' => $t_rel ? [$t_rel->get('ca_relationship_types.sub_type_left_id')] : null,
-				'dontIncludeSubtypesInTypeRestriction' => $t_rel ? !$t_rel->get('ca_relationship_types.include_subtypes_left') : null
-			])));
-					
 		
 		$o_view->setVar('object_collection_collection_ancestors', []); // collections to display as object parents when ca_objects_x_collections_hierarchy_enabled is enabled
-		if (($this->tableName() == 'ca_objects') && $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) {
-				
-			// Is object part of a collection?
+		if ($this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) {
 			
-			$va_object_ids = array_keys($va_ancestor_list);
-			$vn_top_object_id = array_shift($va_object_ids);
-			if ($vn_top_object_id != $this->getPrimaryKey()) { 
-				$t_object = Datamodel::getInstanceByTableName("ca_objects", true);
-				$t_object->load($vn_top_object_id); 
-			} else { 
-				$t_object = $this;
+			$type_selector 	= trim($this->getTypeListAsHTMLFormElement(
+				"{$ps_placement_code}type_id", 
+				['id' => "{$ps_placement_code}typeList"], 
+				[
+					'childrenOfCurrentTypeOnly' => (bool)$vb_strict_type_hierarchy, 
+					'includeSelf' => !(bool)$vb_strict_type_hierarchy, 
+					'directChildrenOnly' => $vb_strict_type_hierarchy && ($vb_strict_type_hierarchy !== '~'),
+					'restrictToTypes' => $pa_bundle_settings['restrict_to_types'] ?: null
+				]
+			));
+			
+			if($this->tableName() == 'ca_collections') {
+				$o_view->setVar('objectTypeList', trim($t_object->getTypeListAsHTMLFormElement("{$ps_placement_code}{$ps_form_name}object_type_id", 
+					['id' => "{$ps_placement_code}{$ps_form_name}objectTypeList"], 
+					[	'childrenOfCurrentTypeOnly' => (bool)$vb_strict_type_hierarchy, 
+						'includeSelf' => !(bool)$vb_strict_type_hierarchy, 
+						'directChildrenOnly' => $vb_strict_type_hierarchy && ($vb_strict_type_hierarchy !== '~'),
+						'restrictToTypes' => $t_rel ? [$t_rel->get('ca_relationship_types.sub_type_left_id')] : null,
+						'dontIncludeSubtypesInTypeRestriction' => $t_rel ? !$t_rel->get('ca_relationship_types.include_subtypes_left') : null
+					])));
 			}
-			if(is_array($va_collections = $t_object->getRelatedItems('ca_collections', array('restrictToRelationshipTypes' => array($vs_object_collection_rel_type))))) {
-				$va_related_collections_by_level = [];
-				foreach($va_collections as $vs_key => $va_collection) {
-					$va_related_collections_by_level[$va_collection['collection_id']] = array(
-						'item_id' => $va_collection['collection_id'],
-						'parent_id' => $va_collection['parent_id'],
-						'label' => $va_collection['label'],
-						'idno' => $va_collection['idno'],
-						'table' => 'ca_collections'
-					);
-					$t_collection = new ca_collections();
-					if (!($va_collection_ancestor_list = $t_collection->getHierarchyAncestors($va_collection['collection_id'], array(
-						'additionalTableToJoin' => 'ca_collection_labels', 
-						'additionalTableJoinType' => 'LEFT',
-						'additionalTableSelectFields' => array('name', 'locale_id'),
-						'additionalTableWheres' => array('(ca_collection_labels.is_preferred = 1 OR ca_collection_labels.is_preferred IS NULL)'),
-						'includeSelf' => false
-					)))) {
-						$va_collection_ancestor_list = [];
-					}
-					$vn_i = 1;
-					foreach($va_collection_ancestor_list as $vn_id => $va_collection_ancestor) {
-						$va_related_collections_by_level[$va_collection_ancestor['NODE']['collection_id']] = array(
-							'item_id' => $va_collection_ancestor['NODE']['collection_id'],
-							'parent_id' => $va_collection_ancestor['NODE']['parent_id'],
-							'label' => $va_collection_ancestor['NODE']['name'],
-							'idno' => $va_collection_ancestor['NODE']['idno'],
+			if($this->tableName() == 'ca_objects') {
+				// Is object part of a collection?
+				$va_object_ids = array_keys($va_ancestor_list);
+				$vn_top_object_id = array_shift($va_object_ids);
+				if ($vn_top_object_id != $this->getPrimaryKey()) { 
+					$t_object = Datamodel::getInstanceByTableName("ca_objects", true);
+					$t_object->load($vn_top_object_id); 
+				} else { 
+					$t_object = $this;
+				}
+				if(is_array($va_collections = $t_object->getRelatedItems('ca_collections', array('restrictToRelationshipTypes' => array($vs_object_collection_rel_type))))) {
+					$va_related_collections_by_level = [];
+					foreach($va_collections as $vs_key => $va_collection) {
+						$va_related_collections_by_level[$va_collection['collection_id']] = array(
+							'item_id' => $va_collection['collection_id'],
+							'parent_id' => $va_collection['parent_id'],
+							'label' => $va_collection['label'],
+							'idno' => $va_collection['idno'],
 							'table' => 'ca_collections'
 						);
-						$vn_i++;
+						$t_collection = new ca_collections();
+						if (!($va_collection_ancestor_list = $t_collection->getHierarchyAncestors($va_collection['collection_id'], array(
+							'additionalTableToJoin' => 'ca_collection_labels', 
+							'additionalTableJoinType' => 'LEFT',
+							'additionalTableSelectFields' => array('name', 'locale_id'),
+							'additionalTableWheres' => array('(ca_collection_labels.is_preferred = 1 OR ca_collection_labels.is_preferred IS NULL)'),
+							'includeSelf' => false
+						)))) {
+							$va_collection_ancestor_list = [];
+						}
+						$vn_i = 1;
+						foreach($va_collection_ancestor_list as $vn_id => $va_collection_ancestor) {
+							$va_related_collections_by_level[$va_collection_ancestor['NODE']['collection_id']] = array(
+								'item_id' => $va_collection_ancestor['NODE']['collection_id'],
+								'parent_id' => $va_collection_ancestor['NODE']['parent_id'],
+								'label' => $va_collection_ancestor['NODE']['name'],
+								'idno' => $va_collection_ancestor['NODE']['idno'],
+								'table' => 'ca_collections'
+							);
+							$vn_i++;
+						}
+						break; // only process the first collection (for now)
 					}
-					break; // only process the first collection (for now)
+					$o_view->setVar('object_collection_collection_ancestors', array_reverse($va_related_collections_by_level, true));
 				}
-				$o_view->setVar('object_collection_collection_ancestors', array_reverse($va_related_collections_by_level, true));
 			}
+		} else {
+			$type_selector 	= trim($t_subject->getTypeListAsHTMLFormElement(
+				"{$ps_placement_code}type_id", 
+				['id' => "{$ps_placement_code}typeList"], 
+				['restrictToTypes' => $pa_bundle_settings['restrict_to_types'] ?: null]
+			));
 		}
+		$o_view->setVar('type_selector', $type_selector);
 		
 		$vn_first_id = null;
 		if ($pb_batch && ($pn_set_id = caGetOption('set_id', $pa_options, null))) { 

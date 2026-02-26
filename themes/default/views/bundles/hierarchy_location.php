@@ -145,16 +145,35 @@ if (in_array($subject_table, array('ca_objects', 'ca_collections')) && $objects_
 }
 
 $strict_type_hierarchy = $this->request->config->get("{$subject_table}_enforce_strict_type_hierarchy");
-$type_selector 	= trim($t_subject->getTypeListAsHTMLFormElement(
-	"{$id_prefix}type_id", 
-	['id' => "{$id_prefix}typeList"], 
-	['enforceStrictTypeHierarchy' => $strict_type_hierarchy, 'restrictToTypes' => $bundle_settings['restrict_to_types'] ?: null]
-));
+$type_selector 	= $this->getVar('type_selector');
 
-$show_add = !$is_new && (!$read_only && $has_privs && !$batch) && (!$strict_type_hierarchy || ($strict_type_hierarchy && $type_selector));
-$show_move = ((!$strict_type_hierarchy || ($strict_type_hierarchy === '~') || $batch) && !$read_only);
-
-$show_add_object = (!$read_only && $has_privs && !$batch) && $objects_x_collections_hierarchy_enabled && in_array($subject_table, ['ca_collections'], true) && (!$strict_type_hierarchy || in_array($strict_type_hierarchy, ['-', '~'])) && (($strict_type_hierarchy != '1') || !sizeof($t_subject->getTypeInstance()->get('ca_list_items.children.item_id', ['returnAsArray' => true])));
+$show_add = (
+	!$is_new 
+	&& 
+	(!$read_only && $has_privs && !$batch) 
+	&& 
+	(!$strict_type_hierarchy || ($strict_type_hierarchy && $type_selector))
+);
+$show_move = (
+	(!$strict_type_hierarchy || ($strict_type_hierarchy === '~') || $batch) 
+	&& 
+	!$read_only
+);
+$show_add_object = (
+	(!$read_only && $has_privs && !$batch) 
+	&& 
+	$objects_x_collections_hierarchy_enabled 
+	&& 
+	in_array($subject_table, ['ca_collections'], true)
+	&& 
+		(
+			// no strict types, or loose type hierarchy
+			(!$strict_type_hierarchy || in_array($strict_type_hierarchy, ['-', '~']))
+			||
+			// strict hierarchy, current type is leaf (no sub-tyoes) - allow objects
+	 		(($strict_type_hierarchy === '1') && !sizeof($t_subject->getTypeInstance()->get('ca_list_items.children.item_id', ['returnAsArray' => true])))
+	 	)
+);
 
 // Tab to open on load?
 $default_tab_index = 0;
