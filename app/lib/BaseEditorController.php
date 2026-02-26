@@ -1233,9 +1233,19 @@ class BaseEditorController extends ActionController {
 		AssetLoadManager::register('imageScroller');
 		AssetLoadManager::register('datePickerUI');
 
+
+		$t_subject = Datamodel::getInstanceByTableName($this->ops_table_name);
+		
+		// Load Rich Text Editor Assets based on which type is selected
+		if(strtolower($t_subject->getAppConfig()->get("wysiwyg_editor")) == 'ckeditor'){
+			AssetLoadManager::register('ck5');
+		}
+		else{
+			AssetLoadManager::register('quilljs');
+		}
+
 		$vn_above_id = $vn_after_id = null;
 		
-		$t_subject = Datamodel::getInstanceByTableName($this->ops_table_name);
 		$vn_subject_id = $this->request->getParameter($t_subject->primaryKey(), pInteger);
 
 		if (!$vn_subject_id || !$t_subject->load($vn_subject_id)) {
