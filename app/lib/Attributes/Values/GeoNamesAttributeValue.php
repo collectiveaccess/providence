@@ -221,7 +221,7 @@ $_ca_attribute_settings['GeoNamesAttributeValue'] = array(		// global
 	'canBeEmpty' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_CHECKBOXES,
-		'default' => true,
+		'default' => 1,
 		'width' => 1, 'height' => 1,
 		'label' => _t('Can be empty'),
 		'description' => _t('Check this option if you want to allow empty attribute values. This - of course - only makes sense if you bundle several elements in a container.')
