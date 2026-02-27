@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -210,10 +210,18 @@ $_ca_attribute_settings['GeoNamesAttributeValue'] = array(		// global
 		'label' => _t('Disable map'),
 		'description' => _t('Check this option if you want to disable location map display.')
 	),
-	'canBeEmpty' => array(
+	'hideCoordinates' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_CHECKBOXES,
 		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Hide coordinates'),
+		'description' => _t('Check this options to hide latitude and longitude coordinates.')
+	),
+	'canBeEmpty' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => true,
 		'width' => 1, 'height' => 1,
 		'label' => _t('Can be empty'),
 		'description' => _t('Check this option if you want to allow empty attribute values. This - of course - only makes sense if you bundle several elements in a container.')
@@ -306,6 +314,16 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
  	 */
  	protected $ops_uri_value;
  	
+ 	/**
+ 	 *
+ 	 */
+ 	protected $opn_latitude;
+ 	
+ 	/**
+ 	 *
+ 	 */
+ 	protected $opn_longitude;
+ 	
  	private $opo_geo_plugin;
  	# ------------------------------------------------------------------
  	public function __construct($pa_value_array=null) {
@@ -316,6 +334,8 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
  	public function loadTypeSpecificValueFromRow($pa_value_array) {
  		$this->ops_text_value = $pa_value_array['value_longtext1'];
  		$this->ops_uri_value =  $pa_value_array['value_longtext2'];
+ 		$this->opn_latitude = $pa_value_array['value_decimal1'];
+ 		$this->opn_longitude=  $pa_value_array['value_decimal2'];
  	}
  	# ------------------------------------------------------------------
  	/**
@@ -370,6 +390,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 			return [];
  		} else {
  			$vs_text = $ps_value;
+ 			$va_coords = $vs_coords = null;
  			$vs_id = null;
 			if (preg_match("! \[id:([0-9]+)\]$!", $vs_text, $va_matches)) {
 				$vs_id = $va_matches[1];
@@ -379,9 +400,9 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 				$vs_id = $va_matches[1];
 				$vs_text = preg_replace("!\|[0-9]+$!", "", $vs_text);
 			}
-			if (preg_match("!\[\-{0,1}([0-9\.]+,[0-9\.]+)\]!", $vs_text, $va_matches)) {
+			if (preg_match("!(\[\-{0,1}([0-9\.]+,\-{0,1}[0-9\.]+)\])!", $vs_text, $va_matches)) {
 				$vs_coords = $va_matches[1];
-				$vs_text = preg_replace("!\[\-{0,1}([0-9\.]+,[0-9\.]+)\]!", "", $vs_text);
+				$va_coords = explode(',', $vs_coords);
 			}
 			if (!$vs_id) {
 			    $vs_base = $vo_conf->get('geonames_api_base_url') . '/search';
@@ -419,6 +440,8 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
                                 return [
                                     'value_longtext1' => $vs_text,
                                     'value_longtext2' => $vs_id,
+                                    'value_decimal1' => (float)$vo_child->lat,
+                                    'value_decimal2' => (float)$vo_child->long
                                 ];
                             }
                         }
@@ -427,16 +450,17 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
                     $this->postError(1970, _t('Could not connect to GeoNames'), 'GeoNamesAttributeValue->parseValue()');
 				    return false;
                 }
-				if(!$va_settings["canBeEmpty"]){
+				if(!($va_settings["canBeEmpty"] ?? true)){
 					$this->postError(1970, _t('Entry for <em>%1</em> was blank.', $pa_element_info['displayLabel']), 'GeoNamesAttributeValue->parseValue()');
 					return false;
 				}
 				return [];
 			}
-
 			return [
 				'value_longtext1' => $vs_text,
 				'value_longtext2' => $vs_id,
+				'value_decimal1' => $va_coords[0] ?? null,
+				'value_decimal2' => $va_coords[1] ?? null,
 			];
 		}
 	}
@@ -462,7 +486,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 		}
  		$o_config = Configuration::load();
 
- 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'disableMap', 'maxResults', 'gnElements', 'gnDelimiter'));
+ 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'disableMap', 'maxResults', 'gnElements', 'gnDelimiter', 'hideCoordinates'));
 		
  		$vn_max_results = (isset($va_settings['maxResults']) ? intval($va_settings['maxResults']) : 20);
  		$vs_gn_elements = $va_settings['gnElements'];
@@ -522,6 +546,10 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 						jQuery('#mapholder_".$pa_element_info['element_id']."_{n}').hide();
 					}
 				});
+				if(".(caGetOption('hideCoordinates', $va_settings, false) ? 'true' : 'false').") {
+					let l = jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_autocomplete{n}').val();
+					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_autocomplete{n}').val(l.replace(/[ ]*\[[\d\.\-,;:]+\]/, ''));
+				}
 			</script>
 		";
 		
