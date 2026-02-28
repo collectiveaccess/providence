@@ -3443,7 +3443,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 			}
 		} else {
-			$type_selector 	= trim($t_subject->getTypeListAsHTMLFormElement(
+			$type_selector 	= trim($this->getTypeListAsHTMLFormElement(
 				"{$placement_code}type_id", 
 				['id' => "{$placement_code}typeList"], 
 				['restrictToTypes' => $bundle_settings['restrict_to_types'] ?: null]
