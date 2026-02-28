@@ -112,44 +112,44 @@ class BaseLookupController extends ActionController {
 			
 				$o_search = new $this->ops_search_class();
 			
-				$types = array();
+				$restrict_to_types = [];
 				if ($types) {
-					$types = explode(';', $types);
+					$restrict_to_types = explode(';', $types);
 				} else {
 					if ($type) {
-						$types = array($type);
+						$restrict_to_types = [$type];
 					}
 				}
 			
 				// Get type_ids
-				$va_ids = array();
-				if (sizeof($types)) {
-					$va_types = $this->opo_item_instance->getTypeList();
-					$va_types_proc = array();
-					foreach($va_types as $vn_type_id => $va_type) {
-						$va_types_proc[$vn_type_id] = $va_types_proc[$va_type['idno']] = $vn_type_id;
+				$ids = [];
+				if (sizeof($restrict_to_types)) {
+					$type_list = $this->opo_item_instance->getTypeList();
+					$type_list_proc = array();
+					foreach($type_list as $vn_type_id => $va_type) {
+						$type_list_proc[$vn_type_id] = $type_list_proc[$va_type['idno']] = $vn_type_id;
 					}
-					foreach($types as $type) {
-						if (isset($va_types_proc[$type])) {
-							$va_ids[$va_types_proc[$type]] = true;
-						} elseif (is_numeric($type)) {
-							$va_ids[(int)$type] = true;
+					foreach($restrict_to_types as $rtype) {
+						if (isset($type_list_proc[$rtype])) {
+							$ids[$type_list_proc[$rtype]] = true;
+						} elseif (is_numeric($rtype)) {
+							$ids[(int)$rtype] = true;
 						}
 					}
-					$va_ids = array_keys($va_ids);
+					$ids = array_keys($ids);
 				
-					if (sizeof($va_ids) > 0) {
+					if (sizeof($ids) > 0) {
 						$t_list = new ca_lists();
 					
 						if (!$no_subtypes) {
-							foreach($va_ids as $vn_id) {
+							foreach($ids as $vn_id) {
 								if (is_array($va_children = $t_list->getItemsForList($this->opo_item_instance->getTypeListCode(), array('item_id' => $vn_id, 'idsOnly' => true)))) {
-									$va_ids = array_merge($va_ids, $va_children);
+									$ids = array_merge($ids, $va_children);
 								}
 							}
-							$va_ids = array_flip(array_flip($va_ids));
+							$ids = array_flip(array_flip($ids));
 						}
-						$o_search->addResultFilter($this->opo_item_instance->tableName().'.'.$this->opo_item_instance->getTypeFieldName(), 'IN', join(",", $va_ids));
+						$o_search->addResultFilter($this->opo_item_instance->tableName().'.'.$this->opo_item_instance->getTypeFieldName(), 'IN', join(",", $ids));
 					}
 				}
 		
@@ -523,12 +523,12 @@ class BaseLookupController extends ActionController {
 				({$field} = ?) AND ({$vs_pk} <> ?)
 				{$vs_extra_wheres}
 		", $va_params);
-		$va_ids = array();
+		$ids = array();
 		while($qr_res->nextRow()) {
-			$va_ids[] = (int)$qr_res->get($vs_pk);
+			$ids[] = (int)$qr_res->get($vs_pk);
 		}
 		
-		$this->view->setVar('id_list', $va_ids);
+		$this->view->setVar('id_list', $ids);
 		return $this->render('intrinsic_json.php');
 	}
 	# -------------------------------------------------------

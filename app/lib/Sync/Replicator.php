@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2023 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -157,6 +157,11 @@ class Replicator {
 	 */
 	protected $set_intrinsics_json = null;
 	
+	/**
+	 *
+	 */
+	protected $sync_list = [];
+	
 	# --------------------------------------------------------------------------------------------------------------
 	public function __construct() {
 		$this->opo_replication_conf = Configuration::load('replication.conf');
@@ -178,6 +183,15 @@ class Replicator {
 				}
 			}
 			$sources = $filtered_sources;
+		}
+		if(($disabled_sources = caGetOption('disabled', $options, null)) || ($disabled_sources = $this->opo_replication_conf->getList('disabled_sources'))) {
+			if(!is_array($disabled_sources)) { $disabled_sources = [$disabled_sources]; }
+			$filtered_sources = [];
+			foreach($disabled_sources as $s) {
+				if(isset($sources[$s])) {
+					unset($sources[$s]);
+				}
+			}
 		}
 		if(!is_array($sources)) { throw new Exception('No sources configured'); }
 
@@ -226,7 +240,10 @@ class Replicator {
 	 * @param int $level log level as Zend_Log level integer:
 	 *        one of Zend_Log::DEBUG, Zend_Log::INFO, Zend_Log::WARN, Zend_Log::ERR
 	 */
-	public function log(string $msg, int $level) : void {
+	public function log(string $msg, int $level, ?bool $is_fatal=false) : void {
+		if($level == Zend_Log::ERR) {
+			$this->setErrorForSourceOnSyncList($this->source_key, $this->target_key, ['error' => $msg, 'level' => $level], $is_fatal);
+		}
 		Replicator::$s_log->log($msg, $level);
 	}
 	# --------------------------------------------------------------------------------------------------------------
@@ -241,35 +258,143 @@ class Replicator {
 	}
 	# --------------------------------------------------------------------------------------------------------------
 	/**
+	 * 
+	 */
+	public function addSourceToSyncList(string $source_key, string $target_key) : void {
+		$this->sync_list['sources'][$source_key] = [
+			$target_key => [
+				'start' => time(),
+				'end' => null,
+				'info' => null,
+				'errors' => null,
+				'start_log_id' => $this->start_log_id,
+				'end_log_id' => null
+			]
+		];
+	}
+	# --------------------------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function setSyncListValueForSource(string $source_key, string $target_key, array $values) : ?bool {
+		if(!isset($this->sync_list['sources'][$source_key][$target_key])) { return null; }
+		foreach($values as $k => $v) {
+			if(array_key_exists($k, $this->sync_list['sources'][$source_key][$target_key])){
+				$this->sync_list['sources'][$source_key][$target_key][$k] = $v;
+			}
+		}
+		return true;
+	}
+	# --------------------------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function closeSyncListForSource(string $source_key, string $target_key, array $info) : ?bool {
+		if(!isset($this->sync_list['sources'][$source_key][$target_key])) { return null; }
+		$this->sync_list['sources'][$source_key][$target_key]['end'] = time();
+		$this->sync_list['sources'][$source_key][$target_key]['end_log_id'] = $this->end_log_id;
+		$this->sync_list['sources'][$source_key][$target_key]['info'] = $info;
+
+		return true;
+	}
+	# --------------------------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function setErrorForSourceOnSyncList(string $source_key, ?string $target_key, array $error, ?bool $is_fatal=false) : ?bool {
+		if(!isset($this->sync_list['sources'][$source_key][$target_key])) { return null;  }
+		if($is_fatal) {
+			$this->sync_list['sources'][$source_key][$target_key]['end'] = time();
+			$this->sync_list['sources'][$source_key][$target_key]['end_log_id'] = $this->end_log_id;
+		}
+		$this->sync_list['sources'][$source_key][$target_key]['errors'][] = $error;
+
+		return true;
+	}
+	# --------------------------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function sendSyncListReport() : ?bool {
+		global $g_last_email_error;
+		$to = $this->opo_replication_conf->get('email_reports_to');
+		if(!$to) { return false; }
+		
+		if(!($from = $this->opo_replication_conf->get('email_reports_from'))) { 
+			$from = __CA_ADMIN_EMAIL__;
+		}
+		$this->sync_list['end'] = time();
+				
+		$o_view = new View(null, [__CA_THEME_DIR__.'/views']);
+		$o_view->setVar('sync_list', $this->sync_list);
+		$o_view->setVar('sources', $configured_sources = $this->opo_replication_conf->get('sources'));
+		
+		$sources_in_report = array_keys($this->sync_list['sources'] ?? []);
+		$sources_not_in_report = array_diff(array_keys($configured_sources), $sources_in_report);
+		
+		$o_view->setVar('sources_not_in_report', $sources_not_in_report);
+		
+		$body = $o_view->render("mailTemplates/replication_report.tpl");
+		
+		$run_date = caGetLocalizedDateRange($this->sync_list['start'], $this->sync_list['end']);
+		
+		$ret = caSendmail(is_array($to) ? join(',', $to) : $to, $from, _t('[%1] Data replication report (%2)', __CA_APP_DISPLAY_NAME__, $run_date), $body, $body, null, null, null, []);
+		return true;
+	}
+	# --------------------------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function initializeSyncList() : void {
+		$this->sync_list = [
+			'start' => time(),
+			'end' => null,
+			'sources' => []
+		];
+	}
+	# --------------------------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getSyncList() : ?array {
+		return $this->sync_list;
+	}
+	# --------------------------------------------------------------------------------------------------------------
+	/**
 	 *
 	 */
 	public function replicate(?array $options=null) {
 		$start_time = time();
+			
+		// Sync a single log_id from a specific source?
+		$single_log_id_mode = false;
+			
+		$this->initializeSyncList();
+	try{
 		foreach($this->getSourcesAsServiceClients($options) as $source_key => $o_source) {
 			/** @var CAS\ReplicationService $o_source */
 			
-			// Sync a single log_id from a specific source?
-			$single_log_id_mode = false;
 			if(caGetOption('source', $options, null) && $single_log_id = caGetOption('log_id', $options, null)) {
 				$single_log_id_mode = 1;
 				
 				$this->logDebug(_t("[%1] Set single log mode.", $source_key), Zend_Log::INFO);
 			}
 
+			$this->source = $o_source;
+			$this->source_key = $source_key;
+			
 			// Get GUID for data source
 			$o_result = $o_source->setEndpoint('getsysguid')->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)->request();
 			if(!$o_result || !($res = $o_result->getRawData()) || !(strlen($source_system_guid = $res['system_guid']))) {
 				$this->log(
 					_t("[%1] Could not get system GUID for one of the configured replication sources: {$source_key}. Skipping source.", $source_key),
-					\Zend_Log::ERR
+					Zend_Log::ERR
 				);
 				continue;
 			}
                 
         	if(($chunk_size = (int)$this->opo_replication_conf->get('chunk_size')) <= 0) { $chunk_size = 100; }
 			
-			$this->source = $o_source;
-			$this->source_key = $source_key;
 			$this->source_guid = $source_system_guid;
 
 			foreach($this->getTargetsAsServiceClients() as $target_key => $o_target) {
@@ -301,7 +426,7 @@ class Replicator {
 					->request();
 				;
 				if (!$o_result || !is_array($res = $o_result->getRawData()) || isset($res['errors'])) {
-				    $this->log(_t("[%1] There were errors getting last replicated log id for source %1 and target %2: %3.", $source_key, $target_key, join('; ', $res['errors'])), Zend_Log::ERR);
+				    $this->log(_t("[%1] There were errors getting last replicated log id for source %1 and target %2: %3.", $source_key, $target_key, join('; ', $res['errors'])), Zend_Log::ERR, true);
 				    continue;
 				}
 				
@@ -352,6 +477,9 @@ class Replicator {
 					continue;
 				}
 
+				$this->start_log_id = $replicated_log_id;
+				$this->addSourceToSyncList($source_key, $target_key);
+				
 				$this->log(_t("[%1] Starting replication for source %1 and target %2, log id is %3.",
 					$source_key, $target_key, $replicated_log_id), Zend_Log::INFO);
 
@@ -467,8 +595,7 @@ class Replicator {
                     if(!$end_log_id) { $end_log_id = $start_log_id; }
                     
                     $this->logDebug(_t("[%1] Found %2 source log entries starting at [%4 - %5].", $this->source_key, sizeof($this->source_log_entries), $replicated_log_id, $start_log_id, $end_log_id), Zend_Log::DEBUG);
-                    //$this->logDebug(_t("[%1] %2", $this->source_key, print_r($this->source_log_entries,true)), Zend_Log::DEBUG);
-                    
+ 
                     $filtered_log_entries = null;
 					if ($is_push_missing) {
 						// harvest guids used for updates
@@ -494,7 +621,7 @@ class Replicator {
 					    $this->filtered_log_entries = [];
 						
 						foreach($this->source_log_entries as $log_id => $source_log_entry) {
-						    $this->last_log_id = $log_id;
+						    $this->last_log_id = (int)$log_id;
 						    if($this->sent_log_ids[$log_id]) { continue; }	// Don't send a source entry more than once (should never happen)
 						   	if($source_log_entry['SKIP'] ?? null) { 
 						   		//$this->logDebug(_t("[%1] Skipping log_id %2 because is marked as SKIP", $this->source_key, $log_id), Zend_Log::DEBUG);
@@ -625,7 +752,7 @@ class Replicator {
 					}
 					
 					if (($o_resp && !$o_resp->isOk()) || !isset($response_data['replicated_log_id'])) {
-						$this->log(_t("[%1] There were errors while processing sync for source %1 and target %2: %3", $source_key, $target_key, join(' ', $o_resp->getErrors())), Zend_Log::ERR);
+						$this->log(_t("[%1] There were errors while processing sync for source %1 and target %2: %3", $source_key, $target_key, join(' ', $o_resp->getErrors())), Zend_Log::ERR, true);
 						break;
 					} else {
 						foreach($this->source_log_entries as $mlog_id => $entry) {						
@@ -690,6 +817,13 @@ class Replicator {
 				}
 			}
 			$this->log(_t("[%1] Sync for source %1 and target %2 took %3.", $source_key, $target_key, caFormatInterval(time() - $start_time)), Zend_Log::DEBUG);
+			$this->closeSyncListForSource($source_key, $target_key, []);
+		}
+	} catch(Exception $e) {
+		$this->setErrorForSourceOnSyncList($this->source_key, $this->target_key, ['error' => $e->getMessage(), 'level' => Zend_Log::ERR], true);	
+	}
+		if(!$single_log_id_mode) {
+			$this->sendSyncListReport();
 		}
 	}
 	# --------------------------------------------------------------------------------------------------------------
@@ -1178,7 +1312,7 @@ class Replicator {
 			if(!$o_result || !($res = $o_result->getRawData()) || !(strlen($source_system_guid = $res['system_guid']))) {
 				$this->log(
 					_t("[%1] Could not get system GUID for one of the configured replication sources: {$source_key}. Skipping source.", $source_key),
-					\Zend_Log::ERR
+					Zend_Log::ERR
 				);
 				return;
 			}

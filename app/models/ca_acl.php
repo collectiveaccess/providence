@@ -1277,6 +1277,8 @@ class ca_acl extends BaseModel {
 							$qr_del = $db->query("DELETE FROM ca_acl WHERE table_num = ? AND row_id = ? AND group_id = ?", [(int)$target_table_num, (int)$target_id, $group_id]);
 						}
 					}
+					// @TODO: verify this is needed
+					$db->query("DELETE FROM ca_acl WHERE group_id IS NULL and user_id IS NULL and table_num = {$target_table_num} AND row_id = {$target_id}");
 					$qr_clone = $db->query("
 						INSERT IGNORE INTO ca_acl
 						(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id)

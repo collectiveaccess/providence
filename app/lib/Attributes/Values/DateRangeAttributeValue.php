@@ -560,6 +560,8 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 	 * @return string
 	 */
 	public function sortableValue(?string $value) {
+		$sort_by_specificity = Configuration::load('datetime.conf')->get('sort_dates_by_specificity');
+		
 		if(DateRangeAttributeValue::$o_tep->parse($value)) { 
 			$dates = DateRangeAttributeValue::$o_tep->getHistoricTimestamps();
 			if(!($dates[0] ?? null)) { $dates[0] = "9999999999.999999999999"; }
@@ -570,7 +572,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 			$sdate = str_pad($sdate_bits[0], 10, '0', STR_PAD_LEFT).'.'.$sdate_bits[1];
 			$edate = str_pad($edate_bits[0], 10, '0', STR_PAD_LEFT).'.'.$edate_bits[1];
 			
-			if(Configuration::load('datetime.conf')->get('sort_dates_by_specificity')) {
+			if($sort_by_specificity) {
 				$sinfo = DateRangeAttributeValue::$o_tep->specificity();
 				
 				$suffix = 0;
@@ -639,6 +641,8 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 				$v = "{$sdate}/{$edate}";
 			}
 			return $v;
+		} elseif($sort_by_specificity) {
+			return "9999999999.999999999999/9999999999.999999999999/9999";
 		}
 		return null;
 	}

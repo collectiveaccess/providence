@@ -2377,7 +2377,18 @@ class ca_users extends BaseModel {
 				case 'DT_STATEPROV_LIST':
 					$output .= caHTMLSelect("pref_{$ps_pref}_select", array(), array('id' => "pref_{$ps_pref}_select", 'class' => $vs_classname), array('value' => $vs_current_value));
 					$output .= caHTMLTextInput("pref_{$ps_pref}_name", array('id' => "pref_{$ps_pref}_text", 'value' => $vs_current_value, 'class' => $vs_classname));
-					
+					$output .= caHTMLHiddenInput("pref_{$ps_pref}", array('id' => "pref_{$ps_pref}", 'value' => $vs_current_value));
+					$output .= "<script type='text/javascript'>
+							jQuery(document).ready(function() {
+								jQuery('#pref_{$ps_pref}_select').on('change', function() {
+									jQuery('#pref_{$ps_pref}').val(jQuery('#pref_{$ps_pref}_select').val());
+								});
+								jQuery('#pref_{$ps_pref}_text').on('change', function() {
+									jQuery('#pref_{$ps_pref}').val(jQuery('#pref_{$ps_pref}_text').val());
+								});
+							});
+						</script>
+";
 					break;
 				# ---------------------------------
 				case 'DT_COUNTRY_LIST':

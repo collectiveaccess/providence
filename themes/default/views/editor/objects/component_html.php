@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2025 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,10 +27,8 @@
  */
 global $g_ui_locale_id;
 
-$t_subject 				= $this->getVar('t_subject');
-
+$t_subject 			= $this->getVar('t_subject');
 $restrict_to_types 	= $this->getVar('restrict_to_types');
-
 $field_name_prefix 	= $this->getVar('field_name_prefix');
 $n 					= $this->getVar('n');
 $q					= caUcFirstUTF8Safe($this->getVar('q'), true);
@@ -61,21 +59,20 @@ $form_name = "ObjectComponentAddForm";
 	<div class="componentAddSectionBox" id="<?= $form_name; ?>Container<?= $field_name_prefix.$n; ?>">
 		<div class="componentAddFormTopPadding"><!-- empty --></div>
 <?php
-
-			$va_force_new_label = array();
-			foreach($t_subject->getLabelUIFields() as $vn_i => $vs_fld) {
-				$va_force_new_label[$vs_fld] = '';
-			}
-			$va_force_new_label['locale_id'] = $g_ui_locale_id;							// use default locale
-			$va_force_new_label[$t_subject->getLabelDisplayField()] = $q;				// query text is used for display field
-			
-			$va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
-					'request' => $this->request, 
-					'formName' => $form_name.$field_name_prefix.$n,
-					'forceLabelForNew' => $va_force_new_label							// force query text to be default in label fields
-			));
-			
-			print join("\n", $va_form_elements);
+		$force_new_label = array();
+		foreach($t_subject->getLabelUIFields() as $i => $vs_fld) {
+			$force_new_label[$vs_fld] = '';
+		}
+		$force_new_label['locale_id'] = $g_ui_locale_id;							// use default locale
+		$force_new_label[$t_subject->getLabelDisplayField()] = $q;				// query text is used for display field
+		
+		$form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
+				'request' => $this->request, 
+				'formName' => $form_name.$field_name_prefix.$n,
+				'forceLabelForNew' => $force_new_label							// force query text to be default in label fields
+		));
+		
+		print join("\n", $form_elements);
 ?>
 		<input type='hidden' name='_formName' value='<?= $form_name.$field_name_prefix.$n; ?>'/>
 		<input type='hidden' name='q' value='<?= htmlspecialchars($q, ENT_QUOTES, 'UTF-8'); ?>'/>

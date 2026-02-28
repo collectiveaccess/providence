@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1186,9 +1186,9 @@ class SearchResult extends BaseObject {
 		if (!($vs_output = (isset($pa_options['output']) ? (string)$pa_options['output'] : null))) {
 			if ($vb_convert_codes_to_display_text) { $vs_output = "text"; }
 			if (!$vs_output && $vb_convert_codes_to_idno) { $vs_output = "idno"; }
-			if (!$vs_output && $vb_convert_codes_to_value) { $vs_output = "value"; }
+			if (!$vs_output && $vb_convert_codes_to_value) { $vs_output = "itemValue"; }
 		}
-		if (!in_array($vs_output, array('text', 'idno', 'value'))) { $vs_output = 'value'; }
+		if (!in_array($vs_output, array('text', 'idno', 'itemValue', 'id'))) { $vs_output = 'itemValue'; }
 		$pa_options['output'] = $vs_output;
 		
 		if (!($vb_return_as_link = (isset($pa_options['makeLink']) ? (bool)$pa_options['makeLink'] : false))) {
@@ -2236,7 +2236,7 @@ class SearchResult extends BaseObject {
 		
 		if (!isset($pa_options['output']) && $vb_convert_codes_to_display_text) { $pa_options['output'] = 'text'; }
 		if (!isset($pa_options['output']) && $vb_convert_codes_to_idno) { $pa_options['output'] = 'idno'; }
-		if (!isset($pa_options['output']) && $vb_convert_codes_to_value) { $pa_options['output'] = 'value'; }
+		if (!isset($pa_options['output']) && $vb_convert_codes_to_value) { $pa_options['output'] = 'itemValue'; }
 		
 		
 		// Set subfield to display field if not specified and *NOT* returning as array

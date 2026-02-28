@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2016 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,45 +25,45 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_item 			= $this->getVar('t_subject');
-	$vn_type_id 		= $this->getVar('subject_id');
-	$vn_above_id 		= $this->getVar('above_id');
-	$vn_after_id 		= $this->getVar('after_id');
-	$vs_context_id 		= $this->getVar('_context_id');	// used to restrict idno uniqueness checking to within the current list
-	
-	$t_ui = $this->getVar('t_ui');
-	
-	$vb_can_edit	 	= $t_item->isSaveable($this->request);
-	$vb_can_delete		= $t_item->isDeletable($this->request);
-	
-	if ($vb_can_edit) {
-		print $vs_control_box = caFormControlBox(
-			caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'RelationshipTypeEditorForm').' '.
-			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/setup/relationship_type_editor', 'RelationshipTypeEditor', 'Edit/'.$this->request->getActionExtra(), array('type_id' => $vn_type_id)), 
-			'', 
-			(intval($vn_type_id) > 0) ? caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/setup/relationship_type_editor', 'RelationshipTypeEditor', 'Delete/'.$this->request->getActionExtra(), array('type_id' => $vn_type_id)) : ''
-		);
-	}
+$t_item 		= $this->getVar('t_subject');
+$type_id 		= $this->getVar('subject_id');
+$parent_id 		= $this->getVar('parent_id');
+$above_id 		= $this->getVar('above_id');
+$after_id 		= $this->getVar('after_id');
+$context_id 	= $this->getVar('_context_id');	// used to restrict idno uniqueness checking to within the current list
+
+$t_ui = $this->getVar('t_ui');
+
+$can_edit	 	= $t_item->isSaveable($this->request);
+$can_delete		= $t_item->isDeletable($this->request);
+if ($can_edit) {
+	print $control_box = caFormControlBox(
+		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'RelationshipTypeEditorForm').' '.
+		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/setup/relationship_type_editor', 'RelationshipTypeEditor', 'Edit/'.$this->request->getActionExtra(), ['type_id' => $type_id, 'parent_id' => $parent_id]), 
+		'', 
+		(intval($type_id) > 0) ? caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/setup/relationship_type_editor', 'RelationshipTypeEditor', 'Delete/'.$this->request->getActionExtra(), array('type_id' => $type_id)) : ''
+	);
+}
 ?>
 	<div class="sectionBox">
 <?php
-			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/type_id/'.$vn_type_id, 'RelationshipTypeEditorForm', null, 'POST', 'multipart/form-data');
+			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/type_id/'.$type_id, 'RelationshipTypeEditorForm', null, 'POST', 'multipart/form-data');
 			
-			$va_form_elements = $t_item->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
+			$form_elements = $t_item->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
-									'formName' => 'RelationshipTypeEditorForm'), $va_bundle_list);
+									'formName' => 'RelationshipTypeEditorForm'), $bundle_list);
 			
-			print join("\n", $va_form_elements);
+			print join("\n", $form_elements);
 			
-			if ($vb_can_edit) { print $vs_control_box; }
+			if ($can_edit) { print $control_box; }
 ?>
 			<input type='hidden' name='_context_id' value='<?= $this->getVar('_context_id'); ?>'/>
-			<input type='hidden' name='type_id' value='<?= $vn_type_id; ?>'/>
-			<input type='hidden' name='above_id' value='<?= $vn_above_id; ?>'/>
-			<input type='hidden' name='after_id' value='<?= $vn_after_id; ?>'/>
+			<input type='hidden' name='type_id' value='<?= $type_id; ?>'/>
+			<input type='hidden' name='above_id' value='<?= $above_id; ?>'/>
+			<input type='hidden' name='after_id' value='<?= $after_id; ?>'/>
 		</form>
 	</div>
 
 	<div class="editorBottomPadding"><!-- empty --></div>
 	
-	<?= caSetupEditorScreenOverlays($this->request, $t_item, $va_bundle_list); ?>
+	<?= caSetupEditorScreenOverlays($this->request, $t_item, $bundle_list); ?>

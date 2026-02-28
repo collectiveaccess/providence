@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2025 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,13 +60,15 @@ $entity_lookup_params['types'] = join(",",array_map(function($v) { return $v['it
 
 $policy  					= $this->getVar('policy');
 $policy_info  				= $this->getVar('policy_info');
-
 $display_mode 				= caGetOption('displayMode', $settings, null);
 
 $allow_value_interstitial_edit 	= !caGetOption('hide_value_interstitial_edit', $settings, false);
 $allow_value_delete 		= !caGetOption('hide_value_delete', $settings, false);
 
-$batch			= $this->getVar('batch');
+$batch						= $this->getVar('batch');
+
+$loan_types 				= array_keys($policy_info['elements']['ca_loans'] ?? []);
+$movement_types 			= array_keys($policy_info['elements']['ca_movements'] ?? []);
 
 $home_location_idno = null;
 if ($t_subject->hasField('home_location_id')) {
@@ -926,7 +928,7 @@ if($show_entity_controls) {
 				showEmptyFormsOnLoad: 0,
 				minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_loans_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 				relationshipTypes: <?= json_encode($this->getVar('loan_relationship_types_by_sub_type')); ?>,
-				autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Loan', 'Get', []); ?>',
+				autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Loan', 'Get', ['types' => $loan_types]); ?>',
 				types: <?= json_encode($settings['restrict_to_types']); ?>,
 				readonly: <?= $read_only ? "true" : "false"; ?>,
 				isSortable: <?= ($read_only || $vs_sort) ? "false" : "true"; ?>,
@@ -975,7 +977,7 @@ if($show_entity_controls) {
 				showEmptyFormsOnLoad: 0,
 				minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_movements_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 				relationshipTypes: <?= json_encode($this->getVar('movement_relationship_types_by_sub_type')); ?>,
-				autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Movement', 'Get', []); ?>',
+				autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Movement', 'Get', ['types' => $movement_types]); ?>',
 				types: <?= json_encode($settings['restrict_to_types']); ?>,
 				readonly: <?= $read_only ? "true" : "false"; ?>,
 				isSortable: <?= ($read_only || $vs_sort) ? "false" : "true"; ?>,

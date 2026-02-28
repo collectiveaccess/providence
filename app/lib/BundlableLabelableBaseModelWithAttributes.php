@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -673,7 +673,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			if (sizeof($va_duplicate_element_settings)) {
 				$va_attrs_to_duplicate = [];
 				foreach($va_duplicate_element_settings as $vs_bundle => $vn_duplication_setting) {
-					$va_attrs_to_duplicate[] = caConvertBundleNameToCode($vs_bundle, ['includeTablePrefix' => true]);
+					if($vn_duplication_setting > 0) {
+						$va_attrs_to_duplicate[] = caConvertBundleNameToCode($vs_bundle, ['includeTablePrefix' => true]);
+					}
 				}
 			}
 
@@ -3204,96 +3206,92 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	/**
 	 *
 	 */
-	private function _getHierarchyLocationHTMLFormBundleInfo($po_request, $ps_form_name, $ps_placement_code, $pa_options=null, $pa_bundle_settings=null) {
-		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
-		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
+	private function _getHierarchyLocationHTMLFormBundleInfo(RequestHTTP $request,  string $form_name, string $placement_code, ?array $options=null, ?array $bundle_settings=null) : ?View {
+		$o_view = new View($request, "{$view_path}/bundles/");
+		$object_collections_hierarchy_enabled = (bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled');
 		
-		$pb_batch = caGetOption('batch', $pa_options, false);
+		$view_path = caGetOption('viewPath', $options, $request->getViewsDirectoryPath());
+		$batch = caGetOption('batch', $options, false);
+		if(!is_array($bundle_settings)) { $bundle_settings = []; }
 		
-		if(!is_array($pa_bundle_settings)) { $pa_bundle_settings = []; }
+		if (!($label_table_name = $this->getLabelTableName())) { return ''; }
 		
-		if (!($vs_label_table_name = $this->getLabelTableName())) { return ''; }
-		
-		$o_view->setVar('id_prefix', $ps_form_name);
-		$o_view->setVar('placement_code', $ps_placement_code);
-		$o_view->setVar('t_subject', $this);
-		if (!($vn_id = $this->getPrimaryKey())) {
-			$vn_parent_id = $vn_id = $po_request->getParameter($this->HIERARCHY_PARENT_ID_FLD, pString);
+		if (!($id = $this->getPrimaryKey())) {
+			$parent_id = $id = $request->getParameter($this->HIERARCHY_PARENT_ID_FLD, pString);
 		} else {
-			$vn_parent_id = $this->get($this->HIERARCHY_PARENT_ID_FLD);
+			$parent_id = $this->get($this->HIERARCHY_PARENT_ID_FLD);
 		}
-		$vs_display_fld = $this->getLabelDisplayField();
+		$display_fld = $this->getLabelDisplayField();
 		
 		if ($this->supportsPreferredLabelFlag()) {
-			if (!($va_ancestor_list = $this->getHierarchyAncestors($vn_id, array(
-				'additionalTableToJoin' => $vs_label_table_name, 
+			if (!($ancestor_list = $this->getHierarchyAncestors($id, [
+				'additionalTableToJoin' => $label_table_name, 
 				'additionalTableJoinType' => 'LEFT',
-				'additionalTableSelectFields' => array($vs_display_fld, 'locale_id'),
-				'additionalTableWheres' => array('('.$vs_label_table_name.'.is_preferred = 1 OR '.$vs_label_table_name.'.is_preferred IS NULL)'),
+				'additionalTableSelectFields' => array($display_fld, 'locale_id'),
+				'additionalTableWheres' => ["({$label_table_name}.is_preferred = 1 OR {$label_table_name}.is_preferred IS NULL)"],
 				'includeSelf' => true
-			)))) {
-				$va_ancestor_list = [];
+			]))) {
+				$ancestor_list = [];
 			}
 		} else {
-			if (!($va_ancestor_list = $this->getHierarchyAncestors($vn_id, array(
-				'additionalTableToJoin' => $vs_label_table_name, 
+			if (!($ancestor_list = $this->getHierarchyAncestors($id, [
+				'additionalTableToJoin' => $label_table_name, 
 				'additionalTableJoinType' => 'LEFT',
-				'additionalTableSelectFields' => array($vs_display_fld, 'locale_id'),
+				'additionalTableSelectFields' => array($display_fld, 'locale_id'),
 				'includeSelf' => true
-			)))) {
-				$va_ancestor_list = [];
+			]))) {
+				$ancestor_list = [];
 			}
 		}
 		
+		$ancestors_by_locale = [];
+		$pk = $this->primaryKey();
+		$idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD');
 		
-		$va_ancestors_by_locale = [];
-		$vs_pk = $this->primaryKey();
-		$vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD');
-		
-		$vs_hierarchy_type = $this->getProperty('HIERARCHY_TYPE');
-		foreach($va_ancestor_list as $vn_ancestor_id => $va_info) {
-			switch($vs_hierarchy_type) {
+		$hierarchy_type = $this->getProperty('HIERARCHY_TYPE');
+		foreach($ancestor_list as $ancestor_id => $info) {
+			switch($hierarchy_type) {
 				case __CA_HIER_TYPE_SIMPLE_MONO__:
-					if (!$va_info['NODE']['parent_id']) { continue(2); }
+					if (!$info['NODE']['parent_id']) { continue(2); }
 					break;
 				case __CA_HIER_TYPE_MULTI_MONO__:
-					if (!$va_info['NODE']['parent_id']) {
-						$vn_item_id = $va_info['NODE'][$vs_pk];
-						$va_ancestors_by_locale[$vn_item_id][$vn_locale_id] = array(
-							'item_id' => $vn_item_id,
-							'parent_id' => $va_info['NODE']['parent_id'],
-							'label' => $this->getHierarchyName($vn_item_id),
-							'idno' => $va_info['NODE'][$vs_idno_field],
+					if (!$info['NODE']['parent_id']) {
+						$item_id = $info['NODE'][$pk];
+						$ancestors_by_locale[$item_id][$locale_id] = [
+							'item_id' => $item_id,
+							'parent_id' => $info['NODE']['parent_id'],
+							'label' => $this->getHierarchyName($item_id),
+							'idno' => $info['NODE'][$idno_field],
 							'locale_id' => null,
 							'table' => $this->tableName()
 				
-						);
+						];
 						continue(2);
 					}
 					break;
 			}
-			if (!$va_info['NODE']['parent_id']) { continue; } // TODO: do we need an option to control visibility of root?
+			if (($hierarchy_type !== __CA_HIER_TYPE_ADHOC_MONO__) && !$info['NODE']['parent_id']) { continue; } // TODO: do we need an option to control visibility of root?
 			
-			$vn_locale_id = isset($va_info['NODE']['locale_id']) ? $va_info['NODE']['locale_id'] : null;
-			$va_ancestor = array(
-				'item_id' => $vn_item_id = $va_info['NODE'][$vs_pk],
-				'parent_id' => $va_info['NODE']['parent_id'] ?? null,
-				'label' => $va_info['NODE'][$vs_display_fld] ?? $va_info['NODE'][$vs_display_fld] ?? $va_info['NODE'][$vs_idno_field],
-				'idno' => $va_info['NODE'][$vs_idno_field] ?? null,
-				'locale_id' => $vn_locale_id,
+			$locale_id = isset($info['NODE']['locale_id']) ? $info['NODE']['locale_id'] : null;
+			$ancestor = [
+				'item_id' => $item_id = $info['NODE'][$pk],
+				'parent_id' => $info['NODE']['parent_id'] ?? null,
+				'label' => $info['NODE'][$display_fld] ?? $info['NODE'][$display_fld] ?? $info['NODE'][$idno_field],
+				'idno' => $info['NODE'][$idno_field] ?? null,
+				'locale_id' => $locale_id,
 				'table' => $this->tableName()
 				
-			);
-			$va_ancestors_by_locale[$vn_item_id][$vn_locale_id] = $va_ancestor;
+			];
+			$ancestors_by_locale[$item_id][$locale_id] = $ancestor;
 		}
 		
-		$va_ancestor_list = array_reverse(caExtractValuesByUserLocale($va_ancestors_by_locale), true);
+		$ancestor_list = array_reverse(caExtractValuesByUserLocale($ancestors_by_locale), true);
 
 		if (!$this->getPrimaryKey()) {
-			$va_ancestor_list[null] = array(
+			$ancestor_list[null] = [
 				$this->primaryKey() => '',
 				$this->getLabelDisplayField() => _t('New %1', $this->getProperty('NAME_SINGULAR'))
-			);
+			];
 		}
 		
 		$object_collection_rel_types = caGetObjectCollectionHierarchyRelationshipTypes();
@@ -3375,29 +3373,110 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
-		$vn_first_id = null;
-		if ($pb_batch && ($pn_set_id = caGetOption('set_id', $pa_options, null))) { 
+		if ($object_collections_hierarchy_enabled) {
+			
+			$type_selector 	= trim($this->getTypeListAsHTMLFormElement(
+				"{$placement_code}type_id", 
+				['id' => "{$placement_code}typeList"], 
+				[
+					'childrenOfCurrentTypeOnly' => (bool)$strict_type_hierarchy, 
+					'includeSelf' => !(bool)$strict_type_hierarchy, 
+					'directChildrenOnly' => $strict_type_hierarchy && ($strict_type_hierarchy !== '~'),
+					'restrictToTypes' => $bundle_settings['restrict_to_types'] ?: null
+				]
+			));
+			
+			if($this->tableName() == 'ca_collections') {
+				$o_view->setVar('objectTypeList', trim($t_object->getTypeListAsHTMLFormElement("{$placement_code}{$form_name}object_type_id", 
+					['id' => "{$placement_code}{$form_name}objectTypeList"], 
+					[	'childrenOfCurrentTypeOnly' => (bool)$strict_type_hierarchy, 
+						'includeSelf' => !(bool)$strict_type_hierarchy, 
+						'directChildrenOnly' => $strict_type_hierarchy && ($strict_type_hierarchy !== '~'),
+						'restrictToTypes' => $t_rel ? [$t_rel->get('ca_relationship_types.sub_type_left_id')] : null,
+						'dontIncludeSubtypesInTypeRestriction' => $t_rel ? !$t_rel->get('ca_relationship_types.include_subtypes_left') : null
+					])));
+			}
+			if($this->tableName() == 'ca_objects') {
+				// Is object part of a collection?
+				$object_ids = array_keys($ancestor_list);
+				$top_object_id = array_shift($object_ids);
+				if ($top_object_id != $this->getPrimaryKey()) { 
+					$t_object = Datamodel::getInstanceByTableName("ca_objects", true);
+					$t_object->load($top_object_id); 
+				} else { 
+					$t_object = $this;
+				}
+				if(is_array($collections = $t_object->getRelatedItems('ca_collections', ['restrictToRelationshipTypes' => [$object_collection_rel_type]]))) {
+					$related_collections_by_level = [];
+					foreach($collections as $key => $collection) {
+						$related_collections_by_level[$collection['collection_id']] = [
+							'item_id' => $collection['collection_id'],
+							'parent_id' => $collection['parent_id'],
+							'label' => $collection['label'],
+							'idno' => $collection['idno'],
+							'table' => 'ca_collections'
+						];
+						$t_collection = new ca_collections();
+						if (!($collection_ancestor_list = $t_collection->getHierarchyAncestors($collection['collection_id'], [
+							'additionalTableToJoin' => 'ca_collection_labels', 
+							'additionalTableJoinType' => 'LEFT',
+							'additionalTableSelectFields' => array('name', 'locale_id'),
+							'additionalTableWheres' => array('(ca_collection_labels.is_preferred = 1 OR ca_collection_labels.is_preferred IS NULL)'),
+							'includeSelf' => false
+						]))) {
+							$collection_ancestor_list = [];
+						}
+						$i = 1;
+						foreach($collection_ancestor_list as $id => $collection_ancestor) {
+							$related_collections_by_level[$collection_ancestor['NODE']['collection_id']] = [
+								'item_id' => $collection_ancestor['NODE']['collection_id'],
+								'parent_id' => $collection_ancestor['NODE']['parent_id'],
+								'label' => $collection_ancestor['NODE']['name'],
+								'idno' => $collection_ancestor['NODE']['idno'],
+								'table' => 'ca_collections'
+							];
+							$i++;
+						}
+						break; // only process the first collection (for now)
+					}
+					$o_view->setVar('object_collection_collection_ancestors', array_reverse($related_collections_by_level, true));
+				}
+			}
+		} else {
+			$type_selector 	= trim($t_subject->getTypeListAsHTMLFormElement(
+				"{$placement_code}type_id", 
+				['id' => "{$placement_code}typeList"], 
+				['restrictToTypes' => $bundle_settings['restrict_to_types'] ?: null]
+			));
+		}
+		$o_view->setVar('type_selector', $type_selector);
+		
+		$first_id = null;
+		if ($batch && ($pn_set_id = caGetOption('set_id', $options, null))) { 
 			$t_set = new ca_sets($pn_set_id); 
-			if (is_array($va_ids = $t_set->getItemRowIDs()) && sizeof($va_ids)) {
-				$vn_first_id = array_shift($va_ids);
+			if (is_array($ids = $t_set->getItemRowIDs()) && sizeof($ids)) {
+				$first_id = array_shift($ids);
 			}
 		}
 
-		$type_id = $po_request->getParameter('type_id', pInteger);
-		
-		$id = ($pb_batch && $vn_first_id ? $vn_first_id : $this->getPrimaryKey());
+		$type_id = $request->getParameter('type_id', pInteger);
+		$id = ($batch && $first_id ? $first_id : $this->getPrimaryKey());
 		
 		if(!$id && $type_id) {
 			$this->get('type_id', $type_id);
 		}
 		
-		$o_view->setVar('batch', $pb_batch);
-		$o_view->setVar('parent_id', $vn_parent_id);
-		$o_view->setVar('ancestors', $va_ancestor_list);
+		$o_view->setVar('object_collections_hierarchy_enabled', $object_collections_hierarchy_enabled); 
+		$o_view->setVar('id_prefix', $form_name);
+		$o_view->setVar('placement_code', $placement_code);
+		$o_view->setVar('t_subject', $this);
+		$o_view->setVar('batch', $batch);
+		$o_view->setVar('parent_id', $parent_id);
+		$o_view->setVar('ancestors', $ancestor_list);
 		$o_view->setVar('id', $id);
 		$o_view->setVar('type_id', $type_id);
 		$o_view->setVar('t_type', $this->getTypeInstance());
-		$o_view->setVar('settings', $pa_bundle_settings);
+		$o_view->setVar('settings', $bundle_settings);
 		
 		return $o_view;
 	}
@@ -4079,7 +4158,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							break;
 						default:
 							// Look for fully qualified intrinsic
-							$vs_v = $po_request->parameterExists("{$vs_placement_code}{$vs_form_prefix}{$vs_f}") ? $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}{$vs_f}", pString) : null;
+							$vs_v = !is_null($po_request->parameterExists("{$vs_placement_code}{$vs_form_prefix}{$vs_f}")) ? $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}{$vs_f}", pString) : null;
+							
 							if(is_null($vs_v)) {
 								// fall back to simple field name intrinsic spec - still used for "mandatory" fields such as type_id and parent_id
 								$vs_v = $po_request->parameterExists("{$vs_f}") ? $po_request->getParameter("{$vs_f}", pString) : null;
@@ -8761,14 +8841,15 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 * Checks if model supports ACL item-based access control
 	 *
-	 * @param array $options Options include:
-	 *		
+	 * @param array $options Array of options. Options include:
+	 *		useSettingsOnly = Return ACL enabled status based upon configuration settings only, ignoring __CA_DISABLE_ACL__ constant. [Default is false]
 	 *
 	 * @return bool True if model supports ACL, false if not
 	 */
 	public function supportsACL(?array $options=null) {
 		$force = caGetOption('force', $options, false);
-		if(!$force && defined('__CA_DISABLE_ACL__') && __CA_DISABLE_ACL__) { return false; }
+		$use_settings_only = caGetOption('useSettingsOnly', $options, false);
+		if(!$force && $use_settings_only && defined('__CA_DISABLE_ACL__') && __CA_DISABLE_ACL__) { return false; }
 		if(!$force && property_exists($this,'disable_acl') && $this->disable_acl) { return false; }
 		$type_code = $this->isLoaded() ? $this->getTypeCode() : null;
 		$supports_acl = true; 
