@@ -486,11 +486,11 @@ class BrowseEngine extends BaseFindEngine {
 		$va_criteria = $this->opo_ca_browse_cache->getParameter('criteria');
 		$va_criteria_display_strings = $this->opo_ca_browse_cache->getParameter('criteria_display_strings');
 		if($ps_facet_name) {
-			$va_criteria[$ps_facet_name] = array();
-			$va_criteria_display_strings[$ps_facet_name] = array();
+			unset($va_criteria[$ps_facet_name]);
+			unset($va_criteria_display_strings[$ps_facet_name]);
 		} else {
-			$va_criteria = array();
-			$va_criteria_display_strings = array();
+			$va_criteria = [];
+			$va_criteria_display_strings = [];
 		}
 
 		$this->opo_ca_browse_cache->setParameter('criteria', $va_criteria);
@@ -1022,6 +1022,7 @@ class BrowseEngine extends BaseFindEngine {
 			$va_facets = array();
 			$facet_list = $this->getInfoForFacets();
 			foreach($facet_list as $vs_facet_name => $va_facet_info) {
+				if($va_facet_info['hide'] ?? false) { continue; }
 				if (in_array($vs_facet_name, $va_criteria_facets) && (caGetOption('type', $va_facet_info, null) == 'field')) { continue; }	// fields can only appear once
 				if (isset($va_facet_info['requires']) && !is_array($va_facet_info['requires']) && $va_facet_info['requires']) { $va_facet_info['requires'] = array($va_facet_info['requires']); }
 				//
@@ -3471,6 +3472,18 @@ class BrowseEngine extends BaseFindEngine {
 		} else {
 			$va_results = $this->opo_ca_browse_cache->getResults();
 			if (!is_array($va_container_ids = $this->opo_ca_browse_cache->getParameter('container_ids'))) { $va_container_ids = []; }
+		}
+						
+		if(isset($va_facet_info['filter']) && is_array($va_facet_info['filter']) && sizeof($va_facet_info['filter'])){
+			$b = $this->ops_browse_table_name;
+			if($qr = $b::findAsSearchResult($va_facet_info['filter'])) {
+				$filtered_ids = $qr->getAllFieldValues($t_subject->primaryKey());
+				if(is_array($va_results) && sizeof($va_results)) {
+					$va_results = array_intersect($filtered_ids, $va_results);
+				} else {
+					$va_results = $filtered_ids;
+				}
+			}
 		}
 
 		$vb_single_value_is_present = false;
@@ -8308,6 +8321,136 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 		
 		$o_search = new SearchEngine();
 		return $o_search->resolveResultDescData($result_desc);
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 * @oaram array $browse_info 
+	 * 
+	 * @return bool 
+	 */
+	public function setBaseCriteria(array $browse_info, array $settings, ?array $options=null) : ?bool {
+		$context = caGetOption('context', $options, 'browse', ['validValues' => ['search', 'browse'], 'forceLowercase' => true]);
+		if (($this->numCriteria() == 0)) {
+			$o_search_config = caGetSearchConfig();
+			$search_base_criteria = $o_search_config->get('baseCriteria');
+			
+			if(!is_array($base_criteria = caGetOption('baseCriteria', $browse_info, null))) {
+				if(is_array($search_base_criteria[$browse_info['table'] ?? null])) {
+					$base_criteria = $search_base_criteria[$browse_info['table'] ?? null];
+				}
+			}
+			
+			if(is_array($base_criteria)) {
+				foreach($base_criteria as $facet => $value) {
+					$this->addCriteria($facet, $value);
+				}
+			}
+		}
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 * @oaram array $browse_info 
+	 * 
+	 * @return bool 
+	 */
+	public function setSelectiveBaseCriteria(array $browse_info, array $settings, ?array $options=null) : ?bool {
+		$context = caGetOption('context', $options, 'browse', ['validValues' => ['search', 'browse'], 'forceLowercase' => true]);
+		if(is_array($sbase_criteria = caGetOption('selectiveBaseCriteria', $browse_info, null))) {
+			foreach($sbase_criteria as $n => $info) {
+				$bool = strtoupper($info['boolean'] ?? 'AND');
+				$where = $info['where'] ?? null;
+				if(is_array($where)) {
+					$apply = null;
+					foreach($where as $cmd => $value) {
+						switch($cmd) {
+							case 'view':
+								$apply = (($settings['view'] ?? null) == $value);
+								break;
+							case 'criteria':
+								$criteria = $this->getCriteria();
+								if($criteria[$value['facet']] ?? null) {
+									foreach(array_keys($criteria[$value['facet']]) as $fv) {
+										if($value['match'] ?? null) {
+											$apply = preg_match($value['match'], $fv);
+											break;
+										} elseif($value['dontMatch'] ?? null) {
+											$apply = !preg_match($value['dontMatch'], $fv);
+											break;
+										}
+									}
+								}
+								break;
+							case 'criteriaCount':
+								$cc = sizeof($this->getCriteria());
+								$op = $value['operator'] ?? "=";
+								
+								switch($op) {
+									case '>':
+										$apply = ($cc > $value['value']);
+										break;
+									case '>=':
+										$apply = ($cc >= $value['value']);
+										break;
+									case '<':
+										$apply = ($cc < $value['value']);
+										break;
+									case '<=':
+										$apply = ($cc <= $value['value']);
+										break;
+									default:
+									case '=':
+										$apply = ($cc == $value['value']);
+										break;
+								}
+								break;
+							case 'facets':
+								$mode = strtoupper($value['mode'] ?? 'ALL');	// ALL or ANY
+								$facets = array_keys($this->getCriteria() ?? []);
+								$apply = false;
+								foreach($facets as $f) {
+									if(in_array($f, $value['facets'] ?? [])) {
+										$apply = true;	
+										if($mode == 'ANY') { 
+											break;
+										}
+									} else {
+										$apply = false;	
+										if($mode == 'ALL') { 
+											break;
+										}
+									}
+								}
+								break;
+						}
+						if($bool === 'OR') {
+							if($apply === true) { break; }
+						} else {
+							if($apply === false) { break; }
+						}
+						
+					}
+					
+					if($apply) {
+						$criteria = $info['criteria'] ?? null;
+						if(is_array($criteria)) {
+							foreach($criteria as $facet => $values) {
+								if(sizeof($values ?? []) == 0) {
+									//print "[$n] REMOVE $facet<br>\n";
+									$this->removeAllCriteria($facet);
+								} else {
+									//print "[$n] ADD $facet<br>\n";
+									$this->addCriteria($facet, $values);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return true;
 	}
 	# ------------------------------------------------------
 }

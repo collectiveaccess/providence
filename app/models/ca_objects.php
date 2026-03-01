@@ -920,7 +920,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		if (is_array($va_component_types) && (sizeof($va_component_types) && !in_array('*', $va_component_types))) {
 			$vm_res = ca_objects::find(array('parent_id' => $pn_object_id, 'type_id' => $va_component_types), array('sort' => 'ca_objects.idno_sort', 'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as));
 		} else {
-			$vm_res = ca_objects::find(array('parent_id' => $pn_object_id), array('sort' => 'ca_objects.idno', 'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as));
+			$vm_res = ca_objects::find(array('parent_id' => $pn_object_id), array('sort' => 'ca_objects.idno_sort', 'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as));
 		}
 	
 		if ($vs_return_as == 'info') {
