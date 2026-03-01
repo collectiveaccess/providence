@@ -867,12 +867,15 @@ class ca_acl extends BaseModel {
 	/**
 	 *
 	 */
-	public static function setACLInheritanceSettingForAllChildRows($subject, int $row_id, bool $set_all) : ?bool {
+	public static function setACLInheritanceSettingForAllChildRows($subject, int $row_id, bool $set_all, ?array $options=null) : ?bool {
 		global $AUTH_CURRENT_USER_ID;
 		
 		if(!($subject = is_object($subject) ? $subject : Datamodel::getInstance($subject, true, $row_id))) { return null; }
 		$subject_table = $subject->tableName();
 		$subject_pk = $subject->primaryKey();
+		
+		$set_for_reps = caGetOption('setForObjectRepresentations', $options, false);
+		$allow_rep_access_inheritance = $subject->getAppConfig()->get('ca_object_representations_allow_access_inheritance');
 		
 		$db = is_object($subject) ? $subject->getDb() : new Db();
 		
@@ -931,6 +934,43 @@ class ca_acl extends BaseModel {
 						// Error adding queue item
 						throw new ApplicationException(_t('Could not add logging tasks to queue'));
 					}
+					
+					if(($subject_table === 'ca_objects') && $allow_rep_access_inheritance) {
+						if($qr_reps = $db->query("SELECT representation_id FROM ca_objects_x_object_representations WHERE object_id IN (?)", [$ids])) {
+							$rep_ids = $qr_reps->getAllFieldValues('representation_id');
+							if(is_array($rep_ids) && sizeof($rep_ids)) {
+								if(!$db->query("UPDATE ca_object_representations SET acl_inherit_from_parent= ? WHERE representation_id IN (?)", [$set_all ? 1 : 0, $rep_ids])) {
+									$ret = false;
+								} else {
+									$k = "{$subject_table}::".$subject->getPrimaryKey();
+									
+									$log_entries = [];
+									foreach($rep_ids as $id) {
+										$log_entries[] = [
+											'datetime' => time(),
+											'table' => 'ca_object_representations',
+											'row_id' => $id,
+											'user_id' => $AUTH_CURRENT_USER_ID,
+											'type' => 'U',
+											'snapshot' => [
+												'acl_inherit_from_parent' => $set_all ? 1 : 0
+											]
+										];
+									}
+									if (!$o_tq->addTask(
+										'bulkLogger',
+										[
+											"logEntries" => $log_entries,
+										],
+										["priority" => 50, "entity_key" => $k, "row_key" => $k, 'user_id' => $AUTH_CURRENT_USER_ID]))
+									{
+										// Error adding queue item
+										throw new ApplicationException(_t('Could not add logging tasks to queue'));
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -941,11 +981,14 @@ class ca_acl extends BaseModel {
 	/**
 	 *
 	 */
-	public static function setACLInheritanceSettingForRelatedObjects($subject, int $row_id, bool $set_all) : ?bool {
+	public static function setACLInheritanceSettingForRelatedObjects($subject, int $row_id, bool $set_all, ?array $options=null) : ?bool {
 		global $AUTH_CURRENT_USER_ID;
 		
 		if(!($subject = is_object($subject) ? $subject : Datamodel::getInstance($subject, true, $row_id))) { return null; }
 		if(($subject_table = $subject->tableName()) !== 'ca_collections') { return null; }
+		
+		$set_for_reps = caGetOption('setForObjectRepresentations', $options, false);
+		$allow_rep_access_inheritance = $subject->getAppConfig()->get('ca_object_representations_allow_access_inheritance');
 		
 		$db = is_object($subject) ? $subject->getDb() : new Db();
 		
@@ -1004,6 +1047,43 @@ class ca_acl extends BaseModel {
 						{
 							// Error adding queue item
 							throw new ApplicationException(_t('Could not add logging tasks to queue'));
+						}
+					}
+					
+					if($set_for_reps && $allow_rep_access_inheritance) {
+						if($qr_reps = $db->query("SELECT representation_id FROM ca_objects_x_object_representations WHERE object_id IN (?)", [$ids])) {
+							$rep_ids = $qr_reps->getAllFieldValues('representation_id');
+							if(is_array($rep_ids) && sizeof($rep_ids)) {
+								if(!$db->query("UPDATE ca_object_representations SET acl_inherit_from_parent= ? WHERE representation_id IN (?)", [$set_all ? 1 : 0, $rep_ids])) {
+									$ret = false;
+								} else {
+									$k = "ca_objects::".$subject->getPrimaryKey();
+									
+									$log_entries = [];
+									foreach($rep_ids as $id) {
+										$log_entries[] = [
+											'datetime' => time(),
+											'table' => 'ca_object_representations',
+											'row_id' => $id,
+											'user_id' => $AUTH_CURRENT_USER_ID,
+											'type' => 'U',
+											'snapshot' => [
+												'acl_inherit_from_parent' => $set_all ? 1 : 0
+											]
+										];
+									}
+									if (!$o_tq->addTask(
+										'bulkLogger',
+										[
+											"logEntries" => $log_entries,
+										],
+										["priority" => 50, "entity_key" => $k, "row_key" => $k, 'user_id' => $AUTH_CURRENT_USER_ID]))
+									{
+										// Error adding queue item
+										throw new ApplicationException(_t('Could not add logging tasks to queue'));
+									}
+								}
+							}
 						}
 					}
 				}
@@ -1181,6 +1261,7 @@ class ca_acl extends BaseModel {
 				switch($subject_table) {
 					case 'ca_collections':
 						ca_acl::applyACLInheritanceToRelatedFromRow($t_child, 'ca_objects', ['restrictToRelationshipTypes' => $object_collections_rel_types, 'skipRedundantEntryRemoval' => true]);
+						
 						break;
 					case 'ca_objects':
 						if(is_array($colls)) {
@@ -1188,6 +1269,7 @@ class ca_acl extends BaseModel {
 								ca_acl::applyACLInheritanceToRelatedFromRow($coll, 'ca_objects', ['limitToIDs' => [$subject_id], 'restrictToRelationshipTypes' => $object_collections_rel_types, 'skipRedundantEntryRemoval' => true]);
 							}
 						}
+						ca_acl::applyACLInheritanceToRelatedFromRow($subject, 'ca_object_representations', ['skipRedundantEntryRemoval' => true]);
 						break;
 				}
 			}
@@ -1207,24 +1289,24 @@ class ca_acl extends BaseModel {
 	 */
 	public static function applyACLInheritanceToRelatedFromRow(BaseModel $subject, string $target, ?array $options=null) {
 		$db = $subject->getDb();
+		$subject_pk = (string)$subject->primaryKey();
+		$subject_table = (string)$subject->tableName();
+		$subject_table_num = (int)$subject->tableNum();
+		$subject_id = (int)$subject->getPrimaryKey();
 		
 		if ($t_link = $subject->getRelationshipInstance($target)) {
 			if ($t_rel_item = Datamodel::getInstanceByTableName($target, false)) {
 				$restrict_to_relationship_types = caGetOption('restrictToRelationshipTypes', $options, null);
 				$limit_to_ids = caGetOption('limitToIDs', $options, null);
 			
-				$path = array_keys(Datamodel::getPath($cur_table = $subject->tableName(), $target));
+				$path = array_keys(Datamodel::getPath($cur_table = $subject_table, $target));
 				$table = array_shift($path);
 				
-				if (!$t_rel_item->hasField("acl_inherit_from_{$table}")) { return false; }
-				
+				$inherit_fld = (($target === 'ca_object_representations') && ($subject_table === 'ca_objects')) ? "acl_inherit_from_parent" : "acl_inherit_from_{$table}";
+				if (!$t_rel_item->hasField($inherit_fld)) { return false; }
+					
 				$target_pk = (string)$t_rel_item->primaryKey();
 				$target_table_num = (int)$t_rel_item->tableNum();
-				
-				$subject_pk = (string)$subject->primaryKey();
-				$subject_table = (string)$subject->tableName();
-				$subject_table_num = (int)$subject->tableNum();
-				$subject_id = (int)$subject->getPrimaryKey();
 				
 				$params = [$subject_id];
 				$relationship_type_sql = null;
@@ -1253,11 +1335,12 @@ class ca_acl extends BaseModel {
 					".join("\n", $joins)."
 					WHERE 
 						({$subject_table}.{$subject_pk} = ?) AND 
-						({$target}.acl_inherit_from_{$subject_table} = 1) 
+						({$target}.{$inherit_fld} = 1) 
 						{$relationship_type_sql}
 					", $params);
+				$target_ids = [];
 				while($qr_res->nextRow()) {
-					$target_id = $qr_res->get($target_pk);
+					$target_ids[] = $target_id = $qr_res->get($target_pk);
 					if(is_array($limit_to_ids) && sizeof($limit_to_ids) && !in_array($target_id, $limit_to_ids)) { continue; }
 					
 					// Remove existing non-inherited ACL entries that conflict with inherited entries
@@ -1288,6 +1371,15 @@ class ca_acl extends BaseModel {
 							table_num = ? AND row_id = ? 
 					", (int)$subject_table_num, (int)$subject_id);
 				}
+				
+				// Expand to representations
+				if(($target == 'ca_objects')) {
+					foreach($target_ids as $target_id) {
+						$o = ca_objects::findAsInstance($target_id);
+						ca_acl::applyACLInheritanceToRelatedFromRow($o, 'ca_object_representations', ['skipRedundantEntryRemoval' => true]);
+					}
+				}
+				
 				if(!caGetOption('skipRedundantEntryRemoval', $options, false)) {
 					ca_acl::removeRedundantACLEntries($db);
 				}
@@ -1322,8 +1414,10 @@ class ca_acl extends BaseModel {
 				$target_id = (int)$target_id;
 				$subject_id = (int)$subject_id;
 				
+				$inherit_fld = (($target === 'ca_object_representations') && ($subject_table === 'ca_objects')) ? "acl_inherit_from_parent" : "acl_inherit_from_{$subject_table}";
+				
 				if (!isset($options['deleteACLOnly']) || !$options['deleteACLOnly']) {
-					if (!$t_rel_item->hasField("acl_inherit_from_{$subject_table}")) { return false; }
+					if (!$t_rel_item->hasField($inherit_fld)) { return false; }
 				}
 				
 				// Delete existing inherited rows
@@ -1331,9 +1425,9 @@ class ca_acl extends BaseModel {
 				
 				if (!isset($options['deleteACLOnly']) || !$options['deleteACLOnly']) {
 					// only inherit if inherit_from field is set. $target and $target_pk have been verified at this pont
-					$qr_inherit = $db->query("SELECT acl_inherit_from_{$subject_table} FROM {$target} WHERE {$target_pk} = ?", $target_id);
+					$qr_inherit = $db->query("SELECT {$inherit_fld} FROM {$target} WHERE {$target_pk} = ?", [$target_id]);
 					if(!$qr_inherit->nextRow()) { return false; }
-					if(!$qr_inherit->get("acl_inherit_from_{$subject_table}")) { return false; }
+					if(!$qr_inherit->get($inherit_fld)) { return false; }
 
 					// insert inherited ACLs
 					$db->query("
@@ -1359,6 +1453,12 @@ class ca_acl extends BaseModel {
 	# ------------------------------------------------------
 	/**
 	 *	Set access_inherit_from_parent value for children of row
+	 *
+	 * @param BaseModel|string $subject 
+	 * @param int $row_id
+	 * @param bool $et_all
+	 * @param array $options Options include:
+	 *		setForObjectRepresentations = [Default is false]
 	 */
 	public static function setAccessInheritanceSettingForChildrenFromRow($subject, int $row_id, bool $set_all, ?array $options=null) : ?bool {
 		global $AUTH_CURRENT_USER_ID;
@@ -1374,6 +1474,8 @@ class ca_acl extends BaseModel {
 		$ret = true;
 		$inherit = (int)$subject->get('access_inherit_from_parent');
 		$access = (int)$subject->get('access');
+		$set_for_reps = caGetOption('setForObjectRepresentations', $options, false);
+		$allow_rep_access_inheritance = $subject->getAppConfig()->get('ca_object_representations_allow_access_inheritance');
 		
 		$set_inherit = $set_all ? 1 : $inherit;
 		
@@ -1387,6 +1489,15 @@ class ca_acl extends BaseModel {
 			"UPDATE {$subject_table} SET access_inherit_from_parent = ? WHERE {$subject_pk} IN (?)"
 		;
 		$params = $set_inherit ? [$set_inherit, $access] : [$set_inherit];
+		
+		$rep_sql = null;
+		if(($subject_table === 'ca_objects') && $set_for_reps) {
+			$rep_sql = $set_inherit ? 
+				"UPDATE ca_object_representations SET access_inherit_from_parent = ?, access = ? WHERE representation_id IN (?)" 
+				:
+				"UPDATE {ca_object_representations SET access_inherit_from_parent = ? WHERE representation_id IN (?)"
+			;
+		}
 		if(is_array($ids_to_set = $subject->getHierarchy($row_id, ['includeSelf' => true, 'idsOnly' => true])) && sizeof($ids_to_set)) {
 			while(sizeof($ids_to_set)) {
 				$ids = array_splice($ids_to_set, 0, 500);
@@ -1418,6 +1529,42 @@ class ca_acl extends BaseModel {
 						// Error adding queue item
 						throw new ApplicationException(_t('Could not add logging tasks to queue'));
 					}
+					
+					if($allow_rep_access_inheritance && ($subject_table === 'ca_objects') && $set_for_reps) {
+						if($qr_reps = $db->query("SELECT representation_id FROM ca_objects_x_object_representations WHERE object_id IN (?)", [$ids])) {
+							$rep_ids = $qr_reps->getAllFieldValues('representation_id');
+							if(is_array($rep_ids) && sizeof($rep_ids)) {
+								if(!$db->query($rep_sql, array_merge($params, [$rep_ids]))) {
+									$ret = false;
+								} else {
+									$o_tq = new TaskQueue(['transaction' => $subject->getTransaction()]);
+									$k = "{$subject_table}::".$subject->getPrimaryKey();
+									
+									$log_entries = [];
+									foreach($rep_ids as $id) {
+										$log_entries[] = [
+											'datetime' => time(),
+											'table' => 'ca_object_representations',
+											'row_id' => $id,
+											'user_id' => $AUTH_CURRENT_USER_ID,
+											'type' => 'U',
+											'snapshot' => $snapshot
+										];
+									}
+									if (!$o_tq->addTask(
+										'bulkLogger',
+										[
+											"logEntries" => $log_entries,
+										],
+										["priority" => 50, "entity_key" => $k, "row_key" => $k, 'user_id' => $AUTH_CURRENT_USER_ID]))
+									{
+										// Error adding queue item
+										throw new ApplicationException(_t('Could not add logging tasks to queue'));
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -1428,6 +1575,12 @@ class ca_acl extends BaseModel {
 	# ------------------------------------------------------
 	/**
 	 *	Set access_inherit_from_parent value for objects related to a collection.
+	 *
+	 * @param BaseModel|string $subject 
+	 * @param int $row_id
+	 * @param bool $et_all
+	 * @param array $options Options include:
+	 *		setForObjectRepresentations = [Default is false]
 	 */
 	public static function setAccessInheritanceSettingToRelatedObjectsFromCollection($subject, int $row_id, bool $set_all, ?array $options=null) : ?bool {
 		global $AUTH_CURRENT_USER_ID;
@@ -1436,6 +1589,9 @@ class ca_acl extends BaseModel {
 		if(($subject_table = $subject->tableName()) !== 'ca_collections') { return null; }
 		if(!$subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) { return null; }
 		if(!is_array($rel_types = caGetObjectCollectionHierarchyRelationshipTypes()) || !sizeof($rel_types)) { return null; }
+		
+		$set_for_reps = caGetOption('setForObjectRepresentations', $options, false);
+		$allow_rep_access_inheritance = $subject->getAppConfig()->get('ca_object_representations_allow_access_inheritance');
 		
 		$db = $subject->getDb() ?? new Db();
 		
@@ -1494,6 +1650,45 @@ class ca_acl extends BaseModel {
 											// Error adding queue item
 											throw new ApplicationException(_t('Could not add logging tasks to queue'));
 										}
+										
+										if($set_for_reps && $allow_rep_access_inheritance) {
+											if($qr_reps = $db->query("SELECT representation_id FROM ca_objects_x_object_representations WHERE object_id IN (?)", [$ids])) {
+												$rep_ids=  $qr_reps->getAllFieldValues('representation_id');
+												if(is_array($rep_ids) && sizeof($rep_ids)) {
+													if(!$db->query("UPDATE ca_object_representations SET access_inherit_from_parent = ? WHERE representation_id IN (?)", [$set_all ? 1 : $access, $rep_ids])) {
+														$ret = false;
+													} else {
+														$o_tq = new TaskQueue(['transaction' => $t_coll->getTransaction()]);
+														$k = 'ca_collections::'.$t_coll->getPrimaryKey();
+														
+														$log_entries = [];
+														foreach($rep_ids as $id) {
+															$log_entries[] = [
+																'datetime' => time(),
+																'table' => 'ca_object_representations',
+																'row_id' => $id,
+																'user_id' => $AUTH_CURRENT_USER_ID,
+																'type' => 'U',
+																'snapshot' => [
+																	'access_inherit_from_parent' => $set_all ? 1 : 0
+																]
+															];
+														}
+														if (!$o_tq->addTask(
+															'bulkLogger',
+															[
+																"logEntries" => $log_entries,
+															],
+															["priority" => 50, "entity_key" => $k, "row_key" => $k, 'user_id' => $AUTH_CURRENT_USER_ID]))
+														{
+															// Error adding queue item
+															throw new ApplicationException(_t('Could not add logging tasks to queue'));
+														}
+													}
+												}
+											}
+										}
+										
 									}
 								}
 							}
@@ -1563,8 +1758,9 @@ class ca_acl extends BaseModel {
 		$access = (int)$subject->get('access');
 		$subject_id = $subject->getPrimaryKey();
 		
-		// get sub-collections
+		$allow_rep_access_inheritance = $subject->getAppConfig()->get('ca_object_representations_allow_access_inheritance');
 		
+		// get sub-collections
 		if ($t_rel_item = Datamodel::getInstanceByTableName('ca_objects', false)) {
 			$collection_ids = ca_acl::getAccessInheritanceHierarchy($subject);
 
@@ -1602,6 +1798,46 @@ class ca_acl extends BaseModel {
 				$acl_access = $map[$access] ?? $subject->getAppConfig()->get('default_item_access_level');
 				
 				ca_acl::setACLWorldAccessForRows($subject_table, $ids, $acl_access);
+				
+				// Apply representation inheritance
+				if($allow_rep_access_inheritance && ($qr_reps = $db->query("SELECT representation_id FROM ca_objects_x_object_representations WHERE object_id IN (?)", [$ids]))) {
+					$rep_ids = $qr_reps->getAllFieldValues('representation_id');
+					if(is_array($rep_ids) && sizeof($rep_ids)) {
+						$db->query("UPDATE ca_object_representations SET access = ? WHERE representation_id IN (?) AND access_inherit_from_parent = 1", [$access, $rep_ids]);
+				
+						$o_tq = new TaskQueue(['transaction' => $subject->getTransaction()]);
+						$k = 'ca_collections::'.$subject->getPrimaryKey();
+						
+						$log_entries = [];
+						foreach($rep_ids as $id) {
+							$log_entries[] = [
+								'datetime' => time(),
+								'table' => 'ca_object_representations',
+								'row_id' => $id,
+								'user_id' => $AUTH_CURRENT_USER_ID,
+								'type' => 'U',
+								'snapshot' => [
+									'access' => $access
+								]
+							];
+						}
+						if (!$o_tq->addTask(
+							'bulkLogger',
+							[
+								"logEntries" => $log_entries,
+							],
+							["priority" => 50, "entity_key" => $k, "row_key" => $k, 'user_id' => $AUTH_CURRENT_USER_ID]))
+						{
+							// Error adding queue item
+							throw new ApplicationException(_t('Could not add logging tasks to queue'));
+						}
+						
+						$map = caGetACLItemLevelMap();
+						$acl_access = $map[$access] ?? $subject->getAppConfig()->get('default_item_access_level');
+						
+						ca_acl::setACLWorldAccessForRows('ca_object_representations', $rep_ids, $acl_access);
+					}
+				}
 			} 
 		}
 		
@@ -1634,9 +1870,10 @@ class ca_acl extends BaseModel {
 		
 		$qr = caMakeSearchResult($subject_table, $ids);
 		$inherit_from_parent_flag_exists = $subject->hasField('access_inherit_from_parent');
+		$allow_rep_access_inheritance = $subject->getAppConfig()->get('ca_object_representations_allow_access_inheritance');
 		
 		// Apply rows to all
-		$ids_to_set = [];
+		$ids_to_set = [$subject_id];
 		while($qr->nextHit()) {
 			$id = $qr->get("{$subject_table}.{$subject_pk}");
 			if($inherit_from_parent_flag_exists && !$qr->get("{$subject_table}.access_inherit_from_parent")) { continue; }
@@ -1650,6 +1887,10 @@ class ca_acl extends BaseModel {
 			while(sizeof($ids_to_set)) {
 				$ids = array_splice($ids_to_set, 0, 500);
 				
+				$filtered_ids = array_filter($ids, function($v) use ($subject_id) {
+					return $v != $subject_id;
+				});
+				
 				// @TODO: for performance reasons we don't attempt to log changes to affected rows. Rather we just apply
 				// the change directly in the database. This means these changes don't appear in the log and won't
 				// be transmitted to replicated systems. Might be a problem for someone someday, so we should consider ways
@@ -1660,7 +1901,7 @@ class ca_acl extends BaseModel {
 					$k = "{$subject_table}::".$subject->getPrimaryKey();
 					
 					$log_entries = [];
-					foreach($ids as $id) {
+					foreach($filtered_ids as $id) {
 						$log_entries[] = [
 							'datetime' => time(),
 							'table' => $subject_table,
@@ -1686,7 +1927,47 @@ class ca_acl extends BaseModel {
 					$map = caGetACLItemLevelMap();
 					$acl_access = $map[$access] ?? $subject->getAppConfig()->get('default_item_access_level');
 					
-					ca_acl::setACLWorldAccessForRows($subject_table, $ids, $acl_access);
+					ca_acl::setACLWorldAccessForRows($subject_table, $filtered_ids, $acl_access);
+					
+					// Apply representation inheritance
+					if($allow_rep_access_inheritance && ($subject_table === 'ca_objects')) {
+						if($qr_reps = $db->query("SELECT representation_id FROM ca_objects_x_object_representations WHERE object_id IN (?)", [$ids])) {
+							$rep_ids = $qr_reps->getAllFieldValues('representation_id');
+							if(is_array($rep_ids) && sizeof($rep_ids)) {
+								if(!$db->query("UPDATE ca_object_representations SET access = ? WHERE representation_id IN (?) AND access_inherit_from_parent = 1", [$access, $rep_ids])) {
+									continue;
+								} else {
+									$k = "{$subject_table}::".$subject->getPrimaryKey();
+					
+									$log_entries = [];
+									foreach($rep_ids as $id) {
+										$log_entries[] = [
+											'datetime' => time(),
+											'table' => 'ca_object_representations',
+											'row_id' => $id,
+											'user_id' => $AUTH_CURRENT_USER_ID,
+											'type' => 'U',
+											'snapshot' => [
+												'access' => $access
+											]
+										];
+									}
+									if (!$o_tq->addTask(
+										'bulkLogger',
+										[
+											"logEntries" => $log_entries,
+										],
+										["priority" => 50, "entity_key" => $k, "row_key" => $k, 'user_id' => $AUTH_CURRENT_USER_ID]))
+									{
+										// Error adding queue item
+										throw new ApplicationException(_t('Could not add logging tasks to queue'));
+									}
+									
+									ca_acl::setACLWorldAccessForRows('ca_object_representations', $rep_ids, $acl_access);
+								}
+							}
+						}
+					}
 				}
 			}
 		}

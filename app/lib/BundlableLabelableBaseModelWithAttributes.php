@@ -8058,6 +8058,8 @@ $pa_options["display_form_field_tips"] = true;
 			$this->set('access', $request->getParameter('access', pInteger) );
 			$this->update();
 		}
+	
+		$set_rep_access = $request->getParameter('set_representation_access_inherit_from_parent', pInteger);
 		if($pawtucket_only_acl_enabled) {
 			$set_all = $request->getParameter('set_all_access_inherit_from_parent', pInteger);
 			$request->setParameter('set_all_acl_inherit_from_parent', $set_all);
@@ -8074,12 +8076,14 @@ $pa_options["display_form_field_tips"] = true;
 			$inherit = $request->getParameter('access_inherit_from_parent', pInteger);
 			$request->setParameter('acl_inherit_from_ca_collections', $inherit);
 			$request->setParameter('acl_inherit_from_parent', $inherit);
+			
+			$request->setParameter('set_representation_acl_inherit_from_parent', $set_rep_access);	
 		}
 	
 		if($can_save_acl) {
 			// Force all?
 			if(($set_all = $request->getParameter('set_all_acl_inherit_from_parent', pInteger)) || ($set_none = $request->getParameter('set_none_acl_inherit_from_parent', pInteger))) {
-				if(!ca_acl::setACLInheritanceSettingForAllChildRows($this, $this->getPrimaryKey(), $set_all)) {
+				if(!ca_acl::setACLInheritanceSettingForAllChildRows($this, $this->getPrimaryKey(), $set_all, ['setForObjectRepresentations' => $set_rep_access])) {
 					$this->postError(1250, _t('Could not set ACL inheritance settings on child items'),"BundleableLabelableBaseModelWithAttributes->setACLAccessFromForm()");
 				}
 				$_REQUEST['form_timestamp'] = time();
@@ -8089,7 +8093,7 @@ $pa_options["display_form_field_tips"] = true;
 				&&
 				($set_all = $request->getParameter('set_all_acl_inherit_from_ca_collections', pInteger)) || ($set_none = $request->getParameter('set_none_acl_inherit_from_ca_collections', pInteger))
 			) {
-				if(!ca_acl::setACLInheritanceSettingForRelatedObjects($this, $this->getPrimaryKey(), $set_all)) {
+				if(!ca_acl::setACLInheritanceSettingForRelatedObjects($this, $this->getPrimaryKey(), $set_all, ['setForObjectRepresentations' => $set_rep_access])) {
 					$this->postError(1250, _t('Could not set ACL inheritance settings on related objects'),"BundleableLabelableBaseModelWithAttributes->setACLAccessFromForm()");
 				}
 				$_REQUEST['form_timestamp'] = time();
@@ -8098,7 +8102,7 @@ $pa_options["display_form_field_tips"] = true;
 		if(
 			($set_all = $request->getParameter('set_all_access_inherit_from_parent', pInteger)) || ($set_none = $request->getParameter('set_none_access_inherit_from_parent', pInteger))
 		) {
-			if(!ca_acl::setAccessInheritanceSettingForChildrenFromRow($this, $this->getPrimaryKey(), $set_all)) {
+			if(!ca_acl::setAccessInheritanceSettingForChildrenFromRow($this, $this->getPrimaryKey(), $set_all, ['setForObjectRepresentations' => $set_rep_access])) {
 				$this->postError(1250, _t('Could not set public access inheritance settings on related objects'),"BundleableLabelableBaseModelWithAttributes->setACLAccessFromForm()");
 			}
 			$_REQUEST['form_timestamp'] = time();
@@ -8108,7 +8112,7 @@ $pa_options["display_form_field_tips"] = true;
 			&&
 			($set_all = $request->getParameter('set_all_objects_access_inherit_from_parent', pInteger)) || ($set_none = $request->getParameter('set_none_objects_access_inherit_from_parent', pInteger))
 		) {
-			if(!ca_acl::setAccessInheritanceSettingToRelatedObjectsFromCollection($this, $this->getPrimaryKey(), $set_all)) {
+			if(!ca_acl::setAccessInheritanceSettingToRelatedObjectsFromCollection($this, $this->getPrimaryKey(), $set_all, ['setForObjectRepresentations' => $set_rep_access])) {
 				$this->postError(1250, _t('Could not set public access inheritance settings on related objects'),"BundleableLabelableBaseModelWithAttributes->setACLAccessFromForm()");
 			}
 			$_REQUEST['form_timestamp'] = time();

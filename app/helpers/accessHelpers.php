@@ -907,7 +907,7 @@ function caACLIsEnabled($t_item=null, ?array $options=null) : bool {
 				return false;
 			}
 		}
-		$paw_only = ($config->get('pawtucket_only_acl') || ($t_item && $config->get($t_item->tableName().'_pawtucket_only_acl')) || (!$for_pawtucket_only && $config->get('perform_item_level_access_checking')));
+		$paw_only = ($config->get('pawtucket_only_acl') || ($t_item && $config->get($t_item->tableName().'_pawtucket_only_acl'))); // || (!$for_pawtucket_only && $config->get('perform_item_level_access_checking')));
 		if($anywhere && $paw_only) { 	
 			return true; 
 		} elseif($for_providence_only && !$paw_only) {

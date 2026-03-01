@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2025 Whirl-i-Gig
+ * Copyright 2010-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -98,6 +98,8 @@ print caEditorBundleMetadataDictionary($this->request, "intrinsic_{$bundle_name}
 						$t_instance->hasField('access_inherit_from_parent') && 
 						(
 							($t_instance->get('parent_id') > 0)
+							||
+							($t_instance->tableName() === 'ca_object_representations')
 							||
 							(
 								$objects_x_collections_hierarchy_enabled && 
