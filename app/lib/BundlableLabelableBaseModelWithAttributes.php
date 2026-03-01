@@ -3295,7 +3295,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		$object_collection_rel_types = caGetObjectCollectionHierarchyRelationshipTypes();
-		$vb_strict_type_hierarchy = $po_request->config->get($this->tableName().'_enforce_strict_type_hierarchy');
+		$vb_strict_type_hierarchy = $request->config->get($this->tableName().'_enforce_strict_type_hierarchy');
 	
 		$t_object = new ca_objects();
 		
