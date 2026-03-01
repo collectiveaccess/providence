@@ -112,17 +112,33 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
 	 */
     public function lookup($settings, $search, $options = null)  {
    		$search = trim($search);
+    	if(preg_match("!^http[s]{0,1}://page\.nomenclature\.info/parcourir\-browse\.app\?id=([\d]+)$!i", $search, $m)) {
+    		$search = $m[1];
+    	}
    		$scope = caGetOption('scope', $settings, 'allLabels');
    		$lang = $this->validateLanguage(caGetOption('language', $settings, 'en'));
    		
    		$limit = caGetOption('limit', $options, caGetOption('limit', $settings, 100));
    		
         $client = $this->getClient();
-        $response = $client->request("GET", self::NOMENCLATURE_SERVICES_BASE_URL."/".self::NOMENCLATURE_LOOKUP."?limit={$limit}&offset=0&scope={$scope}&lang={$lang}&termSearch=".urlencode($search), [
-            'headers' => [
-                'Accept' => 'application/json'
-            ]
-        ]);
+        
+        try {
+        	if(is_numeric($search)) {
+        		$response = $client->request("GET", self::NOMENCLATURE_SERVICES_BASE_URL."/concepts/{$search}?lang={$lang}", [
+					'headers' => [
+						'Accept' => 'application/json'
+					]
+				]);
+        	} else {
+				$response = $client->request("GET", self::NOMENCLATURE_SERVICES_BASE_URL."/".self::NOMENCLATURE_LOOKUP."?limit={$limit}&offset=0&scope={$scope}&lang={$lang}&termSearch=".urlencode($search), [
+					'headers' => [
+						'Accept' => 'application/json'
+					]
+				]);
+			}
+		} catch (Exception $e) {
+			return [];
+		}
 
 		$response_data = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
 	
@@ -130,8 +146,7 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
 		$primaries = [];
         if (is_array($response_data)) {
 			foreach ($response_data as $index => $data){
-				
-				$nomenclatureID = (string)$data['id'];
+				$nomenclature_id = (string)$data['id'];
 				
 				$label = null;
 				if(is_array($data['prefLabel'])) {
@@ -143,7 +158,7 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
 				$entry = [
 					'label' => $label,
 					'url' => $data['mainEntityOfPage'] ?? null,
-					'idno' => $nomenclatureID
+					'idno' => $nomenclature_id
 				];
 				
 				$return['results'][] = $entry;
@@ -188,18 +203,18 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
 					$label = $data['prefLabel'][0]['literalForm']['value'] ?? null;
 					$id = $data['broader'][0]['id'] ?? null;
 					$url = $data['mainEntityOfPage'] ?? null;
-					if(!$label || !$id) { break; }
+					if(!$label) { continue; }
 					
 					$hier[] = [
 						'label' => $label,
 						'url' => $url
 					];
+					if(!$id) { break(2); }
 					continue(2);
 				}
 			}
 			break;
    		} while(true);
-		
 		return [
 			'hierarchy' => $hier
 		];
