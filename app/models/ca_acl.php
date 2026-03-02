@@ -204,9 +204,10 @@ class ca_acl extends BaseModel {
 	
 	static $temporary_tables = [];
 	
-	static $DEBUG = false;
+	static $log_debug_info = false;
 	
-
+	static $log = null;
+	
 	# ------------------------------------------------------
 	/**
 	 * Checks access control list for the specified row and user and returns an access value. Values are:
@@ -693,7 +694,8 @@ class ca_acl extends BaseModel {
 	 */
 	public static function setACLWorldAccess($subject, $world_access, ?array $options=null) {
 		if (!($id = (int)$subject->getPrimaryKey())) { return null; }
-		
+		$subject_table = $subject->tableName();
+			
 		$table_num = $subject->tableNum();
 		
 		$t_acl = new ca_acl();	
@@ -709,10 +711,14 @@ class ca_acl extends BaseModel {
 		
 		if ($t_acl->getPrimaryKey()) {
 			$t_acl->update();
+			ca_acl::debug(_t('Update ACL world access for %1::%2 to %3', $subject_table, $subject->getPrimaryKey(), $world_access), 'setACLWorldAccess');
 		} else {
 			$t_acl->insert();
+			ca_acl::debug(_t('Insert ACL world access for %1::%2 to %3', $subject_table, $subject->getPrimaryKey(), $world_access), 'setACLWorldAccess');
 		}
 		if ($t_acl->numErrors()) {
+			ca_acl::debug(_t('Error saving for %1::%2 to %3: %4', $subject_table, $subject->getPrimaryKey(), $world_access, join('; ', $t_acl->getErrors())), 'setACLWorldAccess');
+		
 			$subject->errors = $t_acl->errors;
 			return false;
 		}
@@ -731,6 +737,8 @@ class ca_acl extends BaseModel {
 		$table_num = (int)$subject->tableNum();
 		
 		$row_ids = array_filter(array_map(function($v) { return (int)$v; }, $row_ids), function($v) { return $v > 0; });
+		ca_acl::debug(_t('Set world ACL access for %1 %2 rows to %3', sizeof($row_ids), $table, $world_access), 'setACLWorldAccessForRows');
+		
 		
 		$trans = caGetOption('transaction', $options, null);
 		$db = $trans ? $trans->getDb() : $subject->getDb();
@@ -830,18 +838,25 @@ class ca_acl extends BaseModel {
 		
 		$db = $subject->getDb();
 		
+		$subject_table = $subject->tableName();
 		$subject_table_num = $subject->tableNum();
 		$subject_id = $subject->getPrimaryKey();
 		
+		ca_acl::debug(_t('Removing ACL entries for %1::%2', $subject_table, $subject_id), 'removeACLValuesForRow');
+
 		if($only_inherited) {
-			return (bool)$db->query(
+			$ret = (bool)$db->query(
 			"DELETE FROM ca_acl WHERE table_num = ? AND row_id = ? AND inherited_from_table_num IS NOT NULL", 
 				[$subject_table_num, $subject_id]);
 		}
-		return (bool)$db->query(
+		$ret =  (bool)$db->query(
 			"DELETE FROM ca_acl WHERE table_num = ? AND row_id = ?", 
 				[$subject_table_num, $subject_id]);
 
+		if(!$ret) {
+			ca_acl::debug(_t('Removal of ACL entries for %1::%2 failed: %3', $subject_table, $subject_id, join('; ', $db->getErrors())), 'removeACLValuesForRow');
+		}
+		return $ret;
 	}
 	# ------------------------------------------------------
 	/**
@@ -853,10 +868,10 @@ class ca_acl extends BaseModel {
 	 * @return bool
 	 */
 	public static function removeRedundantACLEntries(Db $db) : bool {
-		// 
 		if(!($temp_table = ca_acl::_createTempTableForRedundantACL($db))) {
 			throw new ApplicationException(_t('Cannot create temporary table for removal of redundant ACL entries'));
 		}
+		ca_acl::debug(_t('Removing redundant ACL entries'), 'removeRedundantACLEntries');
 		
 		// Clean up users
 		$db->query("
@@ -907,6 +922,7 @@ class ca_acl extends BaseModel {
 		");
 		ca_acl::_dropTempTable($db, $temp_table);
 		
+		ca_acl::debug(_t('Removed redundant ACL entries'), 'removeRedundantACLEntries');
 		return true;
 	}
 	# ------------------------------------------------------
@@ -925,6 +941,11 @@ class ca_acl extends BaseModel {
 		$set_for_reps = caGetOption('setForObjectRepresentations', $options, false);
 		$allow_rep_access_inheritance = $subject->getAppConfig()->get('ca_object_representations_allow_access_inheritance');
 		
+		ca_acl::debug(_t('Setting ACL inheritance setting for child rows of %1::%2', $subject_table, $subject->getPrimaryKey()), 'setACLInheritanceSettingForAllChildRows');
+		if($set_for_reps && $allow_rep_access_inheritance) {
+			ca_acl::debug(_t('Including representations in child row set'), 'setACLInheritanceSettingForAllChildRows');
+		}
+		
 		$db = is_object($subject) ? $subject->getDb() : new Db();
 		
 		$ret = true;
@@ -942,6 +963,7 @@ class ca_acl extends BaseModel {
 				}
 			}
 		}
+		ca_acl::debug(_t('Found %1 child rows for %2::%3', sizeof($ids_to_set), $subject_table, $subject->getPrimaryKey()), 'setACLInheritanceSettingForAllChildRows');
 		
 		// Apply changes to ids. There can potentially be *a lot* of rows to update. We try to do it as quickly
 		// as possible by directly executing SQL UPDATE queries on batches of 500 records.
@@ -957,6 +979,8 @@ class ca_acl extends BaseModel {
 				if(!$db->query("UPDATE {$subject_table} SET acl_inherit_from_parent = ? WHERE {$subject_pk} IN (?)", [$set_all ? 1 : 0, $ids])) {
 					$ret = false;
 				} else {
+					ca_acl::debug(_t('Updated settings for %1 rows for %2::%3', sizeof($ids), $subject_table, $subject->getPrimaryKey()), 'setACLInheritanceSettingForAllChildRows');
+		
 					$k = "{$subject_table}::".$subject->getPrimaryKey();
 					
 					$log_entries = [];
@@ -982,14 +1006,17 @@ class ca_acl extends BaseModel {
 						// Error adding queue item
 						throw new ApplicationException(_t('Could not add logging tasks to queue'));
 					}
+					ca_acl::debug(_t('Queued logging for %1 records inheriting access from %2::%3', sizeof($ids), $subject_table, $subject->getPrimaryKey()), 'setACLInheritanceSettingForAllChildRows');
 					
-					if(($subject_table === 'ca_objects') && $allow_rep_access_inheritance) {
+					if(($subject_table === 'ca_objects') && $allow_rep_access_inheritance && $set_for_reps) {
 						if($qr_reps = $db->query("SELECT representation_id FROM ca_objects_x_object_representations WHERE object_id IN (?)", [$ids])) {
 							$rep_ids = $qr_reps->getAllFieldValues('representation_id');
 							if(is_array($rep_ids) && sizeof($rep_ids)) {
 								if(!$db->query("UPDATE ca_object_representations SET acl_inherit_from_parent= ? WHERE representation_id IN (?)", [$set_all ? 1 : 0, $rep_ids])) {
 									$ret = false;
 								} else {
+									ca_acl::debug(_t('Updated settings for %1 representations for %2::%3', sizeof($rep_ids), $subject_table, $subject->getPrimaryKey()), 'setACLInheritanceSettingForAllChildRows');
+		
 									$k = "{$subject_table}::".$subject->getPrimaryKey();
 									
 									$log_entries = [];
@@ -1015,6 +1042,7 @@ class ca_acl extends BaseModel {
 										// Error adding queue item
 										throw new ApplicationException(_t('Could not add logging tasks to queue'));
 									}
+									ca_acl::debug(_t('Queued logging for %1 representations inheriting access from %2::%3', sizeof($rep_ids), $subject_table, $subject->getPrimaryKey()), 'setACLInheritanceSettingForAllChildRows');
 								}
 							}
 						}
@@ -1037,6 +1065,11 @@ class ca_acl extends BaseModel {
 		
 		$set_for_reps = caGetOption('setForObjectRepresentations', $options, false);
 		$allow_rep_access_inheritance = $subject->getAppConfig()->get('ca_object_representations_allow_access_inheritance');
+		
+		ca_acl::debug(_t('Setting ACL inheritance setting for related objects of %1::%2', $subject_table, $subject->getPrimaryKey()), 'setACLInheritanceSettingForRelatedObjects');
+		if($set_for_reps && $allow_rep_access_inheritance) {
+			ca_acl::debug(_t('Including representations in update set'), 'setACLInheritanceSettingForRelatedObjects');
+		}
 		
 		$db = is_object($subject) ? $subject->getDb() : new Db();
 		
@@ -1071,6 +1104,8 @@ class ca_acl extends BaseModel {
 					if(!$db->query("UPDATE ca_objects SET acl_inherit_from_ca_collections = ? WHERE object_id IN (?)", [$set_all ? 1 : 0, $ids])) {
 						$ret = false;
 					} else {
+						ca_acl::debug(_t('Updated acl inherit setting on %1 related objects for %2::%3', sizeof($ids), $subject_table, $subject->getPrimaryKey()), 'setACLInheritanceSettingForRelatedObjects');
+		
 						$k = "ca_objects::".$subject->getPrimaryKey();
 						
 						$log_entries = [];
@@ -1097,6 +1132,7 @@ class ca_acl extends BaseModel {
 							throw new ApplicationException(_t('Could not add logging tasks to queue'));
 						}
 					}
+					ca_acl::debug(_t('Queued logging for %1 records inheriting acl inherit setting from %2::%3', sizeof($ids), $subject_table, $subject->getPrimaryKey()), 'setACLInheritanceSettingForRelatedObjects');
 					
 					if($set_for_reps && $allow_rep_access_inheritance) {
 						if($qr_reps = $db->query("SELECT representation_id FROM ca_objects_x_object_representations WHERE object_id IN (?)", [$ids])) {
@@ -1105,6 +1141,8 @@ class ca_acl extends BaseModel {
 								if(!$db->query("UPDATE ca_object_representations SET acl_inherit_from_parent= ? WHERE representation_id IN (?)", [$set_all ? 1 : 0, $rep_ids])) {
 									$ret = false;
 								} else {
+									ca_acl::debug(_t('Updated acl inherit setting on %1 representations for %2::%3', sizeof($rep_ids), $subject_table, $subject->getPrimaryKey()), 'setACLInheritanceSettingForRelatedObjects');
+		
 									$k = "ca_objects::".$subject->getPrimaryKey();
 									
 									$log_entries = [];
@@ -1130,6 +1168,7 @@ class ca_acl extends BaseModel {
 										// Error adding queue item
 										throw new ApplicationException(_t('Could not add logging tasks to queue'));
 									}
+									ca_acl::debug(_t('Queued logging for %1 representations inheriting acl inherit setting from %2::%3', sizeof($rep_ids), $subject_table, $subject->getPrimaryKey()), 'setACLInheritanceSettingForRelatedObjects');
 								}
 							}
 						}
@@ -1162,6 +1201,8 @@ class ca_acl extends BaseModel {
 		$subject_pk = (string)$subject->primaryKey();
 		$subject_table = (string)$subject->tableName();
 		$subject_table_num = (int)$subject->tableNum();
+		
+		ca_acl::debug(_t('Apply ACL inheritance to %1 child rows from %2::%3', sizeof($ids), $subject_table, $subject->getPrimaryKey()), 'applyACLInheritanceToChildrenFromRow');
 		
 		$qr = caMakeSearchResult($subject_table, $ids);
 		$inherit_from_parent_flag_exists = $subject->hasField('acl_inherit_from_parent');
@@ -1287,6 +1328,9 @@ class ca_acl extends BaseModel {
 		$ids = ca_acl::getACLInheritanceHierarchy($subject);
 		if(!is_array($ids) || !sizeof($ids)) { return true; }
 		
+		ca_acl::debug(_t('Update ACL inheritance to %1 child rows from %2::%3', sizeof($ids), $subject_table, $subject->getPrimaryKey()), 'updateACLInheritanceForRow');
+		
+		
 		$colls = null;
 		if($object_collections_hier_enabled && ($subject_table == 'ca_objects')) {
 			$colls = $subject->getRelatedItems('ca_collections', ['restrictToRelationshipTypes' => $object_collections_rel_types, 'returnAs' => 'modelInstances']);
@@ -1342,6 +1386,8 @@ class ca_acl extends BaseModel {
 		$subject_table_num = (int)$subject->tableNum();
 		$subject_id = (int)$subject->getPrimaryKey();
 		
+		ca_acl::debug(_t('Apply ACL inheritance to related rows from %1::%2', $subject_table, $subject->getPrimaryKey()), 'applyACLInheritanceToRelatedFromRow');
+
 		if ($t_link = $subject->getRelationshipInstance($target)) {
 			if ($t_rel_item = Datamodel::getInstanceByTableName($target, false)) {
 				$restrict_to_relationship_types = caGetOption('restrictToRelationshipTypes', $options, null);
@@ -1451,6 +1497,8 @@ class ca_acl extends BaseModel {
 	public static function applyACLInheritanceToRelatedRowFromRow($subject, $subject_id, $target, $target_id, $options=null) {
 		$db = $subject->getDb() ?? new Db();
 		
+		ca_acl::debug(_t('Apply ACL inheritance to related rows from row %1::%2 to target %3', $subject->tableName(), $subject_id, $target_id), 'applyACLInheritanceToRelatedRowFromRow');
+
 		if ($t_link = $subject->getRelationshipInstance($target)) {
 			if ($t_rel_item = Datamodel::getInstanceByTableName($target, false)) {
 				$target_pk = (string)$t_rel_item->primaryKey();
@@ -1518,6 +1566,8 @@ class ca_acl extends BaseModel {
 		
 		$subject_pk = $subject->primaryKey();
 		$subject_table = $subject->tableName();
+		
+		ca_acl::debug(_t('Set access inheritance setting to to child rows from row %1::%2', $subject->tableName(), $subject_id, $target_id), 'setAccessInheritanceSettingForChildrenFromRow');
 		
 		$ret = true;
 		$inherit = (int)$subject->get('access_inherit_from_parent');
@@ -1641,6 +1691,8 @@ class ca_acl extends BaseModel {
 		$set_for_reps = caGetOption('setForObjectRepresentations', $options, false);
 		$allow_rep_access_inheritance = $subject->getAppConfig()->get('ca_object_representations_allow_access_inheritance');
 		
+		ca_acl::debug(_t('Set access inheritance setting to to child rows from row %1::%2', $subject->tableName(), $row_id), 'setAccessInheritanceSettingToRelatedObjectsFromCollection');
+		
 		$db = $subject->getDb() ?? new Db();
 		
 		$access = (int)$subject->get('access_inherit_from_parent');
@@ -1754,7 +1806,7 @@ class ca_acl extends BaseModel {
 	 * Apply parent's access inheritance to subject. Supports inheritance of access for objects
 	 * from parent collection when object-collection hierarchies are enabled.
 	 *
-	 * @param BaseModel $t_subject
+	 * @param BaseModel $subject
 	 *
 	 * @return ?bool False or null on failure; true on success
 	 */
@@ -1848,8 +1900,14 @@ class ca_acl extends BaseModel {
 				ca_acl::setACLWorldAccessForRows($subject_table, $ids, $acl_access);
 				
 				// Apply representation inheritance
-				if($allow_rep_access_inheritance && ($qr_reps = $db->query("SELECT representation_id FROM ca_objects_x_object_representations WHERE object_id IN (?)", [$ids]))) {
+				if($allow_rep_access_inheritance && ($qr_reps = $db->query("
+					SELECT r.representation_id 
+					FROM ca_objects_x_object_representations  oxr
+					INNER JOIN ca_object_representations AS r ON r.representation_id = oxr.representation_id
+					WHERE r.deleted = 0 AND r.access_inherit_from_parent = 1 AND oxr.object_id IN (?)
+				", [$ids]))) {
 					$rep_ids = $qr_reps->getAllFieldValues('representation_id');
+					
 					if(is_array($rep_ids) && sizeof($rep_ids)) {
 						$db->query("UPDATE ca_object_representations SET access = ? WHERE representation_id IN (?) AND access_inherit_from_parent = 1", [$access, $rep_ids]);
 				
@@ -1916,6 +1974,8 @@ class ca_acl extends BaseModel {
 		$subject_table = (string)$subject->tableName();
 		$subject_table_num = (int)$subject->tableNum();
 		
+		ca_acl::debug(_t('Apply to %1::%2; hierarchy size is %3', $subject_table, $subject->getPrimaryKey(), sizeof($ids)), 'applyAccessInheritanceToChildrenFromRow');
+		
 		$qr = caMakeSearchResult($subject_table, $ids);
 		$inherit_from_parent_flag_exists = $subject->hasField('access_inherit_from_parent');
 		$allow_rep_access_inheritance = $subject->getAppConfig()->get('ca_object_representations_allow_access_inheritance');
@@ -1927,6 +1987,7 @@ class ca_acl extends BaseModel {
 			if($inherit_from_parent_flag_exists && !$qr->get("{$subject_table}.access_inherit_from_parent")) { continue; }
 			$ids_to_set[] = $id;
 		}
+		ca_acl::debug(_t('%1 records will inherit access value from %2::%3', sizeof($ids_to_set), $subject_table, $subject->getPrimaryKey()), 'applyAccessInheritanceToChildrenFromRow');
 		
 		$access = $subject->get("{$subject_table}.access");
 		
@@ -1939,15 +2000,13 @@ class ca_acl extends BaseModel {
 					return $v != $subject_id;
 				});
 				
-				// @TODO: for performance reasons we don't attempt to log changes to affected rows. Rather we just apply
-				// the change directly in the database. This means these changes don't appear in the log and won't
-				// be transmitted to replicated systems. Might be a problem for someone someday, so we should consider ways
-				// to enable logging (via background processing?)
 				if(!$db->query("UPDATE {$subject_table} SET access = ? WHERE {$subject_pk} IN (?) AND access_inherit_from_parent = 1", [$access, $ids])) {
 					return false;
 				} else {
 					$k = "{$subject_table}::".$subject->getPrimaryKey();
 					
+					ca_acl::debug(_t('Updated %1 records inheriting access from %2::%3', sizeof($ids), $subject_table, $subject->getPrimaryKey()), 'applyAccessInheritanceToChildrenFromRow');
+		
 					$log_entries = [];
 					foreach($filtered_ids as $id) {
 						$log_entries[] = [
@@ -1971,6 +2030,7 @@ class ca_acl extends BaseModel {
 						// Error adding queue item
 						throw new ApplicationException(_t('Could not add logging tasks to queue'));
 					}
+					ca_acl::debug(_t('Queued logging for %1 records inheriting access from %2::%3', sizeof($ids), $subject_table, $subject->getPrimaryKey()), 'applyAccessInheritanceToChildrenFromRow');
 					
 					$map = caGetACLItemLevelMap();
 					$acl_access = $map[$access] ?? $subject->getAppConfig()->get('default_item_access_level');
@@ -1979,12 +2039,23 @@ class ca_acl extends BaseModel {
 					
 					// Apply representation inheritance
 					if($allow_rep_access_inheritance && ($subject_table === 'ca_objects')) {
-						if($qr_reps = $db->query("SELECT representation_id FROM ca_objects_x_object_representations WHERE object_id IN (?)", [$ids])) {
+						ca_acl::debug(_t('Applying representation access inheritance for %1::%2', $subject_table, $subject->getPrimaryKey()), 'applyAccessInheritanceToChildrenFromRow');
+					
+						if($qr_reps = $db->query("
+							SELECT r.representation_id 
+							FROM ca_objects_x_object_representations oxr
+							INNER JOIN ca_object_representations AS r ON r.representation_id = oxr.representation_id
+							WHERE r.deleted = 0 AND r.access_inherit_from_parent = 1 AND oxr.object_id IN (?)
+						", [$ids])) {
 							$rep_ids = $qr_reps->getAllFieldValues('representation_id');
+							ca_acl::debug(_t('Found %1 representations inheriting from from %2::%3', sizeof($rep_ids), $subject_table, $subject->getPrimaryKey()), 'applyAccessInheritanceToChildrenFromRow');
+					
 							if(is_array($rep_ids) && sizeof($rep_ids)) {
 								if(!$db->query("UPDATE ca_object_representations SET access = ? WHERE representation_id IN (?) AND access_inherit_from_parent = 1", [$access, $rep_ids])) {
 									continue;
 								} else {
+									ca_acl::debug(_t('Updated %1 representations inheriting access from %2::%3', sizeof($rep_ids), $subject_table, $subject->getPrimaryKey()), 'applyAccessInheritanceToChildrenFromRow');
+		
 									$k = "{$subject_table}::".$subject->getPrimaryKey();
 					
 									$log_entries = [];
@@ -2010,6 +2081,8 @@ class ca_acl extends BaseModel {
 										// Error adding queue item
 										throw new ApplicationException(_t('Could not add logging tasks to queue'));
 									}
+									ca_acl::debug(_t('Queued logging for %1 representations inheriting access from %2::%3', sizeof($rep_ids), $subject_table, $subject->getPrimaryKey()), 'applyAccessInheritanceToChildrenFromRow');
+					
 									
 									ca_acl::setACLWorldAccessForRows('ca_object_representations', $rep_ids, $acl_access);
 								}
@@ -2215,8 +2288,25 @@ class ca_acl extends BaseModel {
 	 *
 	 */
 	public static function clearAccessValueCache() {
+		
 		ca_acl::$s_acl_access_value_cache = [];
 		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function log() : KLogger {
+		if(!ca_acl::$log) { ca_acl::$log = caGetLogger(['logLevel' => 'DEBUG']); }
+		return ca_acl::$log;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function debug(string $msg, string $function) : void {
+		if(!ca_acl::$log_debug_info) { return; }
+		ca_acl::log()->logDebug(_t('[%1] %2', $function, $msg));
 	}
 	# ------------------------------------------------------
 }
