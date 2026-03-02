@@ -14,6 +14,7 @@
     "easyrdf/easyrdf": "1.1.1",
     "elasticsearch/elasticsearch": "~7.0",
     "ezyang/htmlpurifier": "~4.9",
+    "xemlock/htmlpurifier-html5": "~0.1",
     "guzzlehttp/guzzle": "^7.9",
     "guzzlehttp/psr7": "2.7.*",
     "james-heinrich/getid3": "^1.9.20",
