@@ -38,6 +38,8 @@ $typename		= mb_strtolower($t_instance->getTypeName(null, ['useSingular' => true
 $acl_enabled 					= caACLIsEnabled($t_instance);
 $pawtucket_only_acl_enabled 	= caACLIsEnabled($t_instance, ['forPawtucket' => true]);
 $show_public_access_controls 	= ($config->get('acl_show_public_access_controls') || $config->get("{$tablename}_acl_show_public_access_controls"));
+
+$allow_rep_access_inheritance 	= $config->get('ca_object_representations_allow_access_inheritance');
 ?>
 <div class="sectionBox">
 <?php
@@ -117,7 +119,19 @@ $show_public_access_controls 	= ($config->get('acl_show_public_access_controls')
 				: 
 				_t('%1 %2 (out of %4 total) are inheriting public access settings from this %3', $stats['inheritingAccessRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingAccessRelatedObjectCount'])  
 			?>
+		</p>
 <?php
+			if($allow_rep_access_inheritance && (($stats['objectRepresentationCount'] ?? 0) > 0)) {
+?>
+		<p>
+			<?= ($stats['inheritingAccessObjectRepresentationCount'] === 1) ? 
+				_t('%1 %2 (out of %4 total) are inheriting public access settings from this %3', $stats['inheritingAccessObjectRepresentationCount'], Datamodel::getTableProperty('ca_object_representations', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['objectRepresentationCount']) 
+				: 
+				_t('%1 %2 (out of %4 total) are inheriting public access settings from this %3', $stats['inheritingAccessObjectRepresentationCount'], Datamodel::getTableProperty('ca_object_representations', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['objectRepresentationCount'])  
+			?>
+		</p>
+<?php
+			}
 			if(
 					($stats['potentialInheritingAccessRelatedObjectCount'] !== $stats['inheritingAccessRelatedObjectCount'])
 					||
@@ -210,7 +224,19 @@ if($acl_enabled || $pawtucket_only_acl_enabled) {
 					: 
 					_t('%1 %2 (out of %4 total) are inheriting access control settings from this %3', $stats['inheritingSubRecordCount'], $t_instance->getProperty('NAME_PLURAL'), $typename, $stats['subRecordCount'])  
 				?>
+				</p>
 <?php
+				if($allow_rep_access_inheritance && (($stats['objectRepresentationCount'] ?? 0) > 0)) {
+?>
+				<p>
+					<?= ($stats['inheritingObjectRepresentationCount'] === 1) ? 
+						_t('%1 %2 (out of %4 total) are inheriting public access settings from this %3', $stats['inheritingObjectRepresentationCount'], Datamodel::getTableProperty('ca_object_representations', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['objectRepresentationCount']) 
+						: 
+						_t('%1 %2 (out of %4 total) are inheriting public access settings from this %3', $stats['inheritingObjectRepresentationCount'], Datamodel::getTableProperty('ca_object_representations', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['objectRepresentationCount'])  
+					?>
+				</p>
+<?php
+				}
 				if(
 					($stats['subRecordCount'] !== $stats['inheritingSubRecordCount'])
 					||
@@ -246,7 +272,19 @@ if($acl_enabled || $pawtucket_only_acl_enabled) {
 					: 
 					_t(' %1 %2 (out of %4 total) are inheriting access control settings from this %3', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingRelatedObjectCount'])  
 				?>
+				</p>
 <?php
+				if($allow_rep_access_inheritance && (($stats['objectRepresentationCount'] ?? 0) > 0)) {
+?>
+				<p>
+					<?= ($stats['inheritingObjectRepresentationCount'] === 1) ? 
+						_t('%1 %2 (out of %4 total) are inheriting access control settings from this %3', $stats['inheritingObjectRepresentationCount'], Datamodel::getTableProperty('ca_object_representations', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['objectRepresentationCount']) 
+						: 
+						_t('%1 %2 (out of %4 total) are inheriting access control settings from this %3', $stats['inheritingObjectRepresentationCount'], Datamodel::getTableProperty('ca_object_representations', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['objectRepresentationCount'])  
+					?>
+				</p>
+<?php
+				}
 				if(
 					($stats['potentialInheritingRelatedObjectCount'] !== $stats['inheritingRelatedObjectCount'])
 					||

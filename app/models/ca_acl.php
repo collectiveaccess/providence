@@ -463,6 +463,10 @@ class ca_acl extends BaseModel {
 			'inheritingAccessRelatedObjectCount' => 0,
 			'potentialInheritingRelatedObjectCount' => 0,
 			'potentialInheritingAccessRelatedObjectCount' => 0,
+			
+			'objectRepresentationCount' => 0,
+			'inheritingObjectRepresentationCount' => 0,
+			'inheritingAccessObjectRepresentationCount' => 0
 		];
 		
 		// Number of sub-records and inherited entries
@@ -470,13 +474,22 @@ class ca_acl extends BaseModel {
 		if($qr_sub_records = $subject->getHierarchy($row_id, [])) {
 			$statistics['subRecordCount'] = $qr_sub_records->numRows()-1;
 			$c = $x = 0;
+			$ids = [];
 			while($qr_sub_records->nextRow()) {
 				if($qr_sub_records->get($subject->primaryKey()) == $row_id) { continue; }
 				if((bool)$qr_sub_records->get('acl_inherit_from_parent')) { $c++; }
 				if((bool)$qr_sub_records->get('access_inherit_from_parent')) { $x++; }
+				
+				$ids[] = $qr_sub_records->getPrimaryKey();
 			}
 			$statistics['inheritingSubRecordCount'] = $c;
 			$statistics['inheritingAccessSubRecordCount'] = $x;
+			
+			if($subject->tableName() === 'ca_objects') {
+				$statistics['objectRepresentationCount'] += ca_acl::_getRepresentationCount($db, $ids);
+				$statistics['inheritingObjectRepresentationCount'] += ca_acl::_getRepresentationCount($db, $ids, ['aclInheritance' => true]);
+				$statistics['inheritingAccessObjectRepresentationCount'] += ca_acl::_getRepresentationCount($db, $ids, ['accessInheritance' => true]);
+			}
 		}
 		
 		// Number of related objects and inherited entries
@@ -486,20 +499,53 @@ class ca_acl extends BaseModel {
 					$is_root = ($qr_sub_records->get('collection_id') == $row_id);
 					if(!($t_coll = ca_collections::findAsInstance(['collection_id' => $qr_sub_records->get('ca_collections.collection_id')]))) { continue; }
 					
-					$statistics['relatedObjectCount'] += ($c = $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => $rel_types, 'returnAs' => 'count', 'limit' => 50000]));
+					$object_ids = $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => $rel_types, 'returnAs' => 'ids', 'limit' => 50000]);
+					$c = sizeof($object_ids ?? []);
 					
+					$statistics['relatedObjectCount'] += sizeof($object_ids ?? []);
+					$statistics['objectRepresentationCount'] += ca_acl::_getRepresentationCount($db, $object_ids);
 					if($is_root || (bool)$t_coll->get('acl_inherit_from_parent')) {
-						$statistics['inheritingRelatedObjectCount'] += $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => $rel_types, 'returnAs' => 'count', 'limit' => 50000, 'criteria' => ['ca_objects.acl_inherit_from_ca_collections']]);
+						$object_ids = $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => $rel_types, 'returnAs' => 'ids', 'limit' => 50000, 'criteria' => ['ca_objects.acl_inherit_from_ca_collections']]);
+						$statistics['inheritingRelatedObjectCount'] += sizeof($object_ids ?? []);
 						$statistics['potentialInheritingRelatedObjectCount'] += $c;
+						
+						$statistics['inheritingObjectRepresentationCount'] += ca_acl::_getRepresentationCount($db, $object_ids, ['aclInheritance' => true]);
 					}
 					if($is_root || (bool)$t_coll->get('access_inherit_from_parent')) {
-						$statistics['inheritingAccessRelatedObjectCount'] += $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => $rel_types, 'returnAs' => 'count', 'limit' => 50000, 'criteria' => ['ca_objects.access_inherit_from_parent']]);
+						$object_ids = $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => $rel_types, 'returnAs' => 'ids', 'limit' => 50000, 'criteria' => ['ca_objects.access_inherit_from_parent']]);
+						$statistics['inheritingAccessRelatedObjectCount'] += sizeof($object_ids ?? []);
 						$statistics['potentialInheritingAccessRelatedObjectCount'] += $c;
+						
+						$statistics['inheritingAccessObjectRepresentationCount'] += ca_acl::_getRepresentationCount($db, $object_ids, ['accessInheritance' => true]);
 					}
 				}
 			}
 		}
 		return $statistics;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	private static function _getRepresentationCount(Db $db, ?array $ids, ?array $options=null) : int {
+		if(!is_array($ids) || !sizeof($ids)) { return 0; }
+		
+		$inherit_sql = '';
+		if(caGetOption('aclInheritance', $options, false)) {
+			$inherit_sql = " AND (r.acl_inherit_from_parent = 1)";
+		} elseif(caGetOption('accessInheritance', $options, false)) {
+			$inherit_sql = " AND (r.access_inherit_from_parent = 1)";
+		}		
+		$qr_reps = $db->query("
+			SELECT count(*) c
+			FROM ca_objects_x_object_representations oxr
+			INNER JOIN ca_object_representations AS r ON r.representation_id = oxr.representation_id
+			WHERE
+				r.deleted = 0 AND oxr.object_id IN (?) {$inherit_sql}", [$ids]);
+		if($qr_reps && $qr_reps->nextRow()) {
+			return (int)$qr_reps->get('c');
+		}
+		return 0;
 	}
 	# ------------------------------------------------------
 	/**
