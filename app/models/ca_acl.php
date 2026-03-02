@@ -204,6 +204,8 @@ class ca_acl extends BaseModel {
 	
 	static $temporary_tables = [];
 	
+	static $DEBUG = false;
+	
 
 	# ------------------------------------------------------
 	/**
@@ -554,7 +556,7 @@ class ca_acl extends BaseModel {
 	public static function getStatisticsForBatch(RecordSelection $rs) : ?array {
 		$db = new Db();
 		if(!($subject_table_num = $rs->tableNum())) { return null; }
-		$subject_table_name = $rs->tableName();
+		$subject_table = $rs->tableName();
 		
 		$subject = Datamodel::getInstance($subject_table_num);
 		$pk = $subject->primaryKey();
@@ -580,7 +582,7 @@ class ca_acl extends BaseModel {
 		// Get hierarchy indices for items in set
 		$qr = $db->query("
 			SELECT {$pk}, hier_left, hier_right
-			FROM {$subject_table_name} 
+			FROM {$subject_table} 
 			WHERE 
 				{$pk} IN (?) AND deleted = 0
 		", [$row_ids]);
@@ -597,7 +599,7 @@ class ca_acl extends BaseModel {
 		foreach($acc as $id => $h) {
 			$qr_cc = $db->query("
 				SELECT {$pk}, acl_inherit_from_parent, access_inherit_from_parent
-				FROM {$subject_table_name}
+				FROM {$subject_table}
 				WHERE 
 					{$pk} = ? AND hier_left >= ? AND hier_right <= ? AND deleted = 0
 			",[$id, $h['hier_left'], $h['hier_right']]);
@@ -662,7 +664,7 @@ class ca_acl extends BaseModel {
 		$statistics['groups'] = $groups;
 
 		// Get related objects for collections
-		if($subject_table_name === 'ca_collections') {
+		if($subject_table === 'ca_collections') {
 			$qr_oc = $db->query("
 				SELECT o.object_id, o.acl_inherit_from_ca_collections, o.access_inherit_from_parent
 				FROM ca_objects_x_collections oxc
