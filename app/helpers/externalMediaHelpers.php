@@ -29,8 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
-
 # ---------------------------------------
 /**
  * 
@@ -46,5 +44,20 @@
 function caGetExternalMediaEmbedCode(string $url, ?array $options=null) {
 	$media_url = new CA\MediaUrl();
 	return $media_url->embedTag($url, $options);
+}
+# ---------------------------------------
+/**
+ * Return list of supported formats. By default a list of format codes is returned.
+ * The 'full' and 'names' options allow return of additional information.
+ *
+ * @param array $options Options include:
+ *		full = return array will all available information on formats
+ *		names = return list of format names for display
+ *
+ * @return array
+ */
+function caGetExternalMediaUrlSupportedFormats(?array $options=null) : array {
+	$media_url = new CA\MediaUrl();
+	return  $media_url->supportedFormats($options);
 }
 # ---------------------------------------
