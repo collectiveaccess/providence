@@ -373,7 +373,6 @@ function caHTMLRadioButtonInput($ps_name, $pa_attributes=null, $pa_options=null)
 	if(caGetOption('disabled', $pa_options, false)) { $pa_attributes['disabled'] = 1; }
 	$vs_attr_string = _caHTMLMakeAttributeString($pa_attributes);
 	
-	// standard check box
 	$vs_element = "<input name='{$ps_name}' {$vs_attr_string} type='radio'/>\n";
 	return $vs_element;
 }
