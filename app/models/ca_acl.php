@@ -204,7 +204,7 @@ class ca_acl extends BaseModel {
 	
 	static $temporary_tables = [];
 	
-	static $log_debug_info = false;
+	static $log_debug_info = true;
 	
 	static $log = null;
 	
@@ -848,11 +848,11 @@ class ca_acl extends BaseModel {
 			$ret = (bool)$db->query(
 			"DELETE FROM ca_acl WHERE table_num = ? AND row_id = ? AND inherited_from_table_num IS NOT NULL", 
 				[$subject_table_num, $subject_id]);
+		} else {
+			$ret =  (bool)$db->query(
+				"DELETE FROM ca_acl WHERE table_num = ? AND row_id = ?", 
+					[$subject_table_num, $subject_id]);
 		}
-		$ret =  (bool)$db->query(
-			"DELETE FROM ca_acl WHERE table_num = ? AND row_id = ?", 
-				[$subject_table_num, $subject_id]);
-
 		if(!$ret) {
 			ca_acl::debug(_t('Removal of ACL entries for %1::%2 failed: %3', $subject_table, $subject_id, join('; ', $db->getErrors())), 'removeACLValuesForRow');
 		}
@@ -1169,6 +1169,11 @@ class ca_acl extends BaseModel {
 										throw new ApplicationException(_t('Could not add logging tasks to queue'));
 									}
 									ca_acl::debug(_t('Queued logging for %1 representations inheriting acl inherit setting from %2::%3', sizeof($rep_ids), $subject_table, $subject->getPrimaryKey()), 'setACLInheritanceSettingForRelatedObjects');
+								
+									// When removing inheritance clean up all inherited ACL entries on reps from objects in current set
+									if(!$set_all) {
+										$db->query("DELETE FROM ca_acl WHERE table_num = 56 and row_id IN (?) AND inherited_from_table_num = 57 and inherited_from_row_id IN (?)", [$rep_ids, $ids]);
+									}
 								}
 							}
 						}
@@ -1455,7 +1460,7 @@ class ca_acl extends BaseModel {
 						}
 					}
 					// @TODO: verify this is needed
-					$db->query("DELETE FROM ca_acl WHERE group_id IS NULL and user_id IS NULL and table_num = {$target_table_num} AND row_id = {$target_id}");
+					//$db->query("DELETE FROM ca_acl WHERE group_id IS NULL and user_id IS NULL and table_num = {$target_table_num} AND row_id = {$target_id}");
 					$qr_clone = $db->query("
 						INSERT IGNORE INTO ca_acl
 						(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id)
@@ -1470,6 +1475,7 @@ class ca_acl extends BaseModel {
 				if(($target == 'ca_objects')) {
 					foreach($target_ids as $target_id) {
 						$o = ca_objects::findAsInstance($target_id);
+						print "UPDATE reps FOR $target_id\n";
 						ca_acl::applyACLInheritanceToRelatedFromRow($o, 'ca_object_representations', ['skipRedundantEntryRemoval' => true]);
 					}
 				}
@@ -1860,11 +1866,11 @@ class ca_acl extends BaseModel {
 		
 		$allow_rep_access_inheritance = $subject->getAppConfig()->get('ca_object_representations_allow_access_inheritance');
 		
-		// get sub-collections
+		// get sub-objects
 		if ($t_rel_item = Datamodel::getInstanceByTableName('ca_objects', false)) {
 			$collection_ids = ca_acl::getAccessInheritanceHierarchy($subject);
 
-			if(is_array($ids = $subject->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => $rel_types, 'row_ids' => $collection_ids, 'returnAs' => 'ids', 'limit' => 50000])) && sizeof($ids)) {
+			if(is_array($ids = $subject->getRelatedItems('ca_objects', ['where' => ['access_inherit_from_parent' => 1], 'restrictToRelationshipTypes' => $rel_types, 'row_ids' => $collection_ids, 'returnAs' => 'ids', 'limit' => 50000])) && sizeof($ids)) {
 				$db->query("UPDATE ca_objects SET access = ? WHERE object_id IN (?) AND access_inherit_from_parent = 1", [$access, $ids]);
 				
 				$o_tq = new TaskQueue(['transaction' => $subject->getTransaction()]);
@@ -1897,7 +1903,7 @@ class ca_acl extends BaseModel {
 				$map = caGetACLItemLevelMap();
 				$acl_access = $map[$access] ?? $subject->getAppConfig()->get('default_item_access_level');
 				
-				ca_acl::setACLWorldAccessForRows($subject_table, $ids, $acl_access);
+				ca_acl::setACLWorldAccessForRows('ca_objects', $ids, $acl_access);
 				
 				// Apply representation inheritance
 				if($allow_rep_access_inheritance && ($qr_reps = $db->query("
