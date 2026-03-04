@@ -315,7 +315,7 @@ trait CLIUtilsAccessControl {
 			$table_name = caUcFirstUTF8Safe(Datamodel::getTableProperty($table, 'NAME_PLURAL'));
 			while($qr->nextHit()) {
 				if(!($t_instance = $qr->getInstance())) { continue; }
-				if(!$t_instance->supportsACL(['useSettingsOnly' => true], 'force' => true])) { break; }
+				if(!$t_instance->supportsACL(['useSettingsOnly' => true, 'force' => true])) { break; }
 				ca_acl::applyACLInheritanceToChildrenFromRow($t_instance);
 				
 				if($table === 'ca_collections') { 
