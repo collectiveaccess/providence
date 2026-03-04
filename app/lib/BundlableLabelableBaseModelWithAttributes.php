@@ -3276,7 +3276,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			
 			$type_selector 	= trim($this->getTypeListAsHTMLFormElement(
 				"{$placement_code}type_id", 
-				['id' => "{$placement_code}typeList"], 
+				['id' => "{$placement_code}{$form_name}typeList"], 
 				[
 					'childrenOfCurrentTypeOnly' => (bool)$strict_type_hierarchy, 
 					'includeSelf' => !(bool)$strict_type_hierarchy, 
@@ -3344,7 +3344,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		} else {
 			$type_selector 	= trim($this->getTypeListAsHTMLFormElement(
 				"{$placement_code}type_id", 
-				['id' => "{$placement_code}typeList"], 
+				['id' => "{$placement_code}{$form_name}typeList"], 
 				['restrictToTypes' => $bundle_settings['restrict_to_types'] ?: null]
 			));
 		}
