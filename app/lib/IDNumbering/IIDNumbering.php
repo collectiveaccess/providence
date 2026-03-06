@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2015 Whirl-i-Gig
+ * Copyright 2007-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,36 +29,31 @@
  *
  * ----------------------------------------------------------------------
  */
+interface IIDNumbering {
+	# -------------------------------------------------------
+	# Formats
+	# -------------------------------------------------------
+	public function setFormat($ps_format);
+	public function getFormat();
+	public function getFormats();
+	public function isValidFormat($ps_format);
+	public function isSerialFormat(?string $format=null, ?string $type=null);
+	public function formatIsExtensionOf(?string $format, ?string $type=null);
 	
- /**
-  *
-  */
-  
-	interface IIDNumbering {
-		# -------------------------------------------------------
-		# Formats
-		# -------------------------------------------------------
-		public function setFormat($ps_format);
-		public function getFormat();
-		public function getFormats();
-		public function isValidFormat($ps_format);
-		public function isSerialFormat($ps_format=null);
-		public function formatIsExtensionOf($ps_format);
-		
-		# -------------------------------------------------------
-		# Values
-		# -------------------------------------------------------
-		public function setValue($ps_value);
-		public function getValue();
-		public function validateValue($ps_value);
-		public function isValidValue($ps_value=null);
-		public function getSortableValue($ps_value=null);
-		public function getSeparator();
-		
-		# -------------------------------------------------------
-		# User interace (HTML)
-		# -------------------------------------------------------
-		public function htmlFormElement($ps_name, &$pa_errors=null, $pa_options=null);
-		public function htmlFormValue($ps_name, $ps_value=null, $pb_dont_mark_serial_value_as_used=false, $pb_generate_for_search_form=false, $pb_always_generate_serial_values=false);
-		public function htmlFormValuesAsArray($ps_name, $ps_value=null, $pb_dont_mark_serial_value_as_used=false, $pb_generate_for_search_form=false, $pb_always_generate_serial_values=false);
-	}
+	# -------------------------------------------------------
+	# Values
+	# -------------------------------------------------------
+	public function setValue($ps_value);
+	public function getValue();
+	public function validateValue($ps_value);
+	public function isValidValue($ps_value=null);
+	public function getSortableValue($ps_value=null);
+	public function getSeparator();
+	
+	# -------------------------------------------------------
+	# User interace (HTML)
+	# -------------------------------------------------------
+	public function htmlFormElement($ps_name, &$pa_errors=null, $pa_options=null);
+	public function htmlFormValue($ps_name, $ps_value=null, $pb_dont_mark_serial_value_as_used=false, $pb_generate_for_search_form=false, $pb_always_generate_serial_values=false);
+	public function htmlFormValuesAsArray($ps_name, $ps_value=null, $pb_dont_mark_serial_value_as_used=false, $pb_generate_for_search_form=false, $pb_always_generate_serial_values=false);
+}
