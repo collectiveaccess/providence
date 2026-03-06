@@ -25,22 +25,21 @@
  *
  * ----------------------------------------------------------------------
  */
-$t_instance 	= $this->getVar('t_instance');
-$tablename		= $t_instance->tableName();
-$config			= $t_instance->getAppConfig();
+$t_instance 					= $this->getVar('t_instance');
+$tablename						= $t_instance->tableName();
+$config							= $t_instance->getAppConfig();
 	
-$can_edit	 	= $t_instance->isSaveable($this->request);
-$can_delete		= $t_instance->isDeletable($this->request);
+$can_edit	 					= $t_instance->isSaveable($this->request);
+$can_delete						= $t_instance->isDeletable($this->request);
 
-$stats			= $this->getVar('statistics');
-$typename		= mb_strtolower($t_instance->getTypeName(null, ['useSingular' => true]));
+$stats							= $this->getVar('statistics');
+$typename						= $this->getVar('typename');
 
-$acl_enabled 					= caACLIsEnabled($t_instance);
-$pawtucket_only_acl_enabled 	= caACLIsEnabled($t_instance, ['forPawtucket' => true]);
-$pawtucket_only_acl_separate_inheritance_controls = ($config->get('pawtucket_only_acl_separate_inheritance_controls') || $config->get("{tablename}_pawtucket_only_acl_separate_inheritance_controls"));
-$show_public_access_controls 	= ($config->get('acl_show_public_access_controls') || $config->get("{$tablename}_acl_show_public_access_controls"));
-
-$allow_rep_access_inheritance 	= $config->get('ca_object_representations_allow_access_inheritance');
+$acl_enabled 					= $this->getVar('acl_enabled');
+$pawtucket_only_acl_enabled 	= $this->getVar('pawtucket_only_acl_enabled');
+$show_public_access_controls 	= $this->getVar('show_public_access_controls');
+$allow_rep_access_inheritance 	= $this->getVar('allow_rep_access_inheritance');
+$pawtucket_only_acl_separate_inheritance_controls = $this->getVar('pawtucket_only_acl_separate_inheritance_controls');
 ?>
 <div class="sectionBox">
 <?php
@@ -107,7 +106,7 @@ $allow_rep_access_inheritance 	= $config->get('ca_object_representations_allow_a
 <?php
 				}
 ?>
-					<?= caHTMLCheckboxInput('set_representation_access_inherit_from_parent', ['id' => 'setRepresentationsAccessInheritFromParent', 'value' => '1'], ['disabled' => true]); ?> <?= _t('Set access inheritance for representations?'); ?>
+					<?= caHTMLCheckboxInput('set_representation_access_inherit_from_parent', ['id' => 'setRepresentationsAccessInheritFromParent', 'value' => '1'], ['disabled' => true]); ?> <?= _t('Also set inheritance for representations?'); ?>
 				</div>
 <?php
 			}
@@ -157,7 +156,7 @@ $allow_rep_access_inheritance 	= $config->get('ca_object_representations_allow_a
 <?php
 				}
 ?>
-					<?= caHTMLCheckboxInput('set_representation_access_inherit_from_parent', ['id' => 'setRepresentationsObjectsAccessInheritFromParent', 'value' => '1'], ['disabled' => true]); ?> <?= _t('Set access inheritance for representations?'); ?>
+					<?= caHTMLCheckboxInput('set_representation_access_inherit_from_parent', ['id' => 'setRepresentationsObjectsAccessInheritFromParent', 'value' => '1'], ['disabled' => true]); ?> <?= _t('Also set inheritance for representations?'); ?>
 				</div>
 <?php
 			}
@@ -261,7 +260,7 @@ if($acl_enabled || $pawtucket_only_acl_enabled) {
 <?php
 						}
 ?>
-							<?= caHTMLCheckboxInput('set_representation_acl_inherit_from_parent', ['id' => 'setRepresentationsACLInheritFromParent', 'value' => '1'], ['disabled' => true]); ?> <?= _t('Set access exception inheritance for representations?'); ?>
+							<?= caHTMLCheckboxInput('set_representation_acl_inherit_from_parent', ['id' => 'setRepresentationsACLInheritFromParent', 'value' => '1'], ['disabled' => true]); ?> <?= _t('Also set inheritance for representations?'); ?>
 						</div>
 <?php
 					}
@@ -311,7 +310,7 @@ if($acl_enabled || $pawtucket_only_acl_enabled) {
 <?php
 						}
 ?>
-						<?= caHTMLCheckboxInput('set_representation_acl_inherit_from_parent', ['id' => 'setRepresentationsACLInheritFromCollections', 'value' => '1'], ['disabled' => true]); ?> <?= _t('Set access exception inheritance for representations?'); ?>
+						<?= caHTMLCheckboxInput('set_representation_acl_inherit_from_parent', ['id' => 'setRepresentationsACLInheritFromCollections', 'value' => '1'], ['disabled' => true]); ?> <?= _t('Also set inheritance for representations?'); ?>
 						
 						</div>
 <?php

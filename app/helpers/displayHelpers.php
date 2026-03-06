@@ -2312,6 +2312,21 @@ function caEditorACLEditor(View $view, BaseModel $t_instance, ?array $options=nu
 	// Get inheritance usage stats
 	$o_view->setVar('statistics', ca_acl::getStatisticsForRow($t_instance, $t_instance->getPrimaryKey()));
 	
+	$config = $t_instance->getAppConfig();
+	
+	// Get inheritance usage stats
+	$o_view->setVar('statistics', ca_acl::getStatisticsForRow($t_instance, $t_instance->getPrimaryKey()));
+	$o_view->setVar('allow_rep_access_inheritance', $z=$config->get('ca_object_representations_allow_access_inheritance'));
+	
+	
+	$o_view->setVar('acl_enabled', caACLIsEnabled($t_instance));
+	$o_view->setVar('pawtucket_only_acl_enabled', caACLIsEnabled($t_instance, ['forPawtucket' => true]));
+	
+	$o_view->setVar('pawtucket_only_acl_separate_inheritance_controls', ($config->get('pawtucket_only_acl_separate_inheritance_controls') || $config->get("{tablename}_pawtucket_only_acl_separate_inheritance_controls")));
+	$o_view->setVar('show_public_access_controls', ($config->get('acl_show_public_access_controls') || $config->get("{$tablename}_acl_show_public_access_controls")));
+	
+	$o_view->setVar('typename', mb_strtolower($t_instance->getTypeName(null, ['useSingular' => true])));
+	
 	return $o_view->render('ca_acl_access.php');
 }
 # ------------------------------------------------------------------------------------------------
@@ -2333,6 +2348,20 @@ function caBatchEditorACLEditor(View $view, RecordSelection $rs, ?array $options
 	
 	// Get inheritance usage stats
 	$o_view->setVar('statistics', ca_acl::getStatisticsForBatch($rs));
+	
+	$config = $t_instance->getAppConfig();
+	
+	// Get inheritance usage stats
+	$o_view->setVar('allow_rep_access_inheritance', $config->get('ca_object_representations_allow_access_inheritance'));
+	
+	
+	$o_view->setVar('acl_enabled', caACLIsEnabled($t_instance));
+	$o_view->setVar('pawtucket_only_acl_enabled', caACLIsEnabled($t_instance, ['forPawtucket' => true]));
+
+	$o_view->setVar('pawtucket_only_acl_separate_inheritance_controls', ($config->get('pawtucket_only_acl_separate_inheritance_controls') || $config->get("{tablename}_pawtucket_only_acl_separate_inheritance_controls")));
+	$o_view->setVar('show_public_access_controls', ($config->get('acl_show_public_access_controls') || $config->get("{$tablename}_acl_show_public_access_controls")));
+	
+	$o_view->setVar('typename', mb_strtolower($t_instance->getTypeName(null, ['useSingular' => true])));
 	
 	return $o_view->render('ca_acl_batch_access.php');
 }

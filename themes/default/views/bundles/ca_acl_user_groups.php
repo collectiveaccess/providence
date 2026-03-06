@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2025 Whirl-i-Gig
+ * Copyright 2012-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,15 +31,17 @@ $t_item 		= $this->getVar('t_group');
 $t_subject 		= $this->getVar('t_subject');		
 $settings 		= $this->getVar('settings');
 $add_label 		= $this->getVar('add_label') ?? _t("Add group exception");
+$pawtucket_only_acl_enabled 	= $this->getVar('pawtucket_only_acl_enabled');
+$allow_rep_access_inheritance 	= $this->getVar('allow_rep_access_inheritance');
+$show_rep_access_inheritance_controls = $this->getVar('show_rep_access_inheritance_controls');
 
-$pawtucket_only_acl_enabled 	= caACLIsEnabled($t_instance, ['forPawtucketOnly' => true]);
+$initial_values = $this->getVar('initialValues');
+if (!is_array($initial_values)) { $initial_values = []; }
 
 $read_only = false;
 
 $t_acl = new ca_acl();
 
-$initial_values = $this->getVar('initialValues');
-if (!is_array($initial_values)) { $initial_values = []; }
 ?>
 <div id="<?= $id_prefix.$t_item->tableNum().'_rel'; ?>">
 <?php
@@ -51,9 +53,10 @@ if (!is_array($initial_values)) { $initial_values = []; }
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo">
 			<table class="caListItem">
 				<tr>
-					<td class="formLabel">
+					<td class="formLabel aclLabel">
 						<input type="text" size="60" name="<?= $id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?= $id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
 						<?= $t_acl->htmlFormElement('access', '^ELEMENT', ['name' => "{$id_prefix}_access_{n}", 'id' => "{$id_prefix}_access_{n}", 'value' => '{{access}}', 'no_tooltips' => true, 'forPawtucket' => $pawtucket_only_acl_enabled]); ?>
+						<?= $show_rep_access_inheritance_controls ? $t_acl->htmlFormElement('include_representations', '^ELEMENT ^LABEL', ['name' => "{$id_prefix}_include_representations_{n}", 'id' => "{$id_prefix}_include_representations_{n}", 'value' => '{{include_representations}}', 'no_tooltips' => true, 'forPawtucket' => $pawtucket_only_acl_enabled]) : ''; ?>
 						<input type="hidden" name="<?= $id_prefix; ?>_id{n}" id="<?= $id_prefix; ?>_id{n}" value="{id}"/>
 						<div class="inheritName">{inheritance_link}</div>
 					</td>
@@ -94,7 +97,7 @@ if (!is_array($initial_values)) { $initial_values = []; }
 	jQuery(document).ready(function() {
 		caUI.initRelationBundle('#<?= $id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?= $id_prefix; ?>_',
-			templateValues: ['label', 'effective_date', 'access', 'id', 'inheritance_link'],
+			templateValues: ['label', 'effective_date', 'access', 'id', 'inheritance_link', 'include_representations'],
 			initialValues: <?= json_encode($initial_values); ?>,
 			initialValueOrder: <?= json_encode(array_keys($initial_values)); ?>,
 			defaultValues: <?= json_encode(['access' => __CA_ACL_READONLY_ACCESS__]); ?>,

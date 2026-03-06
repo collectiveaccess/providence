@@ -7996,6 +7996,7 @@ $pa_options["display_form_field_tips"] = true;
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 		
 		$t_user = new ca_users();
+		$config = $t_user->getAppConfig();
 		
 		$o_view->setVar('t_instance', $this);
 		$o_view->setVar('table_num', $this->tableNum());
@@ -8003,6 +8004,16 @@ $pa_options["display_form_field_tips"] = true;
 		$o_view->setVar('request', $po_request);	
 		$o_view->setVar('t_user', $t_user);
 		$o_view->setVar('initialValues', $this->getACLUsers(['returnAsInitialValuesForBundle' => true]));
+		
+		$o_view->setVar('allow_rep_access_inheritance', $allow_rep_access_inheritance = $config->get('ca_object_representations_allow_access_inheritance'));	
+		$o_view->setVar('show_rep_access_inheritance_controls', $allow_rep_access_inheritance && in_array($this->tableName(), ['ca_collections', 'ca_objects']));
+		
+		$o_view->setVar('pawtucket_only_acl_separate_inheritance_controls', ($config->get('pawtucket_only_acl_separate_inheritance_controls') || $config->get("{tablename}_pawtucket_only_acl_separate_inheritance_controls")));
+		
+		$o_view->setVar('show_public_access_controls', ($config->get('acl_show_public_access_controls') || $config->get("{$tablename}_acl_show_public_access_controls")));
+				
+		$o_view->setVar('acl_enabled', caACLIsEnabled($this));
+		$o_view->setVar('pawtucket_only_acl_enabled', caACLIsEnabled($this, ['forPawtucket' => true]));
 		
 		return $o_view->render('ca_acl_users.php');
 	}
@@ -8015,6 +8026,7 @@ $pa_options["display_form_field_tips"] = true;
 		$o_view = new View($request, "{$vs_view_path}/bundles/");
 		
 		$t_user = new ca_users();
+		$config = $t_user->getAppConfig();
 		
 		$o_view->setVar('t_instance', $this);
 		$o_view->setVar('table_num', $this->tableNum());
@@ -8022,6 +8034,13 @@ $pa_options["display_form_field_tips"] = true;
 		$o_view->setVar('request', $request);	
 		$o_view->setVar('t_user', $t_user);
 		$o_view->setVar('initialValues', $users);
+		
+		$o_view->setVar('allow_rep_access_inheritance', $config->get('ca_object_representations_allow_access_inheritance'));	
+		$o_view->setVar('pawtucket_only_acl_separate_inheritance_controls', ($config->get('pawtucket_only_acl_separate_inheritance_controls') || $config->get("{tablename}_pawtucket_only_acl_separate_inheritance_controls")));
+		$o_view->setVar('show_public_access_controls', ($config->get('acl_show_public_access_controls') || $config->get("{$tablename}_acl_show_public_access_controls")));
+		
+		$o_view->setVar('acl_enabled', caACLIsEnabled($this));
+		$o_view->setVar('pawtucket_only_acl_enabled', caACLIsEnabled($this, ['forPawtucket' => true]));
 		
 		return $o_view->render('ca_acl_batch_users.php');
 	}
@@ -8151,17 +8170,24 @@ $pa_options["display_form_field_tips"] = true;
 				if (preg_match("!^{$form_prefix}_user_id(.*)$!", $key, $matches)) {
 					$user_id = (int)$request->getParameter($form_prefix.'_user_id'.$matches[1], pInteger);
 					$access = $request->getParameter($form_prefix.'_user_access_'.$matches[1], pInteger);
+					$include_representations = $request->getParameter($form_prefix.'_user_include_representations_'.$matches[1], pInteger);
 					$action = $is_batch ? $request->getParameter($form_prefix.'_user_action_'.$matches[1], pString) : null;
 					
 					if($is_batch) {
 						if($action === 'ADD') {
-							$users_to_set[$user_id] = $access;
+							$users_to_set[$user_id] = [
+								'access' => $access,
+								'include_representations' => $include_representations
+							];
 						} elseif($action === 'REMOVE') {
 							$users_to_remove[] = $user_id;
 						}
 					} else {
 						if ($access >= 0) {
-							$users_to_set[$user_id] = $access;
+							$users_to_set[$user_id] = [
+								'access' => $access,
+								'include_representations' => $include_representations
+							];
 						}
 					}
 				}
@@ -8179,17 +8205,24 @@ $pa_options["display_form_field_tips"] = true;
 				if (preg_match("!^{$form_prefix}_group_id(.*)$!", $key, $matches)) {
 					$group_id = (int)$request->getParameter($form_prefix.'_group_id'.$matches[1], pInteger);
 					$access = $request->getParameter($form_prefix.'_group_access_'.$matches[1], pInteger);
+					$include_representations = $request->getParameter($form_prefix.'_group_include_representations_'.$matches[1], pInteger);
 					$action = $is_batch ? $request->getParameter($form_prefix.'_group_action_'.$matches[1], pString) : null;
 					
 					if($is_batch) {
 						if($action === 'ADD') {
-							$groups_to_set[$group_id] = $access;
+							$groups_to_set[$group_id] = [
+								'access' => $access,
+								'include_representations' => $include_representations
+							];
 						} elseif($action === 'REMOVE') {
 							$groups_to_remove[] = $group_id;
 						}
 					} else {
 						if ($access >= 0) {
-							$groups_to_set[$group_id] = $access;
+							$groups_to_set[$group_id] = [
+								'access' => $access,
+								'include_representations' => $include_representations
+							];
 						}
 					}
 				}
@@ -8317,7 +8350,7 @@ $pa_options["display_form_field_tips"] = true;
 					:
 					null;
 				$va_row['inheritance_link'] = ($va_row['inheritance_display'] && $g_request) ? _t('Inherited from %1 (%2)', caEditorLink($g_request, $label, '', $va_row['inherited_from_table_num'], $va_row['inherited_from_row_id']), $idno) : null;
-				
+				$va_row['include_representations'] = $qr_res->get('include_representations');
 				
 				$va_users[(int)$qr_res->get('acl_id')] = $va_row;
 			} else {
@@ -8337,7 +8370,6 @@ $pa_options["display_form_field_tips"] = true;
 		
 		$t_acl = new ca_acl();
 		$t_acl->setTransaction($this->getTransaction());
-		
 		foreach($user_ids as $user_id => $access) {
 			$t_acl->clear();
 			$t_acl->load(['user_id' => $user_id, 'table_num' => $table_num, 'row_id' => $id]);		// try to load existing record
@@ -8345,6 +8377,12 @@ $pa_options["display_form_field_tips"] = true;
 			$t_acl->set('table_num', $table_num);
 			$t_acl->set('row_id', $id);
 			$t_acl->set('user_id', $user_id);
+			
+			$include_representations = null;
+			if(is_array($access)) {
+				$include_representations = $access['include_representations'] ?? 0;
+				$access = $access['access'] ?? 0;
+			}
 		
 			if($access != $t_acl->get('access')) {
 				$t_acl->set('inherited_from_table_num', null);
@@ -8352,6 +8390,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 			
 			$t_acl->set('access', $access);
+			if(!is_null($include_representations)) { $t_acl->set('include_representations', $include_representations); }
 			
 			if ($t_acl->getPrimaryKey()) {
 				$t_acl->update();
@@ -8465,6 +8504,7 @@ $pa_options["display_form_field_tips"] = true;
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 		
 		$t_group = new ca_user_groups();
+		$config = $t_group->getAppConfig();
 		
 		$o_view->setVar('t_instance', $this);
 		$o_view->setVar('table_num', $this->tableNum());
@@ -8472,6 +8512,15 @@ $pa_options["display_form_field_tips"] = true;
 		$o_view->setVar('request', $po_request);	
 		$o_view->setVar('t_group', $t_group);
 		$o_view->setVar('initialValues', $this->getACLUserGroups(['returnAsInitialValuesForBundle' => true]));
+		
+		$o_view->setVar('allow_rep_access_inheritance', $allow_rep_access_inheritance = $config->get('ca_object_representations_allow_access_inheritance'));	
+		$o_view->setVar('show_rep_access_inheritance_controls', $allow_rep_access_inheritance && in_array($this->tableName(), ['ca_collections', 'ca_objects']));
+		
+		$o_view->setVar('pawtucket_only_acl_separate_inheritance_controls', ($config->get('pawtucket_only_acl_separate_inheritance_controls') || $config->get("{tablename}_pawtucket_only_acl_separate_inheritance_controls")));
+		$o_view->setVar('show_public_access_controls', ($config->get('acl_show_public_access_controls') || $config->get("{$tablename}_acl_show_public_access_controls")));
+		
+		$o_view->setVar('acl_enabled', caACLIsEnabled($this));
+		$o_view->setVar('pawtucket_only_acl_enabled', caACLIsEnabled($this, ['forPawtucket' => true]));
 		
 		return $o_view->render('ca_acl_user_groups.php');
 	}
@@ -8484,6 +8533,7 @@ $pa_options["display_form_field_tips"] = true;
 		$o_view = new View($request, "{$view_path}/bundles/");
 		
 		$t_group = new ca_user_groups();
+		$config = $t_group->getAppConfig();
 		
 		$o_view->setVar('t_instance', $this);
 		$o_view->setVar('table_num', $this->tableNum());
@@ -8491,6 +8541,13 @@ $pa_options["display_form_field_tips"] = true;
 		$o_view->setVar('request', $request);	
 		$o_view->setVar('t_group', $t_group);
 		$o_view->setVar('initialValues', $groups);
+		
+		$o_view->setVar('allow_rep_access_inheritance', $config->get('ca_object_representations_allow_access_inheritance'));	
+		$o_view->setVar('pawtucket_only_acl_separate_inheritance_controls', ($config->get('pawtucket_only_acl_separate_inheritance_controls') || $config->get("{tablename}_pawtucket_only_acl_separate_inheritance_controls")));
+		$o_view->setVar('show_public_access_controls', ($config->get('acl_show_public_access_controls') || $config->get("{$tablename}_acl_show_public_access_controls")));
+		
+		$o_view->setVar('acl_enabled', caACLIsEnabled($this));
+		$o_view->setVar('pawtucket_only_acl_enabled', caACLIsEnabled($this, ['forPawtucket' => true]));
 		
 		return $o_view->render('ca_acl_batch_user_groups.php');
 	}
@@ -8577,6 +8634,8 @@ $pa_options["display_form_field_tips"] = true;
 					:
 					null;
 				$va_row['inheritance_link'] = ($va_row['inheritance_display'] && $g_request) ? _t('Inherited from %1 (%2)', caEditorLink($g_request, $label, '', $va_row['inherited_from_table_num'], $va_row['inherited_from_row_id']), $idno) : null;
+				$va_row['include_representations'] = $qr_res->get('include_representations');
+				
 				$va_groups[(int)$qr_res->get('acl_id')] = $va_row;
 			} else {
 				$va_groups[(int)$qr_res->get('group_id')] = $va_row;
@@ -8619,12 +8678,19 @@ $pa_options["display_form_field_tips"] = true;
 			$t_acl->set('row_id', $id);
 			$t_acl->set('group_id', $group_id);
 			
+			$include_representations = null;
+			if(is_array($access)) {
+				$include_representations = $access['include_representations'] ?? 0;
+				$access = $access['access'] ?? 0;
+			}
+			
 			if($access != $t_acl->get('access')) {
 				$t_acl->set('inherited_from_table_num', null);
 				$t_acl->set('inherited_from_row_id', null);
 			}
 			
 			$t_acl->set('access', $access);
+			if(!is_null($include_representations)) { $t_acl->set('include_representations', $include_representations); }
 			
 			if ($t_acl->getPrimaryKey()) {
 				$t_acl->update();
