@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2025 Whirl-i-Gig
+ * Copyright 2007-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -554,8 +554,16 @@ class MultipartIDNumber extends IDNumber {
 		if($stub === '') {
 			$field_limit_sql = "{$field} <> ''";
 		} elseif($is_serial) {
+			$enames = array_keys($elements);
+			$index = array_search($ename, $enames);
 			$field_limit_sql = "{$field} REGEXP ?";
-			$params = ['^'.preg_quote($stub.$separator, "!").'[0-9]+$'];
+			
+			$l = sizeof($enames);
+			if(($index !== false) && ($index < ($l - 1))) {
+				$params = ['^'.preg_quote($stub.$separator, "!").'[0-9]+'.str_repeat($separator.'[^'.preg_quote($separator, '!').']', $l - $index - 1).'$'];
+			} else {
+				$params = ['^'.preg_quote($stub.$separator, "!").'[0-9]+$'];
+			}
 		} else {
 			$field_limit_sql = "{$field} LIKE ?";
 			$params = [$stub.$separator.'%'];

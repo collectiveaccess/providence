@@ -185,6 +185,30 @@ class MediaUrl extends \CA\Plugins\PluginConsumer {
 	}
 	# ------------------------------------------------
 	/**
+	 * Return list of supported formats. By default a list of format codes is returned.
+	 * The 'full' and 'names' options allow return of additional information.
+	 *
+	 * @param array $options Options include:
+	 *		names = return list of format names for display
+	 *
+	 * @return array
+	 */
+	public function supportedFormats(?array $options=null) {
+		$active = $this->_getActivePlugins();
+		
+		$formats = [];
+		foreach($active as $p) {
+			if($f = $p['plugin']->formats()) {
+				$formats = array_merge($formats, $f);
+			}
+		}
+		if(caGetOption('names', $options, false)) {
+			return array_values($formats);
+		}
+		return array_keys($formats);
+	}
+	# ------------------------------------------------
+	/**
 	 *
 	 */
 	private function _getActivePlugins() : array {

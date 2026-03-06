@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2025 Whirl-i-Gig
+ * Copyright 2020-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -89,6 +89,11 @@ abstract class BaseMediaUrlPlugin extends \WLPlug  {
 	 *
 	 */
 	abstract public function service(string $url, ?array $options=null);
+	# ------------------------------------------------
+	/**
+	 *
+	 */
+	abstract public function formats() : array;
 	# ------------------------------------------------
 	/**
 	 *

@@ -553,6 +553,9 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 				} catch(\Geocoder\Exception\CollectionIsEmpty $e) {
 					$this->postError(1970, _t('Could not geocode address "%1"', $value), 'GeocodeAttributeValue->parseValue()');
 					return false;
+				} catch(Exception $e) {
+					$this->postError(1970, _t('Could not geocode address "%1": %2', $value, $e->getMessage()), 'GeocodeAttributeValue->parseValue()');
+					return false;
 				}
 	
 				$coords = $result->first()->getCoordinates();

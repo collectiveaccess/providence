@@ -3475,13 +3475,15 @@ class BrowseEngine extends BaseFindEngine {
 		}
 						
 		if(isset($va_facet_info['filter']) && is_array($va_facet_info['filter']) && sizeof($va_facet_info['filter'])){
-			$qr = $vs_browse_table_name::findAsSearchResult($va_facet_info['filter']);
-			$filtered_ids = $qr->getAllFieldValues($t_subject->primaryKey());
-			if(is_array($va_results) && sizeof($va_results)) {
-				$va_results = array_intersect($filtered_ids, $va_results);
-			} else {
-				$va_results = $filtered_ids;
-			}	
+			$b = $this->ops_browse_table_name;
+			if($qr = $b::findAsSearchResult($va_facet_info['filter'])) {
+				$filtered_ids = $qr->getAllFieldValues($t_subject->primaryKey());
+				if(is_array($va_results) && sizeof($va_results)) {
+					$va_results = array_intersect($filtered_ids, $va_results);
+				} else {
+					$va_results = $filtered_ids;
+				}
+			}
 		}
 
 		$vb_single_value_is_present = false;

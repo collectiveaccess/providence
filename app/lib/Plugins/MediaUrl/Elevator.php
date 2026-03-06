@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2023-2025 Whirl-i-Gig
+ * Copyright 2023-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -178,6 +178,15 @@ class Elevator Extends BaseMediaUrlPlugin {
 		$size_css = $size ? "style='font-size: {$size}'" : '';
 		
 		return "<i class='fas fa-building' {$size_css}></i>";
+	}
+	# ------------------------------------------------
+	/**
+	 * Get list of formats handled. Keys are format short names, values are full names.
+	 *
+	 * @return array List of formats supported
+	 */
+	public function formats() : array {
+		return ['Elevator' => 'Elevator'];
 	}
 	# ------------------------------------------------
 	/**
