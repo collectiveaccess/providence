@@ -7293,8 +7293,10 @@ if (!$batch) {
 				}
 			}
 			
+			$count_fld = $t_item_rel ? 'DISTINCT '.$t_item_rel->primaryKey(true) : '*';
+			
 			$vs_sql = "
-				SELECT ".(($ps_return_as === 'count') ? 'count(*) c' : "DISTINCT ".join(', ', $va_selects))."
+				SELECT ".(($ps_return_as === 'count') ? "count({$count_fld}) c" : "DISTINCT ".join(', ', $va_selects))."
 				FROM {$vs_subject_table_name}
 				".join("\n", array_merge($va_joins, $va_joins_post_add))."
 				WHERE
