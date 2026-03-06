@@ -109,7 +109,14 @@ BaseModel::$s_ca_models_definitions['ca_acl'] = array(
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
 				'LABEL' => 'Inherited from row id', 'DESCRIPTION' => 'ACL inherited from row'
-		)
+		),
+		'include_representations' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'LABEL' => _t('Include representations?'), 'DESCRIPTION' => _t('Extend ACL exception to include related representations')
+		),
 	)
 );
 
@@ -731,7 +738,6 @@ class ca_acl extends BaseModel {
 	 */
 	public static function setACLWorldAccessForRows($table, array $row_ids, int $world_access, ?array $options=null) {
 		if(!($subject = Datamodel::getInstance($table))) {
-			print caPrintStackTrace();
 			throw new ApplicationException(_t('Invalid table: %1', $table));
 		}
 		$table_num = (int)$subject->tableNum();
@@ -780,6 +786,8 @@ class ca_acl extends BaseModel {
 		$subject_table_num = $subject->tableNum();
 		$subject_pk = $subject->primaryKey();
 		
+		ca_acl::debug(_t('', '', 'setGlobalEntries'));
+								
 		$new_entries = [];
 		if($qr = $db->query("
 			SELECT t.{$subject_pk}, a.*
@@ -1475,7 +1483,6 @@ class ca_acl extends BaseModel {
 				if(($target == 'ca_objects')) {
 					foreach($target_ids as $target_id) {
 						$o = ca_objects::findAsInstance($target_id);
-						print "UPDATE reps FOR $target_id\n";
 						ca_acl::applyACLInheritanceToRelatedFromRow($o, 'ca_object_representations', ['skipRedundantEntryRemoval' => true]);
 					}
 				}
