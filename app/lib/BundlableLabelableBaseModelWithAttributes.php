@@ -8068,7 +8068,7 @@ $pa_options["display_form_field_tips"] = true;
 		$form_prefix = $request->getParameter('_formName', pString);
 
 		$this->opo_app_plugin_manager->hookBeforeSaveItem([
-			'id' => $subject_id,
+			'id' => $this->getPrimaryKey(),
 			'table_num' => $this->tableNum(),
 			'table_name' => $subject_table, 
 			'instance' => &$this,
@@ -8079,7 +8079,7 @@ $pa_options["display_form_field_tips"] = true;
 		$orig_access = $this->get('access');
 		if($save_access && !is_null($request->parameterExists('access')) && $this->hasField('access')) {
 			$this->set('access', $request->getParameter('access', pInteger) );
-			$this->update();
+			$this->update(['skipACLInheritance' => true]);
 		}
 	
 		$set_rep_access = $request->getParameter('set_representation_access_inherit_from_parent', pInteger);
@@ -8155,7 +8155,7 @@ $pa_options["display_form_field_tips"] = true;
 			if ($this->hasField('access_inherit_from_parent')) {
 				$this->set('access_inherit_from_parent', $request->getParameter('access_inherit_from_parent', pInteger));
 			}
-			$this->update();
+			$this->update(['skipACLInheritance' => true]);
 
 			//if ($this->numErrors()) {
 			//	$this->postError(1250, _t('Could not set ACL inheritance settings: %1', join("; ", $this->getErrors())),"BundleableLabelableBaseModelWithAttributes->setACLAccessFromForm()");
@@ -8239,9 +8239,9 @@ $pa_options["display_form_field_tips"] = true;
 			// Save "world" ACL
 			if($pawtucket_only_acl_enabled) {
 				// Set world access to public access value in "front-end only" mode
-				
+				$a = $request->getParameter('access', pInteger) ?? 0;
 				$access_to_acl_map = caGetACLItemLevelMap();
-				$this->setACLWorldAccess($access_to_acl_map[$request->getParameter('access', pInteger) ?? 0], ['preserveInherited' => $preserve_inherited]);
+				$this->setACLWorldAccess($access_to_acl_map[$a] ?? 0, ['preserveInherited' => $preserve_inherited]);
 			} else {
 				$this->setACLWorldAccess($request->getParameter("{$form_prefix}_access_world", pInteger));
 			}
@@ -8259,7 +8259,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		$this->opo_app_plugin_manager->hookSaveItem(
 			[
-				'id' => $subject_id,
+				'id' => $this->getPrimaryKey(),
 				'table_num' => $this->tableNum(),
 				'table_name' => $subject_table,
 				'instance' => &$this,

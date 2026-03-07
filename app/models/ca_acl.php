@@ -365,7 +365,7 @@ class ca_acl extends BaseModel {
 		
 		$current_acl = ['group' => [], 'user' => [], 'world' => null];
 		$qr_current = $db->query("
-				SELECT group_id, user_id, access, notes
+				SELECT group_id, user_id, access, include_representations
 				FROM ca_acl
 				WHERE
 					table_num = ? AND row_id = ?
@@ -374,13 +374,22 @@ class ca_acl extends BaseModel {
 		while($qr_current->nextRow()) {
 			$row = $qr_current->getRow();
 			if($row['group_id'] > 0) {
-				$current_acl['group'][$row['group_id']] = $row['access'];
+				$current_acl['group'][$row['group_id']] = [
+					'access' => $row['access'],
+					'include_representations' => $row['include_representations']
+				];
 			}
 			if($row['user_id'] > 0) {
-				$current_acl['user'][$row['user_id']] = $row['access'];
+				$current_acl['user'][$row['user_id']] = [
+					'access' => $row['access'],
+					'include_representations' => $row['include_representations']
+				];
 			}
 			if(!$row['group_id'] && !$row['user_id']) {
-				$current_acl['world'] = $row['access'];
+				$current_acl['world'] = [
+					'access' => $row['access'],
+					'include_representations' => $row['include_representations']
+				];
 			}
 		}
 		return $current_acl;
@@ -717,10 +726,10 @@ class ca_acl extends BaseModel {
 		$t_acl->set('access', $world_access);
 		
 		if ($t_acl->getPrimaryKey()) {
-			$t_acl->update();
+			$t_acl->update(['skipACLInheritance' => true]);
 			ca_acl::debug(_t('Update ACL world access for %1::%2 to %3', $subject_table, $subject->getPrimaryKey(), $world_access), 'setACLWorldAccess');
 		} else {
-			$t_acl->insert();
+			$t_acl->insert(['skipACLInheritance' => true]);
 			ca_acl::debug(_t('Insert ACL world access for %1::%2 to %3', $subject_table, $subject->getPrimaryKey(), $world_access), 'setACLWorldAccess');
 		}
 		if ($t_acl->numErrors()) {
@@ -798,12 +807,12 @@ class ca_acl extends BaseModel {
 				$row = $qr->getRow();
 				
 				if(!($row['acl_id'] ?? null)) {
-					$new_entries[] = "(NULL, NULL, {$subject_table_num}, {$row[$subject_pk]}, {$default_item_access_level}, '', NULL, NULL)";
+					$new_entries[] = "(NULL, NULL, {$subject_table_num}, {$row[$subject_pk]}, {$default_item_access_level}, '', NULL, NULL, 0)";
 				}
 			}
 			if(sizeof($new_entries)) {
 				$db->query("INSERT IGNORE INTO ca_acl 
-					(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id)
+					(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id, include_representations)
 					VALUES
 					".join(",", $new_entries)."
 				");
@@ -1237,7 +1246,7 @@ class ca_acl extends BaseModel {
 			$acl_to_delete = [];
 			foreach($acl_to_copy as $kind => $entries) {
 				if($kind === 'world') {
-					if(isset($row_acl[$kind]) && ($row_acl[$kind] >= $access)) {
+					if(isset($row_acl[$kind]) && ($row_acl[$kind]['access'] >= $access)) {
 						unset($acl_to_copy[$kind]);
 					} else {
 						$acl_to_delete[$kind] = $row_acl[$kind];
@@ -1245,7 +1254,7 @@ class ca_acl extends BaseModel {
 				} else {
 					foreach($entries as $entry_id => $access) {
 						if(isset($row_acl[$kind][$entry_id])) {
-							if($row_acl[$kind][$entry_id] >= $access) {
+							if($row_acl[$kind][$entry_id]['access'] >= $access) {
 								unset($acl_to_copy[$kind][$entry_id]);
 							} else {
 								$acl_to_delete[$kind][$entry_id] = $row_acl[$kind][$entry_id];
@@ -1261,17 +1270,17 @@ class ca_acl extends BaseModel {
 				switch($kind) {
 					case 'world':
 						if(strlen($entries)) {
-							$deletes[] = "((user_id IS NULL) AND (group_id IS NULL) AND (access = {$entries})) AND (table_num = ?) AND (row_id = ?)";
+							$deletes[] = "((user_id IS NULL) AND (group_id IS NULL) AND (access = {$entries['access']})) AND (table_num = ?) AND (row_id = ?)";
 						}
 						break;
 					case 'user':
-						foreach($entries as $user_id => $access) {
-							$deletes[] = "((user_id = {$user_id}) AND (group_id IS NULL) AND (access = {$access})) AND (table_num = ?) AND (row_id = ?)";
+						foreach($entries as $user_id => $entry) {
+							$deletes[] = "((user_id = {$user_id}) AND (group_id IS NULL) AND (access = {$entry['access']})) AND (table_num = ?) AND (row_id = ?)";
 						}
 						break;
 					case 'group':
-						foreach($entries as $group_id => $access) {
-							$deletes[] = "((user_id IS NULL) AND (group_id = {$group_id}) AND (access = {$access})) AND (table_num = ?) AND (row_id = ?)";
+						foreach($entries as $group_id => $entry) {
+							$deletes[] = "((user_id IS NULL) AND (group_id = {$group_id}) AND (access = {$entry['access']})) AND (table_num = ?) AND (row_id = ?)";
 						}
 						break;
 				}
@@ -1291,17 +1300,17 @@ class ca_acl extends BaseModel {
 				switch($kind) {
 					case 'world':
 						if(strlen($entries)) {
-							$inserts[] = "(NULL,NULL,{$subject_table_num},{$id},{$entries},'',{$subject_table_num},{$subject_id})";
+							$inserts[] = "(NULL,NULL,{$subject_table_num},{$id},{$entries['access']},'',{$subject_table_num},{$subject_id}, {$entries['include_representations']})";
 						}
 						break;
 					case 'user':
-						foreach($entries as $user_id => $access) {
-							$inserts[] = "(NULL,{$user_id},{$subject_table_num},{$id},{$access},'',{$subject_table_num},{$subject_id})";
+						foreach($entries as $user_id => $entry) {
+							$inserts[] = "(NULL,{$user_id},{$subject_table_num},{$id},{$entry['access']},'',{$subject_table_num},{$subject_id}, {$entry['include_representations']})";
 						}
 						break;
 					case 'group':
-						foreach($entries as $group_id => $access) {
-							$inserts[] = "({$group_id},NULL,{$subject_table_num},{$id},{$access},'',{$subject_table_num},{$subject_id})";
+						foreach($entries as $group_id => $entry) {
+							$inserts[] = "({$group_id},NULL,{$subject_table_num},{$id},{$entry['access']},'',{$subject_table_num},{$subject_id}, {$entry['include_representations']})";
 						}
 						break;
 				}
@@ -1309,7 +1318,7 @@ class ca_acl extends BaseModel {
 				if(sizeof($inserts) > 0) {
 					$qr_clone = $db->query("
 						INSERT IGNORE INTO ca_acl
-						(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id)
+						(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id, include_representations)
 						VALUES
 						".join(",", $inserts), []);
 				}
@@ -1409,7 +1418,8 @@ class ca_acl extends BaseModel {
 				$path = array_keys(Datamodel::getPath($cur_table = $subject_table, $target));
 				$table = array_shift($path);
 				
-				$inherit_fld = (($target === 'ca_object_representations') && ($subject_table === 'ca_objects')) ? "acl_inherit_from_parent" : "acl_inherit_from_{$table}";
+				$is_object_to_representation = (($target === 'ca_object_representations') && ($subject_table === 'ca_objects'));
+				$inherit_fld = $is_object_to_representation ? "acl_inherit_from_parent" : "acl_inherit_from_{$table}";
 				if (!$t_rel_item->hasField($inherit_fld)) { return false; }
 					
 				$target_pk = (string)$t_rel_item->primaryKey();
@@ -1436,19 +1446,29 @@ class ca_acl extends BaseModel {
 				// Delete existing inherited rows
 				$qr_del = $db->query("DELETE FROM ca_acl WHERE inherited_from_table_num = ? AND inherited_from_row_id = ? AND table_num = ?", [(int)$subject_table_num, (int)$subject_id, (int)$target_table_num]);
 				
-				$qr_res = $db->query("
-					SELECT {$target}.{$target_pk}
+				$qr_res = $db->query($s="
+					SELECT {$target}.{$target_pk}, {$target}.{$inherit_fld}
 					FROM {$subject_table}
 					".join("\n", $joins)."
 					WHERE 
-						({$subject_table}.{$subject_pk} = ?) AND 
-						({$target}.{$inherit_fld} = 1) 
+						({$subject_table}.{$subject_pk} = ?)  
 						{$relationship_type_sql}
 					", $params);
-				$target_ids = [];
+				$target_ids = $inheriting_target_ids = [];
 				while($qr_res->nextRow()) {
-					$target_ids[] = $target_id = $qr_res->get($target_pk);
+					$target_id = $qr_res->get($target_pk);
 					if(is_array($limit_to_ids) && sizeof($limit_to_ids) && !in_array($target_id, $limit_to_ids)) { continue; }
+					
+					$target_ids[] = $target_id;
+					
+					$acl_filter_sql = '';
+					if($should_inherit = $qr_res->get("{$target}.{$inherit_fld}")) {
+						$inheriting_target_ids[] = $target_id;
+					} elseif($is_object_to_representation) {
+						$acl_filter_sql = ' AND (ca_acl.include_representations = 1)';
+					}
+					
+					if(!$is_object_to_representation && !$should_inherit) { continue; }
 					
 					// Remove existing non-inherited ACL entries that conflict with inherited entries
 					$qr_clean = $db->query("
@@ -1467,16 +1487,16 @@ class ca_acl extends BaseModel {
 							$qr_del = $db->query("DELETE FROM ca_acl WHERE table_num = ? AND row_id = ? AND group_id = ?", [(int)$target_table_num, (int)$target_id, $group_id]);
 						}
 					}
-					// @TODO: verify this is needed
-					//$db->query("DELETE FROM ca_acl WHERE group_id IS NULL and user_id IS NULL and table_num = {$target_table_num} AND row_id = {$target_id}");
+					
 					$qr_clone = $db->query("
 						INSERT IGNORE INTO ca_acl
-						(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id)
-						SELECT group_id, user_id, {$target_table_num}, {$target_id}, access, notes, {$subject_table_num}, {$subject_id}
+						(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id, include_representations)
+						SELECT group_id, user_id, {$target_table_num}, {$target_id}, access, notes, {$subject_table_num}, {$subject_id}, include_representations
 						FROM ca_acl
 						WHERE
-							table_num = ? AND row_id = ? 
-					", (int)$subject_table_num, (int)$subject_id);
+							table_num = ? AND row_id = ? AND ((user_id IS NOT NULL) OR (group_id IS NOT NULL))
+							{$acl_filter_sql}
+					", [(int)$subject_table_num, (int)$subject_id]);
 				}
 				
 				// Expand to representations
@@ -1535,17 +1555,25 @@ class ca_acl extends BaseModel {
 				if (!isset($options['deleteACLOnly']) || !$options['deleteACLOnly']) {
 					// only inherit if inherit_from field is set. $target and $target_pk have been verified at this pont
 					$qr_inherit = $db->query("SELECT {$inherit_fld} FROM {$target} WHERE {$target_pk} = ?", [$target_id]);
-					if(!$qr_inherit->nextRow()) { return false; }
-					if(!$qr_inherit->get($inherit_fld)) { return false; }
+					
+					$skip = false;
+					if(!$qr_inherit->nextRow()) { $skip = true; }
+					if(!$qr_inherit->get($inherit_fld)) { $skip = true; }
 
+					$rep_force_inherit_sql = '';
+					if($target == 'ca_object_representations') {
+						$rep_force_inherit_sql = " AND include_representations = 1";
+					} elseif($skip) {
+						return false;
+					}
 					// insert inherited ACLs
 					$db->query("
 						INSERT IGNORE INTO ca_acl
-						(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id)
-						SELECT group_id, user_id, {$target_table_num}, {$target_id}, access, notes, {$subject_table_num}, {$subject_id}
+						(group_id, user_id, table_num, row_id, access, notes, include_representations, inherited_from_table_num, inherited_from_row_id, include_representations)
+						SELECT group_id, user_id, {$target_table_num}, {$target_id}, access, notes, include_representations, {$subject_table_num}, {$subject_id}, include_representations
 						FROM ca_acl
 						WHERE
-							table_num = ? AND row_id = ? 
+							table_num = ? AND row_id = ? {$rep_force_inherit_sql}
 					", (int)$subject_table_num, (int)$subject_id);
 					
 					if(!caGetOption('skipRedundantEntryRemoval', $options, false)) {
