@@ -8037,7 +8037,9 @@ $pa_options["display_form_field_tips"] = true;
 		$o_view->setVar('t_user', $t_user);
 		$o_view->setVar('initialValues', $users);
 		
-		$o_view->setVar('allow_rep_access_inheritance', $config->get('ca_object_representations_allow_access_inheritance'));	
+		$o_view->setVar('allow_rep_access_inheritance', $allow_rep_access_inheritance = $config->get('ca_object_representations_allow_access_inheritance'));	
+		$o_view->setVar('show_rep_access_inheritance_controls', $allow_rep_access_inheritance && in_array($this->tableName(), ['ca_collections', 'ca_objects']));
+		
 		$o_view->setVar('pawtucket_only_acl_separate_inheritance_controls', ($config->get('pawtucket_only_acl_separate_inheritance_controls') || $config->get("{tablename}_pawtucket_only_acl_separate_inheritance_controls")));
 		$o_view->setVar('show_public_access_controls', ($config->get('acl_show_public_access_controls') || $config->get("{$tablename}_acl_show_public_access_controls")));
 		
@@ -8545,7 +8547,9 @@ $pa_options["display_form_field_tips"] = true;
 		$o_view->setVar('t_group', $t_group);
 		$o_view->setVar('initialValues', $groups);
 		
-		$o_view->setVar('allow_rep_access_inheritance', $config->get('ca_object_representations_allow_access_inheritance'));	
+		$o_view->setVar('allow_rep_access_inheritance', $allow_rep_access_inheritance = $config->get('ca_object_representations_allow_access_inheritance'));	
+		$o_view->setVar('show_rep_access_inheritance_controls', $allow_rep_access_inheritance && in_array($this->tableName(), ['ca_collections', 'ca_objects']));
+		
 		$o_view->setVar('pawtucket_only_acl_separate_inheritance_controls', ($config->get('pawtucket_only_acl_separate_inheritance_controls') || $config->get("{tablename}_pawtucket_only_acl_separate_inheritance_controls")));
 		$o_view->setVar('show_public_access_controls', ($config->get('acl_show_public_access_controls') || $config->get("{$tablename}_acl_show_public_access_controls")));
 		

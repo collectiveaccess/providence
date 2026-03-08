@@ -32,7 +32,9 @@ $t_subject 		= $this->getVar('t_subject');
 $settings 		= $this->getVar('settings');
 $add_label 		= $this->getVar('add_label') ?? _t("Add group exception");
 
-$pawtucket_only_acl_enabled 	= caACLIsEnabled($t_instance, ['forPawtucketOnly' => true]);
+$pawtucket_only_acl_enabled 	= $this->getVar('pawtucket_only_acl_enabled');
+$allow_rep_access_inheritance 	= $this->getVar('allow_rep_access_inheritance');
+$show_rep_access_inheritance_controls = $this->getVar('show_rep_access_inheritance_controls');
 
 $read_only = false;
 
@@ -51,12 +53,13 @@ if (!is_array($initial_values)) { $initial_values = []; }
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo">
 			<table class="caListItem">
 				<tr>
-					<td class="formLabel">
+					<td class="formLabel aclLabel">
 						<?= caHTMLSelect("{$id_prefix}_action_{n}", [
 							_t('Maintain') => '', _t('Add') => 'ADD', _t('Remove') => 'REMOVE'
 						], ['id' => "{$id_prefix}_action_{n}"]); ?>
-						<input type="text" size="60" name="<?= $id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?= $id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
+						<input type="text" size="50" name="<?= $id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?= $id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
 						<?= $t_acl->htmlFormElement('access', '^ELEMENT', ['name' => "{$id_prefix}_access_{n}", 'id' => "{$id_prefix}_access_{n}", 'value' => '{{access}}', 'no_tooltips' => true, 'forPawtucket' => $pawtucket_only_acl_enabled]); ?>
+						<?= $show_rep_access_inheritance_controls ? $t_acl->htmlFormElement('include_representations', '^ELEMENT ^LABEL', ['name' => "{$id_prefix}_include_representations_{n}", 'id' => "{$id_prefix}_include_representations_{n}", 'value' => '{{include_representations}}', 'no_tooltips' => true, 'forPawtucket' => $pawtucket_only_acl_enabled]) : ''; ?>
 						<input type="hidden" name="<?= $id_prefix; ?>_id{n}" id="<?= $id_prefix; ?>_id{n}" value="{id}"/>
 						<div class="inheritName">{refcount_display}</div>
 					</td>

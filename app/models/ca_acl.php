@@ -386,10 +386,7 @@ class ca_acl extends BaseModel {
 				];
 			}
 			if(!$row['group_id'] && !$row['user_id']) {
-				$current_acl['world'] = [
-					'access' => $row['access'],
-					'include_representations' => $row['include_representations']
-				];
+				$current_acl['world'] = $row['access'];
 			}
 		}
 		return $current_acl;
@@ -1231,7 +1228,6 @@ class ca_acl extends BaseModel {
 		
 		// Get current ACL values for this row
 		$current_acl = ca_acl::getACLValuesForRow($subject_table_num, $subject_id);
-		
 		// Delete existing inherited rows
 		ca_acl::removeACLValuesInheritedFromRow($subject, ['onlyInherited' => true]);
 			
@@ -1246,7 +1242,7 @@ class ca_acl extends BaseModel {
 			$acl_to_delete = [];
 			foreach($acl_to_copy as $kind => $entries) {
 				if($kind === 'world') {
-					if(isset($row_acl[$kind]) && ($row_acl[$kind]['access'] >= $access)) {
+					if(isset($row_acl[$kind]) && ($row_acl[$kind] >= $access)) {
 						unset($acl_to_copy[$kind]);
 					} else {
 						$acl_to_delete[$kind] = $row_acl[$kind];
@@ -1263,14 +1259,13 @@ class ca_acl extends BaseModel {
 					}
 				}
 			}
-			
 			// Remove existing ACL that will be replaced
 			foreach($acl_to_delete as $kind => $entries) {
 				$deletes = [];
 				switch($kind) {
 					case 'world':
 						if(strlen($entries)) {
-							$deletes[] = "((user_id IS NULL) AND (group_id IS NULL) AND (access = {$entries['access']})) AND (table_num = ?) AND (row_id = ?)";
+							$deletes[] = "((user_id IS NULL) AND (group_id IS NULL) AND (access = {$entries})) AND (table_num = ?) AND (row_id = ?)";
 						}
 						break;
 					case 'user':
@@ -1300,7 +1295,7 @@ class ca_acl extends BaseModel {
 				switch($kind) {
 					case 'world':
 						if(strlen($entries)) {
-							$inserts[] = "(NULL,NULL,{$subject_table_num},{$id},{$entries['access']},'',{$subject_table_num},{$subject_id}, {$entries['include_representations']})";
+							$inserts[] = "(NULL,NULL,{$subject_table_num},{$id},{$entries},'',{$subject_table_num},{$subject_id}, 0)";
 						}
 						break;
 					case 'user':

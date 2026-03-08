@@ -2349,11 +2349,11 @@ function caBatchEditorACLEditor(View $view, RecordSelection $rs, ?array $options
 	// Get inheritance usage stats
 	$o_view->setVar('statistics', ca_acl::getStatisticsForBatch($rs));
 	
+	$t_instance = Datamodel::getInstance($rs->tableName());
 	$config = $t_instance->getAppConfig();
 	
 	// Get inheritance usage stats
 	$o_view->setVar('allow_rep_access_inheritance', $config->get('ca_object_representations_allow_access_inheritance'));
-	
 	
 	$o_view->setVar('acl_enabled', caACLIsEnabled($t_instance));
 	$o_view->setVar('pawtucket_only_acl_enabled', caACLIsEnabled($t_instance, ['forPawtucket' => true]));

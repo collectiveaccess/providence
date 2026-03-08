@@ -30,8 +30,8 @@ $tablename		= $rs->tableName();
 $t_instance 	= Datamodel::getInstance($tablename);
 $config			= $t_instance->getAppConfig();
 	
-$can_edit	 	= true; //$t_instance->isSaveable($this->request);
-$can_delete		= false; //$t_instance->isDeletable($this->request);
+$can_edit	 	= true; 
+$can_delete		= false;
 
 $stats			= $this->getVar('statistics');
 $typename		= mb_strtolower($t_instance->getTypeName(null, ['useSingular' => true]));
@@ -39,6 +39,8 @@ $typename		= mb_strtolower($t_instance->getTypeName(null, ['useSingular' => true
 $acl_enabled 					= caACLIsEnabled($t_instance);
 $pawtucket_only_acl_enabled 	= caACLIsEnabled($t_instance, ['forPawtucket' => true]);
 $show_public_access_controls 	= ($config->get('acl_show_public_access_controls') || $config->get("{$tablename}_acl_show_public_access_controls"));
+$allow_rep_access_inheritance 	= $this->getVar('allow_rep_access_inheritance');
+$pawtucket_only_acl_separate_inheritance_controls = $this->getVar('pawtucket_only_acl_separate_inheritance_controls');
 ?>
 <div class="sectionBox">
 <?php
@@ -77,9 +79,9 @@ $show_public_access_controls 	= ($config->get('acl_show_public_access_controls')
 ?>
 		<p>
 			<?= ($stats['inheritingSubRecordCount'] === 1) ? 
-				_t('%1 %2 (out of %4 total) are inheriting public access settings from %3', $stats['inheritingAccessSubRecordCount'], Datamodel::getTableProperty($tablename, 'NAME_SINGULAR'), $t_instance->getProperty('NAME_PLURAL'), $stats['subRecordCount']) 
+				_t('%1 %2 (out of %4 total) are inheriting public access exceptions from %3', $stats['inheritingAccessSubRecordCount'], Datamodel::getTableProperty($tablename, 'NAME_SINGULAR'), $t_instance->getProperty('NAME_PLURAL'), $stats['subRecordCount']) 
 				: 
-				_t(' %1 %2 (out of %4 total) are inheriting public access settings from %3', $stats['inheritingAccessSubRecordCount'], Datamodel::getTableProperty($tablename, 'NAME_PLURAL'), $t_instance->getProperty('NAME_PLURAL'), $stats['subRecordCount'])  
+				_t(' %1 %2 (out of %4 total) are inheriting public access exceptions from %3', $stats['inheritingAccessSubRecordCount'], Datamodel::getTableProperty($tablename, 'NAME_PLURAL'), $t_instance->getProperty('NAME_PLURAL'), $stats['subRecordCount'])  
 			?>
 <?php
 			if(
@@ -164,15 +166,16 @@ if($acl_enabled || $pawtucket_only_acl_enabled) {
 <?php
 		}
 ?>
-		<div class='subtitle itemAccessExceptions'>
-			<?= _t('Exceptions'); ?>
+		<div class='title itemAccessExceptions'>
+			<?= _t('Access exceptions'); ?>
 		</div>
 		<div class='control'>
 			<?= $t_instance->getACLBatchGroupHTMLFormBundle($this->request, 'caAccessControlList', $stats['groups']); ?>	
 			<?= $t_instance->getACLBatchUserHTMLFormBundle($this->request, 'caAccessControlList', $stats['users']); ?>
 		</div>
 <?php
-	if(!$pawtucket_only_acl_enabled) { 
+	if(!$pawtucket_only_acl_enabled || $pawtucket_only_acl_separate_inheritance_controls) { 
+		// ACL settings are set from Pawtucket (aka "Public") settings  - with access inheritance set the same as acl inheritance
 ?>
 		<hr/>
 		<div class='subtitle itemAccessInheritance'><?= _t('Inheritance'); ?></div>
@@ -187,12 +190,12 @@ if($acl_enabled || $pawtucket_only_acl_enabled) {
 			
 			if ($t_instance->hasField('acl_inherit_from_ca_collections')) {
 ?>
-				<div class='control'><?= $t_instance->htmlFormElement('acl_inherit_from_ca_collections', '^LABEL ^ELEMENT',  ['label' => _t('Inherit access settings from collection(s)?')]); ?></div>
+				<div class='control'><?= $t_instance->htmlFormElement('acl_inherit_from_ca_collections', '^LABEL ^ELEMENT',  ['label' => _t('Inherit access exceptions from collection(s)?')]); ?></div>
 <?php
 			}
 			if ($t_instance->hasField('acl_inherit_from_parent')) {
 ?>
-				<div class='control'><?= $t_instance->htmlFormElement('acl_inherit_from_parent', '^LABEL ^ELEMENT', ['label' => _t('Inherit access settings from parent?')]); ?></div>
+				<div class='control'><?= $t_instance->htmlFormElement('acl_inherit_from_parent', '^LABEL ^ELEMENT', ['label' => _t('Inherit access exceptions from parent?')]); ?></div>
 <?php
 			}
 
@@ -202,9 +205,9 @@ if($acl_enabled || $pawtucket_only_acl_enabled) {
 ?>
 				<p>
 				<?= ($stats['inheritingSubRecordCount'] === 1) ? 
-					_t('%1 %2 (out of %4 total) are inheriting access settings from %3', $stats['inheritingSubRecordCount'], $t_instance->getProperty('NAME_SINGULAR'), $typename, $stats['subRecordCount']) 
+					_t('%1 %2 (out of %4 total) are inheriting access exceptions from %3', $stats['inheritingSubRecordCount'], $t_instance->getProperty('NAME_SINGULAR'), $typename, $stats['subRecordCount']) 
 					: 
-					_t('%1 %2 (out of %4 total) are inheriting access settings from %3', $stats['inheritingSubRecordCount'], $t_instance->getProperty('NAME_PLURAL'), $typename, $stats['subRecordCount'])  
+					_t('%1 %2 (out of %4 total) are inheriting access exceptions from %3', $stats['inheritingSubRecordCount'], $t_instance->getProperty('NAME_PLURAL'), $typename, $stats['subRecordCount'])  
 				?>
 <?php
 				if(
@@ -238,9 +241,9 @@ if($acl_enabled || $pawtucket_only_acl_enabled) {
 ?>
 				<p>
 				<?= ($stats['inheritingRelatedObjectCount'] === 1) ? 
-					_t('%1 %2 (out of %4 total) are inheriting access settings from %3', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_SINGULAR'), $t_instance->getProperty('NAME_PLURAL'), $stats['potentialInheritingRelatedObjectCount']) 
+					_t('%1 %2 (out of %4 total) are inheriting access exceptions from %3', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_SINGULAR'), $t_instance->getProperty('NAME_PLURAL'), $stats['potentialInheritingRelatedObjectCount']) 
 					: 
-					_t(' %1 %2 (out of %4 total) are inheriting access settings from %3', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_PLURAL'), $stats['potentialInheritingRelatedObjectCount'])  
+					_t(' %1 %2 (out of %4 total) are inheriting access exceptions from %3', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_PLURAL'), $stats['potentialInheritingRelatedObjectCount'])  
 				?>
 <?php
 				if(
