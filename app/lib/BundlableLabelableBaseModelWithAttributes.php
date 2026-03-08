@@ -8060,6 +8060,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 		$pawtucket_only_acl_enabled = caACLIsEnabled($this, ['forPawtucket' => true]);
 		$pawtucket_only_acl_separate_inheritance_controls = ($this->getAppConfig()->get('pawtucket_only_acl_separate_inheritance_controls') || $this->getAppConfig()->get("{tablename}_pawtucket_only_acl_separate_inheritance_controls"));
+		$pawtucket_only_dont_link_acl_and_access_inheritance = ($this->getAppConfig()->get('pawtucket_only_dont_link_acl_and_access_inheritance') || $this->getAppConfig()->get("{tablename}_pawtucket_only_dont_link_acl_and_access_inheritance"));
 
 		$can_save_acl = ((!method_exists($this, 'supportsACL') || $this->supportsACL())) || $pawtucket_only_acl_enabled;
 	
@@ -8084,7 +8085,7 @@ $pa_options["display_form_field_tips"] = true;
 	
 		$set_rep_access = $request->getParameter('set_representation_access_inherit_from_parent', pInteger);
 		$set_rep_acl = $request->getParameter('set_representation_acl_inherit_from_parent', pInteger);
-		if($pawtucket_only_acl_enabled && !$pawtucket_only_acl_separate_inheritance_controls) {
+		if($pawtucket_only_acl_enabled && !$pawtucket_only_acl_separate_inheritance_controls && !$pawtucket_only_dont_link_acl_and_access_inheritance) {
 			$set_all = $request->getParameter('set_all_access_inherit_from_parent', pInteger);
 			$request->setParameter('set_all_acl_inherit_from_parent', $set_all);
 			
