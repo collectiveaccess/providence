@@ -66,6 +66,7 @@ var caUI = caUI || {};
 			defaultValues: {},
 			bundlePreview: '',
 			readonly: 0,
+			readonlyWhenSet: null,
 			
 			useAnimation: false,
 			animationDuration: 200,
@@ -188,6 +189,16 @@ var caUI = caUI || {};
 		}
 
 		that.addToBundle = function(id, initialValues, dontUpdateBundleFormState) {
+			let isReadonly = that.readonly;
+			if(initialValues && that.readonlyWhenSet && Array.isArray(that.readonlyWhenSet) && (that.readonlyWhenSet.length > 0)) {
+				for(let i in that.readonlyWhenSet) {
+					if(initialValues.hasOwnProperty(that.readonlyWhenSet[i]) && (initialValues[that.readonlyWhenSet[i]] !== null)) {
+						isReadonly = true;
+						break;
+					}
+				}
+			}
+			
 			// prepare template values
 			var cnt, templateValues = {};
 			var isNew = false;
@@ -379,7 +390,7 @@ var caUI = caUI || {};
 
 			// attach interstitial edit button
 			if (that.interstitialButtonClassName) {
-				if (!that.readonly && ('hasInterstitialUI' in initialValues) && (initialValues['hasInterstitialUI'] == true)) {
+				if (!isReadonly && ('hasInterstitialUI' in initialValues) && (initialValues['hasInterstitialUI'] == true)) {
 					jQuery("#" +that.itemID + templateValues.n).find("." + that.interstitialButtonClassName).on('click', null,  {}, function(e) {
 						// Trigger interstitial edit panel
 						var u = options.interstitialUrl + "/relation_id/" + initialValues['relation_id'] + "/placement_id/" + that.placementID + "/n/" + templateValues.n + "/field_name_prefix/" + that.fieldNamePrefix;
@@ -397,10 +408,10 @@ var caUI = caUI || {};
 			}
 
 			// attach delete button
-			if (!that.readonly) {
+			if (!isReadonly) {
 				jQuery("#" +that.itemID + templateValues.n).find("." + that.deleteButtonClassName).on('click', null, {}, function(e) { that.deleteFromBundle(templateValues.n); e.preventDefault(); return false; });
 			} else {
-				jQuery("#" +that.itemID + templateValues.n).find("." + that.deleteButtonClassName).css("display", "none");
+				jQuery("#" +that.itemID + templateValues.n).find("." + that.deleteButtonClassName).remove();	
 			}
 			
 			// attach other buttons
@@ -450,7 +461,7 @@ var caUI = caUI || {};
 				that.onItemCreate(templateValues.n, that.initialValues[id]);
 			}
 
-			if (that.readonly) {
+			if (isReadonly) {
 				jQuery(that.container + " input").prop("disabled", true);
 				jQuery(that.container + " textarea").prop("disabled", true);
 				jQuery(that.container + " select").prop("disabled", true);
