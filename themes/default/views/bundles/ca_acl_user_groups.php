@@ -108,6 +108,7 @@ $t_acl = new ca_acl();
 			deleteButtonClassName: 'caDeleteItemButton',
 			showEmptyFormsOnLoad: 0,
 			readonly: <?= $read_only ? "true" : "false"; ?>,
+			readonlyWhenSet: ['inheritance_link'],
 			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'UserGroup', 'Get', array()); ?>'
 		});
 	});

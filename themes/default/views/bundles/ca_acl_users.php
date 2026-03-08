@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2025 Whirl-i-Gig
+ * Copyright 2012-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -104,6 +104,7 @@ if (!is_array($initial_values)) { $initial_values = []; }
 			deleteButtonClassName: 'caDeleteItemButton',
 			showEmptyFormsOnLoad: 0,
 			readonly: <?= $read_only ? "true" : "false"; ?>,
+			readonlyWhenSet: ['inheritance_link'],
 			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'User', 'Get',[]); ?>'
 		});
 	});
