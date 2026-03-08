@@ -8356,3 +8356,7 @@ button.passwordView {
         border: 1px dotted #999;
         font-weight: bold;
 }
+
+.aclLabel {
+	font-weight: normal;
+}
