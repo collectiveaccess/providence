@@ -159,6 +159,7 @@ $show_move = (
 	&& 
 	!$read_only
 );
+
 $show_add_object = (
 	(!$read_only && $has_privs && !$batch) 
 	&& 
@@ -174,6 +175,7 @@ $show_add_object = (
 	 		(($strict_type_hierarchy === '1') && !sizeof($t_subject->getTypeInstance()->get('ca_list_items.children.item_id', ['returnAsArray' => true])))
 	 	)
 );
+$show_explore = (!$batch && !$is_new) || ($is_new && !$show_move);
 
 // Tab to open on load?
 $default_tab_index = 0;
@@ -364,7 +366,7 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 			<div  id="<?= $id_prefix; ?>HierarchyBrowserTabs">
 				<ul>
 <?php
-	if (!$batch && !$is_new) {
+	if ($show_explore) {
 ?>
 					<li><a href="#<?= $id_prefix; ?>HierarchyBrowserTabs-explore" onclick='_init<?= $id_prefix; ?>ExploreHierarchyBrowser();'><span><?= _t('Explore'); ?></span></a></li>
 <?php	
@@ -387,7 +389,7 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 ?>
 				</ul>
 <?php
-	if (!$batch && !$is_new) {
+	if ($show_explore) {
 ?>
 				<div id="<?= $id_prefix; ?>HierarchyBrowserTabs-explore" class="hierarchyBrowseTab">	
 					<div class="hierarchyBrowserFind">
@@ -808,8 +810,12 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 	} elseif($is_new) {
 ?>
 		jQuery("#<?= $id_prefix; ?>HierarchyBrowserContainer").show();
+<?php
+		if($show_move) {
+?>
 		_init<?= $id_prefix; ?>MoveHierarchyBrowser();
 <?php
+		}
 	} elseif (isset($bundle_settings['open_hierarchy']) && (bool)$bundle_settings['open_hierarchy']) {
 ?>
 		jQuery("#<?= $id_prefix; ?>browseToggle").trigger("click", { "delay" : 0 });
@@ -822,5 +828,6 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 <?php
 	}
 ?>
+		_init<?= $id_prefix; ?>ExploreHierarchyBrowser();
 	});
 </script>
