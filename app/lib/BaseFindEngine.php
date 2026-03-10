@@ -360,7 +360,7 @@ class BaseFindEngine extends BaseObject {
 		$sort_spec = array_shift($sort_fields);
 		$sort_direction = self::sortDirection(array_shift($sort_directions));
 		list($sort_table, $sort_field, $sort_subfield) = array_pad(explode(".", $sort_spec), 3, null);
-		if (!$table || !$sort_table) { return $hits; }
+		if (!$table || !$sort_table || !$primary_field) { return $hits; }
 		
 		// Extract sortable values present on results page ($page_hits)
 		$values = $this->_getSortValues($page_hits, $table, $primary_field, $sort_direction);
