@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2021 Whirl-i-Gig
+ * Copyright 2012-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,15 +25,13 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
 require_once(__CA_LIB_DIR__."/ConfigurationExporter.php");
 
 class ExportConfigurationController extends ActionController {
-
 	# ------------------------------------------------	
-	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-		parent::__construct($po_request, $po_response, $pa_view_paths);
+	public function __construct(&$request, &$response, $pa_view_paths=null) {
+		parent::__construct($request, $response, $pa_view_paths);
 		
 		if (!$this->request->isLoggedIn()) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
@@ -58,4 +56,3 @@ class ExportConfigurationController extends ActionController {
 	}
 	# ------------------------------------------------
 }
-?>
