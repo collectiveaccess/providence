@@ -472,6 +472,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$this->BUNDLES['page_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of pages'));
 		$this->BUNDLES['preview_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of previews'));
 		$this->BUNDLES['caption_file_locales'] = array('type' => 'special', 'repeating' => true, 'label' => _t('List of caption file locales'));
+		$this->BUNDLES['caption_files'] = array('type' => 'special', 'repeating' => true, 'label' => _t('List of caption files'));
 		$this->BUNDLES['media_dimensions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media dimensions'));
 		$this->BUNDLES['media_duration'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media duration'));
 		$this->BUNDLES['media_class'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media class'));

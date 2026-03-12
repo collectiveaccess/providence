@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2024 Whirl-i-Gig
+ * Copyright 2024-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,6 +44,7 @@ final class Updater {
 	 *		progressBar = output progress bar? [Default is false]
 	 */
 	public static function performDatabaseSchemaUpdate(?array $options=null) {
+		if(!defined('__CA_DISABLE_ACL__')) { define('__CA_DISABLE_ACL__', true); }
 		$messages = [];
 		if (($schema_revision = \ConfigurationCheck::getSchemaVersion()) < __CollectiveAccess_Schema_Rev__) {			
 			

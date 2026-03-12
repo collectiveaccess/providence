@@ -493,13 +493,21 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$return_all_available_if_empty = (isset($options['returnAllAvailableIfEmpty']) && !$settings_only) ? (bool)$options['returnAllAvailableIfEmpty'] : false;
 		$table = (isset($options['table'])) ? $options['table'] : $this->getTableNum();
 		$pn_user_id = isset($options['user_id']) ? $options['user_id'] : null;
+		$screen_id = preg_replace("!^screen!i", "", caGetOption('screen_id', $options, null));
+		$placement_id = preg_replace("!^P!i", "", caGetOption('placement_id', $options, null));
+		
+		if(
+			!$table && $screen_id &&
+			($t_screen = ca_editor_ui_screens::find($screen_id, ['returnAs' => 'firstModelInstance'])) &&
+			($t_ui = ca_editor_uis::find($t_screen->get('ui_id'), ['returnAs' => 'firstModelInstance']))
+		) {
+			$table = $t_ui->get('editor_type');
+		}
 		
 		$table_name = Datamodel::getTableName($table);
 		
 		$deleted_elements = ca_metadata_elements::getElementsAsList(true, $table_name, null, !$no_cache, false, true, null, ['deletedOnly' => true]);
 		
-		$screen_id = caGetOption('screen_id', $options, null);
-		$placement_id = caGetOption('placement_id', $options, null);
 		
 		if (!$screen_id && !$placement_id && !($screen_id = $this->getPrimaryKey())) {
 			if ($return_all_available_if_empty && $table) {
@@ -507,8 +515,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			}
 			return []; 
 		}
-		$screen_id = preg_replace("!^screen!i", "", $screen_id);
-		$placement_id = preg_replace("!^P!i", "", $placement_id);
 		
 		
 		if (!$no_cache && $screen_id && isset(ca_editor_ui_screens::$s_placement_list_cache[$screen_id]) && ca_editor_ui_screens::$s_placement_list_cache[$screen_id]) {

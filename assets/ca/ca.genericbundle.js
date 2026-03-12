@@ -164,7 +164,8 @@ var caUI = caUI || {};
 		}
 
 		that.addNextValuesLink = function() {
-			var end = (that.loadFrom + that.loadSize)
+			if(that.loadFrom >= (that.totalValueCount - 1)) { return; }
+			var end = (that.loadFrom + that.loadSize);
 			if (end > that.totalValueCount) { end = that.totalValueCount % that.loadSize; } else { end = that.loadSize; }
 			
 			var p = that.container + " ." + that.itemListClassName;
@@ -178,11 +179,11 @@ var caUI = caUI || {};
 				return false;
 			}).on('scroll', null, function(e) {
 				// Trigger load of next page when bottom of current result set is reached.
-				if ((jQuery(this).scrollTop() + jQuery(this).height()) >= jQuery(this)[0].scrollHeight) {
+				if ((Math.ceil(jQuery(this).scrollTop()) + Math.ceil(jQuery(this).height())) >= Math.floor(jQuery(this)[0].scrollHeight)) {
 					jQuery(p + " .caItemLoadNextBundles").click();	
 				}
 			});
-			if ((jQuery(p).scrollTop() + jQuery(p).height()) >= jQuery(p)[0].scrollHeight) {
+			if ((Math.ceil(jQuery(p).scrollTop()) + Math.ceil(jQuery(p).height())) >= Math.floor(jQuery(p)[0].scrollHeight)) {
 				jQuery(p + " .caItemLoadNextBundles").click();	
 			}
 		}

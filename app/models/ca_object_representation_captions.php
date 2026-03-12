@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2024 Whirl-i-Gig
+ * Copyright 2013-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -180,5 +180,30 @@ class ca_object_representation_captions extends BaseModel {
 	protected $SEARCH_RESULT_CLASSNAME = 'ObjectRepresentationCaptionSearchResult';
 	
 
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function insert($options=null) {
+		if(!is_array($options)) { $options = []; }
+		$rc =  parent::insert($options);
+		if($rc && ($path = $this->getFilePath('caption_file'))) {
+			$this->set('caption_content', file_get_contents($path));
+			$rc = $this->update();
+		}
+		return $rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function update($options=null) {
+		$media_path = null;
+		if(!is_array($options)) { $options = []; }
+		if($this->changed('caption_file') && ($path = $this->getFilePath('caption_file'))) {
+			$this->set('caption_content', file_get_contents($path));
+		}
+		return parent::update($options);
+	}
 	# ------------------------------------------------------
 }

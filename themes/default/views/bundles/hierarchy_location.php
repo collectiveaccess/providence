@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -80,7 +80,7 @@ if ($is_new) {
 			}
 			break;
 		case __CA_HIER_TYPE_SIMPLE_MONO__:
-			$id = $t_subject->getHierarchyRootID();
+			$id = $parent_id ?? $t_subject->getHierarchyRootID();
 			break;
 	}
 } 
@@ -145,16 +145,37 @@ if (in_array($subject_table, array('ca_objects', 'ca_collections')) && $objects_
 }
 
 $strict_type_hierarchy = $this->request->config->get("{$subject_table}_enforce_strict_type_hierarchy");
-$type_selector 	= trim($t_subject->getTypeListAsHTMLFormElement(
-	"{$id_prefix}type_id", 
-	['id' => "{$id_prefix}typeList"], 
-	['enforceStrictTypeHierarchy' => $strict_type_hierarchy, 'restrictToTypes' => $bundle_settings['restrict_to_types'] ?: null]
-));
+$type_selector 	= $this->getVar('type_selector');
 
-$show_add = !$is_new && (!$read_only && $has_privs && !$batch) && (!$strict_type_hierarchy || ($strict_type_hierarchy && $type_selector));
-$show_move = ((!$strict_type_hierarchy || ($strict_type_hierarchy === '~') || $batch) && !$read_only);
+$show_add = (
+	!$is_new 
+	&& 
+	(!$read_only && $has_privs && !$batch) 
+	&& 
+	(!$strict_type_hierarchy || ($strict_type_hierarchy && $type_selector))
+);
+$show_move = (
+	(!$strict_type_hierarchy || ($strict_type_hierarchy === '~') || $batch) 
+	&& 
+	!$read_only
+);
 
-$show_add_object = (!$read_only && $has_privs && !$batch) && $objects_x_collections_hierarchy_enabled && in_array($subject_table, ['ca_collections'], true) && (!$strict_type_hierarchy || in_array($strict_type_hierarchy, ['-', '~'])) && (($strict_type_hierarchy != '1') || !sizeof($t_subject->getTypeInstance()->get('ca_list_items.children.item_id', ['returnAsArray' => true])));
+$show_add_object = (
+	(!$read_only && $has_privs && !$batch) 
+	&& 
+	$objects_x_collections_hierarchy_enabled 
+	&& 
+	in_array($subject_table, ['ca_collections'], true)
+	&& 
+		(
+			// no strict types, or loose type hierarchy
+			(!$strict_type_hierarchy || in_array($strict_type_hierarchy, ['-', '~']))
+			||
+			// strict hierarchy, current type is leaf (no sub-tyoes) - allow objects
+	 		(($strict_type_hierarchy === '1') && !sizeof($t_subject->getTypeInstance()->get('ca_list_items.children.item_id', ['returnAsArray' => true])))
+	 	)
+);
+$show_explore = (!$batch && !$is_new) || ($is_new && !$show_move);
 
 // Tab to open on load?
 $default_tab_index = 0;
@@ -345,7 +366,7 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 			<div  id="<?= $id_prefix; ?>HierarchyBrowserTabs">
 				<ul>
 <?php
-	if (!$batch && !$is_new) {
+	if ($show_explore) {
 ?>
 					<li><a href="#<?= $id_prefix; ?>HierarchyBrowserTabs-explore" onclick='_init<?= $id_prefix; ?>ExploreHierarchyBrowser();'><span><?= _t('Explore'); ?></span></a></li>
 <?php	
@@ -368,7 +389,7 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 ?>
 				</ul>
 <?php
-	if (!$batch && !$is_new) {
+	if ($show_explore) {
 ?>
 				<div id="<?= $id_prefix; ?>HierarchyBrowserTabs-explore" class="hierarchyBrowseTab">	
 					<div class="hierarchyBrowserFind">
@@ -673,12 +694,13 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 				currentSelectionIDID: '<?= $id_prefix; ?>_new_parent_id',
 				currentSelectionDisplayID: '<?= $id_prefix; ?>HierarchyBrowserSelectionMessage',
 				currentSelectionDisplayFormat: <?= json_encode($is_new ? _t('Will be placed under <em>^current</em> after save') : _t('Will be moved under <em>^current</em> after next save.')); ?>,
+				setInitItemIDAsCurrentSelection: true,
 				
-				allowExtractionFromHierarchy: <?= (($t_subject->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_ADHOC_MONO__) && !$batch && !$read_only) ? 'true' : 'false'; ?>,
+				allowExtractionFromHierarchy: <?= (($t_subject->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_ADHOC_MONO__) && !$batch && !$read_only && !$is_new) ? 'true' : 'false'; ?>,
 				extractFromHierarchyButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_EXTRACT__, 1); ?>",
 				extractFromHierarchyMessage: <?= json_encode(_t('Will be placed at the top of its own hierarchy after next save.')); ?>,
 				
-				allowSecondarySelection: true,
+				allowSecondarySelection: <?= (!$is_new) ? 'true' : 'false'; ?>,
 				secondarySelectionID: '<?= $id_prefix; ?>_move_selection',
 				defaultSecondarySelection: [<?= $t_subject->getPrimaryKey() ?>],
 				
@@ -788,8 +810,12 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 	} elseif($is_new) {
 ?>
 		jQuery("#<?= $id_prefix; ?>HierarchyBrowserContainer").show();
+<?php
+		if($show_move) {
+?>
 		_init<?= $id_prefix; ?>MoveHierarchyBrowser();
 <?php
+		}
 	} elseif (isset($bundle_settings['open_hierarchy']) && (bool)$bundle_settings['open_hierarchy']) {
 ?>
 		jQuery("#<?= $id_prefix; ?>browseToggle").trigger("click", { "delay" : 0 });
@@ -802,5 +828,6 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 <?php
 	}
 ?>
+		_init<?= $id_prefix; ?>ExploreHierarchyBrowser();
 	});
 </script>

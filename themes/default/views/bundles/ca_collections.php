@@ -119,6 +119,9 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 ?>
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
 <?php
+	if (!$read_only && ca_editor_uis::loadDefaultUI($t_item_rel->tableNum(), $this->request)) {
+?>			<a href="#" class="caInterstitialEditButton listRelEditButton"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a><?php
+	}
 	if (!$read_only && !$dont_show_del) {
 ?>				
 			<a href="#" class="caDeleteItemButton listRelDeleteButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
