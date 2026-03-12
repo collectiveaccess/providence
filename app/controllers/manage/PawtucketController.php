@@ -185,7 +185,7 @@ class PawtucketController extends ActionController {
 		
 		$template_values = caGetAnalyticsIntegrationValueList();
 		foreach($template_values as $name => $info) {
-			$o_appvars->setVar("pawtucket_analytics_{$name}", $v=$this->request->getParameter($name, pString));
+			$o_appvars->setVar("pawtucket_analytics_{$name}", $this->request->getParameter($name, pString, null, ['purify' => false]));
 		}
 		$o_appvars->save();
 		

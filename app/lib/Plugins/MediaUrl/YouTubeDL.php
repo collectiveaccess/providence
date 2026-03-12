@@ -44,12 +44,12 @@ class YouTubeDL Extends BaseMediaUrlPlugin {
 	 * Regular expressions to match URL host against. Valid matches are accepted by this plugin.
 	 */
 	private $valid_hosts = [
-		'.youtube\.com$' => ['name' => 'YouTube', 'format' => 'mp4'],
-		'youtu\.be$'  => ['name' => 'YouTube', 'format' => 'mp4'],
-		'soundcloud\.com$' => ['name' => 'Soundcloud', 'format' => 'mp3'],
-		'vimeo\.com$' => ['name' => 'Vimeo', 'format' => 'http-720p'],
-		'facebook\.com$' => ['name' => 'Facebook', 'format' => 'mp4'],
-		'instagram\.com$' => ['name' => 'Instagram', 'format' => 'mp4']
+		'.youtube\.com$' => ['name' => 'YouTube', 'code' => 'YouTube', 'format' => 'mp4'],
+		'youtu\.be$'  => ['name' => 'YouTube', 'code' => 'YouTube', 'format' => 'mp4'],
+		'soundcloud\.com$' => ['name' => 'Soundcloud', 'code' => 'Soundcloud', 'format' => 'mp3'],
+		'vimeo\.com$' => ['name' => 'Vimeo', 'code' => 'Vimeo', 'format' => 'http-720p'],
+		'facebook\.com$' => ['name' => 'Facebook', 'code' => 'Facebook', 'format' => 'mp4'],
+		'instagram\.com$' => ['name' => 'Instagram', 'code' => 'Instagram', 'format' => 'mp4']
 	];
 	
 	# ------------------------------------------------
@@ -102,7 +102,7 @@ class YouTubeDL Extends BaseMediaUrlPlugin {
  		foreach($this->valid_hosts as $regex => $info) {
  			if (preg_match("!{$regex}!", $parsed_url['host'])) {
  				$format = $info['format'];
- 				$service = $info['name'];
+ 				$service = $info['code'];
  				
  				$username = $info['username'] ?? null; 				
  				$password = $info['password'] ?? null;		
@@ -226,16 +226,22 @@ class YouTubeDL Extends BaseMediaUrlPlugin {
 			$preview_path = null;
 			$format = null;
 			
-			$login_opts = ($p['username'] ?? null) ? "--username {$p['username']} --password {$p['password']}" : null;
-			$cookie_opts = ($p['cookies'] ?? null) ? "--cookies {$p['cookies']}" : null;
-			
-			foreach($formats as $format) {
-				$tmp_file = $dest ? $dest : caGetTempDirPath().'/YOUTUBEDL_TMP'.uniqid(rand(), true);
-				$output = $ret = null;
-				caExec($this->youtube_dl_path.' '.caEscapeShellArg($url)." -q --skip-download --write-thumbnail --convert-thumbnails {$format} -o ".caEscapeShellArg($tmp_file)." {$login_opts} {$cookie_opts} ".(caIsPOSIX() ? " 2> /dev/null" : ""), $output, $ret);
-				if($ret <= 1) {
-					$preview_path = "{$tmp_file}.{$format}";
-					break;	
+			$tmp_file = $dest ? $dest : caGetTempDirPath().'/YOUTUBEDL_TMP'.uniqid(rand(), true);
+			if($p['service'] === 'YouTube') {
+				$purl = "https://img.youtube.com/vi/{$p['code']}/0.jpg";
+				$img = file_get_contents($purl);
+				file_put_contents($preview_path = "{$tmp_file}.jpg", $img);
+			} else {
+				$login_opts = ($p['username'] ?? null) ? "--username {$p['username']} --password {$p['password']}" : null;
+				$cookie_opts = ($p['cookies'] ?? null) ? "--cookies {$p['cookies']}" : null;
+				
+				foreach($formats as $format) {
+					$output = $ret = null;
+					caExec($this->youtube_dl_path.' '.caEscapeShellArg($url)." -q --skip-download --write-thumbnail --convert-thumbnails {$format} -o ".caEscapeShellArg($tmp_file)." {$login_opts} {$cookie_opts} ".(caIsPOSIX() ? " 2> /dev/null" : ""), $output, $ret);
+					if($ret <= 1) {
+						$preview_path = "{$tmp_file}.{$format}";
+						break;	
+					}
 				}
 			}
 
@@ -345,6 +351,19 @@ class YouTubeDL Extends BaseMediaUrlPlugin {
 			return $tag;
 		}
 		return null;
+	}
+	# ------------------------------------------------
+	/**
+	 * Get list of formats handled. Keys are format short names, values are full names.
+	 *
+	 * @return array List of formats supported
+	 */
+	public function formats() : array {
+		$formats = [];
+		foreach($this->valid_hosts as $url => $info) {
+			$formats[$info['code']] = $info['name'];
+		}
+		return array_keys($formats);
 	}
 	# ------------------------------------------------
 	/**

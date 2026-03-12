@@ -6312,13 +6312,13 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 						$va_tmp = explode($vs_list_multiple_delimiter, $v);
 						foreach($va_tmp as $vs_mult_item) {
 							if (!in_array($vs_mult_item,$va_list)) {
-								$this->postError(1103,_t("'%1' is not valid choice for %2", $v, $va_attr["LABEL"]),"BaseModel->verifyFieldValue()", $this->tableName().'.'.$field);
+								$this->postError(1103,_t("'%1' is not a valid choice for %2", $v, $va_attr["LABEL"]),"BaseModel->verifyFieldValue()", $this->tableName().'.'.$field);
 								return false;
 							}
 						}
 					} else {
 						if (!in_array($v,$va_list)) {
-							$this->postError(1103, _t("'%1' is not valid choice for %2", $v, $va_attr["LABEL"]),"BaseModel->verifyFieldValue()", $this->tableName().'.'.$field);
+							$this->postError(1103, _t("'%1' is not a valid choice for %2", $v, $va_attr["LABEL"]),"BaseModel->verifyFieldValue()", $this->tableName().'.'.$field);
 							return false;
 						}
 					}

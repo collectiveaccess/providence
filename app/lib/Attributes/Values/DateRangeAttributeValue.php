@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -531,7 +531,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 	 * @return string Name of sort field
 	 */
 	public function sortField() {
-		return 'value_decimal1';
+		return 'value_sortable';
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -560,9 +560,89 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 	 * @return string
 	 */
 	public function sortableValue(?string $value) {
+		$sort_by_specificity = Configuration::load('datetime.conf')->get('sort_dates_by_specificity');
+		
 		if(DateRangeAttributeValue::$o_tep->parse($value)) { 
 			$dates = DateRangeAttributeValue::$o_tep->getHistoricTimestamps();
-			return $dates[0].'/'.$dates[1];
+			if(!($dates[0] ?? null)) { $dates[0] = "9999999999.999999999999"; }
+			if(!($dates[1] ?? null)) { $dates[1] = "9999999999.999999999999"; }
+			$sdate_bits = explode('.', $dates[0] ?? '.');
+			$edate_bits = explode('.', $dates[1] ?? '.');
+			
+			$sdate = str_pad($sdate_bits[0], 10, '0', STR_PAD_LEFT).'.'.$sdate_bits[1];
+			$edate = str_pad($edate_bits[0], 10, '0', STR_PAD_LEFT).'.'.$edate_bits[1];
+			
+			if($sort_by_specificity) {
+				$sinfo = DateRangeAttributeValue::$o_tep->specificity();
+				
+				$suffix = 0;
+				switch($sinfo['specificity']) {
+					case 'DAY':
+						if($sinfo['circa'] || $sinfo['probably']) { 
+							$suffix += 10;
+						} 
+						if($sinfo['range']) { 
+							$suffix += 10;
+						}
+						if($sinfo['range']) {
+							$sdate = str_pad($sdate_bits[0], 10, '0', STR_PAD_LEFT).'.'.$edate_bits[1];
+						}
+						break;
+					case 'MONTH':
+						$suffix = 30;
+						if($sinfo['circa'] || $sinfo['probably']) { 
+							$suffix += 10;
+						} 
+						if($sinfo['range']) { 
+							$suffix += 10;
+						}
+						if($sinfo['range']) {
+							$sdate = str_pad($sdate_bits[0], 10, '0', STR_PAD_LEFT).'.'.$edate_bits[1];
+						}
+						break;
+					case 'YEAR':
+						$suffix = 60;
+						if($sinfo['circa'] || $sinfo['probably']) { 
+							$suffix += 10;
+						} 
+						if($sinfo['range']) { 
+							$suffix += 10;
+						}
+						
+						$sdate = str_pad($sdate_bits[0], 10, '0', STR_PAD_LEFT).'.'.$edate_bits[1];
+						break;
+					case 'DECADE':
+						$suffix = 90;
+						if($sinfo['circa'] || $sinfo['probably']) { 
+							$suffix += 10;
+						} 
+						if($sinfo['range']) { 
+							$suffix += 10;
+						}
+						$sdate = str_pad($sdate_bits[0], 10, '0', STR_PAD_LEFT).'.'.$edate_bits[1];
+						break;
+					case 'CENTURY':
+						$suffix = 120;
+						if($sinfo['circa'] || $sinfo['probably']) { 
+							$suffix += 10;
+						} 
+						if($sinfo['range']) { 
+							$suffix += 10;
+						}
+						$sdate = str_pad($sdate_bits[0], 10, '0', STR_PAD_LEFT).'.'.$edate_bits[1];
+						break;
+					case 'UNDATED':
+						$suffix = 9999;
+						break;
+				}
+				$suffix = str_pad($suffix, 4, '0', STR_PAD_LEFT);
+				$v = "{$sdate}/{$edate}/{$suffix}";
+			} else {
+				$v = "{$sdate}/{$edate}";
+			}
+			return $v;
+		} elseif($sort_by_specificity) {
+			return "9999999999.999999999999/9999999999.999999999999/9999";
 		}
 		return null;
 	}

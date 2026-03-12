@@ -4484,11 +4484,14 @@ function caFileIsIncludable($ps_file) {
 		$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_have_seen_param_delimiter = $vb_is_ca_get_ref = false;
 		$vs_tag = '';
 		$vs_last_char = null;
+		
+		$chars = preg_split('//u', $ps_template, -1, PREG_SPLIT_NO_EMPTY);
 
-		for($i=0; $i < mb_strlen($ps_template); $i++) {
-			switch($vs_char = mb_substr($ps_template, $i, 1)) {
+		for($i=0; $i < sizeof($chars); $i++) {
+			$vs_char = $chars[$i];
+			switch($vs_char) {
 				case '{':
-				    if (!$vb_in_tag && !$vb_in_single_quote && (mb_substr($ps_template, $i+1, 1) === '^')) {
+				    if (!$vb_in_tag && !$vb_in_single_quote && (($chars[$i + 1] ?? null) === '^')) {
 				        continue(2);
 				    }
 				    break;
@@ -4553,7 +4556,7 @@ function caFileIsIncludable($ps_file) {
 						if (
 							($vb_is_ca_get_ref && !$vb_have_seen_param_delimiter && (!preg_match("![A-Za-z0-9_\-\.~:]!", $vs_char)))
 							||
-							(($vs_char === ':') && !preg_match("!^[:]*[A-Za-z0-9]+!", mb_substr($ps_template, $i + 1)))	// colon not followed by letters, numbers or another colon is not part of tag
+							(($vs_char === ':') && !preg_match("!^[:]*[A-Za-z0-9]+!", ($chars[$i + 1] ?? null)))	// colon not followed by letters, numbers or another colon is not part of tag
 						) {
 							if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
 							$vs_tag = '';
@@ -4566,7 +4569,6 @@ function caFileIsIncludable($ps_file) {
 			}
 			$vs_last_char = $vs_char;
 		}
-
 		if ($vb_in_tag) {
 			if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
 		}
@@ -4586,6 +4588,7 @@ function caFileIsIncludable($ps_file) {
 
 			$va_tags[$vn_i] = rtrim($vs_tag, ")/.,%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
 		}
+		
 		return array_filter($va_tags, "strlen");
 	}
 	# ----------------------------------------
@@ -4888,11 +4891,28 @@ function caFileIsIncludable($ps_file) {
 			throw new UrlFetchException(_t("Cannot open temporary file for media fetched from URL [%1]", $url));
 		}
 		
+		if($curl_path = caCurlImpersonateInstalled()) {
+			$ch = new CurlImpersonate\CurlImpersonate();
+			$ch->setopt(CURLCMDOPT_URL, $url);
+			$ch->setopt(CURLCMDOPT_METHOD, 'GET');
+			$ch->setopt(CURLCMDOPT_HEADER, false);
+			$ch->setopt(CURLCMDOPT_ENGINE, $curl_path);
+			
+			$ch->execStream();
+			
+			while ($data = $ch->readStream(1024*128)) {
+				fputs($r_outgoing_fp, $data);
+			}
+			fclose($r_outgoing_fp);
+			return $tmp_file;
+		}
+
+
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_FILE, $r_outgoing_fp);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 240);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-		curl_exec($ch);
+		curl_exec($ch);	
  
 		if(curl_errno($ch)){
 			throw new UrlFetchException(_t('Media fetch from URL [%1] failed: %2', $url, curl_error($ch)));
@@ -5283,9 +5303,22 @@ function caFileIsIncludable($ps_file) {
 	function caUrlExists(string $url, ?array $options=null) : bool { 
 		$allow_redirects = caGetOption('allowRedirects', $options, true);
 		
-		if(!is_array($headers = @get_headers($url))) { return false; }
-	
-		if(preg_match("!([\d]{3}) OK$!i", $headers[0], $m)) {
+		if($curl_path = caCurlImpersonateInstalled()) {
+			$ch = new CurlImpersonate\CurlImpersonate();
+			$ch->setopt(CURLCMDOPT_URL, $url);
+			$ch->setopt(CURLCMDOPT_METHOD, 'GET');
+			$ch->setopt(CURLCMDOPT_HEADER, false);
+			$ch->setopt(CURLCMDOPT_ENGINE, $curl_path);
+			
+			$headers = explode("\n", $ch->execStandard(['head' => true]));
+		} else {
+			if(!is_array($headers = @get_headers($url))) { return false; }
+		}
+		if(
+			preg_match("!([\d]{3}) (OK|MOVED)!i", $headers[0], $m)
+			||
+			preg_match("!HTTP/[\d]{1} ([\d]{3})!i", $headers[0], $m)
+		) {
 			$sc = (int)$m[1];
 			if(($sc >= 200) && ($sc <= 299)) { return true; }
 			if($allow_redirects && ($sc >= 300) && ($sc <= 399)) { return true; }

@@ -426,7 +426,6 @@ class BaseFindController extends ActionController {
 				$va_bottom_line[$placement_id] = '';
 			}
 		}
-		
 		$this->view->setVar('bottom_line', $vb_bottom_line_is_set ? $va_bottom_line : null);
 		
 		//

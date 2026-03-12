@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2025 Whirl-i-Gig
+ * Copyright 2025-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -159,6 +159,15 @@ class AmericanArchive Extends BaseMediaUrlPlugin {
 		$size_css = $size ? "style='font-size: {$size}'" : '';
 		
 		return "<i class='fas fa-podcast' {$size_css}></i>";
+	}
+	# ------------------------------------------------
+	/**
+	 * Get list of formats handled. Keys are format short names, values are full names.
+	 *
+	 * @return array List of formats supported
+	 */
+	public function formats() : array {
+		return ['AmericanArchive' => 'American Archive'];
 	}
 	# ------------------------------------------------
 	/**

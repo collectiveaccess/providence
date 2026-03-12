@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2025 Whirl-i-Gig
+ * Copyright 2007-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -211,7 +211,10 @@ class RequestHTTP extends Request {
 		
 		$this->ops_base_path = join('/', $va_tmp);
 		$this->ops_full_path = $_SERVER['REQUEST_URI'];
-		if (!caUseCleanUrls() && !preg_match("!/index.php!", $this->ops_full_path) && !preg_match("!/(service.php|service)!", $this->ops_full_path)) { $this->ops_full_path = rtrim($this->ops_full_path, "/")."/index.php"; }
+		if (!caUseCleanUrls() && !preg_match("!/index.php!", $this->ops_full_path) && !preg_match("!/(service.php|service)!", $this->ops_full_path)) { 
+			$tm = preg_replace("!^".preg_quote(__CA_URL_ROOT__, '!').'!', '', $this->ops_full_path);
+			$this->ops_full_path = __CA_URL_ROOT__."/index.php/".trim($tm, '/');
+		}
 		$this->ops_full_path = preg_replace("![/]+!", "/", $this->ops_full_path);
 		$vs_path_info = str_replace($this->ops_script_name, "", str_replace("?".$_SERVER['QUERY_STRING'], "", $this->ops_full_path));
 		
@@ -519,7 +522,7 @@ class RequestHTTP extends Request {
 		if ($vs_tmp = $this->getBaseUrlPath()) {
 			$va_url[] = trim($vs_tmp, '/');
 		}
-		if ($vs_tmp = $this->getScriptName()) {
+		if (!caUseCleanUrls() && ($vs_tmp = $this->getScriptName())) {
 			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getModulePath()) {
@@ -555,6 +558,17 @@ class RequestHTTP extends Request {
 		}
 		
 		return join('/', $va_url);
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getRoutingUrl() {
+		$url = $this->getFullUrlPath();
+		$base_url = $this->getBaseUrlPath();
+		$url = preg_replace(("!^".preg_quote($base_url, '!'))."!", '', $url);
+		$url = preg_replace("!".$this->getScriptName()."[/]*!", "", $url);
+		return $url;
 	}
 	# --------------------------------------------------------------------------------
 	/**

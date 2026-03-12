@@ -176,8 +176,14 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 				$vs_data = yaz_record($r_conn, $vn_index, "xml; charset=marc-8,utf-8");
 				if (empty($vs_data)) continue;
 
-				$o_row = DomDocument::loadXML($vs_data);
-				$o_xpath = new DOMXPath($o_row);
+				$doc = new DOMDocument();
+
+				if (!$doc->loadXML($vs_data)) {
+					throw new Exception("Invalid XML received from WorldCat");
+				}
+
+				$o_xpath = new DOMXPath($doc);
+
 				$o_xpath->registerNamespace('n', 'http://www.loc.gov/MARC21/slim');
 
 				// Get title for display
