@@ -326,7 +326,8 @@ trait CLIUtilsMaintenance {
 	public static function purge_deleted($opts=null) {
 		require_once(__CA_LIB_DIR__."/Logging/Downloadlog.php");
 	
-		CLIUtils::addMessage(_t("Are you sure you want to PERMANENTLY remove all deleted records? This cannot be undone.\n\nType 'y' to proceed or 'N' to cancel, then hit return ", $current_revision, __CollectiveAccess_Schema_Rev__));
+		CLIUtils::addMessage(_t("Are you sure you want to PERMANENTLY remove all deleted records? This cannot be undone.\n\nType 'y' to proceed or 'N' to cancel, then hit return \n\nConsider running remove-deleted-representations utility first, to physically remove the media files and avoid orphaned media on disk\n", $current_revision, __CollectiveAccess_Schema_Rev__));
+
 		flush();
 		ob_flush();
 		$confirmation  =  trim( fgets( STDIN ) );
