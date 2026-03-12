@@ -93,6 +93,7 @@ class ExpressionVisitor implements Visitor\Visit {
 			'sizeof'		=> xcallable('caExpressionCount'),
 			'count'			=> xcallable('caExpressionCount'),
 			'valueCount'	=> xcallable('caValueCount'),
+			'uniqueValueCount'	=> xcallable('caUniqueValueCount'),
 			'age'			=> xcallable('caCalculateAgeInYears'),
 			'ageyears'		=> xcallable('caCalculateAgeInYears'),
 			'agedays'		=> xcallable('caCalculateAgeInDays'),

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2023 Whirl-i-Gig
+ * Copyright 2020-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -443,7 +443,7 @@ if (!RequestHTTP::isAjax()) {
  	jQuery(document).ready(function() {
 		caRelationBundle<?= $id_prefix; ?> = caUI.initRelationBundle('#<?= "{$id_prefix}"; ?>', {
 			fieldNamePrefix: '<?= $id_prefix; ?>_',
-			templateValues: ['label', 'id', '_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'media', 'locale_id', 'icon', 'type', 'metadata', 'rep_type_id', 'type_id', 'typename', 'center_x', 'center_y', 'idno' <?= (is_array($bundles_to_edit_proc) && sizeof($bundles_to_edit_proc)) ? ", ".join(", ", array_map(function($v) { return "'{$v}'"; }, $bundles_to_edit_proc)) : ''; ?>],
+			templateValues: ['label', 'id', '_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'is_embedded', 'media', 'locale_id', 'icon', 'type', 'metadata', 'rep_type_id', 'type_id', 'typename', 'center_x', 'center_y', 'idno' <?= (is_array($bundles_to_edit_proc) && sizeof($bundles_to_edit_proc)) ? ", ".join(", ", array_map(function($v) { return "'{$v}'"; }, $bundles_to_edit_proc)) : ''; ?>],
 			initialValues: <?= json_encode($initial_values, JSON_INVALID_UTF8_IGNORE); ?>,
 			initialValueOrder: <?= json_encode(array_keys($initial_values)); ?>,
 			errors: <?= json_encode($errors); ?>,

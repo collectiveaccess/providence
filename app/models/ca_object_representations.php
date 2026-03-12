@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -487,6 +487,13 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$this->BUNDLES['media_center_x'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Center of media x-coordinate'));
 		$this->BUNDLES['media_center_y'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Center of media y-coordinate'));
 		
+		$this->BUNDLES['media_fetched_on'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media fetch date'));
+		$this->BUNDLES['media_fetched_by'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media fetched by plugin'));
+		$this->BUNDLES['media_fetched_from'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media source URL'));
+		$this->BUNDLES['media_fetched_original_url'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media original source URL'));
+		$this->BUNDLES['media_fetched_from_service'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media fetched from service name'));
+		$this->BUNDLES['media_is_embedded'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media is embedded?'));
+		
 		$this->BUNDLES['history_tracking_current_value'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History tracking – current value'), 'displayOnly' => true);
 		$this->BUNDLES['history_tracking_current_date'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current history tracking date'), 'displayOnly' => true);
 		$this->BUNDLES['history_tracking_chronology'] = array('type' => 'special', 'repeating' => false, 'label' => _t('History'));
@@ -624,6 +631,29 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		CompositeCache::delete('representation:'.$this->getPrimaryKey(), 'IIIFMediaInfo');
 		CompositeCache::delete('representation:'.$this->getPrimaryKey(), 'IIIFTileCounts');
 		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Re-import extracted metadata from media, replacing previously extracted metadata.
+	 *
+	 * @param array $options Options include:
+	 * 		path = Path to media. If omitted path to original uploaded media is used. [Default is null]
+	 *
+	 * @return bool True on success, false on failure to read or import metadata, null if no media is loaded
+	 */
+	public function updateExtractedMediaMetadata(?array $options=null) : ?bool {
+		if(!$this->isLoaded()) { return null; }
+		if (!($media_path = $this->getMediaPath('media', 'original'))) {
+			if(!($media_path = $this->getOriginalMediaPath('media'))) {
+				$media_path = array_shift($this->get('media', ['returnWithStructure' => true]));
+			}
+		}
+		if(!$media_path) { return null; }
+		
+		if(!($reader = $this->_readEmbeddedMetadata($media_path))) { 
+			return false;
+		}
+		return $this->_importEmbeddedMetadata(array_merge($options ?? [], ['path' => $media_path, 'reader' => $reader]));
 	}
 	# ------------------------------------------------------
 	/**
@@ -1708,9 +1738,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		
  		$t_sidecar = new ca_object_representation_sidecars();
  		if($this->inTransaction()) { $t_sidecar->setTransaction($this->getTransaction()); }
- 		
- 		
- 		$t_sidecar->setMode(ACCESS_WRITE);
+ 
  		$t_sidecar->set('representation_id', $this->getPrimaryKey());
  		$tmp = explode("/", $filepath);
  		$t_sidecar->set('sidecar_file', $filepath, ['original_filename' => caGetOption('originalFilename', $options, array_pop($tmp))]);
@@ -2766,6 +2794,32 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 */
 	public function renderBundleForDisplay($bundle_name, $row_id, $values, $options=null) {
 		switch($bundle_name) {
+			case 'media_fetched_on':
+			case 'media_fetched_by':
+			case 'media_fetched_from':
+			case 'media_fetched_original_url':
+			case 'media_fetched_from_service':
+			case 'media_is_embedded':
+				if (($qr = caMakeSearchResult('ca_object_representations', [$row_id])) && $qr->nextHit()) {
+					$info = $qr->getMediaInfo('media');
+					
+					switch($bundle_name) {
+						case 'media_fetched_on':
+							return date($options['format'] ?? 'c', $info['INPUT']['FETCHED_ON'] ?? null);
+						case 'media_fetched_by':
+							return $info['INPUT']['FETCHED_BY'] ?? null;
+						case 'media_fetched_from':
+							return $info['INPUT']['FETCHED_FROM'] ?? null;
+						case 'media_fetched_original_url':
+							return $info['INPUT']['FETCHED_ORIGINAL_URL'] ?? null;
+						case 'media_fetched_from_service':
+							$mu = new \CA\MediaUrl();
+							return isset($info['INPUT']['FETCHED_FROM']) ? $mu->service($info['INPUT']['FETCHED_FROM']) : '';
+						case 'media_is_embedded':
+							return ($info['IS_EMBEDDED'] ?? false) ? _t('Yes') : _t('No');
+					}
+				}
+				break;
 			case 'caption_files':
 				$files = [];
 				if($file_instances = ca_object_representation_captions::find(['representation_id' => $row_id], ['returnAs' => 'modelInstances'])) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2023 Whirl-i-Gig
+ * Copyright 2020-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -68,7 +68,7 @@ class InternetArchive Extends BaseMediaUrlPlugin {
 	 *
 	 * @return bool|array False if url is not valid, array with information about the url if valid.
 	 */
-	public function parse(string $url, array $options=null) {
+	public function parse(string $url, ?array $options=null) {
 		if (!is_array($parsed_url = parse_url(urldecode($url)))) { return null; }
 		
 		//Ex. We have an item whose url is https://archive.org/details/CTC_1988_08_17
@@ -89,6 +89,9 @@ class InternetArchive Extends BaseMediaUrlPlugin {
  			if(preg_match('!<meta property="og:video" content="([^"]+)">!', $content, $m)) {
  				return ['url' => $m[1], 'originalUrl' => $url, 'plugin' => 'InternetArchive', 'format' => pathInfo($m[1], PATHINFO_EXTENSION), 'originalFilename' => pathInfo($m[1], PATHINFO_BASENAME)];
  			}
+ 			if(preg_match('!<meta property="og:image" content="([^"]+)">!', $content, $m)) {
+ 				return ['url' => $m[1], 'originalUrl' => $url, 'plugin' => 'InternetArchive', 'format' => pathInfo($m[1], PATHINFO_EXTENSION), 'originalFilename' => pathInfo($m[1], PATHINFO_BASENAME)];
+ 			}
  		}
  		
 		return false;
@@ -102,12 +105,17 @@ class InternetArchive Extends BaseMediaUrlPlugin {
 	 *		filename = File name to use for fetched file. If omitted a random name is generated. [Default is null]
 	 *		extension = Extension to use for fetched file. If omitted ".bin" is used as the extension. [Default is null]
 	 *		returnAsString = Return fetched content as string rather than in a file. [Default is false]
+	 *		dontDownload = Skip download and return file information only. [Default is false]
 	 *
 	 * @throws UrlFetchException Thrown if fetch URL fails.
 	 * @return bool|array|string False if url is not valid, array with path to file with content and format if successful, string with content if returnAsString option is set.
 	 */
-	public function fetch(string $url, array $options=null) {
+	public function fetch(string $url, ?array $options=null) {
 		if ($p = $this->parse($url, $options)) {
+			if(caGetOption(['dont_download', 'dontDownload'], $options, false)) { 
+				return array_merge($p, ['file' => null]);
+			}
+			
 			if($dest = caGetOption('filename', $options, null)) {
 				$dest .= '.'.caGetOption('extension', $options, '.bin');
 			}
@@ -129,4 +137,82 @@ class InternetArchive Extends BaseMediaUrlPlugin {
 		return false;
 	}
 	# ------------------------------------------------
+	/**
+	 * Attempt to fetch preview from a URL, transforming content to specified format for source.
+	 *
+	 * @param string $url
+	 * @param array $options Options include:
+	 *		filename = File name to use for fetched file. If omitted a random name is generated. [Default is null]
+	 *		extension = Extension to use for fetched file. If omitted ".bin" is used as the extension. [Default is null]
+	 *		returnAsString = Return fetched content as string rather than in a file. [Default is false]
+	 *
+	 * @throws UrlFetchException Thrown if fetch URL fails.
+	 * @return bool|array|string False if url is not valid, array with path to file with content and format if successful, string with content if returnAsString option is set.
+	 */
+	public function fetchPreview(string $url, ?array $options=null) {
+		return false;
+	}
+	# ------------------------------------------------
+	/**
+	 * Get service-specific HTML embedding tag for media
+	 *
+	 * @param string $url
+	 * @param array $options Options include:
+	 *		width = Width to apply to embedded content. [Default is 100% width]
+	 *		height = Height to use for embedded content. [Default is 100% height]
+	 *		title = Title to apply to embedded content. [Default is null]
+	 *
+	 * @return string HTML embed tag, or null if embedding is not possible
+	 */
+	public function embedTag(string $url, ?array $options=null) : ?string {		
+		if ($p = $this->parse($url, $options)) {
+			$width = caGetOption('width', $options, '100%');
+			$height = caGetOption('height', $options, '100%');
+			$title = addslashes(caGetOption('title', $options, null));
+			
+			$tag = "<iframe src='{$url}' width='{$width}' height='{$height}' frameborder='0' webkitallowfullscreen='true' mozallowfullscreen='true' allowfullscreen></iframe>";
+			return $tag;
+		}
+		return null;
+	}
+	# ------------------------------------------------
+	/**
+	 * Get icon for media
+	 *
+	 * @param string $url
+	 * @param array $options Options include:
+	 *		size = size of icon, including units (Eg. 64px). [Default is null]
+	 *
+	 * @return string HTML icon or null if no icon was found
+	 */
+	public function icon(string $url,  ?array $options=null) : ?string {
+		if(!is_null($tag = $this->getConfiguredIcon('InternetArchive', 'InternetArchive', $options))) {
+			return $tag;
+		}
+		$size = caGetOption('size', $options, null);
+		$size_css = $size ? "style='font-size: {$size}'" : '';
+		
+		return '<i class="fas fa-archive" {$size_css}></i>';
+	}
+	# ------------------------------------------------
+	/**
+	 * Get name of service used to fetch media
+	 *
+	 * @param string $url
+	 * @param array $options Options include:
+	 *		format = Format of name. Valid values are "full", "short". [Default is full]
+	 *
+	 * @return string Service name or null if not service name is available.
+	 */
+	public function service(string $url, ?array $options=null) : ?string {
+		$format = caGetOption('format', $options, 'full', ['forceToLowercase' => true]);
+		switch($format) {
+			case 'short':
+				return 'IA';
+			default:
+				return _t('Internet Archive');
+		}
+	}
+	# ------------------------------------------------
+	
 }

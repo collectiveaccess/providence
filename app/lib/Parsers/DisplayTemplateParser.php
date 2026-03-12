@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 require_once(__CA_LIB_DIR__.'/Parsers/ganon.php');
- 
+
 class DisplayTemplateParser {
 	# -------------------------------------------------------------------
 	/**
@@ -78,6 +78,7 @@ class DisplayTemplateParser {
 						$va_get_options['excludeTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeTypes']); 
 						$va_get_options['restrictToRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']);
 						$va_get_options['excludeRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']);
+						$va_get_options['restrictToSources'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToSources']); 
 						
 						$va_get_options['allDescendants'] = (int) $o_node->allDescendants ?: null;
 						if ($o_node->sort) {
@@ -165,6 +166,12 @@ class DisplayTemplateParser {
 		if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
 		$pb_return_as_array = (bool)caGetOption('returnAsArray', $pa_options, false);
 		unset($pa_options['returnAsArray']);
+	
+		if (($pa_sort = caGetOption('sort', $pa_options, null)) && !is_array($pa_sort)) {
+			$pa_sort = explode(";", $pa_sort);
+		}
+		$ps_sort_direction = caGetOption('sortDirection', $pa_options, null, array('forceUppercase' => true));
+		if(!in_array($ps_sort_direction, array('ASC', 'DESC'))) { $ps_sort_direction = 'ASC'; }
 	
 		$ps_delimiter = caGetOption('delimiter', $pa_options, '; ');
 		
@@ -464,6 +471,7 @@ class DisplayTemplateParser {
 					$va_exclude_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeTypes']); 
 					$va_restrict_to_relationship_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']); 
 					$va_exclude_to_relationship_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']); 
+					$va_restrict_to_sources = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToSources']); 
 					$vb_omit_blanks = !is_null($o_node->omitBlanks) ? (bool)$o_node->omitBlanks : null;
 					$vs_filter = !is_null($o_node->filter) ? (string)$o_node->filter : null;
 					$filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($pr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, $o_node->filterNonPrimaryRepresentations));
@@ -476,6 +484,7 @@ class DisplayTemplateParser {
 						'restrictToTypes' => $va_restrict_to_types, 'excludeTypes' => $va_exclude_types, 
 						'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 
 						'excludeRelationshipTypes' => $va_exclude_to_relationship_types,
+						'restrictToSources' => $va_restrict_to_sources,
 						'locale' => caGetOption('locale', $pa_options, null),
 						'noLocaleFallback' => caGetOption('noLocaleFallback', $pa_options, null),
 						'filterNonPrimaryRepresentations' => $filter_non_primary_reps
@@ -596,8 +605,7 @@ class DisplayTemplateParser {
 					break;
 				case 'expression':
 					if ($vs_exp = trim($o_node->getInnerText())) {
-						$v = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), array_merge($pa_options, ['escapeDoubleQuotes' => true])), array_merge($pa_options, ['quoteNonNumericValues' => true]));
-						$vs_acc .= $content = ExpressionParser::evaluate($v, $pa_vals);
+						$vs_acc .= $content = ExpressionParser::evaluate($vs_exp, $pa_vals);
 						
 						if ($pb_is_case && $content) { break(2); }
 					}
@@ -636,6 +644,7 @@ class DisplayTemplateParser {
 					$va_get_options['excludeTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeTypes']); 
 					$va_get_options['restrictToRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']); 
 					$va_get_options['excludeRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']);
+					$va_get_options['restrictToSources'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToSources']); 
 					$va_get_options['hierarchyDirection'] = (string)$o_node->hierarchyDirection ?: null;
 					$va_get_options['maxLevelsFromTop'] = (int)$o_node->maxLevelsFromTop ?: null;
 					$va_get_options['maxLevelsFromBottom'] = (int)$o_node->maxLevelsFromBottom ?: null;
@@ -755,6 +764,7 @@ class DisplayTemplateParser {
 									'placeholderPrefix' => (string)$o_node->relativeTo,
 									'restrictToTypes' => $va_get_options['restrictToTypes'] ?? null,
 									'excludeTypes' => $va_get_options['excludeTypes'] ?? null,
+									'restrictToSources' => $va_get_options['restrictToSources'] ?? null,
 									'isUnit' => true,
 									'unitStart' => $vn_start,
 									'unitLength' => $vn_length,
@@ -801,6 +811,9 @@ class DisplayTemplateParser {
 							}
 							if (!is_array($va_get_options['excludeTypes']) || !sizeof($va_get_options['excludeTypes'])) {
 								$va_get_options['excludeTypes'] = $pa_options['excludeTypes'] ?? null;
+							}
+							if (!is_array($va_get_options['restrictToSources']) || !sizeof($va_get_options['restrictToSources'])) {
+								$va_get_options['restrictToSources'] = $pa_options['restrictToSources'] ?? null;
 							}
 						}
 						
@@ -953,6 +966,7 @@ class DisplayTemplateParser {
 									'placeholderPrefix' => (string)$o_node->relativeTo,
 									'restrictToTypes' => $va_get_options['restrictToTypes'] ?? null,
 									'excludeTypes' => $va_get_options['excludeTypes'] ?? null,
+									'restrictToSources' => $va_get_options['restrictToSources'] ?? null,
 									'isUnit' => true,
 									'unitStart' => $vn_start,
 									'unitLength' => $vn_length,
@@ -1084,9 +1098,18 @@ class DisplayTemplateParser {
 	/**
 	 *
 	 */
+	static public function getValuesForTemplate(SearchResult $pr_res, string $template, ?array $options=null) {
+		$tags = caGetTemplateTags($template);
+		return self::_getValues($pr_res, array_flip($tags), $options);
+	}
+	# -------------------------------------------------------------------
+	/**
+	 *
+	 */
 	static private function _getValues(SearchResult $pr_res, array $pa_tags, array $pa_options=null) {
 		unset($pa_options['returnAsArray']);
 		unset($pa_options['returnWithStructure']);
+		if(!is_array($pa_options)) { $pa_options = []; }
 		
 		$vn_start = caGetOption('unitStart', $pa_options, 0, ['castTo' => 'int']);
 		$vn_length = caGetOption('unitLength', $pa_options, 0, ['castTo' => 'int']);

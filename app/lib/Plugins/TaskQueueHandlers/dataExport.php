@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2023-2025 Whirl-i-Gig
+ * Copyright 2023-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -175,7 +175,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 			switch($mode = $parameters['mode']) {
 				case 'EXPORT':
 					$t_display = ($display_id = $parameters['display_id'] ?? null) ? new ca_bundle_displays($display_id) : null;
-					$res = caExportResult($req, $result, $parameters['request']['export_format'], _t('Data_Export'), ['output' => 'FILE', 'display' => $t_display, 'checkAccess' => $parameters['request']['checkAccess'] ?? null]);
+					$res = caExportResult($req, $result, $parameters['request']['export_format'], _t('Data_Export'), ['printTemplateType' => 'results', 'output' => 'FILE', 'display' => $t_display, 'checkAccess' => $parameters['request']['checkAccess'] ?? null]);
 					if(is_array($res)) {
 						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Data export for %2', __CA_APP_DISPLAY_NAME__, strip_tags($parameters['searchExpressionForDisplay'])), 'data_export_result.tpl', $parameters, null, null, ['attachments' => [
 							[
@@ -226,7 +226,7 @@ class WLPlugTaskQueueHandlerdataExport Extends WLPlug Implements IWLPlugTaskQueu
 					}
 					break;
 				case 'SETS':
-					$res = caExportResult($req, $result, $parameters['request']['export_format'], _t('Set_Export'), ['output' => 'FILE', 'checkAccess' => $parameters['request']['checkAccess'] ?? null]);
+					$res = caExportResult($req, $result, $parameters['request']['export_format'], _t('Set_Export'), ['printTemplateType' => 'sets', 'set' => new ca_sets($parameters['set_id'] ?? null), 'output' => 'FILE', 'checkAccess' => $parameters['request']['checkAccess'] ?? null]);
 					if(is_array($res)) {
 						caSendMessageUsingView($req, $user->get('email'), __CA_ADMIN_EMAIL__, _t('[%1] Set export for %2', __CA_APP_DISPLAY_NAME__, strip_tags($parameters['searchExpressionForDisplay'])), 'set_export_result.tpl', $parameters, null, null, ['attachments' => [
 							[

@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/helpers/externalMediaHelpers.php : 
+ * themes/default/views/mediaViewers/Embed.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2022-2025 Whirl-i-Gig
+ * Copyright 2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,27 +24,9 @@
  * http://www.CollectiveAccess.org
  *
  * @package CollectiveAccess
- * @subpackage utils
+ * @subpackage Media
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
-
-
-# ---------------------------------------
-/**
- * 
- *
- * @param string $url
- * @param array $options Options include:
- *		title = 
- *		width = 
- *		height = 
- * 
- * @return string Embed HTML code or null if URL is invalid or unsupported
- */
-function caGetExternalMediaEmbedCode(string $url, ?array $options=null) {
-	$media_url = new CA\MediaUrl();
-	return $media_url->embedTag($url, $options);
-}
-# ---------------------------------------
+print $this->getVar('viewerHTML');

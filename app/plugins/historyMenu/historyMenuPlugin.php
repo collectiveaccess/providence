@@ -52,7 +52,7 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 	 * Record editing activity
 	 */
 	public function hookEditItem($params) {
-		if (($params['id'] > 0) && ($o_req = $this->getRequest())) {
+		if (($params['id'] > 0) && ($req = $this->getRequest())) {
 			$table_name = $params['table_name'];
 			if (!is_array($activity_list = Session::getVar("{$table_name}_history_id_list"))) {
 				$activity_list = [];
@@ -68,7 +68,7 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 			}
 			
 			if (!isset($activity_list[$params['id']])) {
-				AppNavigation::clearMenuBarCache($o_req);
+				AppNavigation::clearMenuBarCache($req);
 			}
 			
 			$app_config = Configuration::load();
@@ -76,11 +76,12 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 				$display_template = ($this->opo_config instanceof Configuration) ? $this->opo_config->get("{$table_name}_display_template") : null;
 			}
 			
+			$show_idno = !$req->config->get("{$table_name}_inspector_dont_display_idno");
 			$activity_list[$params['id']] = [
 				'time' => time(),
 				'type_id' => $params['instance']->getTypeID(),
 				'idno' => $idno = $params['instance']->get('idno'),
-				'label' => $display_template ? $params['instance']->getWithTemplate($display_template) : $params['instance']->get("{$table_name}.preferred_labels").((trim($idno)) ? " [{$idno}]" : '')
+				'label' => $display_template ? $params['instance']->getWithTemplate($display_template) : $params['instance']->get("{$table_name}.preferred_labels").($show_idno && (trim($idno)) ? " [{$idno}]" : '')
 			];
 			
 			Session::setVar($params['table_name'].'_history_id_list', $activity_list);
@@ -110,14 +111,14 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 	 * Record delete activity
 	 */
 	public function hookDeleteItem($params) {
-		if ($o_req = $this->getRequest()) {
+		if ($req = $this->getRequest()) {
 			if (!is_array($activity_list = Session::getVar($params['table_name'].'_history_id_list'))) {
 				$activity_list = [];
 			}
 			unset($activity_list[$params['id']]);
 			Session::setVar($params['table_name'].'_history_id_list', $activity_list);
 			
-			AppNavigation::clearMenuBarCache($o_req);
+			AppNavigation::clearMenuBarCache($req);
 		}
 		return $params;
 	}
@@ -126,7 +127,7 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 	 * Insert activity menu
 	 */
 	public function hookRenderMenuBar($menu_bar) {
-		if ($o_req = $this->getRequest()) {
+		if ($req = $this->getRequest()) {
 			$activity_lists = [];
 
 			if($this->opo_config instanceof Configuration) {
@@ -152,7 +153,7 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 						$qr = caMakeSearchResult('ca_sets', $keys);
 						while($qr->nextHit()) {
 							$id = $qr->getPrimaryKey();
-							$editor_url_info = caEditorUrl($o_req, $table_name, $id, true);
+							$editor_url_info = caEditorUrl($req, $table_name, $id, true);
 							
 							$t = caIsInventory($qr) ? 'INVENTORY' : 'SET';
 							$activity_menu_list[$t][$table_name.'_'.$id] = [
@@ -211,9 +212,9 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 						$activity_menu_list = [];
 						if (isset($sorted_by_type_id[$type_id]) && is_array($sorted_by_type_id[$type_id])) {
 							foreach($sorted_by_type_id[$type_id] as $id => $info) {
-								$editor_url_info = caEditorUrl($o_req, $table_name, $id, true);
+								$editor_url_info = caEditorUrl($req, $table_name, $id, true);
 								
-								$activity_menu_list[$table_name.'_'.$type_id.'_'.$id] = [
+								$activity_menu_list[$table_name.'_'.$type_id.'_'.$id] = array(
 									'default' => $editor_url_info,
 									'displayName' => $info['label'],
 									'is_enabled' => 1,
@@ -223,18 +224,18 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 									'parameters' => array(
 										$editor_url_info['_pk'] => $id
 									)
-								];
+								);
 							}
 						}
 						
 						if (sizeof($activity_menu_list) > 0) {
-							$activity_lists[$table_name.'_'.$type_id] = [
+							$activity_lists[$table_name.'_'.$type_id] = array(
 								'displayName' => caUcFirstUTF8Safe($type_info['name_plural']),
 								'submenu' => array(
 									"type" => 'static',
 									'navigation' => $activity_menu_list
 								)
-							];
+							);
 						}
 					}
 				} else {
@@ -249,6 +250,9 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 						case 'ca_tour_stops':
 							$priv_name = 'can_edit_ca_tours';
 							break;
+						case 'ca_sets':
+							$priv_name = 'can_edit_sets';
+							break;
 						default:
 							$priv_name = 'can_edit_'.$table_name;
 							break;
@@ -257,18 +261,18 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 					$keys = array_reverse(array_keys($activity_list));
 					foreach($keys as $id) {
 						$info = $activity_list[$id];
-						$editor_url_info = caEditorUrl($o_req, $table_name, $id, true);
-						$activity_menu_list[$table_name.'_'.$id] = [
+						$editor_url_info = caEditorUrl($req, $table_name, $id, true);
+						$activity_menu_list[$table_name.'_'.$id] = array(
 							'default' => $editor_url_info,
 							'displayName' => $info['label'],
 							'is_enabled' => 1,
-							'requires' => [
+							'requires' => array(
 								'action:'.$priv_name => 'OR'
-							],
-							'parameters' => [
+							),
+							'parameters' => array(
 								$editor_url_info['_pk'] => $id
-							]
-						];
+							)
+						);
 					}
 
 					if(is_array($menu_item_names) && isset($menu_item_names[$table_name])){
@@ -277,13 +281,13 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 						$display_name = caUcFirstUTF8Safe(_t($t_instance->getProperty('NAME_PLURAL')));
 					}
 				
-					$activity_lists[$table_name] = [
+					$activity_lists[$table_name] = array(
 						'displayName' => $display_name,
-						'submenu' => [
+						'submenu' => array(
 							"type" => 'static',
 							'navigation' => $activity_menu_list
-						]
-					];
+						)
+					);
 				}
 				
 			}

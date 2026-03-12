@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2023 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,6 +46,7 @@ $va_display_list	= $this->getVar('display_list');
 $va_initial_values	= $this->getVar('initialValues');
 $vs_bundle_name		= $this->getVar('bundle_name');
 $vs_interstitial_selector = $vs_id_prefix . 'Item_';
+$settings			= $this->getVar('settings');
 
 $va_ids = array();
 foreach($va_initial_values as $vn_rel_id => $va_rel_info) {
@@ -60,7 +61,8 @@ $va_additional_search_controller_params = array(
 	'primaryTable' => $t_subject->tableName(),
 	'primaryID' => $t_subject->getPrimaryKey(),
 	'relatedTable' => $t_item->tableName(),
-	'idPrefix' => $vs_id_prefix
+	'idPrefix' => $vs_id_prefix,
+	'placement_id' => $vn_placement_id
 );
 
 $vs_url_string = '';

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,6 +35,7 @@ require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__.'/Parsers/DisplayTemplateParser.php');
 require_once(__CA_LIB_DIR__.'/Media/MediaInfoCoder.php');
 require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
+require_once(__CA_APP_DIR__.'/helpers/externalMediaHelpers.php');
 
 # ------------------------------------------------------------------------------------------------
 /**
@@ -1143,23 +1144,23 @@ function caEditorInspector($view, $options=null) {
 			//
 			// Display flags; expressions for these are defined in app.conf in the <table_name>_inspector_display_flags directive
 			//
-			if (is_array($va_display_flags = $view->request->config->getAssoc("{$table_name}_inspector_display_flags"))) {
-				$display_flag_buf = array();
-				foreach($va_display_flags as $vs_exp => $vs_display_flag) {
-					$exp_vars = array();
-					foreach(ExpressionParser::getVariableList($vs_exp) as $vs_var_name) {
-						$exp_vars[$vs_var_name] = $t_item->get($vs_var_name, array('convertCodesToIdno' => true));
-					}
-
-					if (ExpressionParser::evaluate($vs_exp, $exp_vars)) {
-						$display_flag_buf[] = $t_item->getWithTemplate("{$vs_display_flag}");
+			if (is_array($display_flags = $view->request->config->getAssoc("{$table_name}_inspector_display_flags"))) {
+				$display_flag_buf = [];
+				foreach($display_flags as $exp => $display_flag) {
+					if($qr = caMakeSearchResult($t_item->tableName(), [$t_item->getPrimaryKey()])) {
+						$qr->nextHit();
+						$exp_vars = DisplayTemplateParser::getValuesForTemplate($qr, $exp);
+						if (ExpressionParser::evaluate($exp, $exp_vars)) {
+							$display_flag_buf[] = $t_item->getWithTemplate("{$display_flag}");
+						}
 					}
 				}
 
-				if(!($vs_display_flag_delim = $view->request->config->get("{$table_name}_inspector_display_flags_delimiter"))) {
-					$vs_display_flag_delim = '; ';
+				if(!($display_flag_delim = $view->request->config->get("{$table_name}_inspector_display_flags_delimiter"))) {
+					$display_flag_delim = '; ';
 				}
-				if (sizeof($display_flag_buf) > 0) { $buf .= join($vs_display_flag_delim, $display_flag_buf); }
+			
+				if (sizeof($display_flag_buf) > 0) { $buf .= join($display_flag_delim, $display_flag_buf); }
 			}
 
 			$label = '';
@@ -3830,7 +3831,7 @@ function caEditorBundleMetadataDictionary($po_request, $ps_id_prefix, $pa_settin
 	$vs_buf .= "<a href='#' class='caMetadataDictionaryDefinitionToggle' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$ps_id_prefix}\");  return false;'>".caNavIcon(__CA_NAV_ICON_INFO__, 1, array('id' => "{$ps_id_prefix}MetadataDictionaryToggleButton"))."</a>";
 
 	$vs_buf .= "<div id='{$ps_id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>{$vs_definition}</div>";
-	$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}', 'closed'); }); </script>";	
+	$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}'); }); </script>";	
 	$vs_buf .= "</span>\n";	
 
 	return $vs_buf;
@@ -4540,7 +4541,7 @@ function caRepresentationList($request, $subject, ?array $options=null) : ?array
 		
 		$display_version = $display_info['display_version'] ?? null;
 		
-		$iiif_url = $request->getBaseUrlPath().'/service/IIIF/representation:'.$rep_id.'/info.json';
+		$iiif_url = $request->getBaseUrlPath().(caUseCleanUrls() ? '/service' : '/service.php').'/IIIF/representation:'.$rep_id.'/info.json';
 		
 		$vtt_captions = null;
 		if(is_array($vtt_caption_list = $t_rep->getCaptionFileList($rep_id))) {
@@ -5339,8 +5340,6 @@ function caRepresentationViewerHTMLBundles($po_request, $po_data, $pt_subject, $
 				['t_instance' => $t_instance, 't_subject' => $pt_subject, 'display' => $va_display_info, 'display_type' => $ps_display_type],
 				['viewerWrapper' => 'viewerInline', 'context' => caGetOption('context', $pa_options, null), 'checkAccess' => caGetOption('checkAccess', $pa_options, null)]
 			).$vs_tool_bar.$vs_caption."</div></div>";
-
-			//if (sizeof($va_reps) > 10) { break(2); }
 		}
 	}
 	return $va_reps;
@@ -5631,7 +5630,7 @@ function caProcessReferenceTags($request, $text, $options=null) {
 	) {
 		if (preg_match_all("!\[{$ref_tag} ([^\]]+)\]([^\[]+)\[/{$ref_tag}\]!", $text, $matches)) {
 			foreach($matches[1] as $i => $attr_string) {
-				if (sizeof($vals = caParseAttributes($attr_string, ['id', 'idno', 'class', 'version'])) > 0) {
+				if (sizeof($vals = caParseAttributes($attr_string, ['id', 'idno', 'class', 'version', 'mode', 'target'])) > 0) {
 					$vals['content'] = $matches[2][$i];
 					$idnos[$ref_type][$matches[0][$i]] = array_filter($vals, function($v) { return !is_null($v); });
 				}
@@ -5639,7 +5638,7 @@ function caProcessReferenceTags($request, $text, $options=null) {
 		}
 		if (preg_match_all("!\[{$ref_tag} ([^\]]+)/\]!", $text, $matches)) {
 			foreach($matches[1] as $i => $attr_string) {
-				if (sizeof($vals = caParseAttributes($attr_string, ['id', 'idno', 'class', 'version'])) > 0) {
+				if (sizeof($vals = caParseAttributes($attr_string, ['id', 'idno', 'class', 'version', 'mode', 'target'])) > 0) {
 					$idnos[$ref_type][$matches[0][$i]] = array_filter($vals, function($v) { return !is_null($v); });
 				}
 			}
@@ -5777,6 +5776,7 @@ function caProcessReferenceTags($request, $text, $options=null) {
 						} elseif (strlen($pm_page)) {
 							$params['path'] = $pm_page;
 						}
+						$return = $va_l['mode'] ?? null;
 						$qr_m = ca_site_page_media::find($params, ['returnAs' => 'searchResult']);
 						while ($qr_m->nextHit()) {
 							if (is_array($access_values) && !in_array($qr_m->get('access'), $access_values)) { 
@@ -5789,13 +5789,20 @@ function caProcessReferenceTags($request, $text, $options=null) {
 							if (!($idno = trim($qr_m->get('idno')))) { $idno = null; }
 
 							$alt_text = caGetOption(['caption', 'title', 'idno'], ['caption' => $caption, 'title' => $title, 'idno' => $idno], null);
-
-							if ($template = $va_l['content']) {
+							if (($template = $va_l['content']) && ($return !== 'link')) {
 								$template = str_replace("^title", $title, $template);
 								$template = str_replace("^caption", $caption, $template);
 								$template = str_replace("^idno", $idno, $template);
 								$template = str_replace("^file", $qr_m->getMediaTag('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media'))), ['alt' => $alt_text]), $template);
 								$text = str_replace($tag, $template, $text);
+							} elseif($return === 'url') {
+								$text = str_replace($tag, $qr_m->getMediaUrl('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media'))), ['alt' => $alt_text]), $text);
+							} elseif($return === 'link') {
+								$url = $qr_m->getMediaUrl('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media'))), ['alt' => $alt_text]);
+								$link_text = $va_l['content'] ?? $url;
+								$target = $va_l['target'] ?? null;
+								$link = "<a href='{$url}'".($target ? " target='{$target}'" : '').">{$link_text}</a>";
+								$text = str_replace($tag, $link, $text);
 							} else {
 								$text = str_replace($tag, $qr_m->getMediaTag('media', caGetOption('version', $va_l, array_shift($qr_m->getMediaVersions('media'))), ['alt' => $alt_text]), $text);
 							}

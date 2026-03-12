@@ -887,6 +887,7 @@ class AppNavigation extends BaseObject {
 						$pvalue = constant($tmp[1]);
 						break;
 					case 'configuration':
+					case 'config':
 						$pvalue = $this->opo_request->config->get($tmp[1]);
 						break;
 					default:
