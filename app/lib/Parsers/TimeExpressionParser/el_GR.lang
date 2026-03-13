@@ -24,6 +24,7 @@ monthTable = {
 
 # List of day names, starting with Sunday
 dayListDisplay = [Κυριακή, Δευτέρα, Τρίτη, Τετάρτη, Πέμπτη, Παρασκευή, Σάββατο]
+dayListShortDisplay = [Κυριακή, Δευτέρα, Τρίτη, Τετάρτη, Πέμπτη, Παρασκευή, Σάββατο]
 
 rangePreConjunctions = [από, μεταξύ]
 rangeConjunctions = [παρά, –, -, και, ..]
