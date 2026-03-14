@@ -3709,8 +3709,8 @@ class TimeExpressionParser {
 		return ((($year % 4) == 0) && ((($year % 100) != 0) || (($year %400) == 0))) ? 366 : 365;
 	}
 	# -------------------------------------------------------------------
-	public function getDayList() {
-		return $this->opo_language_settings->getList('dayListDisplay');
+	public function getDayList(?array $options=null) {
+		return $this->opo_language_settings->getList(caGetOption('short', $options, null) ? 'dayListShortDisplay' : 'dayListDisplay');
 	}
 	# -------------------------------------------------------------------
 	public function getMonthList() {
