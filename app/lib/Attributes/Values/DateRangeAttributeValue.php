@@ -336,6 +336,9 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 				$vs_date_format = $o_date_config->get('dateFormat');
 			}
 		}
+		if ((bool)$va_settings['useDatePicker']) {
+			$vs_date_format = 'delimited';
+		}
 		
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $vs_date_format.$this->opn_start_date.$this->opn_end_date);
 
@@ -493,24 +496,54 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 
 			$vs_date_format = isset($va_settings['datePickerDateFormat']) ? $va_settings['datePickerDateFormat'] : 'yy-mm-dd';
 
+			$locale_settings = [];
 			$o_date_config = Configuration::load('datetime.conf');
 			if ((bool)$o_date_config->get('useDateRangePicker')) {
-				$vs_date_picker = "daterangepicker({dateFormat: '{$vs_date_format}' , datepickerOptions: { minDate: null, maxDate: null}});";
-			}
-			else {
+				$vs_date_picker = "daterangepicker({'parentEl': parentEl, locale: localeSettings, datepickerOptions: { minDate: null, maxDate: null}});";
+				
+				$lang_settings = DateRangeAttributeValue::$o_tep->getLanguageSettings();
+				$range_conj = $lang_settings->get('rangeConjunctions');
+				$month_first = (bool)$lang_settings->get('monthComesFirstInDelimitedDate');
+				$date_delimiters = $lang_settings->get('dateDelimiters');
+				$dd = $date_delimiters[0];
+				
+				$locale_settings = [
+					"format" =>  $month_first ? "MM{$dd}DD{$dd}YYYY" : "DD{$dd}MM{$dd}YYYY",
+					"separator" =>  " {$range_conj[0]} ",
+					"applyLabel" =>  _t("Apply"),
+					"cancelLabel" =>  _t("Cancel"),
+					"fromLabel" =>  _t("From"),
+					"toLabel" =>  _t("To"),
+					"customRangeLabel" =>  _t("Custom"),
+					"weekLabel" =>  _t("W"),
+					"daysOfWeek" =>  DateRangeAttributeValue::$o_tep->getDayList(['short' => true]),
+					"monthNames" =>  DateRangeAttributeValue::$o_tep->getMonthList(),
+					"firstDay" =>  1
+				];
+			
+			} else {
 				$vs_date_picker = "datepicker({dateFormat: '{$vs_date_format}', constrainInput: false});";
 			}
 
 			$vs_element .= "<script type='text/javascript'>
 				jQuery(document).ready(function() {
-					jQuery('#{$id}').{$vs_date_picker}});
+					let parentEl = jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').parents('.caRelationQuickAddPanel');
+					let localeSettings = ".json_encode($locale_settings).";
+					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').{$vs_date_picker}});
 			</script>\n";
 
 			// load localization for datepicker. we can't use the asset manager here
 			// because that doesn't get the script out in time for quickadd forms
-			$vs_i18n_relative_path = '/assets/jquery/jquery-ui/i18n/jquery.ui.datepicker-'.self::$locale.'.js';
-			if(file_exists(__CA_BASE_DIR__.$vs_i18n_relative_path)) {
-				$vs_element .= "<script src='".__CA_URL_ROOT__.$vs_i18n_relative_path."' type='text/javascript'></script>\n";
+			$locale_tmp = explode('_', self::$locale);
+			$i18n_relative_paths = [
+				'/assets/jquery/jquery-ui-1.14.0/i18n/datepicker-'.join('-', $locale_tmp).'.js',
+				'/assets/jquery/jquery-ui-1.14.0/i18n/datepicker-'.$locale_tmp[0].'.js'
+			];
+			foreach($i18n_relative_paths as $i18n_relative_path) {
+				if(file_exists(__CA_BASE_DIR__.$i18n_relative_path)) {
+					$vs_element .= "<script src='".__CA_URL_ROOT__.$i18n_relative_path."' type='text/javascript'></script>\n";
+					break;
+				}
 			}
 		}
 		
