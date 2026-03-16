@@ -5064,7 +5064,9 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 */
 	function caGetHTMLPurifier(?array $options=null) : HTMLPurifier {
-		$config = HTMLPurifier_Config::createDefault();
+		#$config = HTMLPurifier_Config::createDefault();
+		# Swapping out config with html5 compatiable config
+		$config = HTMLPurifier_HTML5Config::createDefault();
 		$config->set('URI.DisableExternalResources', !Configuration::load()->get('purify_allow_external_references'));
 		$config->set('Cache.SerializerPath', Configuration::load()->get('purify_serializer_path'));
 		return new HTMLPurifier($config); 
