@@ -72,15 +72,6 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
 		return 'ulan';
 	}
 	# ------------------------------------------------
-	/** 
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return WLPlugInformationServiceULAN::$s_settings;
-	}
-	# ------------------------------------------------
 	# Data
 	# ------------------------------------------------
 

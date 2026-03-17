@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2025 Whirl-i-Gig
+ * Copyright 2010-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -597,7 +597,7 @@ trait ModelSettings {
 							if ($vb_show_lists) {
 								$t_list = new ca_lists();
 								$va_lists = caExtractValuesByUserLocale($t_list->getListOfLists());
-								
+								$va_lists = caSortArrayByKeyInValue($va_lists, ['name']);
 								$va_rel_opts = array();
 								if (isset($va_properties['allowNull']) && $va_properties['allowNull']) {
 									$va_rel_opts['-'] = null;

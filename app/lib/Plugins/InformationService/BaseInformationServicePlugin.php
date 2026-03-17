@@ -206,4 +206,12 @@ abstract class BaseInformationServicePlugin Extends WLPlug {
 		return [];
 	}
 	# ------------------------------------------------
+	/** 
+	 *
+	 */
+    public function getAvailableSettings() {
+        $settings = static::$s_settings ?? [];
+        return $settings;
+    }
+	# ------------------------------------------------
 }

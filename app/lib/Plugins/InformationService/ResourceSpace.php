@@ -73,15 +73,6 @@ class WLPlugInformationServiceResourceSpace Extends BaseInformationServicePlugin
 		$this->description = _t('Provides access to ResourceSpace data and media');
 	}
 	# ------------------------------------------------
-	/**
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return WLPlugInformationServiceResourceSpace::$s_settings;
-	}
-	# ------------------------------------------------
 	# Data
 	# ------------------------------------------------
 	/**

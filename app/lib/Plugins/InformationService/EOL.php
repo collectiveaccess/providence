@@ -61,15 +61,6 @@ class WLPlugInformationServiceEOL extends BaseInformationServicePlugin Implement
 		$this->description = _t('Provides access to Encyclopedia of Life (EOL) service');
 	}
 	# ------------------------------------------------
-	/** 
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return WLPlugInformationServiceEOL::$s_settings;
-	}
-	# ------------------------------------------------
 	# Data
 	# ------------------------------------------------
 	/** 

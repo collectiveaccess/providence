@@ -209,15 +209,6 @@
  		$this->description = _t('Provides access to Wikidata service and other SPARQL endpoints.');
  	}
  	# ------------------------------------------------
- 	/**
- 	 * Get all settings settings defined by this plugin as an array
- 	 *
- 	 * @return array
- 	 */
- 	public function getAvailableSettings() {
- 		return WLPlugInformationServiceSparqlEndpoint::$s_settings;
- 	}
- 	# ------------------------------------------------
  	# Data
  	# ------------------------------------------------
  	/**

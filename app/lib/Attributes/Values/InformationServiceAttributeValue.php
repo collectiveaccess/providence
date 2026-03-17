@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2025 Whirl-i-Gig
+ * Copyright 2011-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -265,6 +265,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 					return array(
 						'value_longtext1' => $vs_display_text,	// text
 						'value_longtext2' => $va_tmp[2],		// uri
+						'item_id' => $va_info['extra_info']['item_id'] ?? null,
 						'value_decimal1' => is_numeric($va_tmp[1]) && ($va_tmp[1] < pow(2, 64))  ? $va_tmp[1] : null, 		// id
 						'value_blob' => caSerializeForDatabase($va_info),
 						'value_sortable' => $this->sortableValue($vs_display_text)
@@ -291,6 +292,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 					$va_return = array(
 						'value_longtext1' => $vs_display_text,	// text
 						'value_longtext2' => $va_hit['url'],	// url
+						'item_id' => $va_info['extra_info']['item_id'] ?? null,
 						'value_decimal1' => $va_hit['id'], 	// id
 						'value_blob' => caSerializeForDatabase($va_info),
 						'value_sortable' => $this->sortableValue($vs_display_text)
@@ -306,6 +308,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 			    return [
 			        'value_longtext1' => $m[2],
 			        'value_longtext2' => '',
+					'item_id' => null,
 			        'value_decimal1' => is_numeric($m[1]) ? $m[1] : null,
 			        'value_blob' => null,
 			        'value_sortable' => $this->sortableValue($m[2])
@@ -334,6 +337,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 				return [
 			        'value_longtext1' => $ps_value,
 			        'value_longtext2' => '',
+			        'item_id' => null,
 			        'value_decimal1' => null,
 			        'value_blob' => null,
 			        'value_sortable' => $this->sortableValue($ps_value)

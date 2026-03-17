@@ -72,7 +72,37 @@ $g_information_service_settings_nomenclature = [
 		'width' => 90, 'height' => 1,
 		'label' => _t('Nomenclature language'),
 		'description' => _t('Language')
-	]
+	],
+	'useMirrorList' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'options' => [
+			_t('Use mirror list') => 1,
+			_t('Do not use mirror list') => 0
+		],
+		'default' => 0,
+		'width' => 90, 'height' => 1,
+		'label' => _t('Use mirror list?'),
+		'description' => _t('Use mirror list?')
+	],
+	'mirrorToList' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'default' => '',
+		'showLists' => 1,
+		'width' => 90, 'height' => 1,
+		'label' => _t('List to mirror to'),
+		'description' => _t('Create hierarchy in list')
+	],
+	'mirrorToListAccess' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'default' => '',
+		'useList' => 'access_statuses',
+		'width' => 90, 'height' => 1,
+		'label' => _t('Access for mirrored list items'),
+		'description' => _t('Access for newly created mirrored list items')
+	],
 ];
 
 /**
@@ -98,13 +128,6 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
         $this->info['NAME'] = 'Nomenclature';
 
         $this->description = _t('Provides access to Nomenclature for Museum Cataloguing (https://page.nomenclature.info)');
-    }
-	# ------------------------------------------------
-	/** 
-	 *
-	 */
-    public function getAvailableSettings() {
-        return WLPlugInformationServiceNomenclature::$s_settings;
     }
 	# ------------------------------------------------
 	/** 
@@ -198,6 +221,7 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
 			]);
 	
 			$response_data = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
+		
 			if(is_array($response_data)) {
 				foreach($response_data as $index => $data) {
 					$label = $data['prefLabel'][0]['literalForm']['value'] ?? null;
@@ -207,7 +231,8 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
 					
 					$hier[] = [
 						'label' => $label,
-						'url' => $url
+						'url' => $url,
+						'id' => $data['id'] ?? null
 					];
 					if(!$id) { break(2); }
 					continue(2);
@@ -215,9 +240,15 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
 			}
 			break;
    		} while(true);
-		return [
-			'hierarchy' => $hier
-		];
+   		
+   		$info = [
+   			'hierarchy' => $hier
+   		];
+   		if($item_id = $this->mirrorToList($settings, $hier)) {
+   			$info['item_id'] = $item_id;
+   		}
+   		
+		return $info;
 	}
 	# ------------------------------------------------
 	/** 
@@ -249,6 +280,69 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
    		
    		if(!$lang) { $lang = 'en'; }
    		return $lang;
+    } 
+	# ------------------------------------------------
+	/** 
+	 *
+	 */
+    private function languageToLocale(?string $lang) : string  {
+    	$default_locale = defined('__CA_DEFAULT_LOCALE__') ? __CA_DEFAULT_LOCALE__ : 'en_US';
+    	
+    	switch($lang) {
+    		case 'en':
+    		case 'fr':
+    		case 'es':
+    			$locales = ca_locales::localesForLanguage($lang, ['codesOnly' => true]);
+    			break;
+    		case 'en-CA':
+    			$locales = ca_locales::localesForLanguage('en', ['codesOnly' => true]);
+    			$default_locale = 'en_CA';
+    			break;
+    		case 'fr-CA':
+    			$locales = ca_locales::localesForLanguage('fr', ['codesOnly' => true]);
+    			$default_locale = 'en_FR';
+    			break;
+    		default:	// What to do with IU locales?
+    			$default_locale = 'en_CA';
+    			break;
+    	}
+    	if(in_array($default_locale, $locales, true)) {
+			return $default_locale;
+		} 
+		if(defined('__CA_DEFAULT_LOCALE__')) {
+			return __CA_DEFAULT_LOCALE__;
+		}
+		$locales = ca_locales::getLocaleList(['index_by_code' => true]);
+		$locales = array_keys($locales);
+		return array_shift($locales);
+    }
+	# ------------------------------------------------
+	/** 
+	 *
+	 */
+    protected function mirrorToList($settings, $data, $options=null) : ?int  {
+    	$parent_id = null;
+    	if(($settings['useMirrorList'] ?? false) && ($list_id = ($settings['mirrorToList'] ?? null))){
+   			$lang = $this->validateLanguage(caGetOption('language', $settings, 'en'));
+    		$locale = $this->languageToLocale($lang);
+    		$type = caGetDefaultItemID('list_item_types');
+    		
+    		$access = $settings['mirrorToListAccess'] ?? 0;
+    		
+    		foreach(array_reverse($data) as $d) {
+    			$parent_id = DataMigrationUtils::getListItemID($list_id, $d['id'], $type, $locale, [
+    				'parent_id' => $parent_id,
+    				'preferred_labels' => [
+    					'name_singular' => $d['label'],
+    					'name_plural' => $d['label'],
+    					'description' => $d['url']
+    				],
+    				'access' => $access
+    			], ['outputErrors' => true]);
+    		}
+    	}
+    	
+    	return $parent_id;
     }
 	# ------------------------------------------------
 }

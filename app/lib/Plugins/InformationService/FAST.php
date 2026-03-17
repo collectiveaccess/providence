@@ -94,10 +94,6 @@ class WLPlugInformationServiceFAST extends BaseInformationServicePlugin implemen
         $this->description = _t('Provides access to FAST service');
     }
 
-    public function getAvailableSettings() {
-        return WLPlugInformationServiceFAST::$s_settings;
-    }
-
     public function lookup($settings, $search, $options = null)  {
    		$search_on = caGetOption('searchOn', $settings, 'cql.any');
    		if(

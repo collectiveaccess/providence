@@ -242,13 +242,6 @@ class WLPlugInformationServiceGBIF extends BaseInformationServicePlugin implemen
         $this->description = _t('Taxonomic lookups using GBIF resolver');
     }
 	# ------------------------------------------------
-	/** 
-	 *
-	 */
-    public function getAvailableSettings() {
-        return WLPlugInformationServiceGBIF::$s_settings;
-    }
-	# ------------------------------------------------
 	/**
 	 *
 	 */

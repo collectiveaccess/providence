@@ -166,15 +166,6 @@ class WLPlugInformationServiceALANSL extends BaseInformationServicePlugin implem
 	}
 
 	/**
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return self::$s_settings;
-	}
-
-	/**
 	 * Perform lookup on ALA-NSL-based data service
 	 *
 	 * @param array  $pa_settings Plugin settings values
