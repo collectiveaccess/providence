@@ -509,11 +509,19 @@ class BaseBrowseController extends BaseFindController {
 					// is it a list attribute?
 					$t_element = new ca_metadata_elements();
 					if ($t_element->load(array('element_code' => $va_facet_info['element_code']))) {
-						switch($t_element->get('datatype')) { 
+						$element_type = $t_element->get('datatype');
+						$is_information_service_mirror_list = false;
+						
+						if($element_type === __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__) {
+							$element_type = __CA_ATTRIBUTE_VALUE_LIST__;
+							$is_information_service_mirror_list = true;
+						}
+						switch($element_type) { 
 							case __CA_ATTRIBUTE_VALUE_LIST__:
 								$t_list = new ca_lists();
+								$list_id = $is_information_service_mirror_list ? 61 : $t_element->get('list_id');
 								if (!$vn_id) { 
-									$vn_id = $t_list->getRootListItemID($t_element->get('list_id'));
+									$vn_id = $t_list->getRootListItemID($list_id);
 								}
 								$t_item = new ca_list_items($vn_id);
 								$va_children = $t_item->getHierarchyChildren(null, array('idsOnly' => true));
@@ -537,7 +545,7 @@ class BaseBrowseController extends BaseFindController {
 										$va_item['name'] = $qr_res->get('ca_list_items.preferred_labels');
 										$va_item['children'] = (isset($va_child_counts[$vn_item_id]) && $va_child_counts[$vn_item_id]) ? $va_child_counts[$vn_item_id] : 0;
 										$va_item['access'] = $vn_access;
-										$va_item['is_enabled'] = $qr_res->get('ca_list_items.is_enabled');
+										$va_item['is_enabled'] = $is_information_service_mirror_list ? 1 : $qr_res->get('ca_list_items.is_enabled');
 										$va_json_data[$vn_item_id] = $va_item;
 										$vn_count++;
 									}
