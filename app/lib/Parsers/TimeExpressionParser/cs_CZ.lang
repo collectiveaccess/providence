@@ -24,6 +24,7 @@ monthTable = {
 
 # List of day names, starting with Sunday
 dayListDisplay = [neděle, pondělí, úterý, středa, čtvrtek, pátek, sobota]
+dayListShortDisplay = [neděle, pondělí, úterý, středa, čtvrtek, pátek, sobota]
 
 rangePreConjunctions = [od]
 rangeConjunctions = [do, –, -, a, ..]
@@ -40,6 +41,13 @@ meridianTable = {
 	a.m. = am,
 	p.m. = pm
 }
+
+intervalPastIndicator = [past]
+intervalFutureIndicator = [future, next]
+intervalDaysIndicator = [day, days, d]
+intervalWeeksIndicator = [week, weeks, w]
+intervalMonthsIndicator = [month, months, m]
+intervalYearsIndicator = [year, years, yr, y]
 
 dateCircaIndicator = [cirka, cca, c., ca., asi, přibližně, zhruba]
 dateProbablyIndicator = [přibližně]

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -45,6 +45,21 @@ BaseModel::$s_ca_models_definitions['ca_object_lots'] = array(
 			'IS_NULL' => false, 
 			'DEFAULT' => '',
 			'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this lot')
+		),
+		'parent_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => '',
+			'LABEL' => 'Parent id', 'DESCRIPTION' => 'Identifier of parent lot; is null if object is root of hierarchy.'
+		),
+		'hier_lot_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'DONT_INCLUDE_IN_SEARCH_FORM' => true,
+			'LABEL' => 'Object lot hierarchy', 'DESCRIPTION' => 'Identifier of lot that is root of the object lot hierarchy.'
 		),
 		'type_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -216,6 +231,20 @@ BaseModel::$s_ca_models_definitions['ca_object_lots'] = array(
 			'DEFAULT' => '',
 			'LABEL' => 'Source information', 'DESCRIPTION' => 'Serialized array used to store source information for object lot information retrieved via web services [NOT IMPLEMENTED YET].'
 		),
+		'hier_left' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Hierarchical index - left bound', 'DESCRIPTION' => 'Left-side boundary for nested set-style hierarchical indexing; used to accelerate search and retrieval of hierarchical record sets.'
+		),
+		'hier_right' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Hierarchical index - right bound', 'DESCRIPTION' => 'Right-side boundary for nested set-style hierarchical indexing; used to accelerate search and retrieval of hierarchical record sets.'
+		),
 		'deleted' => array(
 			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
@@ -341,16 +370,15 @@ class ca_object_lots extends RepresentableBaseModel {
 	# its name here. The generic list scripts can then use it to order table records.
 	protected $RANK = 'rank';
 	
-	
 	# ------------------------------------------------------
 	# Hierarchical table properties
 	# ------------------------------------------------------
-	protected $HIERARCHY_TYPE				=	null;
-	protected $HIERARCHY_LEFT_INDEX_FLD 	= 	null;
-	protected $HIERARCHY_RIGHT_INDEX_FLD 	= 	null;
-	protected $HIERARCHY_PARENT_ID_FLD		=	null;
-	protected $HIERARCHY_DEFINITION_TABLE	=	null;
-	protected $HIERARCHY_ID_FLD				=	null;
+	protected $HIERARCHY_TYPE				=	__CA_HIER_TYPE_ADHOC_MONO__;
+	protected $HIERARCHY_LEFT_INDEX_FLD 	= 	'hier_left';
+	protected $HIERARCHY_RIGHT_INDEX_FLD 	= 	'hier_right';
+	protected $HIERARCHY_PARENT_ID_FLD		=	'parent_id';
+	protected $HIERARCHY_DEFINITION_TABLE	=	'ca_object_lots';
+	protected $HIERARCHY_ID_FLD				=	'hier_lot_id';
 	protected $HIERARCHY_POLY_TABLE			=	null;
 	
 	# ------------------------------------------------------
@@ -456,6 +484,8 @@ class ca_object_lots extends RepresentableBaseModel {
 		$this->BUNDLES['ca_object_lots_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related object lots list'));
 		
 		$this->BUNDLES['ca_objects_deaccession'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Deaccession status'));
+		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
+		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
 		
 		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
 		

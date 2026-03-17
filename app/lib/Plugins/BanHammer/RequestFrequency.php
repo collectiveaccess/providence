@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019-2024 Whirl-i-Gig
+ * Copyright 2019-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -63,6 +63,11 @@ class WLPlugBanHammerRequestFrequency Extends BaseBanHammerPlugin  {
 	
 		if (($interval = (time() - $request_count['s'])) > 0) {
 			$freq = (float)$request_count['c']/(float)$interval;
+			
+			$log = self::getLogger();
+			
+			if($log) { $log->logInfo(_t('[BanHammer::RequestFrequency] Request freq %1 (%2) > threshold %3', $freq, $request_count['c'], $frequency_threshold)); }
+			self::setDetails(['details' => _t('Request freq %1 (%2) > threshold %3', $freq, $request_count['c'], $frequency_threshold)]);
 			if ($freq > $frequency_threshold) { return $ban_probability; }
 		}
 		

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2025 Whirl-i-Gig
+ * Copyright 2012-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -863,7 +863,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			$vn_row_num = $o_row->getRowIndex();
-			$o_cell = $o_sheet->getCellByColumnAndRow(1, $vn_row_num);
+			$o_cell = $o_sheet->getCell([1, $vn_row_num]);
 			$vs_mode = strtolower(trim((string)$o_cell->getValue()));
 			
 			switch($vs_mode) {
@@ -873,17 +873,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					break;
 				case 'mapping':
 				case 'constant':
-					$o_source = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
-					$o_dest = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
+					$o_source = $o_sheet->getCell([2, $o_row->getRowIndex()]);
+					$o_dest = $o_sheet->getCell([3, $o_row->getRowIndex()]);
 					
-					$o_group = $o_sheet->getCellByColumnAndRow(4, $o_row->getRowIndex());
-					$o_options = $o_sheet->getCellByColumnAndRow(5, $o_row->getRowIndex());
-					$o_refinery = $o_sheet->getCellByColumnAndRow(6, $o_row->getRowIndex());
-					$o_refinery_options = $o_sheet->getCellByColumnAndRow(7, $o_row->getRowIndex());
-					$o_orig_values = $o_sheet->getCellByColumnAndRow(8, $o_row->getRowIndex());
-					$o_replacement_values = $o_sheet->getCellByColumnAndRow(9, $o_row->getRowIndex());
-					$o_source_desc = $o_sheet->getCellByColumnAndRow(10, $o_row->getRowIndex());
-					$o_notes = $o_sheet->getCellByColumnAndRow(11, $o_row->getRowIndex());
+					$o_group = $o_sheet->getCell([4, $o_row->getRowIndex()]);
+					$o_options = $o_sheet->getCell([5, $o_row->getRowIndex()]);
+					$o_refinery = $o_sheet->getCell([6, $o_row->getRowIndex()]);
+					$o_refinery_options = $o_sheet->getCell([7, $o_row->getRowIndex()]);
+					$o_orig_values = $o_sheet->getCell([8, $o_row->getRowIndex()]);
+					$o_replacement_values = $o_sheet->getCell([9, $o_row->getRowIndex()]);
+					$o_source_desc = $o_sheet->getCell([10, $o_row->getRowIndex()]);
+					$o_notes = $o_sheet->getCell([11, $o_row->getRowIndex()]);
 					
 					if (!($vs_group = trim((string)$o_group->getValue()))) {
 						$vs_group = '_group_'.md5((string)$o_source->getValue()."_{$vn_row}");
@@ -938,8 +938,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					if ($va_options && is_array($va_options) && isset($va_options['transformValuesUsingWorksheet']) && $va_options['transformValuesUsingWorksheet']) {
 						if ($o_opt_sheet = $o_excel->getSheetByName($va_options['transformValuesUsingWorksheet'])) {
 							foreach ($o_opt_sheet->getRowIterator() as $o_sheet_row) {
-								if (!$vs_original_value = trim(mb_strtolower((string)$o_opt_sheet->getCellByColumnAndRow(1, $o_sheet_row->getRowIndex())))) { continue; }
-								$vs_replacement_value = trim((string)$o_opt_sheet->getCellByColumnAndRow(2, $o_sheet_row->getRowIndex()));
+								if (!$vs_original_value = trim(mb_strtolower((string)$o_opt_sheet->getCell([1, $o_sheet_row->getRowIndex()])))) { continue; }
+								$vs_replacement_value = trim((string)$o_opt_sheet->getCell([2, $o_sheet_row->getRowIndex()]));
 								$va_original_values[] = $vs_original_value;
 								$va_replacement_values[] = $vs_replacement_value;
 							}
@@ -981,8 +981,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					);
 					break;
 				case 'setting':
-					$o_setting_name = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
-					$o_setting_value = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
+					$o_setting_name = $o_sheet->getCell([2, $o_row->getRowIndex()]);
+					$o_setting_value = $o_sheet->getCell([3, $o_row->getRowIndex()]);
 					
 					switch($vs_setting_name = (string)$o_setting_name->getValue()) {
 						case 'inputTypes':		// older mapping worksheets use "inputTypes" instead of the preferred "inputFormats"
@@ -1000,8 +1000,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 					break;
 				case 'rule':
-					$o_rule_trigger = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
-					$o_rule_action = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
+					$o_rule_trigger = $o_sheet->getCell([2, $o_row->getRowIndex()]);
+					$o_rule_action = $o_sheet->getCell([3, $o_row->getRowIndex()]);
 					
 					$vs_action_string = (string)$o_rule_action->getValue();
 					if (!($va_actions = json_decode($vs_action_string, true))) {
@@ -1019,9 +1019,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 					break;
 				case 'environment':
-					$o_source = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
-					$o_env_var = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
-					$o_options = $o_sheet->getCellByColumnAndRow(5, $o_row->getRowIndex());
+					$o_source = $o_sheet->getCell([2, $o_row->getRowIndex()]);
+					$o_env_var = $o_sheet->getCell([3, $o_row->getRowIndex()]);
+					$o_options = $o_sheet->getCell([5, $o_row->getRowIndex()]);
 					
 					$va_options = array();
 					if ($vs_options_json = (string)$o_options->getValue()) { 
@@ -4093,6 +4093,26 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 					}
 				}
+				
+				// Does record have identifier with PARENT element? If so, we have update the idno to reflect whatever parent was set after insert()
+				if(method_exists($t_subject, 'getIDNoPlugInInstance') && ($idno_plugin = $t_subject->getIDNoPlugInInstance())) {
+					if(method_exists($idno_plugin, 'isParentFormat') && $idno_plugin->isParentFormat()) {
+						$elements = array_keys($idno_plugin->getElements());
+						$pn = array_shift($elements);
+						
+						$table = $t_subject->tableName();
+						$pv = $t_subject->get("{$table}.parent.{$vs_idno_fld}");
+						if(!strlen($pv) && ($table === 'ca_objects') && $o_config->get('ca_objects_x_collections_hierarchy_enabled') && is_array($rt = caGetObjectCollectionHierarchyRelationshipTypes())) {
+							$parent_colls = $t_subject->get('ca_collections.idno', ['restrictToRelationshipTypes' => $rt, 'returnAsArray' => true]);
+							if(is_array($parent_colls) && sizeof($parent_colls)) {
+								$pv = array_shift($parent_colls);
+								$idno_plugin->isChild(true, $pv);
+								$t_subject->setIdnoWithTemplate(preg_replace("!^%!i", '^PARENT^', $vs_idno));
+								$t_subject->update();
+							}
+						}
+					}
+				}
 			
 				$opa_app_plugin_manager->hookDataPostImport(array('subject' => $t_subject, 'mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'transaction' => &$o_trans, 'log' => &$o_log, 'logReference' => $vs_idno, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row));
 			
@@ -4167,7 +4187,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$log = caGetOption('log', $options, null);
 		$trans = caGetOption('transaction', $options, null);
 		$log_reference = caGetOption('logReference', $options, null);
-		$config = Configuration::load();
+		$o_config = Configuration::load();
 		foreach($children as $child) {
 			$vals = $child; unset($vals['_table']); unset($vals['_type']); unset($vals['preferred_labels']); unset($vals['_children']);
 			
@@ -4177,10 +4197,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$attrs = $vals; unset($attrs['_related_related']);
 			if ($parent_table == $child['_table']) {	// direct child to parent (both are same table)
 				$id = DataMigrationUtils::getIDFor($child['_table'], $child['preferred_labels'], $parent_id, $child['_type'], 1, $attrs, $options);
-			} elseif($config->get('ca_objects_x_collections_hierarchy_enabled') && ($parent_table == 'ca_collections') && ($child['_table'] == 'ca_objects')) {	// collection-object hierarchy
+			} elseif($o_config->get('ca_objects_x_collections_hierarchy_enabled') && ($parent_table == 'ca_collections') && ($child['_table'] == 'ca_objects')) {	// collection-object hierarchy
 				if (($id = DataMigrationUtils::getIDFor($child['_table'], $child['preferred_labels'], null, $child['_type'], 1, $attrs, $options)) && ($parent = Datamodel::getInstance($parent_table, true)) && $parent->load($parent_id)) {
 					if($trans) { $parent->setTransaction($trans); }
-					$parent->addRelationship('ca_objects', $id, $config->get('ca_objects_x_collections_hierarchy_relationship_type'));
+					$parent->addRelationship('ca_objects', $id, $o_config->get('ca_objects_x_collections_hierarchy_relationship_type'));
 					
 					if($parent->numErrors() > 0) {
 						if ($log) { $log->logInfo(_t('Could not create object-collection hierarchy child record relationship: %1', join("; ", $parent->getErrors()))); }

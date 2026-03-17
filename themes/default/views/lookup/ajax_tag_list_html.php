@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018 Whirl-i-Gig
+ * Copyright 2018-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,4 +25,4 @@
  *
  * ----------------------------------------------------------------------
  */
- 	print json_encode($this->getVar('tag_list'));
+print json_encode($this->getVar('tag_list'));

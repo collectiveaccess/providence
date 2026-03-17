@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2023 Whirl-i-Gig
+ * Copyright 2011-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,11 +28,11 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  * 
  * ----------------------------------------------------------------------
- */
+ */ 
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 require_once(__CA_MODELS_DIR__.'/ca_list_labels.php');
 require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
-
+	
 # ---------------------------------------
 /**
  * Fetch item_id for item with specified idno in list
@@ -540,7 +540,7 @@ function caGetDefaultItemValue($ps_list_code, $options=null) {
  * @return mixed Value of setting, or null if item or setting do not exist.
  */
 $g_default_list_item_setting_cache = [];
-function caGetListItemSettingValue(string $list_code, string $idno, string $setting, ?array $options=null) {
+function caGetListItemSettingValue(string $list_code, ?string $idno, string $setting, ?array $options=null) {
 	global $g_default_list_item_setting_cache;
 	if(!is_array($options)) { $options = []; }
 	if(!is_array($g_default_list_item_setting_cache)) { $g_default_list_item_setting_cache = []; }

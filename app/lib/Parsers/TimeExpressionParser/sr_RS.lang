@@ -24,6 +24,7 @@ monthTable = {
 
 # List of day names, starting with Sunday
 dayListDisplay = [Недеља, Понедељак, Уторак, Среда, Четвртак, Петак, Субота]
+dayListShortDisplay = [Недеља, Понедељак, Уторак, Среда, Четвртак, Петак, Субота]
 
 rangePreConjunctions = [од, између]
 rangeConjunctions = [до, –, -, и, .., кроз]
@@ -40,6 +41,13 @@ meridianTable = {
 	а.м. = ам,
 	п.м. = пм
 }
+
+intervalPastIndicator = [past]
+intervalFutureIndicator = [future, next]
+intervalDaysIndicator = [day, days, d]
+intervalWeeksIndicator = [week, weeks, w]
+intervalMonthsIndicator = [month, months, m]
+intervalYearsIndicator = [year, years, yr, y]
 
 dateCircaIndicator = [цирка, ц, ц., ца, ца.]
 dateProbablyIndicator = [probably, possibly]

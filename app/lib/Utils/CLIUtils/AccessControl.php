@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2024 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -312,7 +312,7 @@ trait CLIUtilsAccessControl {
 	
 			while($qr->nextHit()) {
 				if(!($t_instance = $qr->getInstance())) { continue; }
-				if(!$t_instance->supportsACL()) { break; }
+				if(!$t_instance->supportsACL(['useSettingsOnly' => true])) { break; }
 				ca_acl::applyACLInheritanceToChildrenFromRow($t_instance);
 				
 				if($table === 'ca_collections') { 

@@ -650,7 +650,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			foreach($va_list_items as $vn_i => $va_item) {
 				if ($pn_type_id && $va_item['NODE']['type_id'] != $pn_type_id) { continue; }
 				if ($vb_enabled_only && !$va_item['NODE']['is_enabled']) { continue; }
-				if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0) && in_array((int)$va_item['access'], $pa_check_access, true)) { continue; }
+				if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0) && !in_array((int)$va_item['NODE']['access'], $pa_check_access, true)) { continue; }
 				
 				$vn_item_id = $va_item['NODE']['item_id'];
 				$vn_parent_id = $va_item['NODE']['parent_id'];
@@ -1361,7 +1361,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * Convert list code to list_id
 	 */
 	private function _getListID($pm_list_name_or_id) {
-		return ca_lists::getListID($pm_list_name_or_id, array('transaction' => $this->getTransaction()));
+		return ca_lists::getListID($pm_list_name_or_id, ['transaction' => $this->getTransaction()]);
 	}
 	# ------------------------------------------------------
 	/**
@@ -1374,7 +1374,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @return int list for the specified list, or null if the list does not exist
 	 */
 	static function getListID($pm_list_name_or_id, $pa_options=null) {
-	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $pm_list_name_or_id);
+	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $pm_list_name_or_id ?? '');
 		if (ca_lists::$s_list_id_cache[$vs_cache_key] ?? null) {
 			return ca_lists::$s_list_id_cache[$vs_cache_key];
 		}

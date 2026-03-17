@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_LIB_DIR__."/Browse/BrowseEngine.php");
 require_once(__CA_APP_DIR__."/helpers/browseHelpers.php");
 
@@ -266,7 +265,14 @@ class SimpleService {
 		if ((trim($ps_q) === '*') && is_array($id_list) && sizeof($id_list)) {
 			// TODO: filter on type and access
 			$o_res = caMakeSearchResult($pa_config['table'], array_unique($id_list));
-		} else {		
+		} else {
+			if($pa_config['filter'] ?? null) {
+				if(trim($ps_q) == '*') {
+					$ps_q = $pa_config['filter'];
+				} else {
+					$ps_q = "({$ps_q}) AND (".$pa_config['filter'].")";
+				}
+			}
 			$o_res = $o_search->search($ps_q, array(
 				'sort' => $sort = (($po_request->getParameter('sort', pString)) ? $po_request->getParameter('sort', pString) : $pa_config['sort']),
 				'sortDirection' => ($po_request->getParameter('sortDirection', pString)) ? $po_request->getParameter('sortDirection', pString) : $pa_config['sortDirection'],

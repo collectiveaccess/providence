@@ -25,6 +25,7 @@ monthTable = {
 
 # List of day names, starting with Sunday
 dayListDisplay = [Söndag, Måndag, Tisdag, Onsdag, Torsdag, Fredag, Lördag]
+dayListShortDisplay = [Sön, Mån, Tis, Ons, Tor, Fre, Lör]
 
 rangePreConjunctions = [från, mellan]
 rangeConjunctions = [till, –, -, och, .., genom]
@@ -41,6 +42,13 @@ meridianTable = {
 	f.m. = fm,
 	e.m. = em
 }
+
+intervalPastIndicator = [past]
+intervalFutureIndicator = [future, next]
+intervalDaysIndicator = [day, days, d]
+intervalWeeksIndicator = [week, weeks, w]
+intervalMonthsIndicator = [month, months, m]
+intervalYearsIndicator = [year, years, yr, y]
 
 dateCircaIndicator = [cirka, c, c., ca, ca., möjligen, förmodligen]
 dateProbablyIndicator = [probably, possibly]

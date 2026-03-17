@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2023 Whirl-i-Gig
+ * Copyright 2006-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,12 +40,18 @@ class MediaProcessingSettings {
 	var $opo_config_settings;
 	var $opa_config_settings_as_array;
 	# ---------------------------------------------------
+	/**
+	 *
+	 */
 	public function __construct($table, $field) {
 		$this->opo_config = Configuration::load();
 		
 		if ($table && $field) { $this->loadSettings($table, $field); }
 	}
 	# ---------------------------------------------------
+	/**
+	 *
+	 */
 	public function loadSettings($table, $field) {
 		if (!is_object($table)) {
 			// if it's not a table instance, try using $table as a table name
@@ -77,6 +83,9 @@ class MediaProcessingSettings {
 		return true;
 	}
 	# ---------------------------------------------------
+	/**
+	 *
+	 */
 	public function getAcceptedMediaTypes() {
 		if ($this->opa_table_settings) {
 			return $this->opa_table_settings['MEDIA_ACCEPT'] ?? null;
@@ -88,7 +97,9 @@ class MediaProcessingSettings {
 		return null;
 	}
 	# ---------------------------------------------------
-	# Returns media type if mimetype can be accepted, null if it cannot
+	/**
+	 * Returns media type if mimetype can be accepted, null if it cannot
+	 */
 	public function canAccept($mimetype) {
 		$media_type = null;
 		if ($this->opa_table_settings) {
@@ -101,6 +112,9 @@ class MediaProcessingSettings {
 		return $media_type;
 	}
 	# ---------------------------------------------------
+	/**
+	 *
+	 */
 	public function getMediaTypes() {
 		if ($this->opa_table_settings) {
 			return $this->opa_table_settings['MEDIA_TYPES'];
@@ -112,12 +126,14 @@ class MediaProcessingSettings {
 		return null;
 	}
 	# ---------------------------------------------------
-	# Returns an array with full media type info - it is an associative array
-	# with the following keys:
-	#
-	# 	VERSIONS = array of version info arrays
-	#	MEDIA_VIEW_DEFAULT_VERSION = name of version to use for default display
-	#
+	/**
+	 * Returns an array with full media type info - it is an associative array
+	 * with the following keys:
+	 *
+	 * 	VERSIONS = array of version info arrays
+	 *	MEDIA_VIEW_DEFAULT_VERSION = name of version to use for default display
+	 *
+	 */
 	public function getMediaTypeInfo($media_type) {
 		$media_type_info = null;
 		if ($this->opa_table_settings) {
@@ -175,6 +191,9 @@ class MediaProcessingSettings {
 		return null;
 	}
 	# ---------------------------------------------------
+	/**
+	 *
+	 */
 	public function getMediaTransformationRules() {
 		if ($this->opa_table_settings) {
 			return $this->opa_table_settings['MEDIA_TRANSFORMATION_RULES'];
@@ -186,6 +205,9 @@ class MediaProcessingSettings {
 		return null;
 	}
 	# ---------------------------------------------------
+	/**
+	 *
+	 */
 	public function getMediaTransformationRule($ps_rule_name) {
 		$va_rule_set = null;
 		if ($this->opa_table_settings) {
@@ -199,6 +221,9 @@ class MediaProcessingSettings {
 		return $va_rule_set;
 	}
 	# ---------------------------------------------------
+	/**
+	 *
+	 */
 	public function getMetadataFieldName() {
 		$vs_field_name = null;
 		if ($this->opa_table_settings) {
@@ -211,6 +236,9 @@ class MediaProcessingSettings {
 		return $vs_field_name;
 	}
 	# ---------------------------------------------------
+	/**
+	 *
+	 */
 	public function getMetadataContentName() {
 		$vs_field_name = null;
 		if ($this->opa_table_settings) {
@@ -223,6 +251,9 @@ class MediaProcessingSettings {
 		return $vs_field_name;
 	}
 	# ---------------------------------------------------
+	/**
+	 *
+	 */
 	public function getMetadataContentLocationsName() {
 		$vs_field_name = null;
 		if ($this->opa_table_settings) {

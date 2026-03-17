@@ -274,7 +274,7 @@ function caExtractRequestParams() {
  *
  * @return string
  */
-function caGetErrorMessage(int $error_code, string $locale=null) {
+function caGetErrorMessage(int $error_code, ?string $locale=null) {
 	if (!$locale || !preg_match("!^[a-z]{2,3}_[A-Z]{2,3}$!", $locale)) { $locale = 'en_US'; } 
 	
 	$path = __CA_LIB_DIR__."/Error/errors.{$locale}";

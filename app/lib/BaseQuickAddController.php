@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2024 Whirl-i-Gig
+ * Copyright 2012-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -61,6 +61,12 @@ class BaseQuickAddController extends ActionController {
 		$vs_n = $this->request->getParameter('n', pString);
 		
 		$vn_subject_id = $t_subject->getPrimaryKey();
+		
+		$t_placement = ($placement_id = $this->request->getParameter('placement_id', pString)) ? ca_editor_ui_bundle_placements::findAsInstance($placement_id) : null;
+		
+		$default_type_id = $t_placement ? $t_placement->getSetting('defaultQuickaddType') : null;
+		if(is_array($default_type_id)) { $default_type_id = array_shift($default_type_id); }
+		if(!$default_type_id) { $default_type_id = $t_subject->getDefaultTypeID(); }
 		
 		// table name and row_id from calling record (what we're quick-adding on)
 		// only set for ca_objects quick-adds
@@ -150,7 +156,7 @@ class BaseQuickAddController extends ActionController {
 					$vn_type_id = array_shift($va_tmp);
 				}
 				if (!$vn_type_id) {
-					$vn_type_id = $t_subject->getDefaultTypeID();
+					$vn_type_id = $default_type_id ?? $t_subject->getDefaultTypeID();
 				}
 			}
 		}
@@ -199,7 +205,6 @@ class BaseQuickAddController extends ActionController {
 		}
 		
 		$this->view->setVar('restrict_to_lists', $this->request->getParameter('lists', pString));
-		
 		$this->request->setParameter('type_id', $vn_type_id);
 		if($t_subject->hasField('type_id')) {
 			$t_subject->set('type_id', $vn_type_id);
