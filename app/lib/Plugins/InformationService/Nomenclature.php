@@ -283,7 +283,11 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
     } 
 	# ------------------------------------------------
 	/** 
+	 * Convert Nomenclature language/locale codes to CA locale codes
 	 *
+	 * @param string $lang Language code
+	 *
+	 * @return string CollectiveAccess locale code
 	 */
     private function languageToLocale(?string $lang) : string  {
     	$default_locale = defined('__CA_DEFAULT_LOCALE__') ? __CA_DEFAULT_LOCALE__ : 'en_US';
@@ -318,10 +322,16 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
     }
 	# ------------------------------------------------
 	/** 
+	 * Mirror Nomemclature hierarchy to a configured list to support browse
 	 *
+	 * @param array $settings
+	 * @param array $data
+	 * @param array $options
+	 *
+	 * @return int
 	 */
-    protected function mirrorToList($settings, $data, $options=null) : ?int  {
-    	$parent_id = null;
+    protected function mirrorToList(array $settings, array $data, ?array $options=null) : ?int  {
+    	$id = null;
     	if(($settings['useMirrorList'] ?? false) && ($list_id = ($settings['mirrorToList'] ?? null))){
    			$lang = $this->validateLanguage(caGetOption('language', $settings, 'en'));
     		$locale = $this->languageToLocale($lang);
@@ -329,20 +339,22 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
     		
     		$access = $settings['mirrorToListAccess'] ?? 0;
     		
-    		foreach(array_reverse($data) as $d) {
-    			$parent_id = DataMigrationUtils::getListItemID($list_id, $d['id'], $type, $locale, [
-    				'parent_id' => $parent_id,
-    				'preferred_labels' => [
-    					'name_singular' => $d['label'],
-    					'name_plural' => $d['label'],
-    					'description' => $d['url']
-    				],
-    				'access' => $access
-    			], ['outputErrors' => true]);
-    		}
+    		$pdata = array_map(function($d) use ($access, $type, $locale) {
+    			return [
+    				'id' => $d['id'],
+    				'name_singular' => $d['label'],
+    				'name_plural' => $d['label'],
+    				'description' => $d['url'],
+    				'access' => $access,
+    				'type_id' => $type,
+    				'locale' => $locale
+    			];
+    		}, array_reverse($data));
+    		
+    		$id = parent::mirrorToList($settings, $pdata, $options);
     	}
     	
-    	return $parent_id;
+    	return $id;
     }
 	# ------------------------------------------------
 }

@@ -283,7 +283,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 
 				// only match exact results. at some point we might want to try to get fancy
 				// and pick one (or rather, have the plugin pick one) if there's more than one
-				if(is_array($va_ret['results']) && (sizeof($va_ret['results']) == 1)) {
+				if(is_array($va_ret['results']) && (sizeof($va_ret['results']) > 0)) {
 					$va_hit = array_shift($va_ret['results']);
 
 					$va_info['indexing_info'] = $this->opo_plugin->getDataForSearchIndexing($pa_element_info['settings'], $va_hit['url']);

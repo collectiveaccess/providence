@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -510,16 +510,15 @@ class BaseBrowseController extends BaseFindController {
 					$t_element = new ca_metadata_elements();
 					if ($t_element->load(array('element_code' => $va_facet_info['element_code']))) {
 						$element_type = $t_element->get('datatype');
-						$is_information_service_mirror_list = false;
+						$is_information_service_mirror_list = caGetInformationServiceMirrorListInformation($t_element);
 						
-						if($element_type === __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__) {
+						if($is_information_service_mirror_list) {
 							$element_type = __CA_ATTRIBUTE_VALUE_LIST__;
-							$is_information_service_mirror_list = true;
 						}
 						switch($element_type) { 
 							case __CA_ATTRIBUTE_VALUE_LIST__:
 								$t_list = new ca_lists();
-								$list_id = $is_information_service_mirror_list ? 61 : $t_element->get('list_id');
+								$list_id = $is_information_service_mirror_list ? $is_information_service_mirror_list['list'] : $t_element->get('list_id');
 								if (!$vn_id) { 
 									$vn_id = $t_list->getRootListItemID($list_id);
 								}

@@ -211,7 +211,37 @@ $g_information_service_settings_GBIF = [
 			_t('Genus/Species') => 'GENUS_SPECIES',
 			_t('Full taxonomic hierarchy') => 'FULL',
 		]
-	]
+	],
+	'useMirrorList' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'options' => [
+			_t('Use mirror list') => 1,
+			_t('Do not use mirror list') => 0
+		],
+		'default' => 0,
+		'width' => 90, 'height' => 1,
+		'label' => _t('Use mirror list?'),
+		'description' => _t('Use mirror list?')
+	],
+	'mirrorToList' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'default' => '',
+		'showLists' => 1,
+		'width' => 90, 'height' => 1,
+		'label' => _t('List to mirror to'),
+		'description' => _t('Create hierarchy in list')
+	],
+	'mirrorToListAccess' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'default' => '',
+		'useList' => 'access_statuses',
+		'width' => 90, 'height' => 1,
+		'label' => _t('Access for mirrored list items'),
+		'description' => _t('Access for newly created mirrored list items')
+	],
 ];
 /**
  * @file A class to interact with the GBIF API
@@ -614,15 +644,22 @@ class WLPlugInformationServiceGBIF extends BaseInformationServicePlugin implemen
 					if(!($key = $response_data["{$rank}Key"] ?? null)) { continue; }
 					
 					$hier[] = [
+						'id' => $key,
 						'label' => $response_data[$rank] ?? '???',
 						'url' => "https://www.gbif.org/species/{$key}"
 					];
 				}
 			}
 			$hier = array_reverse($hier);
-			return [
+			
+			$info = [
 				'hierarchy' => $hier
 			];
+			if($item_id = $this->mirrorToList($settings, $hier)) {
+				$info['item_id'] = $item_id;
+			}		
+			
+			return $info;
 		} elseif(
    			preg_match("!^https://www.gbif.org/occurrence/([A-Za-z0-9\-]+)!", trim($url), $m)
    			||
@@ -646,6 +683,7 @@ class WLPlugInformationServiceGBIF extends BaseInformationServicePlugin implemen
 					if(!($key = $response_data["{$rank}Key"] ?? null)) { continue; }
 					
 					$hier[] = [
+						'id' => $key,
 						'label' => $response_data[$rank] ?? '???',
 						'url' => "https://www.gbif.org/species/{$key}"
 					];
@@ -654,11 +692,17 @@ class WLPlugInformationServiceGBIF extends BaseInformationServicePlugin implemen
 			$location = $response_data['country'] ?? null;
 			$date = caGetLocalizedHistoricDate(caDateToHistoricTimestamp($response_data['eventDate']), ['timeOmit' => true, 'dateFormat' => 'yearOnly']);
 			$hier = array_reverse($hier);
-			return [
+			
+			$info = [
 				'hierarchy' => $hier,
 				'location' => $location,
 				'date' => $date
 			];
+			if($item_id = $this->mirrorToList($settings, $hier)) {
+				$info['item_id'] = $item_id;
+			}			
+			
+			return $info;
    		}
    		return null;
 	}
@@ -678,6 +722,40 @@ class WLPlugInformationServiceGBIF extends BaseInformationServicePlugin implemen
             $this->o_client->getConfig()->add('proxy', $proxy);
 
         return $this->o_client;
+    }
+    # ------------------------------------------------
+	/** 
+	 * Mirror Nomemclature hierarchy to a configured list to support browse
+	 *
+	 * @param array $settings
+	 * @param array $data
+	 * @param array $options
+	 *
+	 * @return int
+	 */
+    protected function mirrorToList(array $settings, array $data, ?array $options=null) : ?int  {
+    	$id = null;
+    	if(($settings['useMirrorList'] ?? false) && ($list_id = ($settings['mirrorToList'] ?? null))){
+    		$locale = __CA_DEFAULT_LOCALE__;
+    		$type = caGetDefaultItemID('list_item_types');
+    		$access = $settings['mirrorToListAccess'] ?? 0;
+    		
+    		$pdata = array_map(function($d) use ($access, $type, $locale) {
+    			return [
+    				'id' => $d['label'],
+    				'name_singular' => $d['label'],
+    				'name_plural' => $d['label'],
+    				'description' => $d['url'],
+    				'access' => $access,
+    				'type_id' => $type,
+    				'locale' => $locale
+    			];
+    		}, array_reverse($data));
+    		
+    		$id = parent::mirrorToList($settings, $pdata, $options);
+    	}
+    	
+    	return $id;
     }
     # ------------------------------------------------
 }

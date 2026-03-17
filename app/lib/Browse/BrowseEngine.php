@@ -651,15 +651,14 @@ class BrowseEngine extends BaseFindEngine {
 				$vn_element_id = $t_element->getPrimaryKey();
 				$element_type = $t_element->get('datatype');
 				
-				$is_information_service_mirror_list = false;
-				if($element_type === __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__) {
+				$is_information_service_mirror_list = caGetInformationServiceMirrorListInformation($t_element);
+				if($is_information_service_mirror_list) {
 					$element_type = __CA_ATTRIBUTE_VALUE_LIST__;
-					$is_information_service_mirror_list = true;
 				}
 
 				switch($element_type) {
 					case __CA_ATTRIBUTE_VALUE_LIST__:
-						$list_id = $is_information_service_mirror_list ? 61 : $t_element->get('list_id');
+						$list_id = $is_information_service_mirror_list ? $is_information_service_mirror_list['list'] : $t_element->get('list_id');
 						if(!is_numeric($pn_row_id)) {
 							$pn_row_id = caGetListItemID($list_id, $pn_row_id);
 						}
@@ -1657,11 +1656,10 @@ class BrowseEngine extends BaseFindEngine {
 								$element_type = $t_element->get('datatype');
 								$list_id = $t_element->get('list_id');
 								
-								$is_information_service_mirror_list = false;
-								if($element_type === __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__) {
+								$is_information_service_mirror_list = caGetInformationServiceMirrorListInformation($t_element);
+								if($is_information_service_mirror_list) {
 									$element_type = __CA_ATTRIBUTE_VALUE_LIST__;
-									$list_id = 61;
-									$is_information_service_mirror_list = true;
+									$list_id = $is_information_service_mirror_list['list'];
 								}
 
 								$va_wheres = [];
@@ -1692,11 +1690,7 @@ class BrowseEngine extends BaseFindEngine {
 									if (in_array($element_type, [__CA_ATTRIBUTE_VALUE_LIST__]) && !is_numeric($vn_row_id)) {
 										$va_value = ['item_id' => caGetListItemID($list_id, $vn_row_id)];
 									} elseif (in_array($element_type, [__CA_ATTRIBUTE_VALUE_ENTITIES__, __CA_ATTRIBUTE_VALUE_OBJECTS__, __CA_ATTRIBUTE_VALUE_PLACES__, __CA_ATTRIBUTE_VALUE_OCCURRENCES__, __CA_ATTRIBUTE_VALUE_COLLECTIONS__, __CA_ATTRIBUTE_VALUE_LOANS__, __CA_ATTRIBUTE_VALUE_MOVEMENTS__, __CA_ATTRIBUTE_VALUE_MOVEMENTS__, __CA_ATTRIBUTE_VALUE_OBJECTLOTS__, __CA_ATTRIBUTE_VALUE_LIST__])) {
-										if($is_information_service_mirror_list) {
-											$va_value = ['item_id' => $vn_row_id];
-										} else {
-											$va_value = $o_attr->parseValue($vn_row_id, $t_element->getFieldValuesArray());
-										}
+										$va_value = $is_information_service_mirror_list ? ['item_id' => $vn_row_id] : $o_attr->parseValue($vn_row_id, $t_element->getFieldValuesArray());
 									} else {
 										if (!is_numeric($vn_row_id)) {
 											$vn_row_id = ca_attribute_values::getValueIDFor($vn_element_id, $vn_row_id);
@@ -1715,9 +1709,7 @@ class BrowseEngine extends BaseFindEngine {
 										foreach($va_value as $vs_f => $vs_v) {
 											switch($element_type) {			
 												case __CA_ATTRIBUTE_VALUE_LIST__:
-													print "[!!!][$vs_f]\n";
 													if ($vs_f != 'item_id') { continue(2); }
-													print "beh";
 													if(!caGetOption(['dontExpandHierarchically', 'dont_expand_hierarchically'], $va_facet_info, false)) {
 
 														// Include sub-items
@@ -4466,10 +4458,9 @@ class BrowseEngine extends BaseFindEngine {
 					}
 					$access = null;
 					
-					$is_information_service_mirror_list = false;
-					if($element_type === __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__) {
+					$is_information_service_mirror_list = caGetInformationServiceMirrorListInformation($t_element);
+					if($is_information_service_mirror_list) {
 						$element_type = __CA_ATTRIBUTE_VALUE_LIST__;
-						$is_information_service_mirror_list = true;
 					}
 					
 					switch($element_type) {
@@ -4481,12 +4472,8 @@ class BrowseEngine extends BaseFindEngine {
 							$qr_res->seek(0);
 							
 							$list_id = $t_element->get('list_id');
-							if($is_information_service_mirror_list) { $list_id = 61; }
+							if($is_information_service_mirror_list) { $list_id = $is_information_service_mirror_list['list']; }
 							
-							if($is_information_service_mirror_list) {
-							//	print "[list=$list_id][".$va_facet_info['element_code']."]<br>";
-						//		print_R($va_values);
-							}
 							$t_list_item = new ca_list_items();
 							$va_list_item_cache = $t_list_item->getFieldValuesForIDs($va_values, array('type_id', 'idno', 'item_value', 'parent_id', 'access', 'deleted', 'rank'));
 							

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2024 Whirl-i-Gig
+ * Copyright 2010-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -212,6 +212,43 @@ abstract class BaseInformationServicePlugin Extends WLPlug {
     public function getAvailableSettings() {
         $settings = static::$s_settings ?? [];
         return $settings;
+    }
+	# ------------------------------------------------
+	/** 
+	 * Mirror data to a configured list to support hierarchical browse on external vocabularies
+	 *
+	 * @param array $settings Metadata element settings
+	 * @param array $data Data to mirror as an array of arrays. Each value array should include the following keys:
+	 *			id = Item identiifer
+	 *			name_singular = Singular name for item
+	 *			name_plural = Plural name for item
+	 *			description = Description of item
+	 *			locale = Locale for item
+	 *			type = Type code or type_id of list item. If not set, will defalt
+	 * @param array $options No options are current supported
+	 *
+	 * @return int item_id of lowest level in hierarchy
+	 */
+    protected function mirrorToList(array $settings, array $data, ?array $options=null) : ?int  {
+    	$parent_id = null;
+    	if(($settings['useMirrorList'] ?? false) && ($list_id = ($settings['mirrorToList'] ?? null))){
+    		$default_type = caGetDefaultItemID('list_item_types');
+    		$default_locale = defined('__CA_DEFAULT_LOCALE__') ? __CA_DEFAULT_LOCALE__ : null;
+    		foreach($data as $d) {
+    			$parent_id = DataMigrationUtils::getListItemID($list_id, $d['id'], $d['type'] ?? $default_type, $d['locale'] ?? $default_locale, [
+    				'parent_id' => $parent_id,
+    				'preferred_labels' => [
+    					'name_singular' => $d['name_singular'],
+    					'name_plural' => $d['name_plural'],
+    					'description' => $d['description']
+    				],
+    				'access' => $d['access']
+    			], ['outputErrors' => false]);
+    			if(!$parent_id) { return null; }
+    		}
+    	}
+    	
+    	return $parent_id;
     }
 	# ------------------------------------------------
 }
