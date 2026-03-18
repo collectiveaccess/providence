@@ -246,7 +246,7 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 		
 		$t_display = $this->view->getVar('t_display');
 		if (!is_array($va_display_list = $this->view->getVar('display_list'))) { $va_display_list = array(); }
-		$this->_setBottomLineValues($vo_result, $va_display_list, $t_display);
+		$this->_setBottomLineValues($vo_result, $va_display_list, $t_display, ['total' => $this->view->getVar('num_hits')]);
 
 		switch($pa_options['output_format'] ?? null) {
 			# ------------------------------------

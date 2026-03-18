@@ -334,7 +334,7 @@ class BaseBrowseController extends BaseFindController {
 			$this->view->setVar('rowHeaders', $va_row_headers);
 		}
 		
-		$this->_setBottomLineValues($vo_result, $va_display_list, $t_display);
+		$this->_setBottomLineValues($vo_result, $va_display_list, $t_display, ['total' => $this->view->getVar('num_hits')]);
 		
 		switch($pa_options['output_format'] ?? null) {
 			# ------------------------------------
