@@ -6634,9 +6634,18 @@ function caNormalizeBundleLabel(?string $label, ?array $options=null) : ?string 
 				:
 				array_map(function($v) { return caUcFirstUTF8Safe($v); }, $config->getList('bundle_label_normalization_skip_words') ?: []);
 			
+			$acronyms = (MemoryCache::contains('normalizeBundleAcronyms')) ? 
+				MemoryCache::fetch('normalizeBundleAcronyms')
+				:
+				array_map(function($v) { return caUcFirstUTF8Safe($v); }, $config->getList('bundle_label_normalization_acronyms') ?: []);
+			
+			
 			// Clean up conjunctions and parentheticals that are now incorrectly capitalized
 			foreach($skip_words as $p) {
-				$label = str_replace($p, mb_strtolower($p), $label);
+				$label = preg_replace("!{$p}([\s\)]+)!", mb_strtolower($p)."\$1", $label);
+			}
+			foreach($acronyms as $p) {
+				$label = preg_replace("!(^|[\s\(]+)({$p})([\s\)]+|$)!i", "\$1".mb_strtoupper($p)."\$3", $label);
 			}
 			if(preg_match_all("!\(([\w]+)\)!", $label, $m)) {
 				 foreach($m as $p) {
