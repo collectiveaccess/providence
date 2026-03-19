@@ -4110,12 +4110,11 @@ function caProcessBottomLineTemplateForDisplay($request, $t_display, $qr_res, $o
 	if (!$qr_res) { return null; }
 	if (!$t_display) { return null; }
 	$template = $t_display->getSetting('bottom_line');
-
 	$bundles_by_code = [];
 	if (!is_array($bundles = $t_display->getPlacementsInDisplay())) { return null; }
 	foreach($bundles as $vn_placement_id => $placement) {
-		$bundles_by_code[$placement['bundle_name']] = $placement;
-	}
+		$bundles_by_code[$placement['bundle_name'] ?? $placement['bundle'] ?? null] = $placement;
+	} 
 	
 	$tags = caGetTemplateTags($template, ['parseOptions' => true]);
 	$is_set = false;
@@ -4139,7 +4138,7 @@ function caProcessBottomLineTemplateForDisplay($request, $t_display, $qr_res, $o
 				$is_set = true;
 				break;
 			case 'count':
-				$template = str_replace("^".$tag['originalTag'], caGetOption('total', $options, 0), $template);
+				$template = str_replace("^".$tag['originalTag'], caGetOption('total', $options, $qr_res->numHits()), $template);
 				$is_set = true;
 				break;
 			case 'pagecount':
@@ -4149,6 +4148,22 @@ function caProcessBottomLineTemplateForDisplay($request, $t_display, $qr_res, $o
 		}
 	}
 	return $is_set ? $template : null;
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caProcessBottomLineTemplateForDisplayPlacements($request, $t_display, $res, $options=null) {
+	if (!$res) { return null; }
+	if (!$t_display) { return null; }
+
+	if (!is_array($bundles = $t_display->getPlacementsInDisplay())) { return null; }
+	
+	$acc = [];
+	foreach($bundles as $placement_id => $placement) {
+		$acc[$placement_id] = caProcessBottomLineTemplateForPlacement($request, $placement, $res, $options);
+	}
+	return $acc;
 }
 # ---------------------------------------
 /**
@@ -4179,9 +4194,8 @@ function caProcessBottomLineTemplateForPlacement($request, $placement, $res, $op
 			$res->seek($current_index);	// Restore current position of search result
 			return null; 
 		}
+		$bundle_name = $placement['bundle_name'] ?? $placement['bundle'] ?? null;
 		
-		$bundle_name = $placement['bundle_name'];
-
 		$tmp = explode(".", $bundle_name);
 
 		if (!($t_instance = Datamodel::getInstanceByTableName($tmp[0], true))) {
@@ -4253,10 +4267,12 @@ function caProcessBottomLineTemplateForPlacement($request, $placement, $res, $op
 				switch($subelement_datatype) {
 					case __CA_ATTRIBUTE_VALUE_LIST__:
 						$values = $res->get($subelement, ['convertCodesToIdno' => true, 'returnAsArray' => true]);
-						if(is_array($values)) {
+						if(is_array($values) && sizeof($values)) {
 							foreach($values as $index => $value) {
 								$tag_values[$value_name]['COUNTS'][$value]++; 
 							}
+						} else {
+							$tag_values[$value_name]['COUNTS'][null]++; 
 						}
 						break;
 					case __CA_ATTRIBUTE_VALUE_DATERANGE__:
@@ -4417,7 +4433,7 @@ function caProcessBottomLineTemplateForPlacement($request, $placement, $res, $op
 								if($key = $parsed_tag['options']['filter'] ?? null) {
 									$c = $tag_values[$value_name]['COUNTS'][$key] ?? 0;
 								} else {
-									$c = array_reduce($tag_values[$value_name]['COUNTS'], function($c, $i) {
+									$c = array_reduce($tag_values[$value_name]['COUNTS'] ?? [], function($c, $i) {
 										return $c + $i;
 									}, 0);
 								}
