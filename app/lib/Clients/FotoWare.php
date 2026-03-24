@@ -64,9 +64,16 @@ class FotoWareClient {
 	 */
 	private $cache_token = null;
 	
-	# ------------------------------------------------------------------
 	/**
 	 *
+	 */
+	private $rendition_url = null;
+	# ------------------------------------------------------------------
+	/**
+	 * @param array $options Options include:
+	 *		url = Base URL for FotoWare API. [Default is null]
+	 *		cacheToken = Used cached access token. If false, a new token will be created. [Default is false
+	 * 
 	 */
 	public function __construct(?array $options=null) {
 		$this->logger = caGetLogger();
@@ -90,7 +97,12 @@ class FotoWareClient {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Set base URL for FotoWare API. URL should include the "fotoweb" URL component.
+	 * A typical value would look like: https://dams.myorganization.org/fotoweb
 	 *
+	 * @param string $base_url
+	 *
+	 * @return bool
 	 */
 	public function setBaseUrl(string $base_url) : bool {
 		if(!strlen($base_url)) { return false; }
@@ -100,14 +112,21 @@ class FotoWareClient {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Get currently used FotoWare API access token
 	 *
+	 * @return string
 	 */
 	public function getAccessToken() : string {
 		return $this->access_token;
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Set access token used for authentication to FotoWare installation
 	 *
+	 * @param string $token
+	 * @param int $expired Unix timestamp for expiration of token
+	 *
+	 * @return bool
 	 */
 	public function setAccessToken(string $token, int $expires) : bool {
 		if(!$token) { return false; }
@@ -118,7 +137,13 @@ class FotoWareClient {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Authenticate against FotoWare API
 	 *
+	 * @param array $options Options include:
+	 *		clientID = FotoWare Client ID. [Default is value in the __FOTOWARE_CLIENT_ID__ constant set in setup.php]
+	 *		clientSecret = FotoWare Client secret. [Default is value in the __FOTOWARE_CLIENT_SECRET__ constant set in setup.php]
+	 *
+	 * @return bool
 	 */	
 	function authenticate(?array $options=null) : bool {
 		if($this->cache_token) {
@@ -132,8 +157,8 @@ class FotoWareClient {
 		}
 		try {
 			$params = [
-				'client_id' => __FOTOWARE_CLIENT_ID__,
-				'client_secret' => __FOTOWARE_CLIENT_SECRET__,
+				'client_id' => caGetOption('clientID', $options, defined('__FOTOWARE_CLIENT_ID__') ? __FOTOWARE_CLIENT_ID__ : null),
+				'client_secret' => caGetOption('clientSecret', $options, defined('__FOTOWARE_CLIENT_SECRET__') ? __FOTOWARE_CLIENT_SECRET__ : null),
 				'grant_type' => 'client_credentials'
 			];
 			
@@ -152,70 +177,16 @@ class FotoWareClient {
 			
 			return true;
 		} catch(Exception $e) {
-			print "[ERROR] ".$e->getMessage()."\n";
 			return false;
 		}
 	}
-	# ------------------------------------------------------------------
-	/**
-	 *
-	 */	
-	public function checkConnection(?array $options=null) : bool {
-		if($this->access_token) { 
-			return true;
-		}
-		return false;
-	}
-	# ------------------------------------------------------------------
-	/**
-	 *
-	 */	
-	private function headers(?array $options=null) : array {
-	    $headers = [
-			'User-Agent' => 'CollectiveAccess/'.__CollectiveAccess_Version__,
-			'Accept'     => 'application/json'
-		];
-		
-		if($this->access_token) {
-			$headers['Authorization'] = 'Bearer '.$this->access_token;
-		}
-		
-		return $headers;
-    }
     # ------------------------------------------------------------------
 	/**
+	 * Return API configuration information for FotoWare installation
 	 *
-	 */	
-	private function request(string $method, string $url, array $params, ?array $headers=null, ?array $options=null) : ?array {
-	    // @TODO: escape urls
-	    if(preg_match('!^'.$this->base_url.'!i', $url)) {
-	    	$url = preg_replace('!^'.$this->base_url.'!i', '', $url);
-	    }
-	    $headers = array_merge($this->headers(), $headers ?? []);
-	    $client_opts = [
-	    	'headers' => $headers,
-		];
-		
-		if($json = caGetOption('json', $options, null)) {
-			$client_opts['json'] = $json;
-		} elseif($body = caGetOption('body', $options, null)) {
-			$client_opts['body'] = $body;
-		}
-		if(!$json && is_array($params) && sizeof($params)) {
-			$client_opts['form_params'] = $params;
-		}
-		// @TODO: refresh token when expired
-		$response = $this->client->request($method, $this->base_url.$url, $client_opts);
-			
-		return [
-			'response' => $response,
-			'content' =>  json_decode((string)$response->getBody(), true),
-			'body' => (string)$response->getBody()
-		];
-    }
-    # ------------------------------------------------------------------
-	/**
+	 * @param array $options No options are currently supported
 	 *
+	 * @return array
 	 */	
 	public function getAPIInfo($options=null) : ?array {
 		try {
@@ -225,13 +196,16 @@ class FotoWareClient {
 		
 			return $content;
 		} catch(Exception $e) {
-			print "[ERROR] ".$e->getMessage()."\n";
 			return false;
 		}
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Fetch list of archives available in FotoWare installation
 	 *
+	 * @param array $options No options are currently supported
+	 *
+	 * @return array 
 	 */	
 	public function getArchives($options=null) : ?array {
 		try {
@@ -262,7 +236,12 @@ class FotoWareClient {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Fetch information for an individual FotoWare asset
 	 *
+	 * @param string $url
+	 * @param array $options No options are currently supported
+	 *
+	 * @return array
 	 */	
 	public function item(string $url, ?array $options=null) : ?array {
 		try {
@@ -280,7 +259,13 @@ class FotoWareClient {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Perform search on FotoWare system
+	 * 
+	 * @param string $query
+	 * @param array $options Options include:
+	 *		url = FotoWare search URL. [Default is '/archives']
 	 *
+	 * @return array Array of arrays, each representing a FotoWare asset
 	 */	
 	public function search(string $query, ?array $options=null) : ?array {
 		$search_url = caGetOption('url', $options, '/archives');
@@ -306,13 +291,129 @@ class FotoWareClient {
 			return null;
 		} catch(Exception $e) {
 			print "[ERROR] ".$e->getMessage()."\n";
-			return false;
+			return null;
 		}
 	}
-	
 	# ------------------------------------------------------------------
 	/**
+	 * Download media referenced by rendition URL
 	 *
+	 * @param string $url Rendition URL
+	 * @param string $filepath Path to file to write media file into
+	 * 
+	 * @return bool 
+	 * @throws Exception
+	 */		
+	public function fetchMedia(string $url, string $filepath) : bool {
+		$headers = array_merge($this->headers(), [
+			'Content-Type' => 'application/vnd.fotoware.rendition-request+json',
+			'Accept' => 'application/vnd.fotoware.rendition-response+json'
+		]);
+		$params = [
+			'href' => $url
+		];
+		
+		// @TODO: get rendition url from API - don't hardcode
+		$response = $this->request('POST', '/services/renditions', [], $headers, ['json' => $params]);
+		if($response) {
+			if(!($rend_href = ($response['content']['href'] ?? null))) { 
+				throw new Exception(_t('Could not render media: not rendition url returned'));	
+			}
+			
+			do {
+				$fresponse = $this->request('GET', $rend_href, [], $this->headers());
+				$status_code = $fresponse['response']->getStatusCode();
+				if($status_code == 200) {
+					$file = $fresponse['response']->getBody();
+					file_put_contents($filepath, $fresponse['body']);
+					return true;
+					break;
+				}
+				sleep(1);
+			} while($status_code != 200);
+		} else {
+			throw new Exception(_t('Could not render media'));
+		}
+		
+		return false;
+	}
+	# ------------------------------------------------------------------
+	# API request functions
+	# ------------------------------------------------------------------
+	/**
+	 * Execute FotoWare API request
+	 *
+	 * @param string $method HTTP method (GET, POST, PATCH)
+	 * @param string $url Request URL
+	 * @param array $params List of request form parameters; keys are parameter names 
+	 * @param array $headers List of HTTP request headers; keys are header names. If omitted standard headers are used. If set, headers are added (or overwrite) standard headers. [Default is null]
+	 * @param array $options Options include:
+	 *		json = Array to pass in POST request body as JSON. [Default is null]
+	 *		body = Raw text to pass in POST request as body. If both json and body options are set, json is used. [Default is null] 
+	 *
+	 * @return array Array with response data. Keys include:
+	 *		response = the Guzzle response object
+	 *		content = For JSON-format responses, the JSON data structure decoded into an array 
+	 *		body = The raw taxt of the response.
+	 */	
+	private function request(string $method, string $url, array $params, ?array $headers=null, ?array $options=null) : ?array {
+	    // @TODO: escape urls
+	    if(preg_match('!^'.$this->base_url.'!i', $url)) {
+	    	$url = preg_replace('!^'.$this->base_url.'!i', '', $url);
+	    }
+	    $headers = array_merge($this->headers(), $headers ?? []);
+	    $client_opts = [
+	    	'headers' => $headers,
+		];
+		
+		if($json = caGetOption('json', $options, null)) {
+			$client_opts['json'] = $json;
+		} elseif($body = caGetOption('body', $options, null)) {
+			$client_opts['body'] = $body;
+		}
+		if(!$json && is_array($params) && sizeof($params)) {
+			$client_opts['form_params'] = $params;
+		}
+		// @TODO: refresh token when expired
+		$response = $this->client->request($method, $this->base_url.$url, $client_opts);
+			
+		return [
+			'response' => $response,
+			'content' =>  json_decode((string)$response->getBody(), true),
+			'body' => (string)$response->getBody()
+		];
+    }
+	# ------------------------------------------------------------------
+	/**
+	 * Return headers required for FotoWare API request
+	 * 
+	 * @param array $options No options are currently supported
+	 *
+	 * @return array List of headers; keys are header names
+	 */	
+	private function headers(?array $options=null) : array {
+	    $headers = [
+			'User-Agent' => 'CollectiveAccess/'.__CollectiveAccess_Version__,
+			'Accept'     => 'application/json'
+		];
+		
+		if($this->access_token) {
+			$headers['Authorization'] = 'Bearer '.$this->access_token;
+		}
+		
+		return $headers;
+    }
+    # ------------------------------------------------------------------
+	# Utilities
+	# ------------------------------------------------------------------
+	/**
+	 * Process asset entry returned by FotoWare API, returning only information
+	 * required for CollectiveAccess integration
+	 *
+	 * @param array $asset
+	 * @param array $options
+	 *
+	 * @return array
 	 */	
 	private function processAsset(array $asset, ?array $options=null) : ?array {
 		$item = [];
@@ -354,43 +455,6 @@ class FotoWareClient {
 		}
 		
 		return $item;
-	}
-	# ------------------------------------------------------------------
-	/**
-	 *
-	 */		
-	public function getMedia(string $href, string $filepath) : bool {
-		$headers = array_merge($this->headers(), [
-			'Content-Type' => 'application/vnd.fotoware.rendition-request+json',
-			'Accept' => 'application/vnd.fotoware.rendition-response+json'
-		]);
-		$params = [
-			'href' => $href
-		];
-		
-		// @TODO: get rendition url from API - don't hardcode
-		$response = $this->request('POST', '/services/renditions', [], $headers, ['json' => $params]);
-		if($response) {
-			if(!($rend_href = ($response['content']['href'] ?? null))) { 
-				throw new Exception(_t('Could not render media: not rendition url returned'));	
-			}
-			
-			do {
-				$fresponse = $this->request('GET', $rend_href, [], $this->headers());
-				$status_code = $fresponse['response']->getStatusCode();
-				if($status_code == 200) {
-					$file = $fresponse['response']->getBody();
-					file_put_contents($filepath, $fresponse['body']);
-					return true;
-					break;
-				}
-				sleep(1);
-			} while($status_code != 200);
-		} else {
-			throw new Exception(_t('Could not render media'));
-		}
-		
-		return false;
 	}
 	# ------------------------------------------------------------------
 }
