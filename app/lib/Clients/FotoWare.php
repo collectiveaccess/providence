@@ -85,15 +85,25 @@ class FotoWareClient {
 			throw new \ApplicationException(_t('Invalid FotoWare base url'));
 		}
 		
+		$d = null;
 		if($this->cache_token) {
-			if(file_exists(__CA_APP_DIR__.'/tmp/fotoware_token.txt')) {
-				$d = json_decode(file_get_contents(__CA_APP_DIR__.'/tmp/fotoware_token.txt'), true);
+			if($d = $this->getAPICachedValues()) {
 				if($d['token'] ?? null) {
 					$this->setAccessToken($d['token'], $d['expires']);
 				}
+				$this->rendition_url = $d['rendition_url'] ?? null;
 			}
 		}
 		
+		if(!$this->rendition_url) { 
+			$api_info = $this->getAPIInfo();
+			$this->rendition_url = $api_info['services']['rendition_request'] ?? null;
+			
+			if(is_array($d)) {
+				$d['rendition_url'] = $this->rendition_url;
+				$this->setAPICachedValues($d);
+			}
+		}
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -142,13 +152,16 @@ class FotoWareClient {
 	 * @param array $options Options include:
 	 *		clientID = FotoWare Client ID. [Default is value in the __FOTOWARE_CLIENT_ID__ constant set in setup.php]
 	 *		clientSecret = FotoWare Client secret. [Default is value in the __FOTOWARE_CLIENT_SECRET__ constant set in setup.php]
+	 *		refresh = Force generation of new token, regardless of cache setting. [Default is false]
 	 *
 	 * @return bool
 	 */	
 	function authenticate(?array $options=null) : bool {
-		if($this->cache_token) {
-			if(file_exists(__CA_APP_DIR__.'/tmp/fotoware_token.txt')) {
-				$d = json_decode(file_get_contents(__CA_APP_DIR__.'/tmp/fotoware_token.txt'), true);
+		if($refresh = caGetOption('refresh', $options, false)) {
+			unlink($this->getAPICachePath());
+		}
+		if($this->cache_token && !$refresh) {
+			if($d = $this->getAPICachedValues()) {
 				if($d['token'] ?? null) {
 					$this->setAccessToken($d['token'], $d['expires']);
 					return true;
@@ -162,17 +175,14 @@ class FotoWareClient {
 				'grant_type' => 'client_credentials'
 			];
 			
-			$response = $this->request('POST', '/oauth2/token', $params);
+			$response = $this->request('POST', '/oauth2/token', $params, [], ['isAuth' => true]);
 			$content = $response['content'] ?? [];
-			
-			if(!($this->access_token = $content['access_token'] ?? null)) {
+			if(!($this->access_token = ($content['access_token'] ?? null))) {
 				return false;
 			}
-			//$this->refresh_token = $content['refresh_token'] ?? null;
 			$this->token_expiration = time() + (int)($content['expires_in'] ?? 0);
-			
 			if($this->cache_token) {
-				file_put_contents(__CA_APP_DIR__.'/tmp/fotoware_token.txt', json_encode(['token' => $this->access_token, 'expires' => $this->token_expiration]));
+				$this->setAPICachedValues(['token' => $this->access_token, 'expires' => $this->token_expiration, 'rendition_url' => $this->rendition_url]);
 			}
 			
 			return true;
@@ -230,8 +240,7 @@ class FotoWareClient {
 			}
 			return null;
 		} catch(Exception $e) {
-			print "[ERROR] ".$e->getMessage()."\n";
-			return false;
+			return null;
 		}
 	}
 	# ------------------------------------------------------------------
@@ -253,8 +262,7 @@ class FotoWareClient {
 			}
 			return null;
 		} catch(Exception $e) {
-			print "[ERROR] ".$e->getMessage()."\n";
-			return false;
+			return null;
 		}
 	}
 	# ------------------------------------------------------------------
@@ -290,7 +298,6 @@ class FotoWareClient {
 			}
 			return null;
 		} catch(Exception $e) {
-			print "[ERROR] ".$e->getMessage()."\n";
 			return null;
 		}
 	}
@@ -350,6 +357,8 @@ class FotoWareClient {
 	 * @param array $options Options include:
 	 *		json = Array to pass in POST request body as JSON. [Default is null]
 	 *		body = Raw text to pass in POST request as body. If both json and body options are set, json is used. [Default is null] 
+	 *		retry = 
+	 *		isAuth = 
 	 *
 	 * @return array Array with response data. Keys include:
 	 *		response = the Guzzle response object
@@ -357,11 +366,15 @@ class FotoWareClient {
 	 *		body = The raw taxt of the response.
 	 */	
 	private function request(string $method, string $url, array $params, ?array $headers=null, ?array $options=null) : ?array {
-	    // @TODO: escape urls
+		$retry = caGetOption('retry', $options, false);
+		$is_auth = caGetOption('isAuth', $options, false);
+		
+		// @TODO: escape urls
 	    if(preg_match('!^'.$this->base_url.'!i', $url)) {
 	    	$url = preg_replace('!^'.$this->base_url.'!i', '', $url);
 	    }
 	    $headers = array_merge($this->headers(), $headers ?? []);
+	    if($is_auth) { unset($headers['Authorization']); }
 	    $client_opts = [
 	    	'headers' => $headers,
 		];
@@ -374,9 +387,15 @@ class FotoWareClient {
 		if(!$json && is_array($params) && sizeof($params)) {
 			$client_opts['form_params'] = $params;
 		}
-		// @TODO: refresh token when expired
-		$response = $this->client->request($method, $this->base_url.$url, $client_opts);
-			
+		
+		try {
+			$response = $this->client->request($method, $this->base_url.$url, $client_opts);
+		} catch(\GuzzleHttp\Exception\ClientException $e) {
+			if(!$retry && ($auth = $this->authenticate(['refresh' => true]))) {
+				return $this->request($method, $url, $params, $headers, array_merge($options ?? [], ['retry' => true]));
+			}
+			return null;
+		}	
 		return [
 			'response' => $response,
 			'content' =>  json_decode((string)$response->getBody(), true),
@@ -455,6 +474,35 @@ class FotoWareClient {
 		}
 		
 		return $item;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function getAPICachePath() : string {
+		return __CA_APP_DIR__.'/tmp/fotoware_token.txt';
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function getAPICachedValues() : ?array {
+		$f = $this->getAPICachePath();
+		if(file_exists($f)) {
+			return json_decode(file_get_contents($f), true);
+		}
+		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function setAPICachedValues(array $values) : bool {
+		$f = $this->getAPICachePath();
+		if(file_exists($f)) {
+			unlink($f);
+		}
+		return (bool)file_put_contents($f, json_encode($values));
 	}
 	# ------------------------------------------------------------------
 }
