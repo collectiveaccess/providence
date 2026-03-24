@@ -286,7 +286,10 @@ class FotoWareClient {
 				$acc = [];
 				foreach($content['data'] as $a) {
 					if((int)($a['assetCount'] ?? 0) > 0) {
-						$acc = array_merge($acc, $this->search($query, ['url' => str_replace('/{?q}', '', $a['searchURL'])]));
+						$res = $this->search($query, ['url' => str_replace('/{?q}', '', $a['searchURL'])]);
+						foreach($res as $r) {
+							$acc[md5($r['filename'].$r['filesize'].$r['created'])] = $r;
+						}
 					}
 				}
 				return $acc;
