@@ -187,6 +187,10 @@ class FotoWareClient {
 	 *
 	 */	
 	private function request(string $method, string $url, array $params, ?array $headers=null, ?array $options=null) : ?array {
+	    // @TODO: escape urls
+	    if(preg_match('!^'.$this->base_url.'!i', $url)) {
+	    	$url = preg_replace('!^'.$this->base_url.'!i', '', $url);
+	    }
 	    $headers = array_merge($this->headers(), $headers ?? []);
 	    $client_opts = [
 	    	'headers' => $headers,
@@ -260,6 +264,24 @@ class FotoWareClient {
 	/**
 	 *
 	 */	
+	public function item(string $url, ?array $options=null) : ?array {
+		try {
+			$response = $this->request('GET', $url, [], $this->headers());
+			$content = $response['content'] ?? [];
+			if(is_array($content) ) {
+				$acc = $this->processAsset($content);
+				return $acc;
+			}
+			return null;
+		} catch(Exception $e) {
+			print "[ERROR] ".$e->getMessage()."\n";
+			return false;
+		}
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */	
 	public function search(string $query, ?array $options=null) : ?array {
 		$search_url = caGetOption('url', $options, '/archives');
 		try {
@@ -277,45 +299,7 @@ class FotoWareClient {
 				return $acc;
 			} elseif(is_array($content) && is_array($content['assets'])) {
 				foreach($content['assets']['data'] as $a) {
-					$item = [];
-					
-					foreach(['created', 'createdBy', 'modified', 'modifiedBy', 'filename', 'filesize'] as $f) {
-						$item[$f] = $a[$f];
-					}
-					$item['filesizeDisplay'] = caHumanFilesize($item['filesize'] ?? 0);
-					
-					if(is_array($a['builtinFields'])) {
-						foreach($a['builtinFields'] as $f) {
-							if(!in_array($f['field'], ['title', 'description', 'tags'])) { continue; }
-							$item['fields'][$f['field']] = $f['value'];
-						}
-					}
-					
-					if(is_array($a['renditions'])) {
-						foreach($a['renditions'] as $r) {
-							if($r['display_name'] == 'Original File') {
-								$item['media'] = $r;
-								break;
-							}
-						}
-						if(!isset($item['media'])) {
-							$item['media'] = array_shift($a['renditions']);
-						}
-					}
-					
-					if(is_array($a['previews'])) {
-						$max_size = null;
-						$preview = null;
-						foreach($a['previews'] as $p) {
-							if(!$max_size || ($p['size'] > $max_size)) {
-								$max_size = $p['size'];
-								$preview = $p;
-							}
-						}
-						$item['preview'] = $preview;
-					}
-					
-					$acc[] = $item;	
+					$acc[] = $this->processAsset($a);	
 				}
 				return $acc;
 			}
@@ -324,6 +308,52 @@ class FotoWareClient {
 			print "[ERROR] ".$e->getMessage()."\n";
 			return false;
 		}
+	}
+	
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */	
+	private function processAsset(array $asset, ?array $options=null) : ?array {
+		$item = [];
+		
+		foreach(['created', 'createdBy', 'modified', 'modifiedBy', 'filename', 'filesize'] as $f) {
+			$item[$f] = $asset[$f];
+		}
+		$item['filesizeDisplay'] = caHumanFilesize($item['filesize'] ?? 0);
+		
+		if(is_array($asset['builtinFields'])) {
+			foreach($asset['builtinFields'] as $f) {
+				if(!in_array($f['field'], ['title', 'description', 'tags'])) { continue; }
+				$item['fields'][$f['field']] = $f['value'];
+			}
+		}
+		
+		if(is_array($asset['renditions'])) {
+			foreach($asset['renditions'] as $r) {
+				if($r['display_name'] == 'Original File') {
+					$item['media'] = $r;
+					break;
+				}
+			}
+			if(!isset($item['media'])) {
+				$item['media'] = array_shift($asset['renditions']);
+			}
+		}
+		
+		if(is_array($asset['previews'])) {
+			$max_size = null;
+			$preview = null;
+			foreach($asset['previews'] as $p) {
+				if(!$max_size || ($p['size'] > $max_size)) {
+					$max_size = $p['size'];
+					$preview = $p;
+				}
+			}
+			$item['preview'] = $preview;
+		}
+		
+		return $item;
 	}
 	# ------------------------------------------------------------------
 	/**
