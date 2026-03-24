@@ -350,38 +350,41 @@ class AssetLoadManager {
 		}
 		
 		if($output_target === 'header') {
-			if(caAppIsPawtucket() && is_array($analytics_values = caGetAnalyticsIntegrationValues())) {
+			if(caAppIsPawtucket() && is_array($analytics_values = caGetAnalyticsIntegrationValues()) && !$for_ajax) {
 				$vs_buf .= $analytics_values['head'] ?? null;
 			}
-			$vs_buf .= "<script type=\'text/javascript\'>if(!window.caAssetLoadList) { window.caAssetLoadList = {}; }\n";
-			if(sizeof($script_urls) > 0) {
-				foreach($script_urls as $u) {
-					if($for_ajax) {
-						$vs_buf .= "if(!window.caAssetLoadList['{$u}']) { jQuery.getScript('{$u}{$suffix}'); }\n";
-					} else {
-						$vs_buf .= "window.caAssetLoadList['{$u}'] = true;\n";
+			if((sizeof($script_urls) > 0) || (sizeof($css_urls) > 0) || (sizeof($property_urls) > 0)) {
+				$vs_buf .= "<script type=\'text/javascript\'>if(!window.caAssetLoadList) { window.caAssetLoadList = {}; }\n";
+			
+				if(sizeof($script_urls) > 0) {
+					foreach($script_urls as $u) {
+						if($for_ajax) {
+							$vs_buf .= "if(!window.caAssetLoadList['{$u}']) { jQuery.getScript('{$u}{$suffix}'); }\n";
+						} else {
+							$vs_buf .= "window.caAssetLoadList['{$u}'] = true;\n";
+						}
 					}
 				}
-			}
-			if(sizeof($css_urls) > 0) {
-				foreach($css_urls as $u) {
-					if($for_ajax) {
-						$vs_buf .= "if(!window.caAssetLoadList['{$u}']) { jQuery('head').append('<link rel=\"stylesheet\" type=\"text/css\" href=\"{$u}{$suffix}\" media=\"all\">'); }\n";
-					} else {
-						$vs_buf .= "window.caAssetLoadList['{$u}'] = true;\n";
+				if(sizeof($css_urls) > 0) {
+					foreach($css_urls as $u) {
+						if($for_ajax) {
+							$vs_buf .= "if(!window.caAssetLoadList['{$u}']) { jQuery('head').append('<link rel=\"stylesheet\" type=\"text/css\" href=\"{$u}{$suffix}\" media=\"all\">'); }\n";
+						} else {
+							$vs_buf .= "window.caAssetLoadList['{$u}'] = true;\n";
+						}
 					}
 				}
-			}
-			if(sizeof($property_urls) > 0) {
-				foreach($property_urls as $u) {
-					if($for_ajax) {
-						$vs_buf .= "if(!window.caAssetLoadList['{$u}']) { jQuery('head').append('<link rel=\"stylesheet\" type=\"application/l10n\" href=\"{$u}{$suffix}\">'); }\n";
-					} else {
-						$vs_buf .= "window.caAssetLoadList['{$u}'] = true;\n";
+				if(sizeof($property_urls) > 0) {
+					foreach($property_urls as $u) {
+						if($for_ajax) {
+							$vs_buf .= "if(!window.caAssetLoadList['{$u}']) { jQuery('head').append('<link rel=\"stylesheet\" type=\"application/l10n\" href=\"{$u}{$suffix}\">'); }\n";
+						} else {
+							$vs_buf .= "window.caAssetLoadList['{$u}'] = true;\n";
+						}
 					}
 				}
+				$vs_buf .= '</script>';
 			}
-			$vs_buf .= '</script>';
 		}
 		
 		return $vs_buf;
