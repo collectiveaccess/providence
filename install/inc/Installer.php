@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2025 Whirl-i-Gig
+ * Copyright 2011-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -639,9 +639,11 @@ class Installer {
 			}
 
 
-			if($list["deleted"] && $t_list->getPrimaryKey()) {
-				$this->logStatus(_t('Deleting list %1', $list_code));
-				$t_list->delete(true);
+			if($list["deleted"]) {
+				if($t_list->getPrimaryKey()) {
+					$this->logStatus(_t('Deleting list %1', $list_code));
+					$t_list->delete(true);
+				}
 				continue;
 			}
 
@@ -843,9 +845,11 @@ class Installer {
 			$this->logStatus(_t('Metadata element with code %1 is new', $element_code));
 		}
 
-		if($element['deleted'] && $t_md_element->getPrimaryKey()) {
-			$this->logStatus(_t('Deleting metadata element with code %1', $element_code));
-			$t_md_element->delete(true, ['hard' => false]);
+		if($element['deleted']) {
+			if($t_md_element->getPrimaryKey()) {
+				$this->logStatus(_t('Deleting metadata element with code %1', $element_code));
+				$t_md_element->delete(true, ['hard' => false]);
+			}
 			return false; // we don't want the postprocessing to kick in. our work here is done.
 		}
 
@@ -1025,9 +1029,11 @@ class Installer {
 				$this->logStatus(_t('User interface with code %1 already exists', $ui_code));
 			}
 
-			if($ui['deleted'] && $t_ui->getPrimaryKey()) {
-				$this->logStatus(_t('Deleting user interface with code %1', $ui_code));
-				$t_ui->delete(true, ['hard' => true]);
+			if($ui['deleted']) {
+				if($t_ui->getPrimaryKey()) {
+					$this->logStatus(_t('Deleting user interface with code %1', $ui_code));
+					$t_ui->delete(true, ['hard' => true]);
+				}
 				continue;
 			}
 
@@ -1111,9 +1117,11 @@ class Installer {
 					$this->logStatus(_t('Screen with code %1 for user interface with code %2 is new', $screen_idno, $ui_code));
 				}
 
-				if($screen['deleted'] && $t_ui_screens->getPrimaryKey()) {
-					$this->logStatus(_t('Deleting screen with code %1 for user interface with code %2', $screen_idno, $ui_code));
-					$t_ui_screens->delete(true, ['hard' => true]);
+				if($screen['deleted']) {
+					if($t_ui_screens->getPrimaryKey()) {
+						$this->logStatus(_t('Deleting screen with code %1 for user interface with code %2', $screen_idno, $ui_code));
+						$t_ui_screens->delete(true, ['hard' => true]);
+					}
 					continue;
 				}
 
@@ -1478,9 +1486,11 @@ class Installer {
 				$this->logStatus(_t('Relationship type with code %1 is new', $type_code));
 			}
 
-			if($type["deleted"] && $t_rel_type->getPrimaryKey()) {
-				$this->logStatus(_t('Deleting relationship type with code %1', $type_code));
-				$t_rel_type->delete(true);
+			if($type["deleted"]) {
+				if($t_rel_type->getPrimaryKey()) {
+					$this->logStatus(_t('Deleting relationship type with code %1', $type_code));
+					$t_rel_type->delete(true);
+				}
 				continue;
 			}
 
@@ -1570,9 +1580,11 @@ class Installer {
 				$this->logStatus(_t('User role with code %1 already exists', $role_code));
 			}
 
-			if($role["deleted"] && $t_role->getPrimaryKey()) {
-				$this->logStatus(_t('Deleting user role with code %1', $role_code));
-				$t_role->delete(true);
+			if($role["deleted"]) {
+				if($t_role->getPrimaryKey()) {
+					$this->logStatus(_t('Deleting user role with code %1', $role_code));
+					$t_role->delete(true);
+				}
 				continue;
 			}
 
@@ -1691,9 +1703,11 @@ class Installer {
 				$this->logStatus(_t('Display with code %1 already exists', $display_code));
 			}
 
-			if($display["deleted"] && $t_display->getPrimaryKey()) {
-				$t_display->delete(true);
-				$this->logStatus(_t('Deleting display with code %1', $display_code));
+			if($display["deleted"]) {
+				if($t_display->getPrimaryKey()) {
+					$t_display->delete(true);
+					$this->logStatus(_t('Deleting display with code %1', $display_code));
+				}
 				continue;
 			}
 
@@ -1881,9 +1895,11 @@ class Installer {
 				$this->logStatus(_t('Search form with code %1 already exists', $form_code));
 			}
 
-			if($form["deleted"] && $t_form->getPrimaryKey()) {
-				$this->logStatus(_t('Deleting search form with code %1', $form_code));
-				$t_form->delete(true);
+			if($form["deleted"]) {
+				if($t_form->getPrimaryKey()) {
+					$this->logStatus(_t('Deleting search form with code %1', $form_code));
+					$t_form->delete(true);
+				}
 				continue;
 			}
 
@@ -2068,8 +2084,10 @@ class Installer {
 					$t_group = new \ca_user_groups();
 				}
 
-				if($group["deleted"] && $t_group->getPrimaryKey()) {
-					$t_group->delete(true);
+				if($group["deleted"]) {
+					if($t_group->getPrimaryKey()) {
+						$t_group->delete(true);
+					}
 					continue;
 				}
 
@@ -2179,9 +2197,11 @@ class Installer {
 				$this->logStatus(_t('Metadata alert with code %1 already exists', $alert_code));
 			}
 
-			if($alert["deleted"] && $t_alert->getPrimaryKey()) {
-				$this->logStatus(_t('Deleting metadata alert with code %1', $alert_code));
-				$t_alert->delete(true);
+			if($alert["deleted"]) {
+				if($t_alert->getPrimaryKey()) {
+					$this->logStatus(_t('Deleting metadata alert with code %1', $alert_code));
+					$t_alert->delete(true);
+				}
 				continue;
 			}
 

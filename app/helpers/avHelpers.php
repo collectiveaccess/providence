@@ -46,7 +46,17 @@ function caMediaInfoGuessFileFormat($ps_path) {
 		case 'MPEG-4':
 			return 'video/mp4';
 		case 'AVC':
-			return ($va_media_metadata['GENERAL']['Format'] === 'MPEG-4') ? 'video/mp4' : 'video/MP2T';
+			switch($va_media_metadata['GENERAL']['Format']) {
+				case 'MPEG-4':
+					return 'video/mp4';
+					break;
+				case 'MXF':
+					return 'video/mxf';
+					break;
+				default:
+					return 'video/MP2T';
+					break;
+			}
 		case 'AVI':
 			return 'video/avi';
 		case 'Matroska':

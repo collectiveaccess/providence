@@ -24,6 +24,7 @@ monthTable = {
 
 # List of day names, starting with Sunday
 dayListDisplay = [zondag, maandag, dinsdag, woensdag, donderdag, vrijdag, zaterdag]
+dayListShortDisplay = [zon, maa, din, woe, don, vri, zat]
 
 rangePreConjunctions = [van, vanaf, tussen]
 rangeConjunctions = [tot, –, -, en, .., tem, t.e.m]

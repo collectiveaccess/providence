@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2013 Whirl-i-Gig
+ * Copyright 2012-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,5 +25,4 @@
  *
  * ----------------------------------------------------------------------
  */
- 	print json_encode($this->getVar('collection_list') + $this->getVar('object_list'));
-?>
+print json_encode($this->getVar('collection_list') + $this->getVar('object_list'));
