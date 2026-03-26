@@ -1267,7 +1267,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			if ($t_user->getBundleAccessLevel($this->tableName(), $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
 		}
 		
-		if ((defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ == "PAWTUCKET") && ($this->hasField('access')))) {
+		if (!caACLIsEnabled($this) && (defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ == "PAWTUCKET") && ($this->hasField('access')))) {
 			$va_access = caGetUserAccessValues($po_request);
 			if (is_array($va_access) && sizeof($va_access) && !in_array($this->get('access'), $va_access)) { return false; }
 		}
@@ -1326,6 +1326,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($ps_bundle_name) {
 			if ($t_user->getBundleAccessLevel($this->tableName(), $ps_bundle_name) < __CA_BUNDLE_ACCESS_EDIT__) { return false; }
 		}
+		
+		if (!caACLIsEnabled($this) && (defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ == "PAWTUCKET") && ($this->hasField('access')))) {
+			$va_access = caGetUserAccessValues($po_request);
+			if (is_array($va_access) && sizeof($va_access) && !in_array($this->get('access'), $va_access)) { return false; }
+		}
  		
  		return true;
  	}
@@ -1382,6 +1387,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		if (!$this->getPrimaryKey() || !$t_user->canDoAction("can_delete_{$table}")) {
  			return false;
  		}
+ 		
+		if (!caACLIsEnabled($this) && (defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ == "PAWTUCKET") && ($this->hasField('access')))) {
+			$va_access = caGetUserAccessValues($po_request);
+			if (is_array($va_access) && sizeof($va_access) && !in_array($this->get('access'), $va_access)) { return false; }
+		}
  		
  		return true;
  	}
@@ -7804,6 +7814,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		primaryTable = When search result is for a relationship, the related table to consider as context. Paths to related tables will be generated as if they were relative to the primary. Mostly useful when sorting on related records from a relationship, to ensure that the path to the sort record is. [Default is null]
 	 *		start = Zero-based index to begin returned items at. [Default is 0]
  	 *		limit = Maximum number of items to return. [Default is null; no limit]
+ 	 *		dontFilterByACL = do not filter results using item-level access control, if when enabled. [Default is false]
 	 * @return SearchResult A search result of for the specified table
 	 */
 	public function makeSearchResult($pm_rel_table_name_or_num, $pa_ids, $pa_options=null) {
@@ -7818,6 +7829,13 @@ $pa_options["display_form_field_tips"] = true;
 				$va_ids[$vn_k] = $vn_id;
 			}
 		}
+		
+		if(!caGetOption('dontfilterByACL', $pa_options, false) && caACLIsEnabled($pm_rel_table_name_or_num)) {
+			global $AUTH_CURRENT_USER_ID;
+			$s = new ObjectSearch();
+			$va_ids = $s->filterHitsByACL($va_ids, $t_instance->tableNum(), $AUTH_CURRENT_USER_ID, __CA_ACL_READONLY_ACCESS__);
+		}
+		
 		// sort?
 		if ($pa_sort = caGetOption('sort', $pa_options, null)) {
 			if (!is_array($pa_sort)) { $pa_sort = [$pa_sort]; }

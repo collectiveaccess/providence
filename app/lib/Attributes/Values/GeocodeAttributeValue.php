@@ -407,6 +407,8 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 		
 		$point = $angle = null;
 		
+		$geocoder_type = caGetOption('geocoderType', $options, null);
+		
 		if (is_array($value) && ($value['_uploaded_file'] ?? null)) {		// KML file upload
 			$o_kml = new KmlParser($value['_uploaded_file']);
 			$placemarks = $o_kml->getPlacemarks();
@@ -553,12 +555,22 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 				} catch(\Geocoder\Exception\CollectionIsEmpty $e) {
 					$this->postError(1970, _t('Could not geocode address "%1"', $value), 'GeocodeAttributeValue->parseValue()');
 					return false;
-				} catch(Exception $e) {
-					$this->postError(1970, _t('Could not geocode address "%1": %2', $value, $e->getMessage()), 'GeocodeAttributeValue->parseValue()');
-					return false;
 				}
+				
+				$uresult = null;
+				if($geocoder_type) {
+					foreach($result as $r) {
+						if($r->getType() === $geocoder_type) {
+							$uresult = $r;
+							break;
+						}
+					}
+				}
+				
+				if(!$uresult) { $uresult = $result->first(); }
+				$is_postcode = (($utype = $uresult->getType()) == 'postcode');
 	
-				$coords = $result->first()->getCoordinates();
+				$coords = $uresult->getCoordinates();
 				$lat = $coords->getLatitude();
 				$long = $coords->getLongitude();
 	
@@ -567,16 +579,24 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 						'value_longtext1' => $value,
 						'value_longtext2' => $lat.','.$long,
 						'value_decimal1' => $lat,
-						'value_decimal2' => $long
+						'value_decimal2' => $long,
+						'type' => $utype
 					];
-					if(caGetOption('returnBounds', $options, false)) {
-						if($bounds = $result->first()->getBounds()) {
+					if(caGetOption('returnBounds', $options, false) && !$is_postcode) {
+						if($bounds = $uresult->getBounds()) {
 							$res['bounds'] = [
 								'north' => $bounds->getNorth(),
 								'east' => $bounds->getEast(),
 								'south' => $bounds->getSouth(),
 								'west' => $bounds->getWest()
 							];
+							if(
+								(sprintf("%4.4f", abs($res['bounds']['north'] - $res['bounds']['south'])) <= 0.0001)
+								&&
+								(sprintf("%4.4f", abs($res['bounds']['east'] - $res['bounds']['west'])) <= 0.0001)
+							){
+								unset($res['bounds']);
+							}
 						}
 					} 
 					return $res;
