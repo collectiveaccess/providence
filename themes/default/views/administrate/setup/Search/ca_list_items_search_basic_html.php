@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,13 +24,11 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 	 
-	$vo_result = $this->getVar('result');
- 	print $this->render('Search/search_controls_html.php');
+ */ 
+$vo_result = $this->getVar('result');
+print $this->render('Search/search_controls_html.php');
  ?>
-	
- 	<div id="resultBox">
+<div id="resultBox">
 <?php
 	if($vo_result) {
 		print $this->render('Results/paging_controls_html.php');
@@ -55,4 +53,4 @@
 <?php
 	}
 ?>
-	</div><!-- end resultbox -->
+</div><!-- end resultbox -->
