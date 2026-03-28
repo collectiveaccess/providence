@@ -413,7 +413,7 @@ class BaseFindController extends ActionController {
 	/**
 	  * 
 	  */
-	protected function _setBottomLineValues($po_result, $pa_display_list, $pt_display) {
+	protected function _setBottomLineValues($po_result, $pa_display_list, $pt_display, ?array $options=null) {
 		$vn_page_num 			= $this->opo_result_context->getCurrentResultsPageNumber();
 		if (!($items_per_page = $this->opo_result_context->getItemsPerPage())) { 
 			$items_per_page = $this->opn_items_per_page_default; 
@@ -423,7 +423,10 @@ class BaseFindController extends ActionController {
 		$vb_bottom_line_is_set = false;
 		foreach($pa_display_list as $placement_id => $va_placement) {
 			if(isset($va_placement['settings']['bottom_line']) && $va_placement['settings']['bottom_line']) {
-				$va_bottom_line[$placement_id] = caProcessBottomLineTemplateForPlacement($this->request, $va_placement, $po_result, array('pageStart' => ($vn_page_num - 1) * $items_per_page, 'pageEnd' => (($vn_page_num - 1) * $items_per_page) + $items_per_page));
+				$va_bottom_line[$placement_id] = caProcessBottomLineTemplateForPlacement(
+					$this->request, $va_placement, $po_result, 
+					array_merge(['pageStart' => ($vn_page_num - 1) * $items_per_page, 'pageEnd' => (($vn_page_num - 1) * $items_per_page) + $items_per_page], $options ?? [])
+				);
 				$vb_bottom_line_is_set = true;
 			} else {
 				$va_bottom_line[$placement_id] = '';
@@ -434,7 +437,10 @@ class BaseFindController extends ActionController {
 		//
 		// Bottom line for display
 		//
-		$this->view->setVar('bottom_line_totals', caProcessBottomLineTemplateForDisplay($this->request, $pt_display, $po_result, array('pageStart' => ($vn_page_num - 1) * $items_per_page, 'pageEnd' => (($vn_page_num - 1) * $items_per_page) + $items_per_page)));
+		$this->view->setVar('bottom_line_totals', caProcessBottomLineTemplateForDisplay(
+			$this->request, $pt_display, $po_result, 
+			array_merge(['pageStart' => ($vn_page_num - 1) * $items_per_page, 'pageEnd' => (($vn_page_num - 1) * $items_per_page) + $items_per_page], $options ?? []))
+		);
 	}
 	# -------------------------------------------------------
 	# Printing

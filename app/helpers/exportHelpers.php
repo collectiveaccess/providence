@@ -697,6 +697,35 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 					'borders' => array(
 							'allborders'=>array(
 									'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN)));
+			
+			$totalstitlestyle = array(
+					'font'=>array(
+							'name' => 'Arial',
+							'size' => 12,
+							'bold' => true),
+					'alignment'=>array(
+							'horizontal'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+							'vertical'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+							'wrap' => true,
+							'shrinkToFit'=> false),
+					'borders' => array(
+							'allborders'=>array(
+									'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK)));
+			
+			$totalstyle = array(
+					'font'=>array(
+							'name' => 'Arial',
+							'size' => 12,
+							'bold' => false, 'italic' => true),
+					'alignment'=>array(
+							'horizontal'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+							'vertical'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+							'wrap' => true,
+							'shrinkToFit'=> false),
+					'borders' => array(
+							'allborders'=>array(
+									'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK)));
+
 
 			$o_sheet->getParent()->getDefaultStyle()->applyFromArray($cellstyle);
 			$o_sheet->setTitle("CollectiveAccess");
@@ -732,6 +761,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 			}
 	
 			$line = 2;
+			$last_column = null;
 
 			// Other lines
 			while($result->nextHit()) {
@@ -815,6 +845,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 							$o_sheet->getColumnDimension($supercol.$column)->setWidth(50);
 						}
 					}
+					$last_column = $supercol.$column;
 
 					if (!($column = next($a_to_z))) {
 						$supercol = array_shift($supercol_a_to_z);
@@ -824,7 +855,46 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 
 				$line++;
 			}
-	
+			
+			
+			$result->seek(0);
+			if(is_array($bottom_line = caProcessBottomLineTemplateForDisplayPlacements($request, $t_display, $result, []))) {
+				if(sizeof(array_filter($bottom_line, 'strlen'))) { 
+					$column = reset($a_to_z);
+					$supercol_a_to_z = range('A', 'Z');
+					$supercol = '';
+					
+					$line++;
+					$o_sheet->setCellValueExplicit('A'.$line, _t('COLUMN TOTALS'), \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+					$o_sheet->getStyle('A'.$line)->applyFromArray($totalstitlestyle);
+					$line++;
+					
+					foreach($display_list as $info) {
+						$placement_id = $info['placement_id'];
+						
+						$display_text = $bottom_line[$placement_id] ?? '';
+						$o_sheet->setCellValueExplicit($supercol.$column.$line, html_entity_decode(strip_tags(br2nl($display_text)), ENT_QUOTES | ENT_HTML5), \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+						$o_sheet->getStyle($supercol.$column.$line)->applyFromArray($totalstyle);
+						if (!($column = next($a_to_z))) {
+							$supercol = array_shift($supercol_a_to_z);
+							$column = reset($a_to_z);
+						}
+					}
+					$line++;
+				}
+			}
+			
+			if($bottom_line = caProcessBottomLineTemplateForDisplay($request, $t_display, $result, [])) {
+				$column = reset($a_to_z);
+				$supercol_a_to_z = range('A', 'Z');
+				$supercol = '';
+				
+				$line++;
+				$o_sheet->setCellValueExplicit($last_column.$line, $bottom_line, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+				$o_sheet->getStyle($last_column.$line)->applyFromArray($totalstyle);
+				$line++;
+			}
+
 			// set column width to auto for all columns where we haven't set width manually yet
 			foreach(range('A','Z') as $chr) {
 				if ($o_sheet->getColumnDimension($chr)->getWidth() == -1) {

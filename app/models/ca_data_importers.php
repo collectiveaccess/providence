@@ -2183,6 +2183,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				
 				if($t_subject->getPrimaryKey()) {
 					$vs_idno = $t_subject->get($vs_idno_fld);
+					$vn_idno_mapping_item_id = null; // we want to ensure idno is maintained from merged record, so wipe out mapping if set
 				}
 				
 				if ($merge_only && !$t_subject->getPrimaryKey()) { 
