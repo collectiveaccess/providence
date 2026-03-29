@@ -1564,8 +1564,8 @@ class ca_acl extends BaseModel {
 					// insert inherited ACLs
 					$db->query("
 						INSERT IGNORE INTO ca_acl
-						(group_id, user_id, table_num, row_id, access, notes, include_representations, inherited_from_table_num, inherited_from_row_id, include_representations)
-						SELECT group_id, user_id, {$target_table_num}, {$target_id}, access, notes, include_representations, {$subject_table_num}, {$subject_id}, include_representations
+						(group_id, user_id, table_num, row_id, access, notes, include_representations, inherited_from_table_num, inherited_from_row_id)
+						SELECT group_id, user_id, {$target_table_num}, {$target_id}, access, notes, include_representations, {$subject_table_num}, {$subject_id}
 						FROM ca_acl
 						WHERE
 							table_num = ? AND row_id = ? {$rep_force_inherit_sql}
