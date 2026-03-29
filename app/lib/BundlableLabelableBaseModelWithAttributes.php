@@ -2397,6 +2397,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$tmp = explode('.', $field);
 		if ((sizeof($tmp) == 2) && ($tmp[0] == $this->getLabelTableName()) && ($tmp[1] == $this->getLabelDisplayField())) {
 			$tmp[0] = $this->tableName();
+			$tmp[2] = $tmp[1];
 			$tmp[1] = 'preferred_labels';
 			$field = join('.', $tmp);
 		}
@@ -2482,7 +2483,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// maybe it's a special bundle name?
-		if (($tmp[0] === $this->tableName()) && isset($this->BUNDLES[$tmp[1]]) && $this->BUNDLES[$tmp[1]]['label']) {
+		if (!$dlabel && ($tmp[0] === $this->tableName()) && isset($this->BUNDLES[$tmp[1]]) && $this->BUNDLES[$tmp[1]]['label']) {
 			$dlabel = $this->BUNDLES[$tmp[1]]['label'];
 		}
 		

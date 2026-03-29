@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2025 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -88,7 +88,13 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugin Implements IWLPlugPD
 	public function render($ps_content, $pa_options=null) {
 		$this->renderer->load_html($ps_content);
 		
-		$this->renderer->render();
+		try {
+			$this->renderer->render();
+		} catch(TypeError $e) {
+			$log = caGetLogger();
+			$log->logError(_('[domPDF] PDF rendering failed. Is font directory writeable?'));
+			return null;
+		}
 		
 		if (caGetOption('stream', $pa_options, false)) {
 			$this->renderer->stream(caGetOption('filename', $pa_options, 'export_results.pdf'));
@@ -117,7 +123,13 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugin Implements IWLPlugPD
 	public function renderFile($ps_file_path, $pa_options=null) {
 		$this->renderer->load_html_file($ps_file_path);
 		
-		$this->renderer->render();
+		try {
+			$this->renderer->render();
+		} catch(TypeError $e) {
+			$log = caGetLogger();
+			$log->logError(_('[domPDF] PDF rendering failed. Is font directory writeable?'));
+			return null;
+		}
 		
 		if (caGetOption('stream', $pa_options, false)) {
 			$this->renderer->stream(caGetOption('filename', $pa_options, 'output.pdf'));
