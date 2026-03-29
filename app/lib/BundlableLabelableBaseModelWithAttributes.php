@@ -4884,7 +4884,6 @@ if (!$batch) {
                             $va_file_list = array_map(function($v) { $v['is_form_upload'] = 1; return $v; }, $_FILES);
                             foreach($_REQUEST as $vs_key => $vs_value) {
                                 if (preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) {
-                                	if(!isURL($vs_value, ['strict' => true, 'schemes' => ['http', 'https']])) { continue; }
                                     $va_file_list[$vs_key] = array(
                                         'url' => $vs_value,
                                         'index' => (int)$va_matches[1]
@@ -4926,6 +4925,20 @@ if (!$batch) {
                             	$is_form_upload = caGetOption('is_form_upload', $va_values, false, ['castTo' => 'boolean']);
                             	$va_values['tmp_name'] = stripslashes($va_values['tmp_name']);
                                 $this->clearErrors();
+                                
+        
+                                if($vb_allow_fetching_of_urls && preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) {
+                                	if(($s = $po_request->getParameter($vs_key, pString)) && !isUrl($s)){
+                                		// Attempt to translate non-URL value to URL using media_url plugin search facility (if available)
+                                		$media_url = new CA\MediaUrl();
+										if(is_array($res = $media_url->search($s)) && sizeof($res)) {
+											$po_request->setParameter($vs_key, $res[0]['url']);
+											$va_values['url'] = $res[0]['url'];
+										} else {
+											continue; 
+										}
+                                	}
+                                }
                             
 								if (
 									(!($va_values['_empty_'] ?? false)) &&
