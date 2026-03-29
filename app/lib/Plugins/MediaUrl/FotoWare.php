@@ -47,7 +47,7 @@ class FotoWare Extends BaseMediaUrlPlugin {
 	public function __construct() {
 		$this->description = _t('Parses FotoWare URLs');
 		
-		$this->client = defined('__FOTOWARE_URL__') ? new \Clients\FotoWare\FotoWareClient(['url' => __FOTOWARE_URL__, 'cacheToken' => true]) : null;
+		$this->client = $this->serviceIsConfigured() ? new \Clients\FotoWare\FotoWareClient(['url' => __FOTOWARE_URL__, 'cacheToken' => true]) : null;
 	}
 	# ------------------------------------------------
 	/**
@@ -61,9 +61,19 @@ class FotoWare Extends BaseMediaUrlPlugin {
 	/**
 	 *
 	 */
+	private function serviceIsConfigured() : bool {
+		if(defined('__FOTOWARE_URL__') && is_string(__FOTOWARE_URL__) && strlen(__FOTOWARE_URL__)) {
+			return true;
+		}
+		return false;
+	}
+	# ------------------------------------------------
+	/**
+	 *
+	 */
 	public function checkStatus() {
 		$status = parent::checkStatus();
-		$status['available'] = defined('__FOTOWARE_URL__'); 
+		$status['available'] = $this->serviceIsConfigured(); 
 		return $status;
 	}
 	# ------------------------------------------------
@@ -77,7 +87,7 @@ class FotoWare Extends BaseMediaUrlPlugin {
 	 * @return bool|array False if url is not valid, array with information about the url if valid.
 	 */
 	public function parse(string $url, ?array $options=null) {
-		if(!defined('__FOTOWARE_URL__')) { return null; }
+		if(!$this->serviceIsConfigured()) { return null; }
 		if (!is_array($parsed_url = parse_url(urldecode($url)))) { return null; }
 		if(preg_match('!^'.__FOTOWARE_URL__.'!i', $url)) { 
 			return ['url' => $url, 'originalUrl' => $url, 'plugin' => 'FotoWare'];
@@ -94,7 +104,7 @@ class FotoWare Extends BaseMediaUrlPlugin {
 	 * @return null|array Null if search is not supported, or array with search results
 	 */
 	public function search(string $search, ?array $options=null) {
-		if(!defined('__FOTOWARE_URL__')) { return null; }
+		if(!$this->serviceIsConfigured()) { return null; }
 		$acc = [];
 		if(is_array($res = $this->client->search($search, $options))) {
 			foreach($res as $r) {
@@ -122,6 +132,7 @@ class FotoWare Extends BaseMediaUrlPlugin {
 	 * @return bool|array|string False if url is not valid, array with path to file with content and format if successful, string with content if returnAsString option is set.
 	 */
 	public function fetch(string $url, ?array $options=null) {
+		if(!$this->serviceIsConfigured()) { return null; }
 		if ($p = $this->parse($url, $options)) {
 			if(caGetOption(['dont_download', 'dontDownload'], $options, false)) { 
 				return array_merge($p, ['file' => null]);
