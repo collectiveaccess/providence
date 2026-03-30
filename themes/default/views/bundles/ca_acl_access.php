@@ -92,21 +92,23 @@ $pawtucket_only_acl_separate_inheritance_controls = $this->getVar('pawtucket_onl
 					($stats['inheritingSubRecordCount'] > 0)
 			) {
 ?>
-				<div style="margin-left: 10px;">
+				<div>
+					<?= _t('Modify: '); ?><select name="set_access_inherit_from_parent" id="setAccessInheritFromParent">
+						<option value=''><?= _t('-'); ?></option>
 <?php
 				if($stats['subRecordCount'] !== $stats['inheritingAccessSubRecordCount']) {
 ?>
-					<?= caHTMLCheckboxInput('set_all_access_inherit_from_parent', ['id' => 'setAllAccessInheritFromParent', 'value' => '1']); ?> <?= _t('Set all to inherit'); ?><span style='margin-left: 10px;'></span>
+					<option value='set_all_access_inherit_from_parent'><?= _t('Set all to inherit'); ?></option>
 <?php
 				}
 				
 				if($stats['inheritingAccessSubRecordCount'] > 0) {
 ?>
-					<?= caHTMLCheckboxInput('set_none_access_inherit_from_parent', ['id' => 'setNoneAccessInheritFromParent', 'value' => '1']); ?> <?= _t('Set all to not inherit'); ?><span style='margin-left: 10px;'></span>
+					<option value='set_none_access_inherit_from_parent'><?= _t('Remove all inheritance'); ?></option>
 <?php
 				}
-?>
-					<?= caHTMLCheckboxInput('set_representation_access_inherit_from_parent', ['id' => 'setRepresentationsAccessInheritFromParent', 'value' => '1'], ['disabled' => true]); ?> <?= _t('Also set inheritance for representations?'); ?>
+?>					</select>
+					<span id="setRepresentationsAccessInheritFromParentContainer" hidden="true"><?= caHTMLCheckboxInput('set_representation_access_inherit_from_parent', ['id' => 'setRepresentationsAccessInheritFromParent', 'value' => '1'], ['disabled' => true]); ?> <?= _t('Also set inheritance for representations?'); ?></span>
 				</div>
 <?php
 			}
@@ -119,9 +121,9 @@ $pawtucket_only_acl_separate_inheritance_controls = $this->getVar('pawtucket_onl
 ?>
 				<p>
 					<?= ($stats['inheritingAccessRelatedObjectCount'] === 1) ? 
-						_t('%1 of %4 %2 and %5 of %8 %6 are inheriting public access settings', $stats['inheritingAccessRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingAccessRelatedObjectCount'], $stats['inheritingAccessObjectRepresentationCount'], Datamodel::getTableProperty('ca_object_representations', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['objectRepresentationCount']) 
+						_t('%1 of %4 %2 are inheriting public access settings<br>%5 of %8 %6 are inheriting public access settings', $stats['inheritingAccessRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingAccessRelatedObjectCount'], $stats['inheritingAccessObjectRepresentationCount'], Datamodel::getTableProperty('ca_object_representations', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['objectRepresentationCount']) 
 						: 
-						_t('%1 of %4 %2 and %5 of %8 %6 are inheriting public access settings', $stats['inheritingAccessRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingAccessRelatedObjectCount'], $stats['inheritingAccessObjectRepresentationCount'], Datamodel::getTableProperty('ca_object_representations', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['objectRepresentationCount'])  
+						_t('%1 of %4 %2 are inheriting public access settings<br>%5 of %8 %6 are inheriting public access settings', $stats['inheritingAccessRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingAccessRelatedObjectCount'], $stats['inheritingAccessObjectRepresentationCount'], Datamodel::getTableProperty('ca_object_representations', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['objectRepresentationCount'])  
 					?>
 				</p>
 <?php
@@ -142,21 +144,24 @@ $pawtucket_only_acl_separate_inheritance_controls = $this->getVar('pawtucket_onl
 					($stats['inheritingAccessRelatedObjectCount'] > 0)
 			) {
 ?>
-				<div style="margin-left: 10px;">
+				<div>
+					<?= _t('Modify: '); ?><select name="set_objects_access_inherit_from_parent" id="setObjectsAccessInheritFromParent">
+						<option value=''><?= _t('-'); ?></option>
 <?php
 				if($stats['potentialInheritingAccessRelatedObjectCount'] !== $stats['inheritingAccessRelatedObjectCount']) {
 ?>
-					<?= caHTMLCheckboxInput('set_all_objects_access_inherit_from_parent', ['id' => 'setAllObjectsAccessInheritFromParent', 'value' => '1']); ?> <?= _t('Set all to inherit'); ?><span style='margin-left: 10px;'></span>
+					<option value='set_all_objects_access_inherit_from_parent'><?= _t('Set all to inherit'); ?></option>
 <?php
 				}
 				
 				if($stats['inheritingAccessRelatedObjectCount'] > 0) {
 ?>
-					<?= caHTMLCheckboxInput('set_none_objects_access_inherit_from_parent', ['id' => 'setNoneObjectsAccessInheritFromParent', 'value' => '1']); ?> <?= _t('Set all to not inherit'); ?><span style='margin-left: 10px;'></span>
+					<option value='set_none_objects_access_inherit_from_parent'><?= _t('Remove all inheritance'); ?></option>
 <?php
 				}
-?>
-					<?= caHTMLCheckboxInput('set_representation_access_inherit_from_parent', ['id' => 'setRepresentationsObjectsAccessInheritFromParent', 'value' => '1'], ['disabled' => true]); ?> <?= _t('Also set inheritance for representations?'); ?>
+?>					</select>
+					<span id="setRepresentationsObjectsAccessInheritFromParentContainer" hidden="true"><?= caHTMLCheckboxInput('set_representation_access_inherit_from_parent', ['id' => 'setRepresentationsObjectsAccessInheritFromParent', 'value' => '1'], ['disabled' => true]); ?> <?= _t('Also set inheritance for representations?'); ?><span>
+		
 				</div>
 <?php
 			}
@@ -248,19 +253,21 @@ if($acl_enabled || $pawtucket_only_acl_enabled) {
 				) {
 ?>
 						<div class='inheritanceControl'>
+							<?= _t('Modify: '); ?><select name="set_acl_inherit_from_parent" id="setACLInheritFromParent">
+								<option value=''><?= _t('-'); ?></option>
 <?php
 						if($stats['subRecordCount'] !== $stats['inheritingSubRecordCount']) {
 ?>
-							<?= caHTMLCheckboxInput('set_all_acl_inherit_from_parent', ['id' => 'setAllACLInheritFromParent', 'value' => '1', ]); ?> <?= _t('Set all to inherit'); ?><span style='margin-left: 10px;'></span>
+							<option value='set_all_acl_inherit_from_parent'><?= _t('Set all to inherit'); ?></option>
 <?php
 						}
 						if($stats['inheritingSubRecordCount'] > 0) {
 ?>
-							<?= caHTMLCheckboxInput('set_none_acl_inherit_from_parent', ['id' => 'setNoneACLInheritFromParent', 'value' => '1']); ?> <?= _t('Set all to not inherit'); ?>
+							<option value='set_none_acl_inherit_from_parent'><?= _t('Remove all inheritance'); ?></option>
 <?php
 						}
 ?>
-							<?= caHTMLCheckboxInput('set_representation_acl_inherit_from_parent', ['id' => 'setRepresentationsACLInheritFromParent', 'value' => '1'], ['disabled' => true]); ?> <?= _t('Also set inheritance for representations?'); ?>
+							</select>
 						</div>
 <?php
 					}
@@ -274,9 +281,9 @@ if($acl_enabled || $pawtucket_only_acl_enabled) {
 ?>
 					<p>
 						<?= ($stats['inheritingRelatedObjectCount'] === 1) ? 
-							_t('%1 of %4 %2 and %5 of %8 %6 are inheriting access exceptions', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingRelatedObjectCount'], $stats['inheritingObjectRepresentationCount'], Datamodel::getTableProperty('ca_object_representations', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['objectRepresentationCount']) 
+							_t('%1 of %4 %2 are inheriting access exceptions', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingRelatedObjectCount'], $stats['inheritingObjectRepresentationCount'], Datamodel::getTableProperty('ca_object_representations', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['objectRepresentationCount']) 
 							: 
-							_t('%1 of %4 %2 and %5 of %8 %6 are inheriting access exceptions', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingRelatedObjectCount'], $stats['inheritingObjectRepresentationCount'], Datamodel::getTableProperty('ca_object_representations', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['objectRepresentationCount'])  
+							_t('%1 of %4 %2 are inheriting access exceptions', $stats['inheritingRelatedObjectCount'], Datamodel::getTableProperty('ca_objects', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['potentialInheritingRelatedObjectCount'], $stats['inheritingObjectRepresentationCount'], Datamodel::getTableProperty('ca_object_representations', 'NAME_PLURAL'), $t_instance->getProperty('NAME_SINGULAR'), $stats['objectRepresentationCount'])  
 						?>
 					</p>
 <?php
@@ -298,20 +305,21 @@ if($acl_enabled || $pawtucket_only_acl_enabled) {
 				) {
 ?>
 						<div class='inheritanceControl'>
+							<?= _t('Modify: '); ?><select name="set_acl_inherit_from_ca_collections" id="setACLInheritFromCollections">
+								<option value=''><?= _t('-'); ?></option>
 <?php
 						if($stats['potentialInheritingRelatedObjectCount'] !== $stats['inheritingRelatedObjectCount']) {
 ?>
-							<?= caHTMLCheckboxInput('set_all_acl_inherit_from_ca_collections', ['id' => 'setAllACLInheritFromCollections', 'value' => '1']); ?> <?= _t('Set all to inherit'); ?><span style='margin-left: 10px;'></span>
+							<option value='set_all_acl_inherit_from_ca_collections'><?= _t('Set all to inherit'); ?></option>
 <?php
 						}
 						if($stats['inheritingRelatedObjectCount'] > 0) {
 ?>
-							<?= caHTMLCheckboxInput('set_none_acl_inherit_from_ca_collections', ['id' => 'setNoneACLInheritFromCollections', 'value' => '1']); ?> <?= _t('Set all to not inherit'); ?>
+							<option value='set_none_acl_inherit_from_ca_collections'><?= _t('Remove all inheritance'); ?></option>
 <?php
 						}
 ?>
-						<?= caHTMLCheckboxInput('set_representation_acl_inherit_from_parent', ['id' => 'setRepresentationsACLInheritFromCollections', 'value' => '1'], ['disabled' => true]); ?> <?= _t('Also set inheritance for representations?'); ?>
-						
+							</select>
 						</div>
 <?php
 				}
@@ -331,32 +339,29 @@ if($acl_enabled || $pawtucket_only_acl_enabled) {
 </div>
 
 <script>
-	function _manageInheritControlButtonGroup(e, allID, noneID, repID) {
-		if(jQuery(e.target).prop('id') == allID) {
-				jQuery('#' + noneID).prop('checked', false);
-		} else {
-			jQuery('#' + allID).prop('checked', false);
-		}
+	function _manageInheritControlButtonGroup(e, selectID, all, none, repID) {
+		const v = jQuery('#' + selectID).val();
 		if(repID) {
-			const disableRepControl = !(jQuery('#' + noneID).prop('checked') || jQuery('#' + allID).prop('checked'));
+			const disableRepControl = (v === '');
 			jQuery('#' + repID).prop('disabled', disableRepControl);
+			jQuery('#' + repID + 'Container').prop('hidden', (disableRepControl ? true : false));
 			if(disableRepControl) { 
 				jQuery('#' + repID).prop('checked', false);
 			}
 		}
 	}
 	jQuery(document).ready(function() {
-		jQuery('#setAllACLInheritFromCollections, #setNoneACLInheritFromCollections').on('change', function(e) {
-			_manageInheritControlButtonGroup(e, 'setAllACLInheritFromCollections', 'setNoneACLInheritFromCollections', 'setRepresentationsACLInheritFromCollections');
+		jQuery('#setACLInheritFromCollections').on('change', function(e) {
+			_manageInheritControlButtonGroup(e, 'setACLInheritFromCollections', 'set_all_acl_inherit_from_ca_collections', 'set_none_acl_inherit_from_ca_collections', null);
 		});
-		jQuery('#setAllACLInheritFromParent, #setNoneACLInheritFromParent').on('change', function(e) {
-			_manageInheritControlButtonGroup(e, 'setAllACLInheritFromParent', 'setNoneACLInheritFromParent', 'setRepresentationsACLInheritFromParent');
+		jQuery('#setACLInheritFromParent').on('change', function(e) {
+			_manageInheritControlButtonGroup(e, 'setACLInheritFromParent' , 'set_all_acl_inherit_from_parent', 'set_none_acl_inherit_from_parent', null);
 		});
-		jQuery('#setAllAccessInheritFromParent, #setNoneAccessInheritFromParent').on('change', function(e) {
-			_manageInheritControlButtonGroup(e, 'setAllAccessInheritFromParent', 'setNoneAccessInheritFromParent', 'setRepresentationsAccessInheritFromParent');
+		jQuery('#setAccessInheritFromParent').on('change', function(e) {
+			_manageInheritControlButtonGroup(e, 'setAccessInheritFromParent', 'set_all_access_inherit_from_parent', 'set_none_access_inherit_from_parent', 'setRepresentationsAccessInheritFromParent');
 		});
-		jQuery('#setAllObjectsAccessInheritFromParent, #setNoneObjectsAccessInheritFromParent').on('change', function(e) {
-			_manageInheritControlButtonGroup(e, 'setAllObjectsAccessInheritFromParent', 'setNoneObjectsAccessInheritFromParent', 'setRepresentationsObjectsAccessInheritFromParent');
+		jQuery('#setObjectsAccessInheritFromParent').on('change', function(e) {
+			_manageInheritControlButtonGroup(e, 'setObjectsAccessInheritFromParent', 'set_all_objects_access_inherit_from_parent', 'set_none_objects_access_inherit_from_parent', 'setRepresentationsObjectsAccessInheritFromParent');
 		});
 	});
 </script>

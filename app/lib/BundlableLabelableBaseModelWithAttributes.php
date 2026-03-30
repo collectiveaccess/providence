@@ -8085,7 +8085,25 @@ $pa_options["display_form_field_tips"] = true;
 			$this->set('access', $request->getParameter('access', pInteger) );
 			$this->update(['skipACLInheritance' => true]);
 		}
-	
+		
+		// Set all/none parameters from batch-inheritance-set <select>'s
+		$set = $request->getParameter('set_access_inherit_from_parent', pString);
+		$request->setParameter('set_all_access_inherit_from_parent', ($set == 'set_all_access_inherit_from_parent') ? 1 : 0);
+		$request->setParameter('set_none_access_inherit_from_parent', ($set == 'set_none_access_inherit_from_parent') ? 1 : 0);
+		
+		$set = $request->getParameter('set_objects_access_inherit_from_parent', pString);
+		$request->setParameter('set_all_objects_access_inherit_from_parent', ($set == 'set_all_objects_access_inherit_from_parent') ? 1 : 0);
+		$request->setParameter('set_none_objects_access_inherit_from_parent', ($set == 'set_none_objects_access_inherit_from_parent') ? 1 : 0);
+		
+		$set = $request->getParameter('set_acl_inherit_from_parent', pString);
+		$request->setParameter('set_all_acl_inherit_from_parent', ($set == 'set_all_acl_inherit_from_parent') ? 1 : 0);
+		$request->setParameter('set_none_acl_inherit_from_parent', ($set == 'set_none_acl_inherit_from_parent') ? 1 : 0);
+		
+		$set = $request->getParameter('set_acl_inherit_from_ca_collections', pString);
+		$request->setParameter('set_all_acl_inherit_from_ca_collections', ($set == 'set_all_acl_inherit_from_ca_collections') ? 1 : 0);
+		$request->setParameter('set_none_acl_inherit_from_ca_collections', ($set == 'set_none_acl_inherit_from_ca_collections') ? 1 : 0);
+		
+		
 		$set_rep_access = $request->getParameter('set_representation_access_inherit_from_parent', pInteger);
 		$set_rep_acl = $request->getParameter('set_representation_acl_inherit_from_parent', pInteger);
 		if($pawtucket_only_acl_enabled && !$pawtucket_only_acl_separate_inheritance_controls && !$pawtucket_only_dont_link_acl_and_access_inheritance) {
