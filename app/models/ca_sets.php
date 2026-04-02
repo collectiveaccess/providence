@@ -867,6 +867,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 			$qr_res->seek(0);
 			$t_list = new ca_lists();
+			
+			
+			$editable_bundle_info = $this->getInventoryEditableBundleInfo($pa_options);
+			
 			while($qr_res->nextRow()) {
 				$set_id = $qr_res->get('set_id');
 				$vn_table_num = $qr_res->get('table_num');
@@ -888,6 +892,16 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				}
 				
 				$va_sets[$set_id][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), $extras);
+					
+				if(isset($pa_options['inventoriesOnly'])) {
+					$i = ca_set_items::findAsInstance($qr_res->get('item_id'));	
+					$found_idno = $i->get("ca_set_items.{$editable_bundle_info['containerElementCode']}.{$editable_bundle_info['foundElementCode']}", ['convertCodesToIdno' => true]) ?? 'NOT_CHECKED';
+			
+					$found_options = is_array($editable_bundle_info['foundOptions']) ? $editable_bundle_info['foundOptions'] : [];
+					$found_status = $found_options[$found_idno] ?? 'NOT CHECKED';
+					
+					$va_sets[$set_id][$qr_res->get('locale_id')]['inventory_status'] = $found_status;
+				}
 			}
 			
 			if ($pb_by_user) {
