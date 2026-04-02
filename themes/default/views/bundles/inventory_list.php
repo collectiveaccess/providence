@@ -139,7 +139,7 @@ if(!$dont_show_delete) {
 				$t_item->htmlFormElementForSimpleForm($this->request, "ca_set_items.{$f}", ['name' => "inventory_{item_id}_{$f}", "id" => str_replace('.', '_', "inventory_{item_id}_{$f}"), 'value' => "{".str_replace('.', '_', $f)."}", 'width' =>'425px', 'height' => 1, 'textAreaTagName' => 'textentry', 'forSearch' => false])."</div>\n";
 			}			
 ?>				
-			<div class="inventoryItemEditorDoneButton"><?= caNavIcon(__CA_NAV_ICON_SAVE__, '20px');?> Done</div>
+			<div class="inventoryItemEditorDoneButton"><?= caNavIcon(__CA_NAV_ICON_SAVE__, '20px');?> <?= _t('Close'); ?></div>
 		</div>
 	</textarea>
 </div>
