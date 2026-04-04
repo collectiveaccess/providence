@@ -105,6 +105,27 @@ class MediaUrl extends \CA\Plugins\PluginConsumer {
 	}
 	# ----------------------------------------------------------
 	/**
+	 * Search service (if available) for text and return matches
+	 *
+	 * @param string $search
+	 * @param array $options No options are supported.
+	 * @return bool|array False is no plugin found matches, an array of matches including the label (title) and URL of each match.
+	 */
+	public function search(string $search, ?array $options=null) {
+		$active = $this->_getActivePlugins();
+		foreach($active as $p) {
+			try {
+				if ($f = $p['plugin']->search($search, array_merge($options ?? [], $p['config']))) {
+					return $f;
+				}
+			} catch (\Exception $e) {
+				return false;
+			}
+		}
+		return false;
+	}
+	# ----------------------------------------------------------
+	/**
 	 * Fetch preview image for URL
 	 *
 	 * @param string $url

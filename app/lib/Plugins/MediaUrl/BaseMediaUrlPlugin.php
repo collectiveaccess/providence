@@ -73,6 +73,13 @@ abstract class BaseMediaUrlPlugin extends \WLPlug  {
 	/**
 	 *
 	 */
+	public function search(string $url, ?array $options=null) {
+		return null;
+	}
+	# ------------------------------------------------
+	/**
+	 *
+	 */
 	abstract public function fetchPreview(string $url, ?array $options=null);
 	# ------------------------------------------------
 	/**
