@@ -88,7 +88,7 @@ class MediaUrl extends \CA\Plugins\PluginConsumer {
 	 *		limit = Limit processing to a specific plugin or list of plugins. Note that the name of the default file URL handler is "_File". [Default is null; all plugins are used]
 	 *		returnAsString = Return fetched content as string rather than in a file. [Default is false]
 	 *
-	 * @return bool|array|string False is no plugin can process the url, an array of data including the path to a file  containing the URL contents on success, or a string with file content is the returnAsString option is set.
+	 * @return bool|array|string False is no plugin can process the url, an array of data including the path to a file containing the URL contents on success, or a string with file content is the returnAsString option is set.
 	 */
 	public function fetch(string $url, ?array $options=null) {
 		$active = $this->_getActivePlugins();
@@ -141,6 +141,27 @@ class MediaUrl extends \CA\Plugins\PluginConsumer {
 		foreach($active as $p) {
 			try {
 				if ($f = $p['plugin']->fetchPreview($url, array_merge($options ?? [], $p['config']))) {
+					return $f;
+				}
+			} catch (\UrlFetchException $e) {
+				return false;
+			}
+		}
+		return false;
+	}
+	# ----------------------------------------------------------
+	/**
+	 * Fetch metadata for URL. URL must have previously been pulled using the fetch() function
+	 *
+	 * @param string $url
+	 * @param array $options No options are currently supported
+	 * @return array|bool False if no metadata is available, an array of metadata
+	 */
+	public function fetchMetadata(string $url, ?array $options=null) {
+		$active = $this->_getActivePlugins();
+		foreach($active as $p) {
+			try {
+				if ($f = $p['plugin']->fetchMetadata($url, array_merge($options ?? [], $p['config']))) {
 					return $f;
 				}
 			} catch (\UrlFetchException $e) {
