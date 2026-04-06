@@ -4519,6 +4519,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 												if ($log) { $log->logError(_t('Import mapping with code %1 configured for %2 urls is not for the MediaUrl format; not metadata was imported', $mapping_code, $r['plugin'], $mapping_code)); }	
 											} else {
 												$va_media_info = $this->getMediaInfo('media');
+												$format = array_shift($format);
 												if(!$t_mapping->importDataFromSource(json_encode($r['metadata'] ?? [], true), $t_mapping->getPrimaryKey(), [
 														'logLevel' => $this->_CONFIG->get('embedded_metadata_extraction_mapping_log_level'), 
 														'format' => $format, 'forceImportForPrimaryKeys' => [$this->getPrimaryKey(), 
