@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2025 Whirl-i-Gig
+ * Copyright 2007-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -56,14 +56,14 @@ class MultipartIDNumber extends IDNumber {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Determine if the specified format and type contain a SERIAL element its last element; that is, that the format and type 
+	 * Determine if the specified format and type contain a SERIAL element as its last element; that is, that the format and type 
 	 * is designed as an auto incrementing sequence with 0 or more prefix elements.
 	 *
 	 * @param string $format A format to test. If omitted the current format is used. [Default is null]
 	 * @param string $type A type to test. If omitted the current type is used. [Default is null]
 	 * @return bool
 	 */
-	public function isSerialFormat($format=null, $type=null) {
+	public function isSerialFormat(?string $format=null, ?string $type=null) : bool{
 		if(!$format) { $format = $this->getFormat(); }
 		if(!$type) { $type = $this->getType(); }
 		$format = mb_strtolower($format);
@@ -71,6 +71,23 @@ class MultipartIDNumber extends IDNumber {
 		
 		if (!$this->isValidType($type, $format)) { $type = '__default__'; }
 		return $this->formatHas('SERIAL', null, $format, $type, ['checkLastElementOnly' => true]);
+	}
+	# -------------------------------------------------------
+	/**
+	 * Determine if the specified format and type contain a PARENT element as its first element.
+	 *
+	 * @param string $format A format to test. If omitted the current format is used. [Default is null]
+	 * @param string $type A type to test. If omitted the current type is used. [Default is null]
+	 * @return bool
+	 */
+	public function isParentFormat(?string $format=null, ?string $type=null) : bool {
+		if(!$format) { $format = $this->getFormat(); }
+		if(!$type) { $type = $this->getType(); }
+		$format = mb_strtolower($format);
+		$type = mb_strtolower($type);
+		
+		if (!$this->isValidType($type, $format)) { $type = '__default__'; }
+		return $this->formatHas('PARENT', 0, $format, $type, []);
 	}
 	# -------------------------------------------------------
 	/**
@@ -84,7 +101,7 @@ class MultipartIDNumber extends IDNumber {
 	 * @param string $type [Default is __default__]
 	 * @return bool
 	 */
-	public function formatIsExtensionOf($format, $type='__default__') {
+	public function formatIsExtensionOf(?string $format, ?string $type='__default__') : bool {
 		$format = mb_strtolower($format);
 		$type = mb_strtolower($type);
 		
@@ -537,8 +554,16 @@ class MultipartIDNumber extends IDNumber {
 		if($stub === '') {
 			$field_limit_sql = "{$field} <> ''";
 		} elseif($is_serial) {
+			$enames = array_keys($elements);
+			$index = array_search($ename, $enames);
 			$field_limit_sql = "{$field} REGEXP ?";
-			$params = ['^'.preg_quote($stub.$separator, "!").'[0-9]+$'];
+			
+			$l = sizeof($enames);
+			if(($index !== false) && ($index < ($l - 1))) {
+				$params = ['^'.preg_quote($stub.$separator, "!").'[0-9]+'.str_repeat($separator.'[^'.preg_quote($separator, '!').']', $l - $index - 1).'$'];
+			} else {
+				$params = ['^'.preg_quote($stub.$separator, "!").'[0-9]+$'];
+			}
 		} else {
 			$field_limit_sql = "{$field} LIKE ?";
 			$params = [$stub.$separator.'%'];

@@ -2183,6 +2183,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				
 				if($t_subject->getPrimaryKey()) {
 					$vs_idno = $t_subject->get($vs_idno_fld);
+					$vn_idno_mapping_item_id = null; // we want to ensure idno is maintained from merged record, so wipe out mapping if set
 				}
 				
 				if ($merge_only && !$t_subject->getPrimaryKey()) { 
@@ -4093,6 +4094,26 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 					}
 				}
+				
+				// Does record have identifier with PARENT element? If so, we have update the idno to reflect whatever parent was set after insert()
+				if(method_exists($t_subject, 'getIDNoPlugInInstance') && ($idno_plugin = $t_subject->getIDNoPlugInInstance())) {
+					if(method_exists($idno_plugin, 'isParentFormat') && $idno_plugin->isParentFormat()) {
+						$elements = array_keys($idno_plugin->getElements());
+						$pn = array_shift($elements);
+						
+						$table = $t_subject->tableName();
+						$pv = $t_subject->get("{$table}.parent.{$vs_idno_fld}");
+						if(!strlen($pv) && ($table === 'ca_objects') && $o_config->get('ca_objects_x_collections_hierarchy_enabled') && is_array($rt = caGetObjectCollectionHierarchyRelationshipTypes())) {
+							$parent_colls = $t_subject->get('ca_collections.idno', ['restrictToRelationshipTypes' => $rt, 'returnAsArray' => true]);
+							if(is_array($parent_colls) && sizeof($parent_colls)) {
+								$pv = array_shift($parent_colls);
+								$idno_plugin->isChild(true, $pv);
+								$t_subject->setIdnoWithTemplate(preg_replace("!^%!i", '^PARENT^', $vs_idno));
+								$t_subject->update();
+							}
+						}
+					}
+				}
 			
 				$opa_app_plugin_manager->hookDataPostImport(array('subject' => $t_subject, 'mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'transaction' => &$o_trans, 'log' => &$o_log, 'logReference' => $vs_idno, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row));
 			
@@ -4167,7 +4188,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$log = caGetOption('log', $options, null);
 		$trans = caGetOption('transaction', $options, null);
 		$log_reference = caGetOption('logReference', $options, null);
-		$config = Configuration::load();
+		$o_config = Configuration::load();
 		foreach($children as $child) {
 			$vals = $child; unset($vals['_table']); unset($vals['_type']); unset($vals['preferred_labels']); unset($vals['_children']);
 			
@@ -4177,10 +4198,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$attrs = $vals; unset($attrs['_related_related']);
 			if ($parent_table == $child['_table']) {	// direct child to parent (both are same table)
 				$id = DataMigrationUtils::getIDFor($child['_table'], $child['preferred_labels'], $parent_id, $child['_type'], 1, $attrs, $options);
-			} elseif($config->get('ca_objects_x_collections_hierarchy_enabled') && ($parent_table == 'ca_collections') && ($child['_table'] == 'ca_objects')) {	// collection-object hierarchy
+			} elseif($o_config->get('ca_objects_x_collections_hierarchy_enabled') && ($parent_table == 'ca_collections') && ($child['_table'] == 'ca_objects')) {	// collection-object hierarchy
 				if (($id = DataMigrationUtils::getIDFor($child['_table'], $child['preferred_labels'], null, $child['_type'], 1, $attrs, $options)) && ($parent = Datamodel::getInstance($parent_table, true)) && $parent->load($parent_id)) {
 					if($trans) { $parent->setTransaction($trans); }
-					$parent->addRelationship('ca_objects', $id, $config->get('ca_objects_x_collections_hierarchy_relationship_type'));
+					$parent->addRelationship('ca_objects', $id, $o_config->get('ca_objects_x_collections_hierarchy_relationship_type'));
 					
 					if($parent->numErrors() > 0) {
 						if ($log) { $log->logInfo(_t('Could not create object-collection hierarchy child record relationship: %1', join("; ", $parent->getErrors()))); }

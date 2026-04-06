@@ -1159,7 +1159,7 @@ class SearchResult extends BaseObject {
 			if (!$vs_output && $vb_convert_codes_to_idno) { $vs_output = "idno"; }
 			if (!$vs_output && $vb_convert_codes_to_value) { $vs_output = "itemValue"; }
 		}
-		if (!in_array($vs_output, array('text', 'idno', 'itemValue'))) { $vs_output = 'itemValue'; }
+		if (!in_array($vs_output, array('text', 'idno', 'itemValue'))) { $vs_output = 'id'; }
 		$pa_options['output'] = $vs_output;
 		
 		if (!($vb_return_as_link = (isset($pa_options['makeLink']) ? (bool)$pa_options['makeLink'] : false))) {

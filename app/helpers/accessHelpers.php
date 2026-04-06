@@ -881,10 +881,12 @@ function caTranslateBundlesForAccessChecking($ps_table_name, $ps_bundle_name) {
  *		dontFilterByACL = If set to true then ACL will be returned as disabled even if configured to be active. [Default is false]
  *		forPawtucket = Check if ACL is enabled for front-end only use. Will return true if set, even if back-end ACL is disabled. [Default is false]
  * 		anywhere = Check if ACL is enabled for front-end or back-end use. [Default is false]
+ *		useSettingsOnly = Return ACL enabled status based upon configuration settings only, ignoring __CA_DISABLE_ACL__ constant. [Default is false]
  * @return bool
  */
 function caACLIsEnabled($t_item=null, ?array $options=null) : bool {
-	if(defined("__CA_DISABLE_ACL__") && __CA_DISABLE_ACL__) { return false; }
+	$use_settings_only = caGetOption('useSettingsOnly', $options, false);
+	if(!$use_settings_only && defined("__CA_DISABLE_ACL__") && __CA_DISABLE_ACL__) { return false; }
 	if($options['dontFilterByACL'] ?? false) { return false; }
 	$config = Configuration::load();
 	

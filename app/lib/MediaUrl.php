@@ -105,6 +105,27 @@ class MediaUrl extends \CA\Plugins\PluginConsumer {
 	}
 	# ----------------------------------------------------------
 	/**
+	 * Search service (if available) for text and return matches
+	 *
+	 * @param string $search
+	 * @param array $options No options are supported.
+	 * @return bool|array False is no plugin found matches, an array of matches including the label (title) and URL of each match.
+	 */
+	public function search(string $search, ?array $options=null) {
+		$active = $this->_getActivePlugins();
+		foreach($active as $p) {
+			try {
+				if ($f = $p['plugin']->search($search, array_merge($options ?? [], $p['config']))) {
+					return $f;
+				}
+			} catch (\Exception $e) {
+				return false;
+			}
+		}
+		return false;
+	}
+	# ----------------------------------------------------------
+	/**
 	 * Fetch preview image for URL
 	 *
 	 * @param string $url
@@ -182,6 +203,30 @@ class MediaUrl extends \CA\Plugins\PluginConsumer {
 			}
 		}
 		return null;
+	}
+	# ------------------------------------------------
+	/**
+	 * Return list of supported formats. By default a list of format codes is returned.
+	 * The 'full' and 'names' options allow return of additional information.
+	 *
+	 * @param array $options Options include:
+	 *		names = return list of format names for display
+	 *
+	 * @return array
+	 */
+	public function supportedFormats(?array $options=null) {
+		$active = $this->_getActivePlugins();
+		
+		$formats = [];
+		foreach($active as $p) {
+			if($f = $p['plugin']->formats()) {
+				$formats = array_merge($formats, $f);
+			}
+		}
+		if(caGetOption('names', $options, false)) {
+			return array_values($formats);
+		}
+		return array_keys($formats);
 	}
 	# ------------------------------------------------
 	/**
