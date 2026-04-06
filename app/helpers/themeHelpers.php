@@ -1424,13 +1424,12 @@ function caGetCollectionLevelSummary($po_request, $va_collection_ids, $vn_level)
 			if($vs_icon){
 				$vs_output .= $vs_icon." ";
 			}
-			$vs_output .= "<b>";
+			
 			if($vs_sub_collection_label_template){
 				$vs_output .= $qr_collections->getWithTemplate($vs_sub_collection_label_template);
 			}else{
 				$vs_output .= $qr_collections->get("ca_collections.preferred_labels");
 			}
-			$vs_output .= "</b>";
 		
 			if($vn_rel_object_count){
 				$vs_output .= " <span class='small'>(".$vn_rel_object_count." record".(($vn_rel_object_count == 1) ? "" : "s").")</span>";
