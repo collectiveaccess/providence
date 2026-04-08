@@ -6639,6 +6639,36 @@ function caIsInventory(BaseModel|SearchResult $t_set, ?array $options=null) : bo
 }
 # ------------------------------------------------------------------
 /**
+ * Get list of active inventory types. The list will include the configured types 
+ * the specified table, filtered by the current user's preferences if set.
+ *
+ * @param string $table Table to get types for
+ * @param ca_users $user Current user
+ * @param array $options No options are supported
+ *
+ * return array
+ */
+function caGetActiveInventoryTypes($table, ca_users $user, ?array $options=null) : array {
+	$config = Configuration::load();
+	if(!$config->get('enable_inventories')) { return []; }
+	
+	if(is_object($table)) { $table = $table->tableName(); }
+	if(is_numeric($table)) { $table = Datamodel::getTableName($table); }
+	
+	$inventory_types = Configuration::load()->get('inventory_types') ?? [];
+	if(!is_array($inventory_types[$table])) { return []; }
+	
+	if(is_array($user_limits = $user->getPreference('inventory_limit_to_types'))) {
+		$user_limits = caMakeTypeList($table, $user_limits);
+	}
+	if(sizeof($user_limits)) {
+		return array_intersect($user_limits, $inventory_types[$table]);
+	}
+	
+	return $inventory_types[$table];
+}
+# ------------------------------------------------------------------
+/**
  * Is inventory system eabled?
  *
  * return bool

@@ -634,7 +634,7 @@ class BaseFindController extends ActionController {
 		$t_set = new ca_sets();
 		$added_items_count = $dupe_item_count = $original_count = $filtered_count = 0;
 		$set_name = $set_code = null;
-		$inventory_types = $this->request->getAppConfig()->get('inventory_types') ?? [];
+		$inventory_types = caGetActiveInventoryTypes($this->ops_tablename, $this->request->user);
 		$inventory_set_type = $this->request->getAppConfig()->get('inventory_set_type');
 		
 		if($is_inventory) {
@@ -671,7 +671,7 @@ class BaseFindController extends ActionController {
 				if($qr = caMakeSearchResult($this->ops_tablename, $row_ids)) {
 					$filtered_rows = [];
 					while($qr->nextHit()) {
-						if(in_array($qr->get('type_id', ['convertCodesToIdno' => true]), $inventory_types[$this->ops_tablename] ?? [], true)) {
+						if(in_array($qr->get('type_id', ['convertCodesToIdno' => true]), $inventory_types ?? [], true)) {
 							if($exclude_inventoried) {
 								$inventories = $t_set->getSetsForItem($this->ops_tablename, $qr->getPrimaryKey(), ['restrictToTypes' => [$inventory_set_type]]);
 								if(is_array($inventories) && sizeof($inventories)) {
