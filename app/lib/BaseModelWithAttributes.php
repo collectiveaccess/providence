@@ -3887,4 +3887,74 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		return $ret;
 	}
 	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getLogForBundle(string $bundle, ?array $options=null) : ?array {
+		$tmp = explode('.', $bundle);
+		if($tmp[0] === $this->tableName()) { array_shift($tmp); }
+		
+		$bundle_element = array_shift($tmp);
+		$bundle_subelement = array_shift($tmp);
+		
+		$guid = ca_guids::getForRow($this->tableNum(), $this->getPrimaryKey());
+		$log = ca_change_log::getLog(0, null, ['forGUID' => $guid, 'forceValuesForAllAttributeSlots' => true]);
+		$acc = [];
+		foreach($log as $l) {
+			switch((int)$l['logged_table_num']) {
+				case 4: // ca_attributes
+					$element_id = $l['snapshot']['element_id'];
+					$element_code = ca_metadata_elements::getElementCodeForId($element_id);
+					if($element_code != $bundle_element) { continue(2); }
+					$acc[$l['snapshot']['attribute_id']] = [
+						'guid' => $l['guid'],
+						'element_id' => $element_id,
+						'element_code' => $element_code,
+						'values' => []
+					];
+					break;
+				case 3: // ca_attribute_values
+					$s = $l['snapshot'];
+					$attribute_id = $s['attribute_id'];
+					if(!isset($acc[$attribute_id])) { continue(2); }
+					$element_id = $s['element_id'];
+					$element_code = ca_metadata_elements::getElementCodeForId($element_id);
+					if(!is_null($bundle_subelement) && ($element_code != $bundle_subelement)) { continue(2); }
+					
+					$s['log_id'] = $l['log_id'];
+					$s['element_code'] = $element_code;;
+					$acc[$l['snapshot']['attribute_id']]['values'][$element_code][] = $s;
+					break;
+			}
+		}
+		return $acc;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getValueHistoryForBundle(string $bundle, ?array $options=null) : ?array {
+		$log = $this->getLogForBundle($bundle, $options);
+		
+		$acc = [];
+		foreach($log as $attr_id => $d) {
+			foreach($d['values'] as $element_code => $values) {
+				foreach($values as $snapshot) {
+					$o_val = \CA\Attributes\Attribute::getValueInstance(ca_metadata_elements::getElementDatatype($element_code), $snapshot);
+					$acc[] = $o_val->getDisplayValue($options);
+				}
+			}
+		}
+		return $acc;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getMostRecentValueForBundle(string $bundle, ?array $options=null) : mixed {
+		$values = $this->getValueHistoryForBundle($bundle, $options);
+		$values = array_filter($values, 'strlen');
+		return array_pop($values);
+	}
+	# ------------------------------------------------------------------
 }
