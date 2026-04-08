@@ -913,13 +913,20 @@ function caEditorFindResultNavigation($request, $instance, $result_context, $opt
 		} else {
 			$default_to_summary_view = (bool)$request->config->get("{$table_name}_editor_defaults_to_summary_view");
 		}
+			
+		$action = $request->getAction();	
+		$extra = $request->getActionExtra();
+		if($extra && !in_array($action, ['Access', 'Summary', 'Log'], true)) {
+			$action = "Edit/{$extra}";
+		}
+		
 		if ($prev_id > 0) {
 			if(
 				$request->user->canAccess($request->getModulePath(),$request->getController(),"Edit",array($pk => $prev_id))
 				&&
 				!$default_to_summary_view
 			){
-				$buf .= caNavLink($request, caNavIcon(__CA_NAV_ICON_SCROLL_LT__, 2), 'prev record', $request->getModulePath(), $request->getController(), 'Edit'.'/'.$request->getActionExtra(), array($pk => $prev_id)).'&nbsp;';
+				$buf .= caNavLink($request, caNavIcon(__CA_NAV_ICON_SCROLL_LT__, 2), 'prev record', $request->getModulePath(), $request->getController(), $action, array($pk => $prev_id)).'&nbsp;';
 			} else {
 				$buf .= caNavLink($request, caNavIcon(__CA_NAV_ICON_SCROLL_LT__, 2), 'prev record', $request->getModulePath(), $request->getController(), 'Summary', array($pk => $prev_id)).'&nbsp;';
 			}
@@ -937,7 +944,7 @@ function caEditorFindResultNavigation($request, $instance, $result_context, $opt
 				&&
 				!$default_to_summary_view
 			){
-				$buf .= '&nbsp;'.caNavLink($request,caNavIcon(__CA_NAV_ICON_SCROLL_RT__, 2), 'next record', $request->getModulePath(), $request->getController(), 'Edit'.'/'.$request->getActionExtra(), array($pk => $next_id));
+				$buf .= '&nbsp;'.caNavLink($request,caNavIcon(__CA_NAV_ICON_SCROLL_RT__, 2), 'next record', $request->getModulePath(), $request->getController(), $action, array($pk => $next_id));
 			} else {
 				$buf .= '&nbsp;'.caNavLink($request,caNavIcon(__CA_NAV_ICON_SCROLL_RT__, 2), 'next record', $request->getModulePath(), $request->getController(), 'Summary', array($pk => $next_id));
 			}
