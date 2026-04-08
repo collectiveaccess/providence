@@ -467,6 +467,7 @@ class ca_acl extends BaseModel {
 		
 		$subject = is_object($subject) ? $subject : Datamodel::getInstance($subject_table_num, false, $row_id);
 		if(!$subject->isLoaded()) { return null; }
+		$subject_table = $subject->tableName();
 		
 		if(!is_array($rel_types = caGetObjectCollectionHierarchyRelationshipTypes()) || !sizeof($rel_types)) { $rel_types = null; }
 		
@@ -485,8 +486,9 @@ class ca_acl extends BaseModel {
 			'inheritingAccessObjectRepresentationCount' => 0
 		];
 		
-		// Number of sub-records and inherited entries
+		$access_counts = [];
 		
+		// Number of sub-records and inherited entries
 		if($qr_sub_records = $subject->getHierarchy($row_id, [])) {
 			$statistics['subRecordCount'] = $qr_sub_records->numRows()-1;
 			$c = $x = 0;
@@ -496,7 +498,9 @@ class ca_acl extends BaseModel {
 				if((bool)$qr_sub_records->get('acl_inherit_from_parent')) { $c++; }
 				if((bool)$qr_sub_records->get('access_inherit_from_parent')) { $x++; }
 				
-				$ids[] = $qr_sub_records->getPrimaryKey();
+				$ids[] = $qr_sub_records->get($subject->primaryKey(true));
+				
+				$access_counts[$subject_table][$qr_sub_records->get('access')]++;
 			}
 			$statistics['inheritingSubRecordCount'] = $c;
 			$statistics['inheritingAccessSubRecordCount'] = $x;
@@ -505,18 +509,39 @@ class ca_acl extends BaseModel {
 				$statistics['objectRepresentationCount'] += ca_acl::_getRepresentationCount($db, $ids);
 				$statistics['inheritingObjectRepresentationCount'] += ca_acl::_getRepresentationCount($db, $ids, ['aclInheritance' => true]);
 				$statistics['inheritingAccessObjectRepresentationCount'] += ca_acl::_getRepresentationCount($db, $ids, ['accessInheritance' => true]);
+				
+				$access_counts['ca_object_representations'] = ca_acl::_getRepresentationAccessCounts($db, $ids);
 			}
 		}
 		
 		// Number of related objects and inherited entries
 		if($subject->tableName() === 'ca_collections') {
 			if($qr_sub_records = $subject->getHierarchy($row_id, ['includeSelf' => true])) {
+				$t_object = new ca_objects();
 				while($qr_sub_records->nextRow()) {
 					$is_root = ($qr_sub_records->get('collection_id') == $row_id);
 					if(!($t_coll = ca_collections::findAsInstance(['collection_id' => $qr_sub_records->get('ca_collections.collection_id')]))) { continue; }
 					
 					$object_ids = $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => $rel_types, 'returnAs' => 'ids', 'limit' => 50000]);
 					$c = sizeof($object_ids ?? []);
+					
+					
+					$access_by_id = $t_object->getFieldValuesForIDs($object_ids, ['access']);
+					$counts = array_reduce($access_by_id ?? [], function($c, $v) {
+						$c[$v]++;
+						return $c;
+					}, []);
+					
+					foreach($counts as $a => $c) {
+						$access_counts['ca_objects'][$a] += $c;
+					}
+					
+					if(is_array($rep_counts = ca_acl::_getRepresentationAccessCounts($db, $object_ids))) {
+						foreach($rep_counts as $a => $c) {
+							$access_counts['ca_object_representations'][$a] += $c;
+						}
+					}
+					
 					
 					$statistics['relatedObjectCount'] += sizeof($object_ids ?? []);
 					$statistics['objectRepresentationCount'] += ca_acl::_getRepresentationCount($db, $object_ids);
@@ -537,6 +562,22 @@ class ca_acl extends BaseModel {
 				}
 			}
 		}
+		
+		foreach($access_counts as $t => $x) {
+			if(!is_array($x)) { unset($access_counts[$t]); continue; }
+			foreach($x as $a => $c) {
+				$l = caExtractValuesByUserLocale(caGetListItemForValue('access_statuses', $a));
+				if(is_array($l)) { $l = array_shift($l); }
+				$access_counts[$t][$a] = [
+					'value' => $a,
+					'count' => $c,
+					'label' => $l['name_plural'] ?? '???'
+				];
+			}
+			ksort($access_counts[$t]);
+		}
+		$statistics['access_counts'] = $access_counts;
+		
 		return $statistics;
 	}
 	# ------------------------------------------------------
@@ -562,6 +603,35 @@ class ca_acl extends BaseModel {
 			return (int)$qr_reps->get('c');
 		}
 		return 0;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	private static function _getRepresentationAccessCounts(Db $db, ?array $ids, ?array $options=null) : ?array {
+		if(!is_array($ids) || !sizeof($ids)) { return null; }
+		
+		$inherit_sql = '';
+		if(caGetOption('aclInheritance', $options, false)) {
+			$inherit_sql = " AND (r.acl_inherit_from_parent = 1)";
+		} elseif(caGetOption('accessInheritance', $options, false)) {
+			$inherit_sql = " AND (r.access_inherit_from_parent = 1)";
+		}		
+		$qr_reps = $db->query("
+			SELECT r.access, count(*) c
+			FROM ca_objects_x_object_representations oxr
+			INNER JOIN ca_object_representations AS r ON r.representation_id = oxr.representation_id
+			WHERE
+				r.deleted = 0 AND oxr.object_id IN (?) {$inherit_sql}
+			GROUP BY r.access", [$ids]);
+		if($qr_reps) {
+			$acc = [];
+			while($qr_reps->nextRow()) {
+				$acc[$qr_reps->get('access')] = (int)$qr_reps->get('c');
+			}
+			return $acc;
+		}
+		return null;
 	}
 	# ------------------------------------------------------
 	/**
@@ -792,7 +862,7 @@ class ca_acl extends BaseModel {
 		$subject_table_num = $subject->tableNum();
 		$subject_pk = $subject->primaryKey();
 		
-		ca_acl::debug(_t('', '', 'setGlobalEntries'));
+		//ca_acl::debug(_t('', '', 'setGlobalEntries'));
 								
 		$new_entries = [];
 		if($qr = $db->query("

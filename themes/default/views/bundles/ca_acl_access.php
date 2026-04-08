@@ -38,8 +38,11 @@ $typename						= $this->getVar('typename');
 $acl_enabled 					= $this->getVar('acl_enabled');
 $pawtucket_only_acl_enabled 	= $this->getVar('pawtucket_only_acl_enabled');
 $show_public_access_controls 	= $this->getVar('show_public_access_controls');
+$show_public_access_counts		= $this->getVar('show_public_access_counts') && is_array($stats['access_counts']) && sizeof($stats['access_counts']);
 $allow_rep_access_inheritance 	= $this->getVar('allow_rep_access_inheritance');
 $pawtucket_only_acl_separate_inheritance_controls = $this->getVar('pawtucket_only_acl_separate_inheritance_controls');
+$public_access_header = $t_instance->getAppConfig()->get('acl_public_access_header_template') ?? _t('Public access');
+$access_exceptions_header = $t_instance->getAppConfig()->get('acl_exceptions_header_template') ?? _t('Access exceptions');
 ?>
 <div class="sectionBox">
 <?php
@@ -58,13 +61,30 @@ $pawtucket_only_acl_separate_inheritance_controls = $this->getVar('pawtucket_onl
 ?>	
 	<div class='globalAccess'>
 		<div class='title globalAccessHeader'>
-			<?= _t('Public access'); ?>
+			<?= $public_access_header; ?>
 		</div>
 		<p>
 			<?=  $t_instance->htmlFormElement('access', '^LABEL ^ELEMENT', ['readonly' => (bool)$t_instance->get('access_inherit_from_parent')]).($t_instance->get('access_inherit_from_parent') ? " <em>("._t('inherited').")</em>" : ''); ?>
 		</p>
 		
 		<hr/>
+<?php
+	if($show_public_access_counts) {
+?>
+		<div class='subtitle itemAccessCounts'>
+			<?= _t('Access statistics'); ?>
+		</div>
+<?php
+		foreach($stats['access_counts'] as $t => $x) {
+			$tn = caUcFirstUTF8Safe(Datamodel::getTableProperty($t,'NAME_PLURAL'));
+			print _t("%1: %2", $tn, caMakeCommaListWithConjunction(array_map(function($v) { 
+				return _t('%2 are %1', $v['label'], $v['count']);
+			}, $x)))."<br>\n";
+		}
+?>
+<?php	
+	}
+?>
 		<div class='subtitle itemAccessInheritance'><?= _t('Inheritance'); ?></div>
 <?php
 		if (
@@ -189,7 +209,7 @@ if($acl_enabled || $pawtucket_only_acl_enabled) {
 		}
 ?>
 		<div class='title itemAccessExceptions'>
-			<?= _t('Access exceptions'); ?>
+			<?= $access_exceptions_header; ?>
 		</div>
 		<div class='control'>
 			<?= $t_instance->getACLGroupHTMLFormBundle($this->request, 'caAccessControlList'); ?>	

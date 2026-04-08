@@ -8014,7 +8014,8 @@ $pa_options["display_form_field_tips"] = true;
 		$o_view->setVar('pawtucket_only_acl_separate_inheritance_controls', ($config->get('pawtucket_only_acl_separate_inheritance_controls') || $config->get("{tablename}_pawtucket_only_acl_separate_inheritance_controls")));
 		
 		$o_view->setVar('show_public_access_controls', ($config->get('acl_show_public_access_controls') || $config->get("{$tablename}_acl_show_public_access_controls")));
-				
+		$o_view->setVar('show_public_access_counts', ($config->get('acl_show_public_access_counts') || $config->get("{$tablename}_acl_show_public_access_counts")));
+		
 		$o_view->setVar('acl_enabled', caACLIsEnabled($this));
 		$o_view->setVar('pawtucket_only_acl_enabled', caACLIsEnabled($this, ['forPawtucket' => true]));
 		
@@ -8043,6 +8044,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 		$o_view->setVar('pawtucket_only_acl_separate_inheritance_controls', ($config->get('pawtucket_only_acl_separate_inheritance_controls') || $config->get("{tablename}_pawtucket_only_acl_separate_inheritance_controls")));
 		$o_view->setVar('show_public_access_controls', ($config->get('acl_show_public_access_controls') || $config->get("{$tablename}_acl_show_public_access_controls")));
+		$o_view->setVar('show_public_access_counts', ($config->get('acl_show_public_access_counts') || $config->get("{$tablename}_acl_show_public_access_counts")));
 		
 		$o_view->setVar('acl_enabled', caACLIsEnabled($this));
 		$o_view->setVar('pawtucket_only_acl_enabled', caACLIsEnabled($this, ['forPawtucket' => true]));
@@ -8542,6 +8544,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 		$o_view->setVar('pawtucket_only_acl_separate_inheritance_controls', ($config->get('pawtucket_only_acl_separate_inheritance_controls') || $config->get("{tablename}_pawtucket_only_acl_separate_inheritance_controls")));
 		$o_view->setVar('show_public_access_controls', ($config->get('acl_show_public_access_controls') || $config->get("{$tablename}_acl_show_public_access_controls")));
+		$o_view->setVar('show_public_access_counts', ($config->get('acl_show_public_access_counts') || $config->get("{$tablename}_acl_show_public_access_counts")));
 		
 		$o_view->setVar('acl_enabled', caACLIsEnabled($this));
 		$o_view->setVar('pawtucket_only_acl_enabled', caACLIsEnabled($this, ['forPawtucket' => true]));
@@ -8571,6 +8574,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 		$o_view->setVar('pawtucket_only_acl_separate_inheritance_controls', ($config->get('pawtucket_only_acl_separate_inheritance_controls') || $config->get("{tablename}_pawtucket_only_acl_separate_inheritance_controls")));
 		$o_view->setVar('show_public_access_controls', ($config->get('acl_show_public_access_controls') || $config->get("{$tablename}_acl_show_public_access_controls")));
+		$o_view->setVar('show_public_access_counts', ($config->get('acl_show_public_access_counts') || $config->get("{$tablename}_acl_show_public_access_counts")));
 		
 		$o_view->setVar('acl_enabled', caACLIsEnabled($this));
 		$o_view->setVar('pawtucket_only_acl_enabled', caACLIsEnabled($this, ['forPawtucket' => true]));
