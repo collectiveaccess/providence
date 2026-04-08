@@ -518,6 +518,10 @@ class FotoWareClient {
 			if(!isset($item['media'])) {
 				$item['media'] = array_shift($asset['renditions']);
 			}
+			$item['renditions'] = [];
+			foreach($asset['renditions'] as $r) {
+				$item['renditions'][$r['display_name']] = $r;
+			}
 		}
 		
 		if(is_array($asset['previews'])) {

@@ -150,7 +150,21 @@ class FotoWare Extends BaseMediaUrlPlugin {
 			$item = $this->client->item($p['url']);
 			if(is_null($item['media'] ?? null)) { return false; }
 			$format = pathinfo($item['media']['href'], PATHINFO_EXTENSION) ?? 'jpg';
-			$m = $this->client->fetchMedia($item['media']['href'], $tmp_file=__CA_APP_DIR__.'/tmp/'.$item['filename']);
+			
+			$renditions = \Configuration::load()->getList('fotoware_media_renditions') ?? [];
+			$hrefs = [];
+			foreach($renditions as $r) {
+				if(!isset($item['renditions'][$r])) { continue; }
+				if($item['renditions'][$r]['href'] ?? null) {
+					$hrefs[] = $item['renditions'][$r]['href'];
+				}
+			}
+			$hrefs[] = $item['media']['href'];
+			foreach($hrefs as $href) {
+				if($m = $this->client->fetchMedia($href, $tmp_file=__CA_APP_DIR__.'/tmp/'.$item['filename'])) {
+					break;
+				}
+			}
 			
 			$metadata = [];
 			if(is_array($item['fields'])) {
