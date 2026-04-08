@@ -3922,11 +3922,20 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 					if(!is_null($bundle_subelement) && ($element_code != $bundle_subelement)) { continue(2); }
 					
 					$s['log_id'] = $l['log_id'];
-					$s['element_code'] = $element_code;;
+					$s['element_code'] = $element_code;
+					$s['datetime'] = $l['log_datetime'];
+					$s['datetime_display'] = caGetLocalizedDate($l['log_datetime']);
 					$acc[$l['snapshot']['attribute_id']]['values'][$element_code][] = $s;
 					break;
 			}
 		}
+		
+		foreach($acc as $id => $info) {
+			if(!isset($info['values']) || !sizeof($info['values'])) {
+				unset($acc[$id]);
+			}
+		}
+		
 		return $acc;
 	}
 	# ------------------------------------------------------------------
@@ -3935,13 +3944,16 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	 */
 	public function getValueHistoryForBundle(string $bundle, ?array $options=null) : ?array {
 		$log = $this->getLogForBundle($bundle, $options);
-		
 		$acc = [];
 		foreach($log as $attr_id => $d) {
 			foreach($d['values'] as $element_code => $values) {
 				foreach($values as $snapshot) {
 					$o_val = \CA\Attributes\Attribute::getValueInstance(ca_metadata_elements::getElementDatatype($element_code), $snapshot);
-					$acc[] = $o_val->getDisplayValue($options);
+					$acc[] = [
+						'value' => $o_val->getDisplayValue($options),
+						'datetime' => $snapshot['datetime'],
+						'datetime_display' => $snapshot['datetime_display']
+					];
 				}
 			}
 		}
@@ -3953,7 +3965,9 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	 */
 	public function getMostRecentValueForBundle(string $bundle, ?array $options=null) : mixed {
 		$values = $this->getValueHistoryForBundle($bundle, $options);
-		$values = array_filter($values, 'strlen');
+		$values = array_filter($values, function($v) {
+			return !(!is_array($v) || !isset($v['value']) || !strlen($v['value']));
+		});
 		return array_pop($values);
 	}
 	# ------------------------------------------------------------------
