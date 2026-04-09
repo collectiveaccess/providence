@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -767,7 +767,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_bundles = [];
 		$qr_res = $o_db->query("
-			SELECT *
+			SELECT ceus.parent_id, ceus.ui_id, ceus.idno, ceus.color, ceus.icon, ceuibp.*
 			FROM ca_editor_ui_bundle_placements ceuibp
 			INNER JOIN ca_editor_ui_screens AS ceus ON ceus.screen_id = ceuibp.screen_id
 			WHERE
