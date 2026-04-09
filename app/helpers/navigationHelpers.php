@@ -940,10 +940,10 @@ function _caNavIconTypeToName($pn_type) {
 			$vs_fa_class = 'fas fa-broadcast-tower';
 			break;				
 		case __CA_NAV_ICON_PACK__:
-			$vs_fa_class = 'fas fa-box';
+			$vs_fa_class = 'fas fa-box-open';
 			break;				
 		case __CA_NAV_ICON_UNPACK__:
-			$vs_fa_class = 'fas fa-box-open';
+			$vs_fa_class = 'fas fa-box';
 			break;												
 		default:
 			print "INVALID CONSTANT $pn_type<br>\n";
