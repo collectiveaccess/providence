@@ -711,6 +711,7 @@ trait ModelSettings {
 								if($va_properties['includePreferredLabels'] ?? null) {
 									if (!($t_rep = Datamodel::getInstance($vs_table, true))) { continue; }
 									foreach($t_rep->getLabelUIFields() as $vs_f) {
+										if($vs_f == 'access') { continue; }
 										$va_select_opts[$t_rep->getDisplayLabel("{$vs_table}.preferred_labels.{$vs_f}")] = "{$vs_table}.preferred_labels.{$vs_f}";
 									}	
 								}
