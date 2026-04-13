@@ -1433,7 +1433,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		// Name to use for detailed (bundle-level) logging
 		$this->detailed_log_name = $detailed_log_name = pathinfo(caGetOption('detailedLogName', $pa_options, "import_errors_".$t_mapping->get('importer_code')."_".date("Y-m-d")), PATHINFO_FILENAME);
 		
-		$o_event = ca_data_import_events::newEvent(isset($pa_options['user_id']) ? $pa_options['user_id'] : null, $pa_options['format'], $ps_source, isset($pa_options['description']) ? $pa_options['description'] : '');
+		$o_event = ca_data_import_events::newEvent(isset($pa_options['user_id']) ? $pa_options['user_id'] : null, $pa_options['format'], is_array($ps_source) ? "[DATA]" : $ps_source, isset($pa_options['description']) ? $pa_options['description'] : '');
 		
 		$o_trans = null;
 		
@@ -2183,6 +2183,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				
 				if($t_subject->getPrimaryKey()) {
 					$vs_idno = $t_subject->get($vs_idno_fld);
+					$vn_idno_mapping_item_id = null; // we want to ensure idno is maintained from merged record, so wipe out mapping if set
 				}
 				
 				if ($merge_only && !$t_subject->getPrimaryKey()) { 

@@ -4501,8 +4501,41 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 					try {
 						$r = $media_url->fetch($vs_url);
 						if (is_array($r)) {
+							$log = caGetLogger();
 							if(!isset($this->_SET_FILES[$ps_field]['original_filename'])) { 
 								$this->_SET_FILES[$ps_field]['original_filename'] = !empty($r['originalFilename']) ? $r['originalFilename'] : pathinfo($r['file'], PATHINFO_BASENAME);
+							}
+							if(is_array($r['metadata'])) { 
+								if(is_array($media_url_mapping_config = $this->_CONFIG->get('fetched_media_metadata_import_mappings') ?? [])) {
+									foreach($media_url_mapping_config as $p => $v) {
+										$media_url_mapping_config[strtolower($p)] = $v;
+									}
+									
+									if($mapping_code = ($media_url_mapping_config[strtolower($r['plugin'])] ?? null)) { 
+										if($t_mapping = ca_data_importers::find(['importer_code' => $mapping_code], ['returnAs' => 'firstModelInstance'])) {
+											$format = $t_mapping->getSetting('inputFormats');
+											if(!is_array($format)) { $format = [$format]; }
+											if(!in_array('mediaurl', $format, true)) {
+												if ($log) { $log->logError(_t('Import mapping with code %1 configured for %2 urls is not for the MediaUrl format; not metadata was imported', $mapping_code, $r['plugin'], $mapping_code)); }	
+											} else {
+												$va_media_info = $this->getMediaInfo('media');
+												$format = array_shift($format);
+												if(!$t_mapping->importDataFromSource(json_encode($r['metadata'] ?? [], true), $t_mapping->getPrimaryKey(), [
+														'logLevel' => $this->_CONFIG->get('embedded_metadata_extraction_mapping_log_level'), 
+														'format' => $format, 'forceImportForPrimaryKeys' => [$this->getPrimaryKey(), 
+														'transaction' => $this->getTransaction()],
+														'environment' => ['source_url' => $vs_url, 'original_filename' => $va_media_info['ORIGINAL_FILENAME'] ?? null, '/original_filename' => $va_media_info['ORIGINAL_FILENAME'] ?? null]
+													])) {
+													if ($log) { $log->logError(_t('MediaUrl import mapping for %1 with code %2 failed', $r['plugin'], $mapping_code)); }	
+												}
+											}
+										} else {
+											if ($log) { $log->logWarn(_t('Could not find import mapping for %1 with code %2; no metadata was imported', $r['plugin'], $mapping_code)); }
+										}
+									} else {
+										if ($log) { $log->logDebug(_t('No MediaUrl import mapping configured for %1; no metadata was imported', $r['plugin'])); }
+									}
+								}
 							}
 							$vs_tmp_file = $r['file'];
 							$is_without_media = true;
