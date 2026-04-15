@@ -195,31 +195,38 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 	 *
 	 *
 	 */
-	public function __construct($pa_value_array=null) {
-		parent::__construct($pa_value_array);
+	public function __construct($value_array=null) {
+		parent::__construct($value_array);
 	}
 	# ------------------------------------------------------------------
 	/**
 	 *
 	 *
 	 */
-	public function loadTypeSpecificValueFromRow($pa_value_array) {
-		$this->ops_text_value = $pa_value_array['value_longtext1'];
-		$this->ops_uri_value = $pa_value_array['value_longtext2'];
+	public function loadTypeSpecificValueFromRow($value_array) {
+		global $g_ui_locale;
+		$this->ops_text_value = $value_array['value_longtext1'];
+		$this->ops_uri_value = $value_array['value_longtext2'];
 
-		$va_info = caUnserializeForDatabase($pa_value_array['value_blob']);
+		$info = caUnserializeForDatabase($value_array['value_blob']);
+		
+		// Are there locale-specific display values?
+		if(isset($info['extra_info']['values_by_locale']) && isset($info['extra_info']['values_by_locale'][$g_ui_locale])) {
+			$this->ops_text_value = $info['extra_info']['values_by_locale'][$g_ui_locale];
+		}
+		
 		$this->opa_indexing_info =
-			(is_array($va_info) && isset($va_info['indexing_info']) && is_array($va_info['indexing_info'])) ? $va_info['indexing_info'] : array();
+			(is_array($info) && isset($info['indexing_info']) && is_array($info['indexing_info'])) ? $info['indexing_info'] : array();
 
 		$this->opa_extra_info =
-			(is_array($va_info) && isset($va_info['extra_info']) && is_array($va_info['extra_info'])) ? $va_info['extra_info'] : array();
+			(is_array($info) && isset($info['extra_info']) && is_array($info['extra_info'])) ? $info['extra_info'] : array();
 	}
 	# ------------------------------------------------------------------
 	/**
 	 *
 	 *
 	 */
-	public function getDisplayValue($pa_options=null) {
+	public function getDisplayValue($options=null) {
 		return $this->ops_text_value;
 	}
 	# ------------------------------------------------------------------
@@ -243,68 +250,69 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 	 *
 	 *
 	 */
-	public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
-		$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
-		$vs_service = caGetOption('service', $this->getSettingValuesFromElementArray(
-			$pa_element_info, ['service']
+	public function parseValue($value, $element_info, $options=null) {
+		if(!is_array($options)) { $options = []; }
+		$value = trim(preg_replace("![\t\n\r]+!", ' ', $value));
+		$service = caGetOption('service', $this->getSettingValuesFromElementArray(
+			$element_info, ['service']
 		));
 		
-		if (trim($ps_value)) {
-			$va_tmp = explode('|', $ps_value);
-			$va_info = array();
-			if(sizeof($va_tmp) == 3) { /// value is already in desired format (from autocomplete lookup)
-				if ($va_tmp[2]) {	// Skip if no url set (is "no match" message)
+		if (trim($value)) {
+			$tmp = explode('|', $value);
+			$info = array();
+			if(sizeof($tmp) == 3) { /// value is already in desired format (from autocomplete lookup)
+				if ($tmp[2]) {	// Skip if no url set (is "no match" message)
 					// get extra indexing info for this uri from plugin implementation
-					if(!($this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service))) { 
+					if(!($this->opo_plugin = InformationServiceManager::getInformationServiceInstance($service))) { 
 						return null; 
 					}
-					$vs_display_text = $this->opo_plugin->getDisplayValueFromLookupText($va_tmp[0]);
-					$va_info['indexing_info'] = $this->opo_plugin->getDataForSearchIndexing($pa_element_info['settings'], $va_tmp[2]);
-					$va_info['extra_info'] = $this->opo_plugin->getExtraInfo($pa_element_info['settings'], $va_tmp[2]);
+					$display_text = $this->opo_plugin->getDisplayValueFromLookupText($tmp[0]);
+					$info['indexing_info'] = $this->opo_plugin->getDataForSearchIndexing($element_info['settings'], $tmp[2]);
+					$info['extra_info'] = $this->opo_plugin->getExtraInfo($element_info['settings'], $tmp[2]);
 
 					return array(
-						'value_longtext1' => $vs_display_text,	// text
-						'value_longtext2' => $va_tmp[2],		// uri
-						'item_id' => $va_info['extra_info']['item_id'] ?? null,
-						'value_decimal1' => is_numeric($va_tmp[1]) && ($va_tmp[1] < pow(2, 64))  ? $va_tmp[1] : null, 		// id
-						'value_blob' => caSerializeForDatabase($va_info),
-						'value_sortable' => $this->sortableValue($vs_display_text)
+						'value_longtext1' => $display_text,	// text
+						'value_longtext2' => $tmp[2],		// uri
+						'item_id' => $info['extra_info']['item_id'] ?? null,
+						'value_decimal1' => is_numeric($tmp[1]) && ($tmp[1] < pow(2, 64))  ? $tmp[1] : null, 		// id
+						'value_blob' => caSerializeForDatabase($info),
+						'value_sortable' => $this->sortableValue($display_text)
 					);
 				}
-			} elseif((sizeof($va_tmp)==1) && (isURL($va_tmp[0], array('strict' => true)) || is_numeric($va_tmp[0]))) { // URI or ID -> try to look it up. we match hit when exactly 1 hit comes back
+			} elseif((sizeof($tmp)==1) && (isURL($tmp[0], array('strict' => true)) || is_numeric($tmp[0]))) { // URI or ID -> try to look it up. we match hit when exactly 1 hit comes back
 				// try lookup cache
-				if(CompositeCache::contains($va_tmp[0], "InformationServiceLookup{$vs_service}")) {
-					return CompositeCache::fetch($va_tmp[0], "InformationServiceLookup{$vs_service}");
+				if(CompositeCache::contains($tmp[0], "InformationServiceLookup{$service}")) {
+					return CompositeCache::fetch($tmp[0], "InformationServiceLookup{$service}");
 				}
 
 				// try lookup
-				$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service);
-				$va_ret = $this->opo_plugin->lookup($pa_element_info['settings'], $va_tmp[0]);
+				$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($service);
+				$ret = $this->opo_plugin->lookup($element_info['settings'], $tmp[0]);
 
 				// only match exact results. at some point we might want to try to get fancy
 				// and pick one (or rather, have the plugin pick one) if there's more than one
-				if(is_array($va_ret['results']) && (sizeof($va_ret['results']) > 0)) {
-					$va_hit = array_shift($va_ret['results']);
+				if(is_array($ret['results']) && (sizeof($ret['results']) > 0)) {
+					$hit = array_shift($ret['results']);
 
-					$va_info['indexing_info'] = $this->opo_plugin->getDataForSearchIndexing($pa_element_info['settings'], $va_hit['url']);
-					$va_info['extra_info'] = $this->opo_plugin->getExtraInfo($pa_element_info['settings'], $va_hit['url']);
-					$vs_display_text = $this->opo_plugin->getDisplayValueFromLookupText($va_hit['label']);
-					$va_return = array(
-						'value_longtext1' => $vs_display_text,	// text
-						'value_longtext2' => $va_hit['url'],	// url
-						'item_id' => $va_info['extra_info']['item_id'] ?? null,
-						'value_decimal1' => $va_hit['id'], 	// id
-						'value_blob' => caSerializeForDatabase($va_info),
-						'value_sortable' => $this->sortableValue($vs_display_text)
+					$info['indexing_info'] = $this->opo_plugin->getDataForSearchIndexing($element_info['settings'], $hit['url']);
+					$info['extra_info'] = $this->opo_plugin->getExtraInfo($element_info['settings'], $hit['url']);
+					$display_text = $this->opo_plugin->getDisplayValueFromLookupText($hit['label']);
+					$return = array(
+						'value_longtext1' => $display_text,	// text
+						'value_longtext2' => $hit['url'],	// url
+						'item_id' => $info['extra_info']['item_id'] ?? null,
+						'value_decimal1' => $hit['id'], 	// id
+						'value_blob' => caSerializeForDatabase($info),
+						'value_sortable' => $this->sortableValue($display_text)
 					);
 				} else {
-					$this->postError(1970, _t('Value for InformationService lookup has to be an ID or URL that returns exactly 1 hit. We got more or no hits. Value was %1', $ps_value), 'ListAttributeValue->parseValue()');
+					$this->postError(1970, _t('Value for InformationService lookup has to be an ID or URL that returns exactly 1 hit. We got more or no hits. Value was %1', $value), 'ListAttributeValue->parseValue()');
 					return false;
 				}
 
-				CompositeCache::save($va_tmp[0], $va_return, "InformationServiceLookup{$vs_service}");
-				return $va_return;
-			} elseif((sizeof($va_tmp) == 1) && (preg_match("!^\[([0-9]+)\][ ]*(.*)!", $va_tmp[0], $m))) {   // [ID] TEXT format string where ID is numeric
+				CompositeCache::save($tmp[0], $return, "InformationServiceLookup{$service}");
+				return $return;
+			} elseif((sizeof($tmp) == 1) && (preg_match("!^\[([0-9]+)\][ ]*(.*)!", $tmp[0], $m))) {   // [ID] TEXT format string where ID is numeric
 			    return [
 			        'value_longtext1' => $m[2],
 			        'value_longtext2' => '',
@@ -315,11 +323,11 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 			    ];
 			    
 			} else { // raw text
-				$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service);
-				$res = $this->opo_plugin->lookup($pa_element_info['settings'], $ps_value);
+				$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($service);
+				$res = $this->opo_plugin->lookup($element_info['settings'], $value);
 				$selected_result = null;
 				if(is_array($res['results'] ?? null) && sizeof($res['results'])) {
-					$v = mb_strtolower($ps_value);
+					$v = mb_strtolower($value);
 					foreach($res['results'] as $r) {
 						if(mb_strtolower($r['label']) === $v) {
 							$selected_result = $r;
@@ -328,19 +336,19 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 					}
 					if(!$selected_result) { $selected_result = array_shift($res['results']); }
 				}
-				if($selected_result && !caGetOption('isRecursive', $pa_options, false)) {
-					return self::parseValue($selected_result['url'], $pa_element_info, array_merge($pa_options, ['isRecursive' => true]));
+				if($selected_result && !caGetOption('isRecursive', $options, false)) {
+					return self::parseValue($selected_result['url'], $element_info, array_merge($options, ['isRecursive' => true]));
 				}
 				if(!$selected_result) {
 					return null;
 				}
 				return [
-			        'value_longtext1' => $ps_value,
+			        'value_longtext1' => $value,
 			        'value_longtext2' => '',
 			        'item_id' => null,
 			        'value_decimal1' => null,
 			        'value_blob' => null,
-			        'value_sortable' => $this->sortableValue($ps_value)
+			        'value_sortable' => $this->sortableValue($value)
 			    ];
 			}
 		}
@@ -350,8 +358,8 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 	/**
 	 * Return HTML form element for editing.
 	 *
-	 * @param array $pa_element_info An array of information about the metadata element being edited
-	 * @param array $pa_options array Options include:
+	 * @param array $element_info An array of information about the metadata element being edited
+	 * @param array $options array Options include:
 	 *			class = the CSS class to apply to all visible form elements [Default=lookupBg]
 	 *			width = the width of the form element [Default=field width defined in metadata element definition]
 	 *			height = the height of the form element [Default=field height defined in metadata element definition]
@@ -359,24 +367,24 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 	 *
 	 * @return string
 	 */
-	public function htmlFormElement($pa_element_info, $pa_options=null) {
-		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight'));
-		$ps_class = caGetOption('class', $pa_options, 'lookupBg');
-		$pb_for_search = caGetOption('forSearch', $pa_options, false);
+	public function htmlFormElement($element_info, $options=null) {
+		$settings = $this->getSettingValuesFromElementArray($element_info, array('fieldWidth', 'fieldHeight'));
+		$class = caGetOption('class', $options, 'lookupBg');
+		$pb_for_search = caGetOption('forSearch', $options, false);
 		
-		$vs_service = caGetOption('service', $this->getSettingValuesFromElementArray(
-			$pa_element_info, ['service']
+		$service = caGetOption('service', $this->getSettingValuesFromElementArray(
+			$element_info, ['service']
 		));
 		
 		if(!$this->opo_plugin) {
-			$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service);
+			$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($service);
 		}
 		
-		$vs_element = '';
+		$element = '';
 		
         if (!$pb_for_search) {
         	// Add additional UI elements for services that require them (Eg. Numishare)
-        	$additional_ui_controls = method_exists($this->opo_plugin, 'getAdditionalFields') ? $this->opo_plugin->getAdditionalFields($pa_element_info) : [];
+        	$additional_ui_controls = method_exists($this->opo_plugin, 'getAdditionalFields') ? $this->opo_plugin->getAdditionalFields($element_info) : [];
 			$additional_ui_elements = trim(join(' ', array_map(function($v) { return $v['html']; }, $additional_ui_controls)));
 			
     		$additional_ui_gets = array_map(function($v) { 
@@ -385,14 +393,14 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
     		
     		$additional_ui_gets_str = sizeof($additional_ui_gets) ? ','.join(',', $additional_ui_gets) : '';
     		
-    		$additional_fields = $this->opo_plugin->getAdditionalFields($pa_element_info);
+    		$additional_fields = $this->opo_plugin->getAdditionalFields($element_info);
     		
-    		$hidden_val = '{{'.$pa_element_info['element_id'].'}}';
+    		$hidden_val = '{{'.$element_info['element_id'].'}}';
     		if(is_array($additional_fields)) {
     			foreach($additional_fields as $f) {
     				switch($f['name']) {
     					case 'id':
-    						$hidden_val .= "|{$vs_service}:{{id}}";
+    						$hidden_val .= "|{$service}:{{id}}";
     						break;
     					default: 
     						$hidden_val .= "|{{{$f['name']}}}";
@@ -401,47 +409,47 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
     			}
     		}
     		
-            $vs_element = '<div id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_input{n}">'.
+            $element = '<div id="{fieldNamePrefix}'.$element_info['element_id'].'_input{n}">'.
             	$additional_ui_elements.
                 caHTMLTextInput(
-                    '{fieldNamePrefix}'.$pa_element_info['element_id'].'_autocomplete{n}',
+                    '{fieldNamePrefix}'.$element_info['element_id'].'_autocomplete{n}',
                     array(
-                        'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
-                        'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'],
-                        'value' => '{{'.$pa_element_info['element_id'].'}}',
+                        'size' => (isset($options['width']) && $options['width'] > 0) ? $options['width'] : $settings['fieldWidth'],
+                        'height' => (isset($options['height']) && $options['height'] > 0) ? $options['height'] : $settings['fieldHeight'],
+                        'value' => '{{'.$element_info['element_id'].'}}',
                         'maxlength' => 512,
-                        'id' => "{fieldNamePrefix}".$pa_element_info['element_id']."_autocomplete{n}",
-                        'class' => $ps_class
+                        'id' => "{fieldNamePrefix}".$element_info['element_id']."_autocomplete{n}",
+                        'class' => $class
                     )
                 ).
                 caHTMLHiddenInput(
-                    '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
+                    '{fieldNamePrefix}'.$element_info['element_id'].'_{n}',
                     array(
                         'value' => $hidden_val,
-                        'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}'
+                        'id' => '{fieldNamePrefix}'.$element_info['element_id'].'_{n}'
                     )
                 );
 
-            if ($pa_options['request']) {
-                $vs_url = caNavUrl($pa_options['request'], 'lookup', 'InformationService', 'Get', array('max' => 100, 'element_id' => $pa_element_info['element_id']));
-                $vs_detail_url = caNavUrl($pa_options['request'], 'lookup', 'InformationService', 'GetDetail', array('element_id' => $pa_element_info['element_id']));
+            if ($options['request']) {
+                $url = caNavUrl($options['request'], 'lookup', 'InformationService', 'Get', array('max' => 100, 'element_id' => $element_info['element_id']));
+                $detail_url = caNavUrl($options['request'], 'lookup', 'InformationService', 'GetDetail', array('element_id' => $element_info['element_id']));
             } else {
                 // hardcoded default for testing.
-                $vs_url = '/index.php/lookup/InformationService/Get';
-                $vs_detail_url = '/index.php/lookup/InformationService/GetDetail';
+                $url = '/index.php/lookup/InformationService/Get';
+                $detail_url = '/index.php/lookup/InformationService/GetDetail';
             }
 
-            $vs_element .= " <a href='#' class='caInformationServiceMoreLink' id='{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}'>"._t("More &rsaquo;")."</a>";
-            $vs_element .= "<div id='{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}' class='caInformationServiceDetail'>".($pa_options['request'] ? caBusyIndicatorIcon($pa_options['request']) : '')."</div></div>";
+            $element .= " <a href='#' class='caInformationServiceMoreLink' id='{fieldNamePrefix}".$element_info['element_id']."_link{n}'>"._t("More &rsaquo;")."</a>";
+            $element .= "<div id='{fieldNamePrefix}".$element_info['element_id']."_detail{n}' class='caInformationServiceDetail'>".($options['request'] ? caBusyIndicatorIcon($options['request']) : '')."</div></div>";
     				
-            $vs_element .= "
+            $element .= "
                     <script type='text/javascript'>
                         jQuery(document).ready(function() {
-                            jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_autocomplete{n}').autocomplete(
+                            jQuery('#{fieldNamePrefix}".$element_info['element_id']."_autocomplete{n}').autocomplete(
                                 {
                                     minLength: 3,delay: 800,
                                     source: function (request, response) {
-										jQuery.get('{$vs_url}', {
+										jQuery.get('{$url}', {
 												term: request.term{$additional_ui_gets_str}
 											}, function (data) {
 												response(JSON.parse(data));
@@ -449,74 +457,74 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 									},
                                     html: true,
                                     select: function(event, ui) {".((!$pb_for_search) ? "
-                                        jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label + '|' + ui.item.idno + '|' + ui.item.url);" : 
-                                        "jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label);"
+                                        jQuery('#{fieldNamePrefix}".$element_info['element_id']."_{n}').val(ui.item.label + '|' + ui.item.idno + '|' + ui.item.url);" : 
+                                        "jQuery('#{fieldNamePrefix}".$element_info['element_id']."_{n}').val(ui.item.label);"
                                     )."
                                     }
                                 }
                             ).click(function() { this.select(); });
                     ";
                 
-            $vs_element .= "					if ('{{".$pa_element_info['element_id']."}}') {
-                            jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').css('display', 'inline').on('click', function(e) {
-                                if (jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').css('display') == 'none') {
-                                    jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').slideToggle(250, function() {
-                                        jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').load('{$vs_detail_url}/id/{n}');
+            $element .= "					if ('{{".$element_info['element_id']."}}') {
+                            jQuery('#{fieldNamePrefix}".$element_info['element_id']."_link{n}').css('display', 'inline').on('click', function(e) {
+                                if (jQuery('#{fieldNamePrefix}".$element_info['element_id']."_detail{n}').css('display') == 'none') {
+                                    jQuery('#{fieldNamePrefix}".$element_info['element_id']."_detail{n}').slideToggle(250, function() {
+                                        jQuery('#{fieldNamePrefix}".$element_info['element_id']."_detail{n}').load('{$detail_url}/id/{n}');
                                     });
-                                    jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').html('".addslashes(_t("Less &rsaquo;"))."');
+                                    jQuery('#{fieldNamePrefix}".$element_info['element_id']."_link{n}').html('".addslashes(_t("Less &rsaquo;"))."');
                                 } else {
-                                    jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').slideToggle(250);
-                                    jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').html('".addslashes(_t("More &rsaquo;"))."');
+                                    jQuery('#{fieldNamePrefix}".$element_info['element_id']."_detail{n}').slideToggle(250);
+                                    jQuery('#{fieldNamePrefix}".$element_info['element_id']."_link{n}').html('".addslashes(_t("More &rsaquo;"))."');
                                 }
                                 return false;
                             });
                         }
             ";
         
-            $vs_element .= "
+            $element .= "
                         });
                         </script>";
 		} else {
-		    $vs_element .= caHTMLTextInput(
-                    '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
+		    $element .= caHTMLTextInput(
+                    '{fieldNamePrefix}'.$element_info['element_id'].'_{n}',
                     array(
-                        'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
-                        'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
-                        'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'],
-                        'value' => '{{'.$pa_element_info['element_id'].'}}',
-                        'class' => $ps_class
+                        'id' => '{fieldNamePrefix}'.$element_info['element_id'].'_{n}',
+                        'size' => (isset($options['width']) && $options['width'] > 0) ? $options['width'] : $settings['fieldWidth'],
+                        'height' => (isset($options['height']) && $options['height'] > 0) ? $options['height'] : $settings['fieldHeight'],
+                        'value' => '{{'.$element_info['element_id'].'}}',
+                        'class' => $class
                     )
                 );
 		}
 
-		return $vs_element;
+		return $element;
 	}
 	# ------------------------------------------------------------------
 	/**
 	 *
 	 *
 	 */
-	public function getAvailableSettings($pa_element_info=null) {
+	public function getAvailableSettings($element_info=null) {
 		global $_ca_attribute_settings;
-		if (!($vs_service = isset($pa_element_info['settings']['service']) ? $pa_element_info['settings']['service'] : null)) {
-			$vs_service = isset($pa_element_info['service']) ? $pa_element_info['service'] : null;
+		if (!($service = isset($element_info['settings']['service']) ? $element_info['settings']['service'] : null)) {
+			$service = isset($element_info['service']) ? $element_info['service'] : null;
 		}
 		
-		$va_names = InformationServiceManager::getInformationServiceNames();
-		if (!in_array($vs_service, $va_names)) {
-			$vs_service = $va_names[0];
+		$names = InformationServiceManager::getInformationServiceNames();
+		if (!in_array($service, $names)) {
+			$service = $names[0];
 		}
 
-		if ($this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service)) {
-			$va_settings = $this->opo_plugin->getAvailableSettings() +  $_ca_attribute_settings['InformationServiceAttributeValue'] ;
-			$va_settings['service']['options'] = InformationServiceManager::getInformationServiceNamesOptionList();
-			$va_service = $va_settings['service'];
-			unset($va_settings['service']);
-			$va_settings = array('service' => $va_service) + $va_settings;
+		if ($this->opo_plugin = InformationServiceManager::getInformationServiceInstance($service)) {
+			$settings = $this->opo_plugin->getAvailableSettings() +  $_ca_attribute_settings['InformationServiceAttributeValue'] ;
+			$settings['service']['options'] = InformationServiceManager::getInformationServiceNamesOptionList();
+			$service = $settings['service'];
+			unset($settings['service']);
+			$settings = array('service' => $service) + $settings;
 		} else {
-			$va_settings = array();
+			$settings = array();
 		}
-		return $va_settings;
+		return $settings;
 	}
 	# ------------------------------------------------------------------
 	public function getDataForSearchIndexing() {
@@ -525,14 +533,14 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 	# ------------------------------------------------------------------
 	/**
 	 * Get extra info
-	 * @param null|string $ps_info_key Optional specific info key
+	 * @param null|string $info_key Optional specific info key
 	 * @return mixed
 	 */
-	public function getExtraInfo($ps_info_key=null) {
-		if(!$ps_info_key) {
+	public function getExtraInfo($info_key=null) {
+		if(!$info_key) {
 			return (is_array($this->opa_extra_info) ? $this->opa_extra_info : array());
 		} else {
-			return isset($this->opa_extra_info[$ps_info_key]) ? $this->opa_extra_info[$ps_info_key] : null;
+			return isset($this->opa_extra_info[$info_key]) ? $this->opa_extra_info[$info_key] : null;
 		}
 	}
 	# ------------------------------------------------------------------

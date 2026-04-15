@@ -723,7 +723,7 @@ class WLPlugInformationServiceGBIF extends BaseInformationServicePlugin implemen
 
         return $this->o_client;
     }
-    # ------------------------------------------------
+    # ------------------------------------------------	
 	/** 
 	 * Mirror Nomemclature hierarchy to a configured list to support browse
 	 *
@@ -734,27 +734,29 @@ class WLPlugInformationServiceGBIF extends BaseInformationServicePlugin implemen
 	 * @return int
 	 */
     protected function mirrorToList(array $settings, array $data, ?array $options=null) : ?int  {
+    	global $g_ui_locale;
+    	$default_locale = $g_ui_locale ?? (defined('__CA_DEFAULT_LOCALE__') ? __CA_DEFAULT_LOCALE__ : 'en_US');
+   
     	$id = null;
     	if(($settings['useMirrorList'] ?? false) && ($list_id = ($settings['mirrorToList'] ?? null))){
-    		$locale = __CA_DEFAULT_LOCALE__;
     		$type = caGetDefaultItemID('list_item_types');
     		$access = $settings['mirrorToListAccess'] ?? 0;
     		
-    		$pdata = array_map(function($d) use ($access, $type, $locale) {
+    		$pdata = array_map(function($d) use ($access, $type, $default_locale) {
     			return [
-    				'id' => $d['label'],
-    				'name_singular' => $d['label'],
-    				'name_plural' => $d['label'],
-    				'description' => $d['url'],
+    				'id' => $d['id'],
     				'access' => $access,
     				'type_id' => $type,
-    				'locale' => $locale
+    				'labels' => [$default_locale => [    				
+						'name_singular' => $d['label'],
+						'name_plural' => $d['label'],
+						'description' => $d['url']
+					]]
     			];
     		}, array_reverse($data));
-    		
     		$id = parent::mirrorToList($settings, $pdata, $options);
     	}
-    	
+    	print_R($pdata);
     	return $id;
     }
     # ------------------------------------------------

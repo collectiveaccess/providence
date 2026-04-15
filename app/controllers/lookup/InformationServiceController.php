@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2023 Whirl-i-Gig
+ * Copyright 2013-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,7 +28,6 @@
 require_once(__CA_APP_DIR__."/helpers/displayHelpers.php");
 require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
 require_once(__CA_LIB_DIR__.'/InformationServiceManager.php');
-
 
 class InformationServiceController extends ActionController {
 	# -------------------------------------------------------
@@ -94,6 +93,8 @@ class InformationServiceController extends ActionController {
 	 *
 	 */
 	public function GetDetail() {
+		global $g_ui_locale;
+		$locale = $g_ui_locale ?? (defined('__CA_DEFAULT_LOCALE__') ? __CA_DEFAULT_LOCALE__ : 'en_US');
 		$no_cache = $this->request->getParameter('noCache', pInteger);
 		$pn_element_id = $this->request->getParameter('element_id', pInteger);
 		$t_element = new ca_metadata_elements($pn_element_id);
@@ -118,7 +119,7 @@ class InformationServiceController extends ActionController {
 						if (!($o_plugin = InformationServiceManager::getInformationServiceInstance($vs_service))) {
 							$va_items['error'] = ['label' => _t('ERROR: Invalid service'), 'idno' => ''];
 						} else {
-							$vs_cache_key = md5(print_r($va_settings, true) . $vs_url);
+							$vs_cache_key = md5(print_r($va_settings, true) . $vs_url . $locale);
 
 							if(!$no_cache && CompositeCache::contains($vs_cache_key, 'InformationServiceExtendedInfo')) {
 								$va_data = CompositeCache::fetch($vs_cache_key, 'InformationServiceExtendedInfo');
