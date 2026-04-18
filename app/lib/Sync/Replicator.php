@@ -592,7 +592,7 @@ class Replicator {
                     $log_ids = array_keys($this->source_log_entries);
                     $start_log_id = $this->start_log_id = array_shift($log_ids);
                     $end_log_id = $this->end_log_id = array_pop($log_ids);
-                    if(!$end_log_id) { $end_log_id = $start_log_id; }
+                    if(!$end_log_id) { $end_log_id =  $this->end_log_id = $start_log_id; }
                     
                     $this->logDebug(_t("[%1] Found %2 source log entries starting at [%4 - %5].", $this->source_key, sizeof($this->source_log_entries), $replicated_log_id, $start_log_id, $end_log_id), Zend_Log::DEBUG);
  
