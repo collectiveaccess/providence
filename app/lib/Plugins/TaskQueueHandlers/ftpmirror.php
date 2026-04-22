@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2010 Whirl-i-Gig
+ * Copyright 2004-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -56,23 +56,23 @@ class WLPlugTaskQueueHandlerftpmirror Extends WLPlug Implements IWLPlugTaskQueue
 		return _t("FTP mirroring handler");
 	}
 	# --------------------------------------------------------------------------------
-	public function getParametersForDisplay($pa_rec) {
+	public function getParametersForDisplay($rec) {
 		return array();
 	}
 	# --------------------------------------------------------------------------------
 	# Task processor function - all task queue handlers must implement this
 	#
 	# Returns 1 on success, 0 on error
-	public function process($pa_parameters) {
-		$va_files = $pa_parameters["FILES"];
-		$vn_files_sent = 0;
+	public function process($parameters) {
+		$files = $parameters["FILES"];
+		$files_sent = 0;
 		
-		$table = 			$pa_parameters["TABLE"];
-		$field = 			$pa_parameters["FIELD"];
-		$pk = 				$pa_parameters["PK"];
-		$id = 				$pa_parameters["PK_VAL"];
+		$table = 			$parameters["TABLE"];
+		$field = 			$parameters["FIELD"];
+		$pk = 				$parameters["PK"];
+		$id = 				$parameters["PK_VAL"];
 		
-		$va_report = array('errors' => array(), 'notes' => array());
+		$report = array('errors' => array(), 'notes' => array());
 		
 		$o_log = caGetLogger();
 		
@@ -80,74 +80,74 @@ class WLPlugTaskQueueHandlerftpmirror Extends WLPlug Implements IWLPlugTaskQueue
 		# Connect to FTP
 		#
 		
-		$r_ftp = ftp_connect($pa_parameters["MIRROR_INFO"]["hostname"]);
+		$r_ftp = ftp_connect($parameters["MIRROR_INFO"]["hostname"]);
 		if (!$r_ftp) {
-			$msg = _t("Could not connect to FTP mirror server at %1", $pa_parameters["MIRROR_INFO"]["hostname"]);
+			$msg = _t("Could not connect to FTP mirror server at %1", $parameters["MIRROR_INFO"]["hostname"]);
 			$o_log->logError($msg);
 			$this->error->setError(580, $msg,"ftpmirror->process()");	
-			return 0;
+			return false;
 		}
-		if (!ftp_login($r_ftp, $pa_parameters["MIRROR_INFO"]["username"], $pa_parameters["MIRROR_INFO"]["password"])) {
-			$msg = _t("Could not login to FTP server at %1", $pa_parameters["MIRROR_INFO"]["hostname"]);
+		if (!ftp_login($r_ftp, $parameters["MIRROR_INFO"]["username"], $parameters["MIRROR_INFO"]["password"])) {
+			$msg = _t("Could not login to FTP server at %1", $parameters["MIRROR_INFO"]["hostname"]);
 			$o_log->logError($msg);
 			$this->error->setError(581, $msg,"ftpmirror->process()");	
-			return 0;
+			return false;
 		}
 		
-		if ($pa_parameters["MIRROR_INFO"]["passive"]) {
+		if ($parameters["MIRROR_INFO"]["passive"]) {
 			ftp_pasv($r_ftp, 1);
 		}
 		
-		foreach($va_files as $va_file_info) {
-			$vs_file_path = $va_file_info["FILE_PATH"];
+		foreach($files as $file_info) {
+			$file_path = $file_info["FILE_PATH"];
 			
-			if ($pa_parameters["DELETE"]) {
+			if ($parameters["DELETE"]) {
 				#
 				# Delete file from remote server
 				#
-				$vs_remote_path = join("/", array($pa_parameters["MIRROR_INFO"]["directory"], $va_file_info["HASH"], $va_file_info["FILENAME"]));
+				$remote_path = join("/", array($parameters["MIRROR_INFO"]["directory"], $file_info["HASH"], $file_info["FILENAME"]));
 				
 				if ($this->debug) {
-					print "DEBUG: DELETING $vs_remote_path FROM remote server\n";
+					print "DEBUG: DELETING $remote_path FROM remote server\n";
 				}
-				ftp_delete($r_ftp, $vs_remote_path);
+				ftp_delete($r_ftp, $remote_path);
 				
-				$va_report['notes'][] = _t("Deleted %1 from remote server", $vs_remote_path);
+				$report['notes'][] = _t("Deleted %1 from remote server", $remote_path);
 
-				$vn_files_sent++;
+				$files_sent++;
 			} else {
 				#
 				# Upload file to remote server
 				#
-				if (file_exists($vs_file_path)) {
-					$vs_remote_path = join("/", array($pa_parameters["MIRROR_INFO"]["directory"], $va_file_info["HASH"], $va_file_info["FILENAME"]));
-					$va_pieces = explode("/", $vs_remote_path);
+				if (file_exists($file_path)) {
+					$remote_path = join("/", array($parameters["MIRROR_INFO"]["directory"], $file_info["HASH"], $file_info["FILENAME"]));
+					$pieces = explode("/", $remote_path);
 					
 					#
 					# Create directories
 					#
-					array_pop($va_pieces); # get rid of file name
-					$vn_num_pieces = sizeof($va_pieces);
-					for($vn_i=1; $vn_i <= $vn_num_pieces; $vn_i++) {
-						$vs_dir = join("/",array_slice($va_pieces, 0, $vn_i));
+					array_pop($pieces); # get rid of file name
+					$num_pieces = sizeof($pieces);
+					for($i=1; $i <= $num_pieces; $i++) {
+						$dir = join("/",array_slice($pieces, 0, $i));
 						if ($this->debug) {
-							print "DEBUG: CREATING DIRECTORY $vs_dir\n";
+							print "DEBUG: CREATING DIRECTORY $dir\n";
 						}
-						@ftp_mkdir($r_ftp, $vs_dir);
+						@ftp_mkdir($r_ftp, $dir);
 					}
 					
 					
 					if ($this->debug) {
-						print "DEBUG: SENDING $vs_file_path TO remote ".$vs_remote_path."\n";
+						print "DEBUG: SENDING $file_path TO remote ".$remote_path."\n";
 					}
-					$vs_remote_path = str_replace('//','/',$vs_remote_path);
-					ftp_put($r_ftp, $vs_remote_path, $vs_file_path, FTP_BINARY);
+					$remote_path = str_replace('//','/',$remote_path);
+					ftp_put($r_ftp, $remote_path, $file_path, FTP_BINARY);
 
-					$va_report['notes'][] = _t("Sent %1 to remote server at %2", $vs_file_path, $vs_remote_path);
-					$vn_files_sent++;
+					$report['notes'][] = _t("Sent %1 to remote server at %2", $file_path, $remote_path);
+					$files_sent++;
 				} else {
 					# bad table name
-					$msg = _t("File to mirror '%1' does not exist", $vs_file_path);
+					$msg = _t("File to mirror '%1' does not exist", $file_path);
 					$o_log->logError($msg);
 					$this->error->setError(570, $msg, "ftpmirror->process()");	
 				}
@@ -156,16 +156,16 @@ class WLPlugTaskQueueHandlerftpmirror Extends WLPlug Implements IWLPlugTaskQueue
 		
 		ftp_close($r_ftp);
 		
-		if ($vn_files_sent < sizeof($va_files)) {
+		if ($files_sent < sizeof($files)) {
 			// partial mirror
-			$vn_mirror_code = "PARTIAL";
+			$mirror_code = "PARTIAL";
 		} else {
-			if ($vn_files_sent == 0) {
+			if ($files_sent == 0) {
 				// failed mirror	
-				$vn_mirror_code = "FAIL";
+				$mirror_code = "FAIL";
 			} else {
 				// successful mirror
-				$vn_mirror_code = "SUCCESS";
+				$mirror_code = "SUCCESS";
 			}
 		}
 		#
@@ -176,25 +176,25 @@ class WLPlugTaskQueueHandlerftpmirror Extends WLPlug Implements IWLPlugTaskQueue
 				if ($table_obj->load($id)) {
 					$md = $table_obj->get($field);
 					if (!is_array($md["MIRROR_STATUS"])) { $md["MIRROR_STATUS"] = array(); }
-					$md["MIRROR_STATUS"][$pa_parameters["MIRROR"]] = $vn_mirror_code;
+					$md["MIRROR_STATUS"][$parameters["MIRROR"]] = $mirror_code;
 					$table_obj->setMediaInfo($field, $md);
 					$table_obj->update();
 					if ($table_obj->numErrors()) {
-						$msg = _t("Could not update mirror status for mirror '%1' on '%2'; row_id=%3", $pa_parameters["MIRROR"], $table, $id);
+						$msg = _t("Could not update mirror status for mirror '%1' on '%2'; row_id=%3", $parameters["MIRROR"], $table, $id);
 						$o_log->logError($msg);
-						$va_report['errors'][] = $msg;
+						$report['errors'][] = $msg;
 					} 
 				}
 			}
 		}
-		return $va_report;
+		return $report;
 	}
 	# --------------------------------------------------------------------------------
 	# Cancel function - cancels queued task, doing cleanup and deleting task queue record
 	# all task queue handlers must implement this
 	#
 	# Returns 1 on success, 0 on error
-	public function cancel($pn_task_id, $pa_parameters) {
+	public function cancel($task_id, $parameters) {
 		return true;
 	}
 	# --------------------------------------------------------------------------------

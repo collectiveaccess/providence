@@ -4785,14 +4785,17 @@ function caFileIsIncludable($ps_file) {
 	 * @param int $length Length of generated password
 	 * @param array $options Options include:
 	 *		uppercase = force password to use all uppercase characters. [Default is false]
+	 *		policies = password policy configuration, overriding that set in authentication.conf [Default is null - use authentication.conf settings]
 	 *
 	 * @return string
 	 */
 	function caGenerateRandomPassword($length=6, $options=null) {
 		$auth_config = Configuration::load('authentication.conf');
+		
+		$policies = caGetOption('policies', $options, $auth_config->get('password_policies'));
 
 		if(strtolower($auth_config->get('auth_adapter')) === 'causers') { // password policies only apply to integral auth system
-			if (is_array($policies = $auth_config->get('password_policies')) && sizeof($policies)) {
+			if (is_array($policies) && sizeof($policies)) {
 				$limits = [];
 				foreach($policies as $k => $psettings) {
 					if(isset($psettings['rules']) && is_array($psettings['rules'])) {

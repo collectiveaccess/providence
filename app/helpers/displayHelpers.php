@@ -1627,7 +1627,7 @@ function caEditorInspector($view, $options=null) {
 			FooterManager::add($change_type_view->render("create_component_html.php"));
 		}
 		
-		$t_set_type = $t_item->getTypeInstance();		
+		$t_set_type = method_exists($t_item, 'getTypeInstance') ? $t_item->getTypeInstance() : null;		
 		$type_settings = $t_set_type ? $t_set_type->getSettings() : [];
 		if(($table_name === 'ca_sets') && (caGetOption('random_generation_mode', $type_settings, 0) > 0)) {
 			$tools[] = "<div id='inspectorRandomButton' class='inspectorActionButton'><a href='#' onclick='caRandomSetGenerationPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_RANDOM__, '20px', ['title' => _t('Add random items')])."</a></div>\n";

@@ -30,6 +30,7 @@
  * ----------------------------------------------------------------------
  */
 use AnthonyMartin\GeoLocation\GeoPoint;
+use Geocoder\Query\GeocodeQuery;
 require_once(__CA_LIB_DIR__.'/Attributes/Values/LengthAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Parsers/gPoint.php');
 
@@ -782,5 +783,137 @@ function caGetCoordinateDataFromResult($data, string $bundle, ?array $options=nu
 		return ['coordinates' => array_values($georef_list)];
 	}
 	return null;
+}
+# --------------------------------------------------------------------------------------------
+/**
+ *
+ */
+$g_geo_cache = [];
+function caGeocodeAddress(string $address) : ?array {
+	global $g_geo_cache;
+	
+	$address = trim($address);
+	if(!strlen($address)) { return null; }
+	
+	if(isset($g_geo_cache[strtolower(trim($address))])) {
+		return $g_geo_cache[strtolower(trim($address))];
+	}
+	
+	$geocoder = new \Geocoder\ProviderAggregator();
+	$client  = new \GuzzleHttp\Client();
+			
+	$provider_list = [];
+			
+	if(!is_array($provider_conf = Configuration::load()->getList('geocode_providers'))) {
+		$provider_conf = ['Nominatim'];
+	}
+	foreach($provider_conf as $p) {
+		switch(strtolower($p)) {
+			case 'nominatim':
+				$provider_list[] = \Geocoder\Provider\Nominatim\Nominatim::withOpenStreetMapServer($client, __CA_APP_NAME__);
+				break;
+			case 'geonames':
+				$provider_list[] = new \Geocoder\Provider\Geonames\Geonames($client, __CA_APP_NAME__);
+				break;
+			case 'googlemaps':
+				if(!defined('__CA_GOOGLE_MAPS_KEY__') || !__CA_GOOGLE_MAPS_KEY__) { break; }
+				$provider_list[] = new \Geocoder\Provider\GoogleMaps\GoogleMaps($client, __CA_APP_NAME__, __CA_GOOGLE_MAPS_KEY__);
+				break;
+		}
+	}
+	if(sizeof($provider_list) > 0) {
+		$chain = new \Geocoder\Provider\Chain\Chain($provider_list);
+		$geocoder->registerProvider($chain);
+		
+		$result = $geocoder->geocodeQuery(GeocodeQuery::create($address));
+	
+		try {
+			if(!$result || !$result->first()){
+				return null;
+			}
+		} catch(\Geocoder\Exception\CollectionIsEmpty $e) {
+			return null;
+		}
+		
+		$uresult = null;
+		if($geocoder_type) {
+			foreach($result as $r) {
+				if($r->getType() === $geocoder_type) {
+					$uresult = $r;
+					break;
+				}
+			}
+		}
+		
+		if(!$uresult) { $uresult = $result->first(); }
+		if(!$uresult) { return null; }
+		$utype = method_exists($uresult, 'getType') ? $uresult->getType() : null;
+		$is_postcode = ($utype == 'postcode');
+		
+		$country = $uresult->getCountry();
+		$locality = $uresult->getLocality();
+		$sublocality = $uresult->getSubLocality();
+		
+		$alevels = [];
+		$admin_levels = $uresult->getAdminLevels();
+		foreach($admin_levels as $a) {
+			$alevels[] = $a->getName();
+		}
+
+		$coords = $uresult->getCoordinates();
+		$lat = $coords->getLatitude();
+		$long = $coords->getLongitude();
+
+		if($lat && $long) {
+			$res = [
+				'address' => $address,
+				'coords' => $lat.','.$long,
+				'latitude' => $lat,
+				'longitude' => $long,
+				'country' => $country ? $country->getName()  : null,
+				'locality' => $locality,
+				'sublocality' => $sublocality,
+				'adminlevels' => $alevels,
+				'type' => $utype
+			];
+			
+			$hier = [];
+			foreach(['country', 'adminlevels', 'locality', 'sublocality'] as $l) {
+				if(is_array($res[$l])) {
+					foreach($res[$l] as $a) {
+						$hier[] = $a;
+						if(preg_match("!^".preg_quote($a, '!')."!i", $address)) { break(2); }
+					}
+				} elseif(strlen($res[$l])) {
+					$hier[] = $res[$l];
+					if(preg_match("!^".preg_quote($res[$l], '!')."!i", $address)) { break; }
+				}
+			}
+			$res['hierarchy'] = $hier;
+			
+			if(caGetOption('returnBounds', $options, false) && !$is_postcode) {
+				if($bounds = $uresult->getBounds()) {
+					$res['bounds'] = [
+						'north' => $bounds->getNorth(),
+						'east' => $bounds->getEast(),
+						'south' => $bounds->getSouth(),
+						'west' => $bounds->getWest()
+					];
+					if(
+						(sprintf("%4.4f", abs($res['bounds']['north'] - $res['bounds']['south'])) <= 0.0001)
+						&&
+						(sprintf("%4.4f", abs($res['bounds']['east'] - $res['bounds']['west'])) <= 0.0001)
+					){
+						unset($res['bounds']);
+					}
+				}
+			} 
+			$g_geo_cache[strtolower(trim($address))] = $res;
+			return $res;
+		} else {
+			$g_geo_cache[strtolower(trim($address))] = null;
+			return null;
+		}
+	}
 }
 # --------------------------------------------------------------------------------------------
