@@ -3177,10 +3177,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *
 	 */
 	private function _getHierarchyLocationHTMLFormBundleInfo(RequestHTTP $request,  string $form_name, string $placement_code, ?array $options=null, ?array $bundle_settings=null) : ?View {
+		$view_path = caGetOption('viewPath', $options, $request->getViewsDirectoryPath());
+		
 		$o_view = new View($request, "{$view_path}/bundles/");
 		$object_collections_hierarchy_enabled = (bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled');
 		
-		$view_path = caGetOption('viewPath', $options, $request->getViewsDirectoryPath());
 		$batch = caGetOption('batch', $options, false);
 		if(!is_array($bundle_settings)) { $bundle_settings = []; }
 		

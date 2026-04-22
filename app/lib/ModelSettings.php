@@ -711,6 +711,7 @@ trait ModelSettings {
 								if($va_properties['includePreferredLabels'] ?? null) {
 									if (!($t_rep = Datamodel::getInstance($vs_table, true))) { continue; }
 									foreach($t_rep->getLabelUIFields() as $vs_f) {
+										if($vs_f == 'access') { continue; }
 										$va_select_opts[$t_rep->getDisplayLabel("{$vs_table}.preferred_labels.{$vs_f}")] = "{$vs_table}.preferred_labels.{$vs_f}";
 									}	
 								}
@@ -770,7 +771,7 @@ trait ModelSettings {
 			
 			
 		$vs_return .= $pb_no_container ? '' : '</div>'."\n";
-		TooltipManager::add('.'.$vs_label_id, "<h3>".$va_properties["label"]."</h3>".$va_properties["description"]);
+		TooltipManager::add($vs_label_id, "<h3>".$va_properties["label"]."</h3>".$va_properties["description"]);
 
 		return $vs_return;
 	}

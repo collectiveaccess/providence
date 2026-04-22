@@ -1427,13 +1427,12 @@ function caGetCollectionLevelSummary($request, $collection_ids, $level) {
 			if($icon){
 				$output .= $icon." ";
 			}
-			$output .= "<b>";
+
 			if($sub_collection_label_template){
 				$output .= $qr_collections->getWithTemplate($sub_collection_label_template);
 			}else{
 				$output .= $qr_collections->get("ca_collections.preferred_labels");
 			}
-			$output .= "</b>";
 		
 			if($rel_object_count){
 				$output .= " <span class='small'>(".$rel_object_count." record".(($rel_object_count == 1) ? "" : "s").")</span>";

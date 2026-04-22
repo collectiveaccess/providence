@@ -118,4 +118,11 @@ abstract class BaseMediaUrlPlugin extends \WLPlug  {
 		return $icon;
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
+	public function fetchMetadata(string $url, ?array $options=null) : ?array {
+		return [];
+	}
+	# ------------------------------------------------
 }

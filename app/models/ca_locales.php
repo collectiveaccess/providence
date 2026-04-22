@@ -85,6 +85,112 @@ BaseModel::$s_ca_models_definitions['ca_locales'] = array(
 class ca_locales extends BaseModel {
 
     use SyncableBaseModel;
+    
+    static $s_code3_to_name = [
+        'ara' => 'arabic',
+        'aze' => 'azeri',
+        'ben' => 'bengali',
+        'bul' => 'bulgarian',
+        'ceb' => 'cebuano',
+        'ces' => 'czech',
+        'crp' => 'pidgin',
+        'cym' => 'welsh',
+        'dan' => 'danish',
+        'deu' => 'german',
+        'eng' => 'english',
+        'est' => 'estonian',
+        'fas' => 'farsi',
+        'fin' => 'finnish',
+        'fra' => 'french',
+        'hau' => 'hausa',
+        'haw' => 'hawaiian',
+        'hin' => 'hindi',
+        'hrv' => 'croatian',
+        'hun' => 'hungarian',
+        'ind' => 'indonesian',
+        'isl' => 'icelandic',
+        'ita' => 'italian',
+        'kaz' => 'kazakh',
+        'kir' => 'kyrgyz',
+        'lat' => 'latin',
+        'lav' => 'latvian',
+        'lit' => 'lithuanian',
+        'mkd' => 'macedonian',
+        'mon' => 'mongolian',
+        'nep' => 'nepali',
+        'nld' => 'dutch',
+        'nor' => 'norwegian',
+        'pol' => 'polish',
+        'por' => 'portuguese',
+        'pus' => 'pashto',
+        'rom' => 'romanian',
+        'rus' => 'russian',
+        'slk' => 'slovak',
+        'slv' => 'slovene',
+        'som' => 'somali',
+        'spa' => 'spanish',
+        'sqi' => 'albanian',
+        'srp' => 'serbian',
+        'swa' => 'swahili',
+        'swe' => 'swedish',
+        'tgl' => 'tagalog',
+        'tur' => 'turkish',
+        'ukr' => 'ukrainian',
+        'urd' => 'urdu',
+        'uzb' => 'uzbek',
+        'vie' => 'vietnamese',
+    ];
+     static $s_code2_to_name = [
+        'ar' => 'arabic',
+        'az' => 'azeri',
+        'bg' => 'bulgarian',
+        'bn' => 'bengali',
+        'cs' => 'czech',
+        'cy' => 'welsh',
+        'da' => 'danish',
+        'de' => 'german',
+        'en' => 'english',
+        'es' => 'spanish',
+        'et' => 'estonian',
+        'fa' => 'farsi',
+        'fi' => 'finnish',
+        'fr' => 'french',
+        'ha' => 'hausa',
+        'hi' => 'hindi',
+        'hr' => 'croatian',
+        'hu' => 'hungarian',
+        'id' => 'indonesian',
+        'is' => 'icelandic',
+        'it' => 'italian',
+        'kk' => 'kazakh',
+        'ky' => 'kyrgyz',
+        'la' => 'latin',
+        'lt' => 'lithuanian',
+        'lv' => 'latvian',
+        'mk' => 'macedonian',
+        'mn' => 'mongolian',
+        'ne' => 'nepali',
+        'nl' => 'dutch',
+        'no' => 'norwegian',
+        'pl' => 'polish',
+        'ps' => 'pashto',
+        'pt' => 'portuguese',
+        'ro' => 'romanian',
+        'ru' => 'russian',
+        'sk' => 'slovak',
+        'sl' => 'slovene',
+        'so' => 'somali',
+        'sq' => 'albanian',
+        'sr' => 'serbian',
+        'sv' => 'swedish',
+        'sw' => 'swahili',
+        'tl' => 'tagalog',
+        'tr' => 'turkish',
+        'uk' => 'ukrainian',
+        'ur' => 'urdu',
+        'uz' => 'uzbek',
+        'vi' => 'vietnamese'
+    ];
 
 	# ---------------------------------
 	# --- Object attribute properties
@@ -506,6 +612,7 @@ class ca_locales extends BaseModel {
 	 * @param string $ps_language A locale (ex. "en_US") or langage (ex. "en") code.
 	 * @param array $pa_options Options include:
 	 *		codesOnly = Return a list of locale codes for the given language. If not set then a list of arrays with details about each relevant locale is returned. [Default is false]
+	 *		cataloguingOnly = 
 	 *
 	 * @return array An array of arrays, each containing information about a locale. If the "codesOnly" option is set then a simple list of locale codes is returned.
 	 */
@@ -513,11 +620,12 @@ class ca_locales extends BaseModel {
 		$va_language = explode('_', $ps_language);
 		$ps_language = array_shift($va_language);
 		$pb_codes_only = caGetOption('codesOnly', $pa_options, false);
-		//$va_locales =  array_filter(ca_locales::getLocaleList(['index_by_code' => true]), function($v, $k) use ($ps_language) { return ($ps_language == array_shift(explode('_', $k))); }, ARRAY_FILTER_USE_BOTH);
-	
+		$cataloguing_only = caGetOption('cataloguingOnly', $pa_options, false);
+		
 	    $va_locales = [];
 	    $va_list = ca_locales::getLocaleList(['index_by_code' => true]);
 	    foreach($va_list as $k => $v) {
+	    	if($cataloguing_only && ($v['dont_use_for_cataloguing'] == 1)) { continue; }
 	        if ($ps_language == array_shift(explode('_', $k))) { 
 	            $va_locales[$k] = $v;
 	        }
@@ -539,6 +647,20 @@ class ca_locales extends BaseModel {
 			return 'rtl';
 		}
 		return 'ltr';
+	}
+	# ------------------------------------------------------
+	/**
+	 * Convert 3-letter language code to 2-letter language code
+	 *
+	 * @param string $code3
+	 *
+	 * @return string 
+	 */
+	static function code3ToLanguage(string $code3) : ?string {
+		if(!($name = ca_locales::$s_code3_to_name[$code3] ?? null)) { return null; }
+		
+		$t = array_flip(ca_locales::$s_code2_to_name);
+		return $t[$name] ?? null;
 	}
 	# ------------------------------------------------------
 }

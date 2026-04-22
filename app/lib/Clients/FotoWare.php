@@ -107,8 +107,8 @@ class FotoWareClient {
 	}
 	# ------------------------------------------------------------------
 	/**
-	 * Set base URL for FotoWare API. URL should include the "fotoweb" URL component.
-	 * A typical value would look like: https://dams.myorganization.org/fotoweb
+	 * Set base URL for FotoWare API. URL should not include the "fotoweb" URL component.
+	 * A typical value would look like: https://dams.myorganization.org/
 	 *
 	 * @param string $base_url
 	 *
@@ -175,7 +175,7 @@ class FotoWareClient {
 				'grant_type' => 'client_credentials'
 			];
 			
-			$response = $this->request('POST', '/oauth2/token', $params, [], ['isAuth' => true]);
+			$response = $this->request('POST', '/fotoweb/oauth2/token', $params, [], ['isAuth' => true]);
 			$content = $response['content'] ?? [];
 			if(!($this->access_token = ($content['access_token'] ?? null))) {
 				return false;
@@ -201,7 +201,7 @@ class FotoWareClient {
 	public function getAPIInfo($options=null) : ?array {
 		try {
 			$params = [];
-			$response = $this->request('GET', '/me', $params, $this->headers());
+			$response = $this->request('GET', '/fotoweb/me', $params, $this->headers());
 			$content = $response['content'] ?? [];
 		
 			return $content;
@@ -220,7 +220,7 @@ class FotoWareClient {
 	public function getArchives($options=null) : ?array {
 		try {
 			$params = [];
-			$response = $this->request('GET', '/me/archives', $params, $this->headers());
+			$response = $this->request('GET', '/fotoweb/me/archives', $params, $this->headers());
 			$content = $response['content'] ?? [];
 			
 			if(is_array($content) && is_array($content['data'])) {
@@ -324,10 +324,10 @@ class FotoWareClient {
 		];
 		
 		// @TODO: get rendition url from API - don't hardcode
-		$response = $this->request('POST', '/services/renditions', [], $headers, ['json' => $params]);
+		$response = $this->request('POST', '/fotoweb/services/renditions', [], $headers, ['json' => $params]);
 		if($response) {
 			if(!($rend_href = ($response['content']['href'] ?? null))) { 
-				throw new Exception(_t('Could not render media: not rendition url returned'));	
+				throw new \Exception(_t('Could not render media: not rendition url returned'));	
 			}
 			
 			do {
@@ -342,10 +342,53 @@ class FotoWareClient {
 				sleep(1);
 			} while($status_code != 200);
 		} else {
-			throw new Exception(_t('Could not render media'));
+			throw new \Exception(_t('Could not render media'));
 		}
 		
 		return false;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Get definitions for custmom fields
+	 *
+	 * @param string $url Metadata editor URL
+	 * @param array $options Options include:
+	 *		noCache = Don't used cached metadata field definitions. [Default is false]
+	 * 
+	 * @return array 
+	 * @throws Exception
+	 */		
+	public function fetchMetadataDefinitions(string $url, ?array $options=null) : ?array {
+		$no_cache = caGetOption('noCache', $options, false);
+		$key = 'METADATA'.md5($url);
+		if(!$no_cache && \CompositeCache::contains($key, 'fotoware')) {
+			return \CompositeCache::fetch($key, 'fotoware');
+		}
+		try {
+			$response = $this->request('GET', $url, [], $this->headers());
+			
+			$acc = null;
+			if(is_array($response['content'] ?? null) && is_array($response['content']['detailRegions'] ?? null)) {
+				$acc = [];
+				foreach($response['content']['detailRegions'] as $i => $f) {
+					if(is_array($f['fields'] ?? null)) {
+						foreach($f['fields'] as $finfo) {
+							$acc[$finfo['field']['id']] = [
+								'label' => $finfo['field']['label'],
+								'href' => $finfo['field']['taxonomyHref'],
+								'datatype' => $finfo['field']['data-type']
+							];
+						}
+					}
+				}
+				\CompositeCache::save('METADATA'.md5($url), $acc, 'fotoware');
+				return $acc;
+			}
+		} catch(\Exception $e) {
+			throw new \Exception(_t('Could not get metdata definitions: %1', $e->getMessage()));
+		}
+		
+		return null;
 	}
 	# ------------------------------------------------------------------
 	# API request functions
@@ -440,6 +483,9 @@ class FotoWareClient {
 	private function processAsset(array $asset, ?array $options=null) : ?array {
 		$item = [];
 		
+		$md_url = $asset['metadataEditor']['href'] ?? null;
+		$md = $md_url ? self::fetchMetadataDefinitions($md_url) : [];
+		
 		foreach(['created', 'createdBy', 'modified', 'modifiedBy', 'filename', 'filesize'] as $f) {
 			$item[$f] = $asset[$f];
 		}
@@ -452,6 +498,16 @@ class FotoWareClient {
 			}
 		}
 		
+		if(is_array($asset['metadata'])) {
+			foreach($asset['metadata'] as $field_id => $f) {
+				if(!isset($md[$field_id])){ continue; }
+				$item['metadata'][$field_id] = [
+					'label' => $md[$field_id]['label'],
+					'values' => is_array($f['value']) ? $f['value'] : [$f['value']]
+				];
+			}
+		}
+		
 		if(is_array($asset['renditions'])) {
 			foreach($asset['renditions'] as $r) {
 				if($r['display_name'] == 'Original File') {
@@ -461,6 +517,10 @@ class FotoWareClient {
 			}
 			if(!isset($item['media'])) {
 				$item['media'] = array_shift($asset['renditions']);
+			}
+			$item['renditions'] = [];
+			foreach($asset['renditions'] as $r) {
+				$item['renditions'][$r['display_name']] = $r;
 			}
 		}
 		

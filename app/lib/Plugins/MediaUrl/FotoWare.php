@@ -44,6 +44,11 @@ class FotoWare Extends BaseMediaUrlPlugin {
 	/**
 	 *
 	 */
+	protected $metadata = [];
+	
+	/**
+	 *
+	 */
 	public function __construct() {
 		$this->description = _t('Parses FotoWare URLs');
 		
@@ -145,7 +150,38 @@ class FotoWare Extends BaseMediaUrlPlugin {
 			$item = $this->client->item($p['url']);
 			if(is_null($item['media'] ?? null)) { return false; }
 			$format = pathinfo($item['media']['href'], PATHINFO_EXTENSION) ?? 'jpg';
-			$m = $this->client->fetchMedia($item['media']['href'], $tmp_file=__CA_APP_DIR__.'/tmp/'.$item['filename']);
+			
+			$renditions = \Configuration::load()->getList('fotoware_media_renditions') ?? [];
+			$hrefs = [];
+			foreach($renditions as $r) {
+				if(!isset($item['renditions'][$r])) { continue; }
+				if($item['renditions'][$r]['href'] ?? null) {
+					$hrefs[] = $item['renditions'][$r]['href'];
+				}
+			}
+			$hrefs[] = $item['media']['href'];
+			foreach($hrefs as $href) {
+				if($m = $this->client->fetchMedia($href, $tmp_file=__CA_APP_DIR__.'/tmp/'.$item['filename'])) {
+					break;
+				}
+			}
+			
+			$metadata = [];
+			if(is_array($item['fields'])) {
+				foreach($item['fields'] as $f => $v) {
+					$metadata[$f] = is_array($v) ? $v : [$v];
+				}
+			}
+			if(is_array($item['metadata'])) {
+				foreach($item['metadata'] as $f => $v) {
+					$label = $v['label'];
+					$label_proc = preg_replace("![\s]+!", "_" , preg_replace("![^\w]+!", "_", mb_strtolower($label)));
+					$metadata[$label] = $metadata[mb_strtolower($label)] = $metadata[$label_proc] = $metadata[$f] = $v['values'];
+				}
+			}
+			
+			if(sizeof($this->metadata) > 255) { $this->metadata = []; }
+			$this->metadata[$url] = $metadata;
 
 			
 			if (caGetOption('returnAsString', $options, false)) {
@@ -156,7 +192,7 @@ class FotoWare Extends BaseMediaUrlPlugin {
 			
 			if(!$dest) { rename($tmp_file, $tmp_file .= '.'.$format); }
 			
-			return array_merge($p, ['file' => $tmp_file]);
+			return array_merge($p, ['file' => $tmp_file, 'metadata' => $metadata]);
 		}
 		return false;
 	}
@@ -247,5 +283,16 @@ class FotoWare Extends BaseMediaUrlPlugin {
 		}
 	}
 	# ------------------------------------------------
-	
+	/**
+	 * Return parsed metadata for url
+	 *
+	 * @param string $url
+	 * @param array $options No options are current supported
+	 *
+	 * @return array Array of metadata, or null if not metadata is available for the URL.
+	 */
+	public function fetchMetadata(string $url, ?array $options=null) : ?array {
+		return $this->metadata[$url] ?? null;
+	}
+	# ------------------------------------------------
 }
