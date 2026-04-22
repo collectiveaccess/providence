@@ -86,4 +86,18 @@
 			return $pa_menu_bar;
 		}
 		# -------------------------------------------------------
+		/**
+		 * Inserts a quick access menu to other help pages
+		 * This could be replaced if a Menu Sidebar hook is ever implemented
+		 */
+		public function hookRenderWidgets($pa_widgets_config){
+		$pa_widgets_config['helpMenuInfo'] = array(
+				"domain" => array("module" => "helpMenu", "controller" => "Show"),
+				"handler" => array("module" => "helpMenu", "controller" => "Show", "action" => "Info", "isplugin" => true),
+				"requires" => array(),
+				"parameters" => array()
+		);
+		return $pa_widgets_config;
+
+}
 	}
