@@ -50,6 +50,13 @@ if(($this->getVar('num_pages') > 1) && !$this->getVar('dontShowPages')){
 	if ($this->getVar('page') < $this->getVar('num_pages')) {
 		$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"".caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction(), $va_next_link_params)."\"); return false;' class='button'>"._t("Next")." &rsaquo;</a>";
 	}
+	if ($vn_num_hits == 0) {
+		// When there are no results → use the translation "Your search found no %1"
+		$vs_searchNav .= _t(
+			"Your search found no %1",
+			$this->getVar('mode_type_plural')
+		);
+	} 
 	$vs_searchNav .= "</div>";
 	$vs_searchNav .= '<form action="#">'._t('Jump to page').': <input type="text" size="3" name="page" id="jumpToPageNum" value=""/> <a href="#" onclick=\'jQuery("#resultBox").load("'.caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction(), $va_jump_to_params).'/page/" + jQuery("#jumpToPageNum").val());\' class="button">'.caNavIcon(__CA_NAV_ICON_GO__, "14px").'</a></form>';
 }

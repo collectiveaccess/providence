@@ -300,7 +300,6 @@ class BaseSearchController extends BaseRefineableSearchController {
 		$t_display = $this->view->getVar('t_display');
 		if (!is_array($va_display_list = $this->view->getVar('display_list'))) { $va_display_list = array(); }
 		
-		$this->_setBottomLineValues($vo_result, $va_display_list, $t_display);
 		
 		switch($pa_options['output_format'] ?? null) {
 			# ------------------------------------
@@ -314,6 +313,8 @@ class BaseSearchController extends BaseRefineableSearchController {
 			# ------------------------------------
 			case 'HTML': 
 			default:
+				$this->_setBottomLineValues($vo_result, $va_display_list, $t_display, ['total' => $this->view->getVar('num_hits')]);
+		
 				// generate type menu and type value list
 				if (method_exists($t_model, "getTypeList")) {
 					$this->view->setVar('type_list', $t_model->getTypeList());

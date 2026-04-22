@@ -70,7 +70,6 @@ class WLPlugTaskQueueHandlermetadataImport Extends WLPlug Implements IWLPlugTask
 	# 
 	# Returns 1 on success, 0 on error
 	public function process($parameters) {
-		
 		$resp = new ResponseHTTP();
 		$req = new RequestHTTP($resp, array('simulateWith' => array(
 				'POST' => $parameters['values'],

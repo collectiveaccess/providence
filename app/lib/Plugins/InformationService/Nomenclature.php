@@ -60,19 +60,45 @@ $g_information_service_settings_nomenclature = [
 		'formatType' => FT_TEXT,
 		'displayType' => DT_SELECT,
 		'options' => [
+			_t('Any') => 'ANY',
 			_t('English') => 'en',
-			_t('English (Canadian)') => 'en-CA',
 			_t('French') => 'fr',
-			_t('French (Canadian)') => 'fr-CA',
-			_t('Spanish') => 'es',
-			_t('International') => 'iu',
-			_t('International (Latin)') => 'iu-Latn',
 		],
 		'default' => 'en',
 		'width' => 90, 'height' => 1,
 		'label' => _t('Nomenclature language'),
 		'description' => _t('Language')
-	]
+	],
+	'useMirrorList' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'options' => [
+			_t('Use mirror list') => 1,
+			_t('Do not use mirror list') => 0
+		],
+		'default' => 0,
+		'width' => 90, 'height' => 1,
+		'label' => _t('Use mirror list?'),
+		'description' => _t('Use mirror list?')
+	],
+	'mirrorToList' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'default' => '',
+		'showLists' => 1,
+		'width' => 90, 'height' => 1,
+		'label' => _t('List to mirror to'),
+		'description' => _t('Create hierarchy in list')
+	],
+	'mirrorToListAccess' => [
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'default' => '',
+		'useList' => 'access_statuses',
+		'width' => 90, 'height' => 1,
+		'label' => _t('Access for mirrored list items'),
+		'description' => _t('Access for newly created mirrored list items')
+	],
 ];
 
 /**
@@ -103,20 +129,14 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
 	/** 
 	 *
 	 */
-    public function getAvailableSettings() {
-        return WLPlugInformationServiceNomenclature::$s_settings;
-    }
-	# ------------------------------------------------
-	/** 
-	 *
-	 */
     public function lookup($settings, $search, $options = null)  {
    		$search = trim($search);
     	if(preg_match("!^http[s]{0,1}://page\.nomenclature\.info/parcourir\-browse\.app\?id=([\d]+)$!i", $search, $m)) {
     		$search = $m[1];
     	}
    		$scope = caGetOption('scope', $settings, 'allLabels');
-   		$lang = $this->validateLanguage(caGetOption('language', $settings, 'en'));
+   		$lang = $this->validateLanguage(caGetOption('language', $settings, 'ANY'));
+   		$lang_param = ($lang !== 'ANY') ? "lang={$lang}" : '';
    		
    		$limit = caGetOption('limit', $options, caGetOption('limit', $settings, 100));
    		
@@ -124,13 +144,13 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
         
         try {
         	if(is_numeric($search)) {
-        		$response = $client->request("GET", self::NOMENCLATURE_SERVICES_BASE_URL."/concepts/{$search}?lang={$lang}", [
+        		$response = $client->request("GET", self::NOMENCLATURE_SERVICES_BASE_URL."/concepts/{$search}?{$lang_param}", [
 					'headers' => [
 						'Accept' => 'application/json'
 					]
 				]);
         	} else {
-				$response = $client->request("GET", self::NOMENCLATURE_SERVICES_BASE_URL."/".self::NOMENCLATURE_LOOKUP."?limit={$limit}&offset=0&scope={$scope}&lang={$lang}&termSearch=".urlencode($search), [
+				$response = $client->request("GET", self::NOMENCLATURE_SERVICES_BASE_URL."/".self::NOMENCLATURE_LOOKUP."?limit={$limit}&offset=0&scope={$scope}&{$lang_param}&termSearch=".urlencode($search), [
 					'headers' => [
 						'Accept' => 'application/json'
 					]
@@ -171,10 +191,12 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
 	 *
 	 */
     public function getExtendedInformation($settings, $url) {
+    	global $g_ui_locale;
+    	$default_locale = $g_ui_locale ?? (defined('__CA_DEFAULT_LOCALE__') ? __CA_DEFAULT_LOCALE__ : 'en_US');
     	$info = $this->getExtraInfo($settings, $url);
     	$path = array_map(function($v) {
     		return $v['label'];
-    	}, $info['hierarchy'] ?? []);
+    	}, $info['hierarchy'][$default_locale] ?? []);
         return ['display' => "<p>".join(" ➜ ", array_reverse($path))."<br><a href='{$url}' target='_blank' rel='noopener noreferrer'>{$url}</a></p>"];
     }
     # ------------------------------------------------
@@ -186,38 +208,59 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
    			return null;
    		}
    		$id = $m[1];
-   		$lang = $this->validateLanguage(caGetOption('language', $settings, 'en'));
-   		
+   		$lang = $this->validateLanguage(caGetOption('language', $settings, 'ANY'));
+   		$lang_param = ($lang !== 'ANY') ? "lang={$lang}" : '';
    		$client = $this->getClient();
    		$hier = [];
+   		$values_by_locale = [];
    		do {
-       	 	$response = $client->request("GET", self::NOMENCLATURE_SERVICES_BASE_URL."/concepts/{$id}?lang={$lang}", [
+   			if(!$id) { break; }
+       	 	$response = $client->request("GET", self::NOMENCLATURE_SERVICES_BASE_URL."/concepts/{$id}?{$lang_param}", [
 				'headers' => [
 					'Accept' => 'application/json'
 				]
 			]);
-	
 			$response_data = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
+
 			if(is_array($response_data)) {
 				foreach($response_data as $index => $data) {
-					$label = $data['prefLabel'][0]['literalForm']['value'] ?? null;
-					$id = $data['broader'][0]['id'] ?? null;
 					$url = $data['mainEntityOfPage'] ?? null;
-					if(!$label) { continue; }
+					$id = $data['id'] ?? null;
+					if(!$id) { continue; }
+					foreach($data['prefLabel'] as $i => $d) {
+						$label = $data['prefLabel'][$i]['literalForm']['value'] ?? null;
+						$lang = $data['prefLabel'][$i]['literalForm']['language'] ?? null;
+						$locale = $this->languageToLocale($lang);
+						if(!in_array($locale, ['en_CA', 'fr_CA'], true)) { continue; }
+						if(!$label) { continue; }
+						if(preg_match("!\((blank class|blank subclass|classe vide|sous\-classe vide)\)!i", $label)) { continue; }
+						$label = preg_replace("!^(Category|Catégorie)[ ]+!iu", "", $label);
+						
+						if(!isset($values_by_locale[$locale])) {
+							$values_by_locale[$locale] = $label;
+						}
+						$hier[$locale][] = [
+							'label' => $label,
+							'url' => $url,
+							'id' => $id
+						];
+					}
 					
-					$hier[] = [
-						'label' => $label,
-						'url' => $url
-					];
-					if(!$id) { break(2); }
+					$id = $data['broader'][0]['id'] ?? null;
 					continue(2);
 				}
 			}
 			break;
    		} while(true);
-		return [
-			'hierarchy' => $hier
-		];
+   		
+   		$info = [
+   			'hierarchy' => $hier,
+   			'values_by_locale' => $values_by_locale
+   		];
+   		if($item_id = $this->mirrorToList($settings, $hier)) {
+   			$info['item_id'] = $item_id;
+   		}
+		return $info;
 	}
 	# ------------------------------------------------
 	/** 
@@ -249,6 +292,97 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
    		
    		if(!$lang) { $lang = 'en'; }
    		return $lang;
+    } 
+	# ------------------------------------------------
+	/** 
+	 * Convert Nomenclature language/locale codes to CA locale codes
+	 *
+	 * @param string $lang Language code
+	 *
+	 * @return string CollectiveAccess locale code
+	 */
+    private function languageToLocale(?string $lang) : string  {
+    	global $g_ui_locale;
+    	$default_locale = $g_ui_locale ?? (defined('__CA_DEFAULT_LOCALE__') ? __CA_DEFAULT_LOCALE__ : 'en_US');
+    	
+    	switch($lang) {
+    		case 'en':
+    		case 'fr':
+    		case 'es':
+    			$locales = ca_locales::localesForLanguage($lang, ['codesOnly' => true]);
+    			if(($lang === 'fr') && in_array('fr_CA', $locales, true)) {
+    				$default_locale = 'fr_CA';
+    			} elseif(($lang === 'en') && in_array('en_CA', $locales, true)) {
+    				$default_locale = 'en_CA';
+    			}
+    			break;
+    		case 'en-CA':
+    			$locales = ca_locales::localesForLanguage('en', ['codesOnly' => true]);
+    			$default_locale = 'en_CA';
+    			break;
+    		case 'fr-CA':
+    			$locales = ca_locales::localesForLanguage('fr', ['codesOnly' => true]);
+    			$default_locale = 'en_FR';
+    			break;
+    		default:	// What to do with IU locales?
+    			$default_locale = 'en_CA';
+    			break;
+    	}
+    	if(in_array($default_locale, $locales ?? [], true)) {
+			return $default_locale;
+		}
+		if(is_array($locales) && sizeof($locales)) { 
+			return array_shift($locales);
+		} 
+		if(defined('__CA_DEFAULT_LOCALE__')) {
+			return __CA_DEFAULT_LOCALE__;
+		}
+		
+		$locales = ca_locales::getLocaleList(['index_by_code' => true]);
+		$locales = array_keys($locales);
+		return array_shift($locales);
+    }
+	# ------------------------------------------------
+	/** 
+	 * Mirror Nomemclature hierarchy to a configured list to support browse
+	 *
+	 * @param array $settings
+	 * @param array $data
+	 * @param array $options
+	 *
+	 * @return int
+	 */
+    protected function mirrorToList(array $settings, array $data, ?array $options=null) : ?int  {
+    	$id = null;
+    	if(($settings['useMirrorList'] ?? false) && ($list_id = ($settings['mirrorToList'] ?? null))){
+   			$lang = $this->validateLanguage(caGetOption('language', $settings, 'ANY'));
+    		$locale = $this->languageToLocale($lang);
+    		$type = caGetDefaultItemID('list_item_types');
+    		
+    		$access = $settings['mirrorToListAccess'] ?? 0;
+    		
+    		$pdata = [];
+    		foreach($data as $locale => $hier) {
+    			if(!ca_locales::codeToID($locale)) { continue; }
+    			$hier = array_reverse($hier);
+    			foreach($hier as $i => $item) {
+    				if(!isset($pdata[$item['id']])) { $pdata[$item['id']] = []; }
+    				$pdata[$item['id']] = array_merge($pdata[$item['id']], [
+						'id' => $item['id'],
+						'access' => $access,
+						'type_id' => $type
+					]);
+					$pdata[$item['id']]['preferred_labels'][$locale] = [
+						'name_singular' => $item['label'],
+						'name_plural' => $item['label'],
+						'description' => $item['url'],
+					];
+    			}
+    		}
+    		$id = parent::mirrorToList($settings, $pdata, $options);
+    	}
+    	
+    	return $id;
     }
 	# ------------------------------------------------
 }
