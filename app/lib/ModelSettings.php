@@ -771,7 +771,7 @@ trait ModelSettings {
 			
 			
 		$vs_return .= $pb_no_container ? '' : '</div>'."\n";
-		TooltipManager::add('.'.$vs_label_id, "<h3>".$va_properties["label"]."</h3>".$va_properties["description"]);
+		TooltipManager::add($vs_label_id, "<h3>".$va_properties["label"]."</h3>".$va_properties["description"]);
 
 		return $vs_return;
 	}
