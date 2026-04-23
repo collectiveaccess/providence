@@ -256,7 +256,8 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 			$va_ancestor_ids = $t_list_item->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true));
 		
 			$va_params[] = $pn_sub_type_left_id; $va_params[] = $va_ancestor_ids;
-			$vs_sub_type_left_sql = '(crt.sub_type_left_id IS NULL OR crt.sub_type_left_id = ? OR (crt.include_subtypes_left = 1 AND crt.sub_type_left_id IN (?)))';
+			//$vs_sub_type_left_sql = '(crt.sub_type_left_id IS NULL OR crt.sub_type_left_id = ? OR (crt.include_subtypes_left = 1 AND crt.sub_type_left_id IN (?)))';
+			$vs_sub_type_left_sql = '((rtr.restriction_id IS NULL) OR (rtr.sub_type_left_id IS NULL OR rtr.sub_type_left_id = ? OR (rtr.include_subtypes_left = 1 AND rtr.sub_type_left_id IN (?))))';
 		}
 		$vs_sub_type_right_sql = '';
 		if ($pn_sub_type_right_id) {
@@ -266,7 +267,8 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 			$va_ancestor_ids = $t_list_item->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true));
 			
 			$va_params[] = $pn_sub_type_right_id; $va_params[] = $va_ancestor_ids;
-			$vs_sub_type_right_sql = '(crt.sub_type_right_id IS NULL OR crt.sub_type_right_id = ? OR (crt.include_subtypes_right = 1 AND crt.sub_type_right_id IN (?)))';
+			//$vs_sub_type_right_sql = '(crt.sub_type_right_id IS NULL OR crt.sub_type_right_id = ? OR (crt.include_subtypes_right = 1 AND crt.sub_type_right_id IN (?)))';
+			$vs_sub_type_right_sql = '((rtr.restriction_id IS NULL) OR (rtr.sub_type_right_id IS NULL OR rtr.sub_type_right_id = ? OR (rtr.include_subtypes_right = 1 AND rtr.sub_type_right_id IN (?))))';
 		}
 		
 		$add_parents = [];
@@ -302,9 +304,10 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 		}
 		
 		$vs_sql = "
-			SELECT *
+			SELECT crt.*, crtl.*
 			FROM ca_relationship_types crt
 			INNER JOIN ca_relationship_type_labels AS crtl ON crt.type_id = crtl.type_id
+			LEFT JOIN ca_relationship_type_restrictions AS rtr ON crt.type_id = rtr.type_id
 			WHERE
 				(crt.table_num = ?) ".(($vs_sub_type_left_sql || $vs_sub_type_right_sql) ? ' AND ' : '')." 
 				{$vs_sub_type_left_sql} ".(($vs_sub_type_left_sql && $vs_sub_type_right_sql) ? ' AND ' : '')." {$vs_sub_type_right_sql}
@@ -442,9 +445,10 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 		}
 		
 		$qr_res = $o_db->query("
-			SELECT *
+			SELECT crt.*, crtl.*, rtr.sub_type_left_id, rtr.sub_type_right_id, rtr.include_subtypes_left, rtr.include_subtypes_right
 			FROM ca_relationship_types crt
 			INNER JOIN ca_relationship_type_labels AS crtl ON crt.type_id = crtl.type_id
+			LEFT JOIN ca_relationship_type_restrictions AS rtr ON crt.type_id = rtr.type_id
 			WHERE
 				(crt.table_num = ?)
 				{$vs_restrict_to_relationship_type_sql}
@@ -715,7 +719,6 @@ class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes im
 				$vn_type_id = $va_row['type_id'];
 				$va_types[$vn_parent_id][$vs_subtype][$vs_key][$vn_type_id][$va_row['locale_id']] = $va_row;
 			}
-			
 			$va_types = $this->_processRelationshipHierarchy($vn_root_id, $va_hier, $va_types, 1);
 		
 			$va_processed_types = array('_type_map' => []);

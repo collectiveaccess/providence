@@ -927,7 +927,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * @return bool True on success, false on error, null if no screen is loaded
 	 * 
 	 */
-	public function addTypeRestriction(?int $left_type_id, ?int $right_type_id, ?array $settings=null) {
+	public function addTypeRestriction($left_type_id, $right_type_id, ?array $settings=null) {
 		if (!($type_id = $this->getPrimaryKey())) { return null; }		// relationshp must be loaded
 		if (!is_array($settings)) { $settings = []; }
 		
@@ -956,7 +956,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * @param int $restriction_id
 	 * @param int $type_id New type for relationship
 	 */
-	public function editTypeRestriction(int $restriction_id, ?int $left_type_id, ?int $right_type_id, ?array $settings=null) {
+	public function editTypeRestriction(int $restriction_id, $left_type_id,  $right_type_id, ?array $settings=null) {
 		if (!($type_id = $this->getPrimaryKey())) { return null; }		// relationship type must be loaded
 		$t_restriction = new ca_relationship_type_restrictions($restriction_id);
 		if ($t_restriction->isLoaded()) {
@@ -1098,7 +1098,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Save type restrictions for bundle in editor
 	 */
-	public function saveTypeRestrictionsFromHTMLForm(RequestHTTP $request, string $form_prefix, string $placement_code) : ?array {
+	public function saveTypeRestrictionsFromHTMLForm(RequestHTTP $request, string $form_prefix, string $placement_code) : ?bool {
 		if (!$this->getPrimaryKey()) { return null; }
 		
 		$acc = [];
@@ -1125,6 +1125,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * @return array Type list
 	 */
 	protected function getRelatedTypeLists() : ?array {
+		// @TODO: display lists with hierarchical nesting
 		$left_type_list = $right_type_list = [];
 		if ($table_num = $this->get('table_num')) {
 			$relationship_tables = $this->getRelationshipsUsingTypes();

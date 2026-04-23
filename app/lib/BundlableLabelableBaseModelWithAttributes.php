@@ -3331,7 +3331,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 			// Is object part of a collection?
 			
-			$va_object_ids = array_keys($va_ancestor_list);
+			$va_object_ids = array_keys($va_ancestor_list ?? []);
 			$vn_top_object_id = array_shift($va_object_ids);
 			if ($vn_top_object_id != $this->getPrimaryKey()) { 
 				$t_object = Datamodel::getInstanceByTableName("ca_objects", true);
