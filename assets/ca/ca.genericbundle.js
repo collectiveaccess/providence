@@ -249,12 +249,13 @@ var caUI = caUI || {};
 			}
 
 			// Set default value for new items
-			var is_new = id ? false : true;
-			if (!id) {
+			var is_new = false;
+			if ((id === null) || (id === undefined) || (id === '')) {
 				jQuery.each(that.defaultValues, function(k, v) {
 					if (v && !templateValues[k]) { templateValues[k] = v; }
 				});
 				id = 'new_' + that.getNIndex();	// set id to ensure sub-fields get painted with unsaved warning handler
+				is_new = true;
 			}
 		
 			// print out any errors
