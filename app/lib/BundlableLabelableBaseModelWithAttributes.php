@@ -1722,6 +1722,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				break;
 			# -------------------------------------------------
 			case 'intrinsic':
+				// Skip abandoned fields
+				if(in_array($ps_bundle_name, ['sub_type_left_id', 'include_subtypes_left', 'sub_type_right_id', 'include_subtypes_right'], true)) { break; }
+				
 				if (!($pa_options['label'] = caExtractSettingValueByLocale($pa_bundle_settings, 'label', $g_ui_locale))) {
 					$pa_options['label'] = $this->getFieldInfo($ps_bundle_name, 'LABEL');
 				}
