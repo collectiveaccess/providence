@@ -598,12 +598,6 @@
         <xs:complexType>
           <xs:sequence>
             <xs:element name="labels" type="relationshipTypeLabels" minOccurs="1" maxOccurs="1"/>
-            <xs:element name="subTypeLeft" type="xs:string" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="subTypeRight" type="xs:string" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="typeRestrictionLeft" type="xs:string" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="typeRestrictionRight" type="xs:string" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="includeSubtypesLeft" type="xs:integer" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="includeSubtypesRight" type="xs:integer" minOccurs="0" maxOccurs="1"/>
             <xs:element name="types" type="relationshipTypes" minOccurs="0" maxOccurs="1"/>
             <xs:element name="typeRestrictions" minOccurs="0" maxOccurs="1">
               <xs:complexType>
