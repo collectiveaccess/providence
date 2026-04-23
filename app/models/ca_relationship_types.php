@@ -927,20 +927,17 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * @return bool True on success, false on error, null if no screen is loaded
 	 * 
 	 */
-	public function addTypeRestriction($left_type_id, $right_type_id, ?array $settings=null) {
+	public function addTypeRestriction(?int $left_type_id, ?int $right_type_id, ?array $options=null) {
 		if (!($type_id = $this->getPrimaryKey())) { return null; }		// relationshp must be loaded
-		if (!is_array($settings)) { $settings = []; }
+		if (!is_array($options)) { $options = []; }
 		
 		$t_restriction = new ca_relationship_type_restrictions();
 		$t_restriction->set('type_id', $this->getPrimaryKey());
 		$t_restriction->set('sub_type_left_id', $left_type_id);
 		$t_restriction->set('sub_type_right_id', $right_type_id);
-		//$t_restriction->set('include_subtypes', caGetOption('includeSubtypes', $settings, 0));
+		$t_restriction->set('include_subtypes_left', caGetOption('include_subtypes_left', $options, 0));
+		$t_restriction->set('include_subtypes_right', caGetOption('include_subtypes_right', $options, 0));
 		
-		unset($settings['includeSubtypes']);
-		foreach($settings as $setting => $setting_value) {
-			$t_restriction->setSetting($setting, $setting_value);
-		}
 		$t_restriction->insert();
 		
 		if ($t_restriction->numErrors()) {
@@ -956,13 +953,16 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * @param int $restriction_id
 	 * @param int $type_id New type for relationship
 	 */
-	public function editTypeRestriction(int $restriction_id, $left_type_id,  $right_type_id, ?array $settings=null) {
+	public function editTypeRestriction(int $restriction_id, ?int $left_type_id, ?int $right_type_id, ?array $options=null) {
 		if (!($type_id = $this->getPrimaryKey())) { return null; }		// relationship type must be loaded
+		if (!is_array($options)) { $options = []; }
+		
 		$t_restriction = new ca_relationship_type_restrictions($restriction_id);
 		if ($t_restriction->isLoaded()) {
 			$t_restriction->set('sub_type_left_id', $left_type_id);
 			$t_restriction->set('sub_type_right_id', $right_type_id);
-			//$t_restriction->set('include_subtypes', caGetOption('includeSubtypes', $settings, 0));
+			$t_restriction->set('include_subtypes_left', caGetOption('include_subtypes_left', $options, 0));
+			$t_restriction->set('include_subtypes_right', caGetOption('include_subtypes_right', $options, 0));
 			$t_restriction->update();
 			if ($t_restriction->numErrors()) {
 				$this->errors = $t_restriction->errors();
@@ -995,11 +995,13 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		foreach($restrictions as $k => $r) {
+			$options['include_subtypes_left'] = $r['include_subtypes_left'];
+			$options['include_subtypes_right'] = $r['include_subtypes_right'];
 			if(preg_match("!^new_[\d]+$!", $k)) {
-				$this->addTypeRestriction($r['sub_type_left_id'], $r['sub_type_right_id'], $options);
+				$this->addTypeRestriction($r['sub_type_left_id'] ?: null, $r['sub_type_right_id'] ?: null, $options);
 			} elseif(is_numeric($k)) {
 				$cr = $current_restrictions[$k];
-				$this->editTypeRestriction($cr['restriction_id'], $r['sub_type_left_id'], $r['sub_type_right_id']);
+				$this->editTypeRestriction($cr['restriction_id'], $r['sub_type_left_id'] ?: null, $r['sub_type_right_id'] ?: null, $options);
 				unset($current_restrictions[$k]);
 			}
 		}
@@ -1073,23 +1075,16 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		$o_view->setVar('placement_code', $placement_code);
 		$o_view->setVar('request', $request);
 		
-		$type_restrictions = $this->getTypeRestrictions();
-		$restriction_type_ids = [];
-		$include_subtypes = false;
-		if (is_array($type_restrictions)) {
-			foreach($type_restrictions as $i => $restriction) {
-				$restriction_type_ids[] = $restriction['type_id'];
-				if ($restriction['include_subtypes'] && !$include_subtypes) { $include_subtypes = true; }
-			}
-		}
-		
-		$o_view->setVar('type_restrictions', $type_restrictions);
+		$o_view->setVar('type_restrictions', $this->getTypeRestrictions());
 		
 		$type_lists = $this->getRelatedTypeLists();
-		$o_view->setVar('left_select', caHTMLSelect("{$placement_code}{$form_name}sub_type_left_id_{n}", $type_lists['left'], ['id' => "{$placement_code}{$form_name}sub_type_left_id_{n}"], ['value' => "sub_type_left_id"]));
-		$o_view->setVar('right_select', caHTMLSelect("{$placement_code}{$form_name}sub_type_right_id_{n}", $type_lists['right'], ['id' => "{$placement_code}{$form_name}sub_type_right_id_{n}"], ['value' => "sub_type_right_id"]));
+		$o_view->setVar('left_select', caHTMLSelect("{$placement_code}{$form_name}sub_type_left_id_{n}", $type_lists['left'], ['id' => "{$placement_code}{$form_name}sub_type_left_id_{n}"], ['width' => '100px', 'value' => "sub_type_left_id"]));
+		$o_view->setVar('right_select', caHTMLSelect("{$placement_code}{$form_name}sub_type_right_id_{n}", $type_lists['right'], ['id' => "{$placement_code}{$form_name}sub_type_right_id_{n}"], ['width' => '100px', 'value' => "sub_type_right_id"]));
 		$o_view->setVar('left_label',  caUcFirstUTF8Safe($type_lists['left_label']));
 		$o_view->setVar('right_label',  caUcFirstUTF8Safe($type_lists['right_label']));
+		
+		$o_view->setVar('left_include', caHTMLCheckboxInput("{$placement_code}{$form_name}include_subtypes_left_{n}", ['id' => "{$placement_code}{$form_name}include_subtypes_left_{n}", 'value' => '1'], []));
+		$o_view->setVar('right_include', caHTMLCheckboxInput("{$placement_code}{$form_name}include_subtypes_right_{n}", ['id' => "{$placement_code}{$form_name}include_subtypes_right_{n}", 'value' => '1'], []));
 		
 		
 		return $o_view->render('ca_relationship_type_restrictions.php');
@@ -1103,14 +1098,11 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		
 		$acc = [];
 		foreach($_REQUEST as $k => $v) {
-			if(preg_match("!^{$placement_code}{$form_prefix}(sub_type_left_id|sub_type_right_id)_(.*)$!", $k, $m)) {
+			if(preg_match("!^{$placement_code}{$form_prefix}(sub_type_left_id|sub_type_right_id|include_subtypes_left|include_subtypes_right)_(.*)$!", $k, $m)) {
 				$acc[$m[2]][$m[1]] = $v;
 			}
 		}
-		
-		return $this->setTypeRestrictions($acc, [
-			//'includeSubtypes' => $request->getParameter('type_restriction_include_subtypes', pInteger)
-		]);
+		return $this->setTypeRestrictions($acc);
 	}
 	# ------------------------------------------------------
 	/**
@@ -1137,11 +1129,12 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 			
 			$left_name = $t_instance->getProperty('NAME_PLURAL');
 			if (method_exists($t_instance, 'getTypeList')) {
-				$types = $t_instance->getTypeList();
+				$types = $t_instance->getTypeList(['returnHierarchyLevels' => true]);
 				
 				$left_type_list[_t('- ANY -')] = '';
 				foreach($types as $type_id => $type_info) {
-					$left_type_list[$type_info['name_plural']] = $type_id;
+					$indent = str_repeat("&#160;&#160;&#160;", ($type_info['LEVEL'] - 1));
+					$left_type_list[$indent.$type_info['name_plural']] = $type_id;
 				}
 			}
 			
@@ -1149,11 +1142,12 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 			
 			$right_name = $t_instance->getProperty('NAME_PLURAL');
 			if (method_exists($t_instance, 'getTypeList')) {
-				$types = $t_instance->getTypeList();
+				$types = $t_instance->getTypeList(['returnHierarchyLevels' => true]);
 			
 				$right_type_list[_t('- ANY -')] = '';
 				foreach($types as $type_id => $type_info) {
-					$right_type_list[$type_info['name_plural']] = $type_id;
+					$indent = str_repeat("&#160;&#160;&#160;", ($type_info['LEVEL'] - 1));
+					$right_type_list[$indent.$type_info['name_plural']] = $type_id;
 				}
 			}
 		}

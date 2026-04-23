@@ -35,11 +35,13 @@ if(is_array($action_errors = $this->getVar('errors'))) {
 	}
 }
 
-$left_select = $this->getVar('left_select');
-$right_select = $this->getVar('right_select');
-$left_label = $this->getVar('left_label');
-$right_label = $this->getVar('right_label');
-$initial_values = $this->getVar('type_restrictions');
+$left_select 		= $this->getVar('left_select');
+$right_select 		= $this->getVar('right_select');
+$left_label 		= $this->getVar('left_label');
+$right_label 		= $this->getVar('right_label');
+$left_include 		= $this->getVar('left_include');
+$right_include 		= $this->getVar('right_include');
+$initial_values 	= $this->getVar('type_restrictions');
 
 print caEditorBundleShowHideControl($this->request, $id_prefix);
 ?>
@@ -61,8 +63,16 @@ print caEditorBundleShowHideControl($this->request, $id_prefix);
 							
 							<table style="width: 100%;">
 								<tr valign="top"> 
-									<td><?= "{$left_label}: {$left_select}"; ?>
-									<?= "{$right_label}: {$right_select}"; ?></td>
+									<td class="formLabel">
+										<?= "{$left_label}: {$left_select}"; ?>
+										
+										<span class="formLabelPlain"><?= $left_include.' '._t('Include subtypes?'); ?></span>
+									</td>
+									<td class="formLabel">
+										<?= "{$right_label}: {$right_select}"; ?>
+									
+										<span class="formLabelPlain"><?= $right_include.' '._t('Include subtypes?'); ?></span>
+									</td>
 									<td style="align: right;">
 										<a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 									</td>
