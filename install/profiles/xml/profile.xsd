@@ -605,6 +605,20 @@
             <xs:element name="includeSubtypesLeft" type="xs:integer" minOccurs="0" maxOccurs="1"/>
             <xs:element name="includeSubtypesRight" type="xs:integer" minOccurs="0" maxOccurs="1"/>
             <xs:element name="types" type="relationshipTypes" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="typeRestrictions" minOccurs="0" maxOccurs="1">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="restriction" minOccurs="1" maxOccurs="unbounded">
+                    <xs:complexType>
+                      <xs:attribute name="left" type="xs:string" use="required"/>
+                      <xs:attribute name="right" type="xs:string" use="required"/>
+                      <xs:attribute name="includeSubtypesLeft" type="xs:integer" use="optional"/>
+                      <xs:attribute name="includeSubtypesRight" type="xs:integer" use="optional"/>
+                    </xs:complexType>
+                  </xs:element>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
           </xs:sequence>
           <xs:attribute name="code" type="elementCodeType" use="required"/>
           <xs:attribute name="default" type="booleanType" use="required"/>
