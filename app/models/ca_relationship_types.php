@@ -336,8 +336,10 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($pa_options=null) {
 		parent::initLabelDefinitions($pa_options);
-		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
-		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
+		$this->BUNDLES['hierarchy_navigation'] = ['type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation')];
+		$this->BUNDLES['hierarchy_location'] = ['type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy')];
+		
+		$this->BUNDLES['ca_relationship_type_restrictions'] = ['type' => 'special', 'repeating' => false, 'label' => _t('Type restrictions')];
 	}
 	# ------------------------------------------------------
 	/**
@@ -912,5 +914,250 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
  		
  		return false;
  	}
+ 	# ----------------------------------------
+	# Type restrictions
+	# ----------------------------------------
+	/**
+	 * Adds restriction to relationship type
+	 *
+	 * @param int $left_type_id 
+	 * @param int $right_type_id 
+	 * @param array $settings Options include:
+	 *		includeSubtypes = automatically expand type restriction to include sub-types. [Default is false]
+	 * @return bool True on success, false on error, null if no screen is loaded
+	 * 
+	 */
+	public function addTypeRestriction(?int $left_type_id, ?int $right_type_id, ?array $settings=null) {
+		if (!($type_id = $this->getPrimaryKey())) { return null; }		// relationshp must be loaded
+		if (!is_array($settings)) { $settings = []; }
+		
+		$t_restriction = new ca_relationship_type_restrictions();
+		$t_restriction->set('type_id', $this->getPrimaryKey());
+		$t_restriction->set('sub_type_left_id', $left_type_id);
+		$t_restriction->set('sub_type_right_id', $right_type_id);
+		//$t_restriction->set('include_subtypes', caGetOption('includeSubtypes', $settings, 0));
+		
+		unset($settings['includeSubtypes']);
+		foreach($settings as $setting => $setting_value) {
+			$t_restriction->setSetting($setting, $setting_value);
+		}
+		$t_restriction->insert();
+		
+		if ($t_restriction->numErrors()) {
+			$this->errors = $t_restriction->errors();
+			return false;
+		}
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * Edit settings for an existing type restriction on the currently loaded row
+	 *
+	 * @param int $restriction_id
+	 * @param int $type_id New type for relationship
+	 */
+	public function editTypeRestriction(int $restriction_id, ?int $left_type_id, ?int $right_type_id, ?array $settings=null) {
+		if (!($type_id = $this->getPrimaryKey())) { return null; }		// relationship type must be loaded
+		$t_restriction = new ca_relationship_type_restrictions($restriction_id);
+		if ($t_restriction->isLoaded()) {
+			$t_restriction->set('sub_type_left_id', $left_type_id);
+			$t_restriction->set('sub_type_right_id', $right_type_id);
+			//$t_restriction->set('include_subtypes', caGetOption('includeSubtypes', $settings, 0));
+			$t_restriction->update();
+			if ($t_restriction->numErrors()) {
+				$this->errors = $t_restriction->errors();
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+	# ----------------------------------------
+	/**
+	 * Sets restrictions for currently loaded ui
+	 *
+	 * @param array $type_ids list of types to restrict to
+	 * @param array $options Options include:
+	 *		includeSubtypes = Automatically include subtypes for all set type restrictions. [Default is false]
+	 * @return bool True on success, false on error, null if no screen is loaded
+	 * 
+	 */
+	public function setTypeRestrictions(array $restrictions, ?array $options=null) {
+		if (!($type_id = $this->getPrimaryKey())) { return null; }		// relationship type must be loaded
+		if (!is_array($restrictions)) {
+			return null;
+		}
+		
+		$current_restrictions = $this->getTypeRestrictions();
+		$current_type_ids = [];
+		foreach($current_restrictions as $i => $restriction) {
+			$current_type_ids[$restriction['type_id']] = $restriction['restriction_id'];
+		}
+		
+		foreach($restrictions as $k => $r) {
+			if(preg_match("!^new_[\d]+$!", $k)) {
+				$this->addTypeRestriction($r['sub_type_left_id'], $r['sub_type_right_id'], $options);
+			} elseif(is_numeric($k)) {
+				$cr = $current_restrictions[$k];
+				$this->editTypeRestriction($cr['restriction_id'], $r['sub_type_left_id'], $r['sub_type_right_id']);
+				unset($current_restrictions[$k]);
+			}
+		}
+		foreach($current_restrictions as $r) {
+			$this->removeTypeRestriction($r['restriction_id']);
+		}
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * Remove restriction from currently loaded relationship type for specified type pair
+	 *
+	 * @param int $type_id The type of the restriction
+	 * @return bool True on success, false on error, null if no screen is loaded
+	 */
+	public function removeTypeRestriction(int $restriction_id) : ?bool {
+		if (!($type_id = (int)$this->getPrimaryKey())) { return null; }		// relationship type must be loaded
+
+		$params = ['type_id' => $type_id];
+		if ((int)$type_id > 0) { $params['type_id'] = (int)$type_id; }
+
+		if ($t_restriction = ca_relationship_type_restrictions::find($restriction_id)) {
+			$t_restriction->delete(true);
+			if ($t_restriction->numErrors()) {
+				$this->errors = $t_restriction->errors();
+				return false;
+			}
+		}
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * Remove all type restrictions from loaded ui
+	 *
+	 * @return bool True on success, false on error, null if no screen is loaded 
+	 */
+	public function removeAllTypeRestrictions() : ?bool {
+		return $this->removeTypeRestriction();
+	}
+	# ----------------------------------------
+	/**
+	 * Return restrictions for currently loaded relationship type
+	 *
+	 * @param int Type_id of relationship type to return restrictios for. If null currentload loaded type is used. [Default is null]
+	 * @return array A list of restrictions, false on error or null if no relationship type is loaded
+	 */
+	public function getTypeRestrictions(?int $type_id=null) : ?array {
+		if(!$type_id) {
+			if (!($type_id = (int)$this->getPrimaryKey())) { return null; }
+		}
+		
+		$params = ['type_id' => $type_id];
+		if ((int)$type_id > 0) { $params['type_id'] = (int)$type_id; }
+
+		return ca_relationship_type_restrictions::find($params, ['returnAs' => 'arrays']);
+	}
+ 	# ----------------------------------------
+	/**
+	 * Renders and returns HTML form bundle for management of type restriction in the currently loaded ui
+	 * 
+	 * @param object $request The current request object
+	 * @param string $form_name The name of the form in which the bundle will be rendered
+	 *
+	 * @return string Rendered HTML bundle for display
+	 */
+	public function getTypeRestrictionsHTMLFormBundle(RequestHTTP $request, string $form_name, string $placement_code, ?array $options=null) : ?string {
+		$o_view = new View($request, $request->getViewsDirectoryPath().'/bundles/');
+		
+		$o_view->setVar('t_relationship_type', $this);
+		$o_view->setVar('id_prefix', $form_name);
+		$o_view->setVar('placement_code', $placement_code);
+		$o_view->setVar('request', $request);
+		
+		$type_restrictions = $this->getTypeRestrictions();
+		$restriction_type_ids = [];
+		$include_subtypes = false;
+		if (is_array($type_restrictions)) {
+			foreach($type_restrictions as $i => $restriction) {
+				$restriction_type_ids[] = $restriction['type_id'];
+				if ($restriction['include_subtypes'] && !$include_subtypes) { $include_subtypes = true; }
+			}
+		}
+		
+		$o_view->setVar('type_restrictions', $type_restrictions);
+		
+		$type_lists = $this->getRelatedTypeLists();
+		$o_view->setVar('left_select', caHTMLSelect("{$placement_code}{$form_name}sub_type_left_id_{n}", $type_lists['left'], ['id' => "{$placement_code}{$form_name}sub_type_left_id_{n}"], ['value' => "sub_type_left_id"]));
+		$o_view->setVar('right_select', caHTMLSelect("{$placement_code}{$form_name}sub_type_right_id_{n}", $type_lists['right'], ['id' => "{$placement_code}{$form_name}sub_type_right_id_{n}"], ['value' => "sub_type_right_id"]));
+		$o_view->setVar('left_label',  caUcFirstUTF8Safe($type_lists['left_label']));
+		$o_view->setVar('right_label',  caUcFirstUTF8Safe($type_lists['right_label']));
+		
+		
+		return $o_view->render('ca_relationship_type_restrictions.php');
+	}
+	# ----------------------------------------
+	/**
+	 * Save type restrictions for bundle in editor
+	 */
+	public function saveTypeRestrictionsFromHTMLForm(RequestHTTP $request, string $form_prefix, string $placement_code) : ?array {
+		if (!$this->getPrimaryKey()) { return null; }
+		
+		$acc = [];
+		foreach($_REQUEST as $k => $v) {
+			if(preg_match("!^{$placement_code}{$form_prefix}(sub_type_left_id|sub_type_right_id)_(.*)$!", $k, $m)) {
+				$acc[$m[2]][$m[1]] = $v;
+			}
+		}
+		
+		return $this->setTypeRestrictions($acc, [
+			//'includeSubtypes' => $request->getParameter('type_restriction_include_subtypes', pInteger)
+		]);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return type lists for tables at each end of relationship. An array
+	 * is returned with the following keys:
+	 *
+	 * 	left = List of types for table on the left side of the relationship
+	 * 	left_label = Display label for left-side type list
+	 * 	right = List of types for table on the right side of the relationship
+	 * 	right_label = Display label for right-side type list
+	 *
+	 * @return array Type list
+	 */
+	protected function getRelatedTypeLists() : ?array {
+		$left_type_list = $right_type_list = [];
+		if ($table_num = $this->get('table_num')) {
+			$relationship_tables = $this->getRelationshipsUsingTypes();
+			if (!isset($relationship_tables[$table_num])) { return null; }
+			
+			$t_rel_instance = Datamodel::getInstanceByTableNum($table_num, true);
+			$t_instance = Datamodel::getInstanceByTableName($t_rel_instance->getLeftTableName(), true);
+			
+			
+			$left_name = $t_instance->getProperty('NAME_PLURAL');
+			if (method_exists($t_instance, 'getTypeList')) {
+				$types = $t_instance->getTypeList();
+				
+				$left_type_list[_t('- ANY -')] = '';
+				foreach($types as $type_id => $type_info) {
+					$left_type_list[$type_info['name_plural']] = $type_id;
+				}
+			}
+			
+			$t_instance = Datamodel::getInstanceByTableName($t_rel_instance->getRightTableName(), true);
+			
+			$right_name = $t_instance->getProperty('NAME_PLURAL');
+			if (method_exists($t_instance, 'getTypeList')) {
+				$types = $t_instance->getTypeList();
+			
+				$right_type_list[_t('- ANY -')] = '';
+				foreach($types as $type_id => $type_info) {
+					$right_type_list[$type_info['name_plural']] = $type_id;
+				}
+			}
+		}
+		
+		return ['left' => $left_type_list, 'left_label' => $left_name, 'right' => $right_type_list, 'right_label' => $right_name];
+	}
 	# ------------------------------------------------------
 }
