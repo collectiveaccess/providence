@@ -383,7 +383,6 @@ function caHTMLRadioButtonInput($ps_name, $pa_attributes=null, $pa_options=null)
  * $ps_name - name of the element
  * $pa_attributes - optional associative array of <input> tag options applied to the checkbox; keys are attribute names and values are attribute values
  * $pa_options - optional associative array of options. Valid options are:
- *		value				= the default value of the element	
  *		disabled			= boolean indicating if checkbox is enabled or not (true=disabled; false=enabled)
  *		returnValueIfUnchecked = boolean indicating if checkbox should return value in request if unchecked; default is false
  */
