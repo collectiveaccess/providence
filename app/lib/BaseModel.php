@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2025 Whirl-i-Gig
+ * Copyright 2000-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2347,7 +2347,7 @@ class BaseModel extends BaseObject {
 						$msg = _t("The value of %1 must be unique", $last_name);
 					}
 				} else {
-					$msg = $e->getMessage();
+					$msg = _t('The value already exists');
 				}
 				$this->postError($e->getNumber(), $msg, $context, $source);
 				$o_db->postError($e->getNumber(), $msg, $context, $source);
