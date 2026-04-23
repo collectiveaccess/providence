@@ -32,8 +32,8 @@
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 
 BaseModel::$s_ca_models_definitions['ca_relationship_type_restrictions'] = array(
- 	'NAME_SINGULAR' 	=> _t('editor ui type restriction'),
- 	'NAME_PLURAL' 		=> _t('editor ui type restrictions'),
+ 	'NAME_SINGULAR' 	=> _t('relationship type restriction'),
+ 	'NAME_PLURAL' 		=> _t('relationship type restrictions'),
  	'FIELDS' 			=> array(
  		'restriction_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
