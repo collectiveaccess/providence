@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -682,6 +682,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					if (!$t_instance->getLabelTableInstance()) { continue(2); }
 					
 					$va_additional_settings = array(
+						'allowLocales' => [
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'default' => null,
+							'useLocaleList' => true,
+							'width' => '400px', 'height' => 6,
+							'label' => _t('Allow locales'),
+							'multiple' => true,
+							'description' => _t('Specify specific locales to allow for this element.')
+						],
 						'usewysiwygeditor' => array(
 							'formatType' => FT_NUMBER,
 							'displayType' => DT_SELECT,

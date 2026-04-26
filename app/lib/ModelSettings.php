@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2025 Whirl-i-Gig
+ * Copyright 2010-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -554,7 +554,6 @@ trait ModelSettings {
 					}
 				} elseif (
 					($vs_rel_table = ($va_properties['useRelationshipTypeList'] ?? null)) || 
-					($vb_locale_list = (bool)($va_properties['useLocaleList'] ?? false)) || 
 					($vs_list_code = ($va_properties['useList'] ?? false)) || 
 					($vb_show_lists = ((bool)($va_properties['showLists'] ?? false) || 
 					(bool)($va_properties['showVocabularies'] ?? false))) || 
@@ -574,12 +573,7 @@ trait ModelSettings {
 							$va_rel_opts[$va_rel_type_info['typename'].'/'.$va_rel_type_info['typename_reverse']] = $va_rel_type_info['type_id'];
 						}
 					} else {
-						if ($vb_locale_list) {
-							$va_rel_opts = array_flip(ca_locales::getLocaleList(array('return_display_values' => true)));
-							if (isset($va_properties['allowNull']) && $va_properties['allowNull']) {
-								$va_rel_opts = array_merge([_t('Default') => null], $va_rel_opts);
-							}
-						} elseif($vb_policy_list) {
+						if($vb_policy_list) {
 							$table = caGetOption('table', $pa_options, null);
 							$rel_table = caGetOption('relatedTable', $pa_options, null);
 							$policies = array_merge(
@@ -728,9 +722,26 @@ trait ModelSettings {
 								$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'multiple' => 1, 'values' => is_array($vs_value) ? $vs_value : array($vs_value), 'class' => $input_class);
 								$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts,  $va_select_attr, $va_opts);
 							}
-						} elseif ($va_properties['showLocaleList'] ?? null) {
-							$locales = ca_locales::getLocaleList();
-							$vs_select_element = caHTMLSelect($vs_input_name, [], [], []);
+						} elseif (
+							($show_locale_list = ($va_properties['showLocaleList'] ?? null))
+							||
+							($use_locale_list = ($va_properties['useLocaleList'] ?? false))
+						) {
+                			// showLocaleList = list all available locales
+							// useLocaleList = show cataloguing locales only
+                			$locales = ca_locales::getLocaleList(['available_for_cataloguing_only' => $use_locale_list]);
+							$va_properties['options'] = [];
+							foreach($locales as $locale_id => $l) {
+								$va_properties['options'][$l['name']] = $l['language'].'_'.$l['country'];
+							}
+							if ($vn_height > 1) { $va_attr['multiple'] = 1; $vs_input_name .= '[]'; }
+
+							$va_opts = array('width' => $vn_width, 'height' => $vn_height, 'values' => is_array($vs_value) ? $vs_value : [$vs_value]);
+							if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
+							$va_attr['id'] = $vs_input_id;
+							$va_attr['class'] = $input_class;
+							$vs_select_element = caHTMLSelect($vs_input_name, $va_properties['options'], $va_attr, $va_opts);
+							
 						} else {
 							// Regular drop-down with configured options
 							if ($vn_height > 1) { $va_attr['multiple'] = 1; $vs_input_name .= '[]'; }
