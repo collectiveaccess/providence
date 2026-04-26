@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -133,11 +133,12 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 			if($this->opo_config instanceof Configuration) {
 				$menu_item_names = $this->opo_config->getAssoc('menuItemNames');
 			}
+			$breakout_by_type = $this->opo_config->getList('breakout_by_type') ?? [];
 
-			foreach(array(
+			foreach([
 				'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 
 				'ca_collections', 'ca_storage_locations', 'ca_loans', 'ca_movements', 'ca_list_items', 'ca_sets', 'ca_tours', 'ca_tour_stops'
-			) as $table_name) {
+			] as $table_name) {
 				$activity_menu_list = [];
 				if (!is_array($activity_list = Session::getVar($table_name.'_history_id_list'))) {
 					$activity_list = [];
@@ -147,10 +148,26 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 				
 				$t_instance = Datamodel::getInstanceByTableName($table_name, true);
 				
-				if ($table_name === 'ca_occurrences') {
-					$priv_name = 'can_edit_ca_occurrences';
-					
-					// Output occurrences grouped by type with types as top-level menu items
+				switch($table_name) {
+					case 'ca_list_items':
+						$priv_name = 'can_edit_ca_lists';
+						break;
+					case 'ca_object_representations':
+						$priv_name = 'can_edit_ca_objects';
+						break;
+					case 'ca_tour_stops':
+						$priv_name = 'can_edit_ca_tours';
+						break;
+					case 'ca_sets':
+						$priv_name = 'can_edit_sets';
+						break;
+					default:
+						$priv_name = 'can_edit_'.$table_name;
+						break;
+				}
+				
+				if (in_array($table_name, $breakout_by_type ?? [], true)) {
+					// Output grouped by type with types as top-level menu items
 					$types = $t_instance->getTypeList();
 					
 					// sort occurrences by type
@@ -191,25 +208,7 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 						}
 					}
 				} else {
-					// Non-occurrences get grouped by their table
-					switch($table_name) {
-						case 'ca_list_items':
-							$priv_name = 'can_edit_ca_lists';
-							break;
-						case 'ca_object_representations':
-							$priv_name = 'can_edit_ca_objects';
-							break;
-						case 'ca_tour_stops':
-							$priv_name = 'can_edit_ca_tours';
-							break;
-						case 'ca_sets':
-							$priv_name = 'can_edit_sets';
-							break;
-						default:
-							$priv_name = 'can_edit_'.$table_name;
-							break;
-					}
-					
+					// Grouped by their table
 					$keys = array_reverse(array_keys($activity_list));
 					foreach($keys as $id) {
 						$info = $activity_list[$id];
