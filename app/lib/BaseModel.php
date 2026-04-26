@@ -13949,7 +13949,19 @@ $pa_options["display_form_field_tips"] = true;
 		$tags = caGetTemplateTags($expression);
 		$data = [];
 		foreach($tags as $t) {
-			$data[$t] = $this->get($t);
+			$p = caParseTagOptions($t);
+			if(!is_array($p)) {
+				$p = ['tag' => $t, 'options' => []];
+			}
+			if(
+				!isset($p['options']['convertCodesToDisplayText']) && 
+				!isset($p['options']['convertCodesToIdno']) && 
+				!isset($p['options']['convertCodesToValue'])
+			) {
+				$p['options']['convertCodesToIdno'] =  true;
+			}
+			
+			$data[$t] = $this->get($p['tag'], $p['options']);
 		}
 		return ExpressionParser::evaluate($expression, $data);
 	}
