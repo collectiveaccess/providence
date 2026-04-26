@@ -140,3 +140,1202 @@ winterSeason = [冬]
 springSeason = [春]
 summerSeason = [夏]
 autumnSeason = [秋]
+
+gengo_eras = {
+    Taika = {
+		roman => "Taika",
+		kanji => "大化",
+		year => 645,
+	}
+	Hakuchi = {
+		roman => "Hakuchi",
+		kanji => "白雉",
+		year => 650,
+	}
+	Shuchō = {
+		roman => "Shuchō",
+		kanji => "朱鳥",
+		year => 686,
+	}
+	Taihō = {
+		roman => "Taihō",
+		kanji => "大宝",
+		year => 701,
+	}
+	Keiun = {
+		roman => "Keiun",
+		kanji => "慶雲",
+		year => 704,
+	}
+	Wadō = {
+		roman => "Wadō",
+		kanji => "和銅",
+		year => 708,
+	}
+	Reiki = {
+		roman => "Reiki",
+		kanji => "霊亀",
+		year => 715,
+	}
+	Yōrō = {
+		roman => "Yōrō",
+		kanji => "養老",
+		year => 717,
+	}
+	Jinki = {
+		roman => "Jinki",
+		kanji => "神亀",
+		year => 724,
+	}
+	Tenpyō = {
+		roman => "Tenpyō",
+		kanji => "天平",
+		year => 729,
+	}
+	Tenpyō-kanpō = {
+		roman => "Tenpyō-kanpō",
+		kanji => "天平感宝",
+		year => 749,
+	}
+	Tenpyō-shōhō = {
+		roman => "Tenpyō-shōhō",
+		kanji => "天平勝宝",
+		year => 749,
+	}
+	Tenpyō-hōji = {
+		roman => "Tenpyō-hōji",
+		kanji => "天平宝字",
+		year => 757,
+	}
+	Tenpyō-jingo = {
+		roman => "Tenpyō-jingo",
+		kanji => "天平神護",
+		year => 764,
+	}
+	Jingo-keiun = {
+		roman => "Jingo-keiun",
+		kanji => "神護景雲",
+		year => 767,
+	}
+	Hōki = {
+		roman => "Hōki",
+		kanji => "宝亀",
+		year => 770,
+	}
+	Ten-ō = {
+		roman => "Ten-ō",
+		kanji => "天応",
+		year => 781,
+	}
+	Enryaku = {
+		roman => "Enryaku",
+		kanji => "延暦",
+		year => 782,
+	}
+	Daidō = {
+		roman => "Daidō",
+		kanji => "大同",
+		year => 806,
+	}
+	Kōnin = {
+		roman => "Kōnin",
+		kanji => "弘仁",
+		year => 810,
+	}
+	Tenchō = {
+		roman => "Tenchō",
+		kanji => "天長",
+		year => 824,
+	}
+	Jōwa = {
+		roman => "Jōwa",
+		kanji => "承和",
+		year => 834,
+	}
+	Kashō = {
+		roman => "Kashō",
+		kanji => "嘉祥",
+		year => 848,
+	}
+	Ninju = {
+		roman => "Ninju",
+		kanji => "仁寿",
+		year => 851,
+	}
+	Saikō = {
+		roman => "Saikō",
+		kanji => "斉衡",
+		year => 854,
+	}
+	Ten-an = {
+		roman => "Ten-an",
+		kanji => "天安",
+		year => 857,
+	}
+	Jōgan = {
+		roman => "Jōgan",
+		kanji => "貞観",
+		year => 859,
+	}
+	Gangyō = {
+		roman => "Gangyō",
+		kanji => "元慶",
+		year => 877,
+	}
+	Ninna = {
+		roman => "Ninna",
+		kanji => "仁和",
+		year => 885,
+	}
+	Kanpyō = {
+		roman => "Kanpyō",
+		kanji => "寛平",
+		year => 889,
+	}
+	Shōtai = {
+		roman => "Shōtai",
+		kanji => "昌泰",
+		year => 898,
+	}
+	Engi = {
+		roman => "Engi",
+		kanji => "延喜",
+		year => 901,
+	}
+	Enchō = {
+		roman => "Enchō",
+		kanji => "延長",
+		year => 923,
+	}
+	Jōhei = {
+		roman => "Jōhei",
+		kanji => "承平",
+		year => 931,
+	}
+	Tengyō = {
+		roman => "Tengyō",
+		kanji => "天慶",
+		year => 938,
+	}
+	Tenryaku = {
+		roman => "Tenryaku",
+		kanji => "天暦",
+		year => 947,
+	}
+	Tentoku = {
+		roman => "Tentoku",
+		kanji => "天徳",
+		year => 957,
+	}
+	Ōwa = {
+		roman => "Ōwa",
+		kanji => "応和",
+		year => 961,
+	}
+	Kōhō = {
+		roman => "Kōhō",
+		kanji => "康保",
+		year => 964,
+	}
+	Anna = {
+		roman => "Anna",
+		kanji => "安和",
+		year => 967,
+	}
+	Tenroku = {
+		roman => "Tenroku",
+		kanji => "天禄",
+		year => 970,
+	}
+	Ten-en = {
+		roman => "Ten-en",
+		kanji => "天延",
+		year => 973,
+	}
+	Jōgen = {
+		roman => "Jōgen",
+		kanji => "貞元",
+		year => 976,
+	}
+	Tengen = {
+		roman => "Tengen",
+		kanji => "天元",
+		year => 978,
+	}
+	Eikan = {
+		roman => "Eikan",
+		kanji => "永観",
+		year => 983,
+	}
+	Kanna = {
+		roman => "Kanna",
+		kanji => "寛和",
+		year => 985,
+	}
+	Eien = {
+		roman => "Eien",
+		kanji => "永延",
+		year => 987,
+	}
+	Eiso = {
+		roman => "Eiso",
+		kanji => "永祚",
+		year => 989,
+	}
+	Shōryaku = {
+		roman => "Shōryaku",
+		kanji => "正暦",
+		year => 990,
+	}
+	Chōtoku = {
+		roman => "Chōtoku",
+		kanji => "長徳",
+		year => 995,
+	}
+	Chōhō = {
+		roman => "Chōhō",
+		kanji => "長保",
+		year => 999,
+	}
+	Kankō = {
+		roman => "Kankō",
+		kanji => "寛弘",
+		year => 1004,
+	}
+	Chōwa = {
+		roman => "Chōwa",
+		kanji => "長和",
+		year => 1012,
+	}
+	Kannin = {
+		roman => "Kannin",
+		kanji => "寛仁",
+		year => 1017,
+	}
+	Jian = {
+		roman => "Jian",
+		kanji => "治安",
+		year => 1021,
+	}
+	Manju = {
+		roman => "Manju",
+		kanji => "万寿",
+		year => 1024,
+	}
+	Chōgen = {
+		roman => "Chōgen",
+		kanji => "長元",
+		year => 1028,
+	}
+	Chōkyū = {
+		roman => "Chōkyū",
+		kanji => "長久",
+		year => 1037,
+	}
+	Kantoku = {
+		roman => "Kantoku",
+		kanji => "寛徳",
+		year => 1044,
+	}
+	Eishō = {
+		roman => "Eishō",
+		kanji => "永承",
+		year => 1046,
+	}
+	Tenki = {
+		roman => "Tenki",
+		kanji => "天喜",
+		year => 1053,
+	}
+	Kōhei = {
+		roman => "Kōhei",
+		kanji => "康平",
+		year => 1058,
+	}
+	Jiryaku = {
+		roman => "Jiryaku",
+		kanji => "治暦",
+		year => 1065,
+	}
+	Enkyū = {
+		roman => "Enkyū",
+		kanji => "延久",
+		year => 1069,
+	}
+	Jōhō = {
+		roman => "Jōhō",
+		kanji => "承保",
+		year => 1074,
+	}
+	Jōryaku = {
+		roman => "Jōryaku",
+		kanji => "承暦",
+		year => 1077,
+	}
+	Eihō = {
+		roman => "Eihō",
+		kanji => "永保",
+		year => 1081,
+	}
+	Ōtoku = {
+		roman => "Ōtoku",
+		kanji => "応徳",
+		year => 1084,
+	}
+	Kanji = {
+		roman => "Kanji",
+		kanji => "寛治",
+		year => 1087,
+	}
+	Kahō = {
+		roman => "Kahō",
+		kanji => "嘉保",
+		year => 1094,
+	}
+	Eichō = {
+		roman => "Eichō",
+		kanji => "永長",
+		year => 1096,
+	}
+	Jōtoku = {
+		roman => "Jōtoku",
+		kanji => "承徳",
+		year => 1097,
+	}
+	Kōwa = {
+		roman => "Kōwa",
+		kanji => "康和",
+		year => 1099,
+	}
+	Chōji = {
+		roman => "Chōji",
+		kanji => "長治",
+		year => 1104,
+	}
+	Kajō = {
+		roman => "Kajō",
+		kanji => "嘉承",
+		year => 1106,
+	}
+	Tennin = {
+		roman => "Tennin",
+		kanji => "天仁",
+		year => 1108,
+	}
+	Ten-ei = {
+		roman => "Ten-ei",
+		kanji => "天永",
+		year => 1110,
+	}
+	Eikyū = {
+		roman => "Eikyū",
+		kanji => "永久",
+		year => 1113,
+	}
+	Gen-ei = {
+		roman => "Gen-ei",
+		kanji => "元永",
+		year => 1118,
+	}
+	Hōan = {
+		roman => "Hōan",
+		kanji => "保安",
+		year => 1120,
+	}
+	Tenji = {
+		roman => "Tenji",
+		kanji => "天治",
+		year => 1124,
+	}
+	Daiji = {
+		roman => "Daiji",
+		kanji => "大治",
+		year => 1126,
+	}
+	Tenshō = {
+		roman => "Tenshō",
+		kanji => "天承",
+		year => 1131,
+	}
+	Chōshō = {
+		roman => "Chōshō",
+		kanji => "長承",
+		year => 1132,
+	}
+	Hōen = {
+		roman => "Hōen",
+		kanji => "保延",
+		year => 1135,
+	}
+	Eiji = {
+		roman => "Eiji",
+		kanji => "永治",
+		year => 1141,
+	}
+	Kōji = {
+		roman => "Kōji",
+		kanji => "康治",
+		year => 1142,
+	}
+	Ten-yō = {
+		roman => "Ten-yō",
+		kanji => "天養",
+		year => 1144,
+	}
+	Kyūan = {
+		roman => "Kyūan",
+		kanji => "久安",
+		year => 1145,
+	}
+	Nin-an = {
+		roman => "Nin-an",
+		kanji => "仁安",
+		year => 1166,
+	}
+	Kaō = {
+		roman => "Kaō",
+		kanji => "嘉応",
+		year => 1169,
+	}
+	Shōan = {
+		roman => "Shōan",
+		kanji => "承安",
+		year => 1171,
+	}
+	Angen = {
+		roman => "Angen",
+		kanji => "安元",
+		year => 1175,
+	}
+	Jishō = {
+		roman => "Jishō",
+		kanji => "治承",
+		year => 1177,
+	}
+	Yōwa = {
+		roman => "Yōwa",
+		kanji => "養和",
+		year => 1181,
+	}
+	Juei = {
+		roman => "Juei",
+		kanji => "寿永",
+		year => 1182,
+	}
+	Genryaku = {
+		roman => "Genryaku",
+		kanji => "元暦",
+		year => 1184,
+	}
+	Bunji = {
+		roman => "Bunji",
+		kanji => "文治",
+		year => 1185,
+	}
+	Kenkyū = {
+		roman => "Kenkyū",
+		kanji => "建久",
+		year => 1190,
+	}
+	Shōji = {
+		roman => "Shōji",
+		kanji => "正治",
+		year => 1199,
+	}
+	Kennin = {
+		roman => "Kennin",
+		kanji => "建仁",
+		year => 1201,
+	}
+	Genkyū = {
+		roman => "Genkyū",
+		kanji => "元久",
+		year => 1204,
+	}
+	Ken-ei = {
+		roman => "Ken-ei",
+		kanji => "建永",
+		year => 1206,
+	}
+	Jōgen = {
+		roman => "Jōgen",
+		kanji => "承元",
+		year => 1207,
+	}
+	Kenryaku = {
+		roman => "Kenryaku",
+		kanji => "建暦",
+		year => 1211,
+	}
+	Kenpō = {
+		roman => "Kenpō",
+		kanji => "建保",
+		year => 1213,
+	}
+	Jōkyū = {
+		roman => "Jōkyū",
+		kanji => "承久",
+		year => 1219,
+	}
+	Jōō = {
+		roman => "Jōō",
+		kanji => "貞応",
+		year => 1222,
+	}
+	Gennin = {
+		roman => "Gennin",
+		kanji => "元仁",
+		year => 1224,
+	}
+	Karoku = {
+		roman => "Karoku",
+		kanji => "嘉禄",
+		year => 1225,
+	}
+	Antei = {
+		roman => "Antei",
+		kanji => "安貞",
+		year => 1227,
+	}
+	Kanki = {
+		roman => "Kanki",
+		kanji => "寛喜",
+		year => 1229,
+	}
+	Jōei = {
+		roman => "Jōei",
+		kanji => "貞永",
+		year => 1232,
+	}
+	Tenpuku = {
+		roman => "Tenpuku",
+		kanji => "天福",
+		year => 1233,
+	}
+	Bunryaku = {
+		roman => "Bunryaku",
+		kanji => "文暦",
+		year => 1234,
+	}
+	Katei = {
+		roman => "Katei",
+		kanji => "嘉禎",
+		year => 1235,
+	}
+	Ryakunin = {
+		roman => "Ryakunin",
+		kanji => "暦仁",
+		year => 1238,
+	}
+	En-ō = {
+		roman => "En-ō",
+		kanji => "延応",
+		year => 1239,
+	}
+	Ninji = {
+		roman => "Ninji",
+		kanji => "仁治",
+		year => 1240,
+	}
+	Kangen = {
+		roman => "Kangen",
+		kanji => "寛元",
+		year => 1243,
+	}
+	Hōji = {
+		roman => "Hōji",
+		kanji => "宝治",
+		year => 1247,
+	}
+	Kenchō = {
+		roman => "Kenchō",
+		kanji => "建長",
+		year => 1249,
+	}
+	Kōgen = {
+		roman => "Kōgen",
+		kanji => "康元",
+		year => 1256,
+	}
+	Shōka = {
+		roman => "Shōka",
+		kanji => "正嘉",
+		year => 1257,
+	}
+	Shōgen = {
+		roman => "Shōgen",
+		kanji => "正元",
+		year => 1259,
+	}
+	Bun-ō = {
+		roman => "Bun-ō",
+		kanji => "文応",
+		year => 1260,
+	}
+	Kōchō = {
+		roman => "Kōchō",
+		kanji => "弘長",
+		year => 1261,
+	}
+	Bun-ei = {
+		roman => "Bun-ei",
+		kanji => "文永",
+		year => 1264,
+	}
+	Kenji = {
+		roman => "Kenji",
+		kanji => "建治",
+		year => 1275,
+	}
+	Kōan = {
+		roman => "Kōan",
+		kanji => "弘安",
+		year => 1278,
+	}
+	Shōō = {
+		roman => "Shōō",
+		kanji => "正応",
+		year => 1288,
+	}
+	Einin = {
+		roman => "Einin",
+		kanji => "永仁",
+		year => 1293,
+	}
+	Shōan = {
+		roman => "Shōan",
+		kanji => "正安",
+		year => 1299,
+	}
+	Kengen = {
+		roman => "Kengen",
+		kanji => "乾元",
+		year => 1302,
+	}
+	Kagen = {
+		roman => "Kagen",
+		kanji => "嘉元",
+		year => 1303,
+	}
+	Tokuji = {
+		roman => "Tokuji",
+		kanji => "徳治",
+		year => 1306,
+	}
+	Enkyō = {
+		roman => "Enkyō",
+		kanji => "延慶",
+		year => 1308,
+	}
+	Ōchō = {
+		roman => "Ōchō",
+		kanji => "応長",
+		year => 1311,
+	}
+	Shōwa = {
+		roman => "Shōwa",
+		kanji => "正和",
+		year => 1312,
+	}
+	Bunpō = {
+		roman => "Bunpō",
+		kanji => "文保",
+		year => 1317,
+	}
+	Gen-ō = {
+		roman => "Gen-ō",
+		kanji => "元応",
+		year => 1319,
+	}
+	Genkō = {
+		roman => "Genkō",
+		kanji => "元亨",
+		year => 1321,
+	}
+	Shōchū = {
+		roman => "Shōchū",
+		kanji => "正中",
+		year => 1324,
+	}
+	Karyaku = {
+		roman => "Karyaku",
+		kanji => "嘉暦",
+		year => 1326,
+	}
+	Gentoku = {
+		roman => "Gentoku",
+		kanji => "元徳",
+		year => 1329,
+	}
+	Genkō = {
+		roman => "Genkō",
+		kanji => "元弘",
+		year => 1331,
+	}
+	Shōkyō = {
+		roman => "Shōkyō",
+		kanji => "正慶",
+		year => 1332,
+	}
+	Kenmu = {
+		roman => "Kenmu",
+		kanji => "建武",
+		year => 1334,
+	}
+	Engen = {
+		roman => "Engen",
+		kanji => "延元",
+		year => 1336,
+	}
+	Kōkoku = {
+		roman => "Kōkoku",
+		kanji => "興国",
+		year => 1340,
+	}
+	Shōhei = {
+		roman => "Shōhei",
+		kanji => "正平",
+		year => 1346,
+	}
+	Kentoku = {
+		roman => "Kentoku",
+		kanji => "建徳",
+		year => 1370,
+	}
+	Bunchū = {
+		roman => "Bunchū",
+		kanji => "文中",
+		year => 1372,
+	}
+	Tenju = {
+		roman => "Tenju",
+		kanji => "天授",
+		year => 1375,
+	}
+	Kōwa = {
+		roman => "Kōwa",
+		kanji => "弘和",
+		year => 1381,
+	}
+	Genchū = {
+		roman => "Genchū",
+		kanji => "元中",
+		year => 1384,
+	}
+	Ryakuō = {
+		roman => "Ryakuō",
+		kanji => "暦応",
+		year => 1338,
+	}
+	Kōei = {
+		roman => "Kōei",
+		kanji => "康永",
+		year => 1342,
+	}
+	Jōwa = {
+		roman => "Jōwa",
+		kanji => "貞和",
+		year => 1345,
+	}
+	Kan-ō = {
+		roman => "Kan-ō",
+		kanji => "観応",
+		year => 1350,
+	}
+	Bunna = {
+		roman => "Bunna",
+		kanji => "文和",
+		year => 1352,
+	}
+	Enbun = {
+		roman => "Enbun",
+		kanji => "延文",
+		year => 1356,
+	}
+	Kōan = {
+		roman => "Kōan",
+		kanji => "康安",
+		year => 1361,
+	}
+	Jōji = {
+		roman => "Jōji",
+		kanji => "貞治",
+		year => 1362,
+	}
+	Ōan = {
+		roman => "Ōan",
+		kanji => "応安",
+		year => 1368,
+	}
+	Eiwa = {
+		roman => "Eiwa",
+		kanji => "永和",
+		year => 1375,
+	}
+	Kōryaku = {
+		roman => "Kōryaku",
+		kanji => "康暦",
+		year => 1379,
+	}
+	Eitoku = {
+		roman => "Eitoku",
+		kanji => "永徳",
+		year => 1381,
+	}
+	Shitoku = {
+		roman => "Shitoku",
+		kanji => "至徳",
+		year => 1384,
+	}
+	Kakei = {
+		roman => "Kakei",
+		kanji => "嘉慶",
+		year => 1387,
+	}
+	Kōō = {
+		roman => "Kōō",
+		kanji => "康応",
+		year => 1389,
+	}
+	Meitoku = {
+		roman => "Meitoku",
+		kanji => "明徳",
+		year => 1390,
+	}
+	Ōei = {
+		roman => "Ōei",
+		kanji => "応永",
+		year => 1394,
+	}
+	Shōchō = {
+		roman => "Shōchō",
+		kanji => "正長",
+		year => 1428,
+	}
+	Eikyō = {
+		roman => "Eikyō",
+		kanji => "永享",
+		year => 1429,
+	}
+	Kakitsu = {
+		roman => "Kakitsu",
+		kanji => "嘉吉",
+		year => 1441,
+	}
+	Bun-an = {
+		roman => "Bun-an",
+		kanji => "文安",
+		year => 1444,
+	}
+	Hōtoku = {
+		roman => "Hōtoku",
+		kanji => "宝徳",
+		year => 1449,
+	}
+	Kyōtoku = {
+		roman => "Kyōtoku",
+		kanji => "享徳",
+		year => 1452,
+	}
+	Kōshō = {
+		roman => "Kōshō",
+		kanji => "康正",
+		year => 1455,
+	}
+	Chōroku = {
+		roman => "Chōroku",
+		kanji => "長禄",
+		year => 1457,
+	}
+	Kanshō = {
+		roman => "Kanshō",
+		kanji => "寛正",
+		year => 1460,
+	}
+	Bunshō = {
+		roman => "Bunshō",
+		kanji => "文正",
+		year => 1466,
+	}
+	Ōnin = {
+		roman => "Ōnin",
+		kanji => "応仁",
+		year => 1467,
+	}
+	Bunmei = {
+		roman => "Bunmei",
+		kanji => "文明",
+		year => 1469,
+	}
+	Chōkyō = {
+		roman => "Chōkyō",
+		kanji => "長享",
+		year => 1487,
+	}
+	Entoku = {
+		roman => "Entoku",
+		kanji => "延徳",
+		year => 1489,
+	}
+	Meiō = {
+		roman => "Meiō",
+		kanji => "明応",
+		year => 1492,
+	}
+	Bunki = {
+		roman => "Bunki",
+		kanji => "文亀",
+		year => 1501,
+	}
+	Eishō = {
+		roman => "Eishō",
+		kanji => "永正",
+		year => 1504,
+	}
+	Daigi = {
+		roman => "Daigi",
+		kanji => "大永",
+		year => 1521,
+	}
+	Kyōroku = {
+		roman => "Kyōroku",
+		kanji => "享禄",
+		year => 1528,
+	}
+	Tenbun = {
+		roman => "Tenbun",
+		kanji => "天文",
+		year => 1532,
+	}
+	Kōji = {
+		roman => "Kōji",
+		kanji => "弘治",
+		year => 1555,
+	}
+	Eiroku = {
+		roman => "Eiroku",
+		kanji => "永禄",
+		year => 1558,
+	}
+	Genki = {
+		roman => "Genki",
+		kanji => "元亀",
+		year => 1570,
+	}
+	Tenshō = {
+		roman => "Tenshō",
+		kanji => "天正",
+		year => 1573,
+	}
+	Bunroku = {
+		roman => "Bunroku",
+		kanji => "文禄",
+		year => 1592,
+	}
+	Keichō = {
+		roman => "Keichō",
+		kanji => "慶長",
+		year => 1596,
+	}
+	Genna = {
+		roman => "Genna",
+		kanji => "元和",
+		year => 1615,
+	}
+	Kan-ei = {
+		roman => "Kan-ei",
+		kanji => "寛永",
+		year => 1624,
+	}
+	Shōhō = {
+		roman => "Shōhō",
+		kanji => "正保",
+		year => 1644,
+	}
+	Keian = {
+		roman => "Keian",
+		kanji => "慶安",
+		year => 1648,
+	}
+	Jōō = {
+		roman => "Jōō",
+		kanji => "承応",
+		year => 1652,
+	}
+	Meireki = {
+		roman => "Meireki",
+		kanji => "明暦",
+		year => 1655,
+	}
+	Manji = {
+		roman => "Manji",
+		kanji => "万治",
+		year => 1658,
+	}
+	Kanbun = {
+		roman => "Kanbun",
+		kanji => "寛文",
+		year => 1661,
+	}
+	Enpō = {
+		roman => "Enpō",
+		kanji => "延宝",
+		year => 1673,
+	}
+	Tenna = {
+		roman => "Tenna",
+		kanji => "天和",
+		year => 1681,
+	}
+	Jōkyō = {
+		roman => "Jōkyō",
+		kanji => "貞享",
+		year => 1684,
+	}
+	Genroku = {
+		roman => "Genroku",
+		kanji => "元禄",
+		year => 1688,
+	}
+	Hōei = {
+		roman => "Hōei",
+		kanji => "宝永",
+		year => 1704,
+	}
+	Shōtoku = {
+		roman => "Shōtoku",
+		kanji => "正徳",
+		year => 1711,
+	}
+	Kyōhō = {
+		roman => "Kyōhō",
+		kanji => "享保",
+		year => 1716,
+	}
+	Genbun = {
+		roman => "Genbun",
+		kanji => "元文",
+		year => 1736,
+	}
+	Kanpō = {
+		roman => "Kanpō",
+		kanji => "寛保",
+		year => 1741,
+	}
+	Enkyō = {
+		roman => "Enkyō",
+		kanji => "延享",
+		year => 1744,
+	}
+	Kan-en = {
+		roman => "Kan-en",
+		kanji => "寛延",
+		year => 1748,
+	}
+	Hōreki = {
+		roman => "Hōreki",
+		kanji => "宝暦",
+		year => 1751,
+	}
+	Meiwa = {
+		roman => "Meiwa",
+		kanji => "明和",
+		year => 1764,
+	}
+	An-ei = {
+		roman => "An-ei",
+		kanji => "安永",
+		year => 1772,
+	}
+	Tenmei = {
+		roman => "Tenmei",
+		kanji => "天明",
+		year => 1781,
+	}
+	Kansei = {
+		roman => "Kansei",
+		kanji => "寛政",
+		year => 1789,
+	}
+	Kyōwa = {
+		roman => "Kyōwa",
+		kanji => "享和",
+		year => 1801,
+	}
+	Bunka = {
+		roman => "Bunka",
+		kanji => "文化",
+		year => 1804,
+	}
+	Bunsei = {
+		roman => "Bunsei",
+		kanji => "文政",
+		year => 1818,
+	}
+	Tenpō = {
+		roman => "Tenpō",
+		kanji => "天保",
+		year => 1830,
+	}
+	Kōka = {
+		roman => "Kōka",
+		kanji => "弘化",
+		year => 1844,
+	}
+	Kaei = {
+		roman => "Kaei",
+		kanji => "嘉永",
+		year => 1848,
+	}
+	Ansei = {
+		roman => "Ansei",
+		kanji => "安政",
+		year => 1854,
+	}
+	Man-en = {
+		roman => "Man-en",
+		kanji => "万延",
+		year => 1860,
+	}
+	Bunkyū = {
+		roman => "Bunkyū",
+		kanji => "文久",
+		year => 1861,
+	}
+	Genji = {
+		roman => "Genji",
+		kanji => "元治",
+		year => 1864,
+	}
+	Keiō = {
+		roman => "Keiō",
+		kanji => "慶応",
+		year => 1865,
+	}
+	Meiji = {
+		roman => "Meiji",
+		kanji => "明治",
+		year => 1868,
+	}
+	Taishō = {
+		roman => "Taishō",
+		kanji => "大正",
+		year => 1912,
+	}
+	Shōwa = {
+		roman => "Shōwa",
+		kanji => "昭和",
+		year => 1926,
+	}
+	Heisei = {
+		roman => "Heisei",
+		kanji => "平成",
+		year => 1989,
+	}
+	Reiwa = {
+		roman => "Reiwa",
+		kanji => "令和",
+		year => 2019,
+	}
+
+}
