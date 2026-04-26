@@ -407,6 +407,7 @@ trait ModelSettings {
 			# --------------------------------------------
 			case DT_FIELD:
 				$vb_takes_locale = false;
+				$use_wysiwygeditor = $va_properties['usewysiwygeditor'] ?? false;
 				if (isset($va_properties['takesLocale']) && $va_properties['takesLocale']) {
 					$vb_takes_locale = true;
 					$va_locales = ca_locales::getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true, 'available_for_cataloguing_only' => true)); 
@@ -431,7 +432,7 @@ trait ModelSettings {
 					} else {
 						$vs_text_value = $vs_value;
 					}
-					$vs_return .= ($vs_locale_label ? "{$vs_locale_label}<br/>" : "").caHTMLTextInput($vs_input_name.$vs_input_name_suffix, array('size' => $va_properties["width"] ?? null, 'height' => $va_properties["height"] ?? null, 'value' => $vs_text_value, 'class' => $input_class,  'id' => $vs_input_id.$vs_input_name_suffix))."<br/>\n";	
+					$vs_return .= ($vs_locale_label ? "{$vs_locale_label}<br/>" : "").caHTMLTextInput($vs_input_name.$vs_input_name_suffix, ['size' => $va_properties["width"] ?? null, 'height' => $va_properties["height"] ?? null, 'value' => $vs_text_value, 'class' => $input_class,  'id' => $vs_input_id.$vs_input_name_suffix], ['usewysiwygeditor' => $use_wysiwygeditor])."<br/>\n";	
 				}
 				break;
 			# --------------------------------------------
