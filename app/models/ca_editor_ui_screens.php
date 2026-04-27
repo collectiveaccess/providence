@@ -1780,6 +1780,20 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									// @todo: maybe add settings!?
 								);
 								break;
+							case 'ca_objects_deaccession':
+								$va_additional_settings['alwaysOpen'] = [
+									'formatType' => FT_NUMBER,
+									'displayType' => DT_SELECT,
+									'options' => array(
+										_t('Yes') => 1,
+										_t('No') => 0
+									),
+									'default' => 0,
+									'width' => "100px", 'height' => 1,
+									'label' => _t('Always keep open?'),
+									'description' => _t('By default deaccession fields are hidden until the <em>deaccessioned</em> check box is set. Set this option to force all fields to be shown at all times.')
+								];
+								break;
 							case 'ca_objects_history':
 							case 'ca_objects_location':
 							case 'history_tracking_chronology':

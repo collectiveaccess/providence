@@ -327,6 +327,7 @@ var caUI = caUI || {};
 			var i;
 			var fieldRegex = new RegExp(that.fieldNamePrefix + "([A-Za-z0-9_\-]+)_([0-9]+)");
 			for(i=0; i < checkboxes.length; i++) {
+			    if(jQuery(checkboxes[i]).data('exclude')) { continue; }
 				var element_id = checkboxes[i].id;
 
 				var info = element_id.match(fieldRegex);
