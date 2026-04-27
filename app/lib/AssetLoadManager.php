@@ -197,7 +197,8 @@ class AssetLoadManager {
 					}
 				}
 				
-				$g_asset_load_list[$output_target][$pn_priority][$ps_package.'/'.$va_list[$ps_library]][$vb_is_theme_specific ? "THEME" : "APP"] = true;
+				$type = $vb_is_theme_specific ? 'THEME' : 'APP';
+				$g_asset_load_list[$output_target][$pn_priority][$ps_package.'/'.$va_list[$ps_library]][$type] = true;
 							
 				return true;
 			}
@@ -247,11 +248,13 @@ class AssetLoadManager {
 	 * @param array $pa_options Options include:
 	 *		dontLoadAppAssets = don't load assets specified in the app asset.conf file [default is false]
 	 *      outputTarget = Block of load HTML to generate. Valid values are "header" and "footer". [Default is header]
+	 *		forAjax = Load Javascript, CSS and properties conditionally, skipping those already loaded in the current request. [Default is false]
 	 * @return string - HTML loading registered libraries
 	 */
 	static function getLoadHTML($po_request, $pa_options=null) {
 		global $g_asset_config, $g_asset_load_list, $g_asset_import_map, $g_asset_complementary;
-
+		
+		$for_ajax = caGetOption('forAjax', $pa_options, false);
 		$output_target = caGetOption('outputTarget', $pa_options, 'header', ['validValues' => ['header', 'footer']]);
 		$vs_base_url_path = $po_request->getBaseUrlPath();
 		$vs_theme_url_path = $po_request->getThemeUrlPath();
@@ -268,6 +271,7 @@ class AssetLoadManager {
 		
 		if (!$g_asset_config) { AssetLoadManager::init(); }
 		$vs_buf = '';
+		$script_urls = $css_urls = $property_urls = [];
 		if (is_array($g_asset_load_list[$output_target] ?? null)) {
 			ksort($g_asset_load_list[$output_target]);
 			foreach($g_asset_load_list[$output_target] as $vn_priority => $va_libs) {
@@ -316,11 +320,20 @@ class AssetLoadManager {
 							$vs_url = "{$vs_base_url_path}/assets/{$vs_lib}";
 						}
 						if (preg_match('!\.css$!', $vs_lib)) {
-							$vs_buf .= "<link rel='stylesheet' href='{$vs_url}{$suffix}' type='text/css' media='all'/>\n";
+							$css_urls[] = $vs_url;
+							if(!$for_ajax) {
+								$vs_buf .= "<link rel='stylesheet' href='{$vs_url}{$suffix}' type='text/css' media='all'>\n";
+							}
 						} elseif(preg_match('!\.properties$!', $vs_lib)) {
-							$vs_buf .= "<link rel='resource' href='{$vs_url}{$suffix}' type='application/l10n' />\n";
+							$property_urls[] = $vs_url;
+							if(!$for_ajax) {
+								$vs_buf .= "<link rel='resource' href='{$vs_url}{$suffix}' type='application/l10n'>\n";
+							}
 						} else {
-							$vs_buf .= "<script src='{$vs_url}{$suffix}' type='text/javascript'></script>\n";
+							$script_urls[] = $vs_url;
+							if(!$for_ajax) {
+								$vs_buf .= "<script src='{$vs_url}{$suffix}' type='text/javascript'></script>\n";
+							}
 						}
 					}
 				}
@@ -336,8 +349,42 @@ class AssetLoadManager {
 			$vs_buf .= "<script type='importmap'>\n".json_encode(['imports' => $map], JSON_UNESCAPED_SLASHES)."</script>\n";
 		}
 		
-		if(($output_target === 'header') && caAppIsPawtucket() && is_array($analytics_values = caGetAnalyticsIntegrationValues())) {
-			$vs_buf .= $analytics_values['head'] ?? null;
+		if($output_target === 'header') {
+			if(caAppIsPawtucket() && is_array($analytics_values = caGetAnalyticsIntegrationValues()) && !$for_ajax) {
+				$vs_buf .= $analytics_values['head'] ?? null;
+			}
+			if((sizeof($script_urls) > 0) || (sizeof($css_urls) > 0) || (sizeof($property_urls) > 0)) {
+				$vs_buf .= "<script type=\'text/javascript\'>if(!window.caAssetLoadList) { window.caAssetLoadList = {}; }\n";
+			
+				if(sizeof($script_urls) > 0) {
+					foreach($script_urls as $u) {
+						if($for_ajax) {
+							$vs_buf .= "if(!window.caAssetLoadList['{$u}']) { jQuery.getScript('{$u}{$suffix}'); }\n";
+						} else {
+							$vs_buf .= "window.caAssetLoadList['{$u}'] = true;\n";
+						}
+					}
+				}
+				if(sizeof($css_urls) > 0) {
+					foreach($css_urls as $u) {
+						if($for_ajax) {
+							$vs_buf .= "if(!window.caAssetLoadList['{$u}']) { jQuery('head').append('<link rel=\"stylesheet\" type=\"text/css\" href=\"{$u}{$suffix}\" media=\"all\">'); }\n";
+						} else {
+							$vs_buf .= "window.caAssetLoadList['{$u}'] = true;\n";
+						}
+					}
+				}
+				if(sizeof($property_urls) > 0) {
+					foreach($property_urls as $u) {
+						if($for_ajax) {
+							$vs_buf .= "if(!window.caAssetLoadList['{$u}']) { jQuery('head').append('<link rel=\"stylesheet\" type=\"application/l10n\" href=\"{$u}{$suffix}\">'); }\n";
+						} else {
+							$vs_buf .= "window.caAssetLoadList['{$u}'] = true;\n";
+						}
+					}
+				}
+				$vs_buf .= '</script>';
+			}
 		}
 		
 		return $vs_buf;

@@ -25,6 +25,7 @@ monthTable = {
 
 # List of day names, starting with Sunday
 dayListDisplay = [Söndag, Måndag, Tisdag, Onsdag, Torsdag, Fredag, Lördag]
+dayListShortDisplay = [Sön, Mån, Tis, Ons, Tor, Fre, Lör]
 
 rangePreConjunctions = [från, mellan]
 rangeConjunctions = [till, –, -, och, .., genom]

@@ -72,7 +72,7 @@ class Mapping {
 	 */
 	public function __construct() {
 		// set up basic properties
-		$this->opo_search_conf = \Configuration::load(\Configuration::load()->get('search_config'));
+		$this->opo_search_conf = \Configuration::load('search.conf');
 		$this->opo_indexing_conf = \Configuration::load('search_indexing.conf');
 		$this->version = (int)$this->opo_search_conf->get('elasticsearch_version');
 		if (!in_array($this->version, [2, 5, 6, 7], true)) { $this->version = 5; }

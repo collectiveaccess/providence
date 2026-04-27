@@ -73,6 +73,13 @@ abstract class BaseMediaUrlPlugin extends \WLPlug  {
 	/**
 	 *
 	 */
+	public function search(string $url, ?array $options=null) {
+		return null;
+	}
+	# ------------------------------------------------
+	/**
+	 *
+	 */
 	abstract public function fetchPreview(string $url, ?array $options=null);
 	# ------------------------------------------------
 	/**
@@ -109,6 +116,13 @@ abstract class BaseMediaUrlPlugin extends \WLPlug  {
 			$icon = str_replace('^SIZE', $size, $icon);
 		}
 		return $icon;
+	}
+	# ------------------------------------------------
+	/**
+	 *
+	 */
+	public function fetchMetadata(string $url, ?array $options=null) : ?array {
+		return [];
 	}
 	# ------------------------------------------------
 }

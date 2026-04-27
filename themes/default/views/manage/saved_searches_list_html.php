@@ -122,7 +122,7 @@ print caFormControlBox(
 							<?= $display_table; ?>
 						</td>
 						<td>
-							<?= str_replace("_", " ", $search_type); ?>
+							<?= _t(ucfirst(str_replace("_", " ", $search_type))); ?>
 						</td>
 						<td>
 							<?= caNavLink($this->request, $search, "", "find", $bits['controller'], 'doSavedSearch', ["saved_search_key" => $key]); ?>

@@ -24,6 +24,7 @@ monthTable = {
 
 # List of day names, starting with Sunday
 dayListDisplay = [Недеља, Понедељак, Уторак, Среда, Четвртак, Петак, Субота]
+dayListShortDisplay = [Недеља, Понедељак, Уторак, Среда, Четвртак, Петак, Субота]
 
 rangePreConjunctions = [од, између]
 rangeConjunctions = [до, –, -, и, .., кроз]

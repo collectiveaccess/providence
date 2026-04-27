@@ -64,7 +64,6 @@ a:hover{
     color: #858585;
 }
 h1 { font-family: 'DIN-Regular', arial, sans-serif;}
-h2 { font-size: 13px; color: #666; }
 
 h5 {
     margin: 0px;
@@ -1377,7 +1376,7 @@ div.formLabelUploadSizeNote {
 
 .caDupeLabelMessageBox {
     margin: 0 auto;
-    width: 200px;
+    min-width: 200px;
     font-family: Helvetica Neue, sans-serif;
     color: #EB0000;
 }

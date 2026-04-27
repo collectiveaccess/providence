@@ -2366,6 +2366,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$tmp = explode('.', $field);
 		if ((sizeof($tmp) == 2) && ($tmp[0] == $this->getLabelTableName()) && ($tmp[1] == $this->getLabelDisplayField())) {
 			$tmp[0] = $this->tableName();
+			$tmp[2] = $tmp[1];
 			$tmp[1] = 'preferred_labels';
 			$field = join('.', $tmp);
 		}
@@ -2451,7 +2452,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// maybe it's a special bundle name?
-		if (($tmp[0] === $this->tableName()) && isset($this->BUNDLES[$tmp[1]]) && $this->BUNDLES[$tmp[1]]['label']) {
+		if (!$dlabel && ($tmp[0] === $this->tableName()) && isset($this->BUNDLES[$tmp[1]]) && $this->BUNDLES[$tmp[1]]['label']) {
 			$dlabel = $this->BUNDLES[$tmp[1]]['label'];
 		}
 		
@@ -3176,10 +3177,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *
 	 */
 	private function _getHierarchyLocationHTMLFormBundleInfo(RequestHTTP $request,  string $form_name, string $placement_code, ?array $options=null, ?array $bundle_settings=null) : ?View {
+		$view_path = caGetOption('viewPath', $options, $request->getViewsDirectoryPath());
+		
 		$o_view = new View($request, "{$view_path}/bundles/");
 		$object_collections_hierarchy_enabled = (bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled');
 		
-		$view_path = caGetOption('viewPath', $options, $request->getViewsDirectoryPath());
 		$batch = caGetOption('batch', $options, false);
 		if(!is_array($bundle_settings)) { $bundle_settings = []; }
 		
@@ -4166,13 +4168,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							$va_inserted_attributes_by_element[$vn_element_id][$vn_c]['value_source'] = $va_attributes_to_insert[$vn_c]['value_source'] = $value_source; 
 						}
 						$va_inserted_attributes_by_element[$vn_element_id][$vn_c][$va_matches[1]] = $va_attributes_to_insert[$vn_c][$va_matches[1]] = $vs_val;
-					} else {
+					} elseif(preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\d]+)_delete/', $vs_key, $va_matches)) {
 						// is it a delete key?
-						if (preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\d]+)_delete/', $vs_key, $va_matches)) {
-							$vn_attribute_id = intval($va_matches[1]);
-							$va_attributes_to_delete[$vn_attribute_id] = true;
-						}
-					}
+						$vn_attribute_id = intval($va_matches[1]);
+						$va_attributes_to_delete[$vn_attribute_id] = true;
+					} 
 				}
 				
 				if(isset($va_inserted_attributes_by_element[$vn_element_id])) {
@@ -4232,7 +4232,7 @@ if (!$batch) {
 						}
 						
 						//
-						// Check to see if there are any values in the element set that are not in the  attribute we're editing
+						// Check to see if there are any values in the element set that are not in the attribute we're editing
 						// If additional sub-elements were added to the set after the attribute we're updating was created
 						// those sub-elements will not have corresponding values returned by $o_attr->getValues() above.
 						// Because we use the element_ids in those values to pull request parameters, if an element_id is missing
@@ -4259,7 +4259,17 @@ if (!$batch) {
 									continue;
 								}
 							} 
-							$va_attr_update[$sub_element_id] = $vs_attr_val;
+							
+							if($po_request->getParameter("{$vs_k}_clear", pInteger)) {
+								// is it a media clear key?
+								$va_attr_update[$sub_element_id] = [
+									'tmp_name' => '__CLEAR__',
+									'_uploaded_file' => true,
+									'size' => 0
+								];
+							} else {
+								$va_attr_update[$sub_element_id] = $vs_attr_val;
+							}
 							$isset = true;
 						}
 						if (!$isset) { continue; }
@@ -4268,7 +4278,8 @@ if (!$batch) {
 						if(!$this->editAttribute($vn_attribute_id, $vn_element_set_id, $va_attr_update, null, ['batch' => $batch])) {
 							$po_request->addActionErrors($this->errors);
 						}
-						 $ifv[$vs_element_set_code][] = ($va_attr_update + ['attribute_id' => $vn_attribute_id]);
+						$ifv[$vs_element_set_code][] = ($va_attr_update + ['attribute_id' => $vn_attribute_id]);
+						
 					}
 				}
 			}
@@ -4883,7 +4894,6 @@ if (!$batch) {
                             $va_file_list = array_map(function($v) { $v['is_form_upload'] = 1; return $v; }, $_FILES);
                             foreach($_REQUEST as $vs_key => $vs_value) {
                                 if (preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) {
-                                	if(!isURL($vs_value, ['strict' => true, 'schemes' => ['http', 'https']])) { continue; }
                                     $va_file_list[$vs_key] = array(
                                         'url' => $vs_value,
                                         'index' => (int)$va_matches[1]
@@ -4925,6 +4935,20 @@ if (!$batch) {
                             	$is_form_upload = caGetOption('is_form_upload', $va_values, false, ['castTo' => 'boolean']);
                             	$va_values['tmp_name'] = stripslashes($va_values['tmp_name']);
                                 $this->clearErrors();
+                                
+        
+                                if($vb_allow_fetching_of_urls && preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) {
+                                	if(($s = $po_request->getParameter($vs_key, pString)) && !isUrl($s)){
+                                		// Attempt to translate non-URL value to URL using media_url plugin search facility (if available)
+                                		$media_url = new CA\MediaUrl();
+										if(is_array($res = $media_url->search($s)) && sizeof($res)) {
+											$po_request->setParameter($vs_key, $res[0]['url']);
+											$va_values['url'] = $res[0]['url'];
+										} else {
+											continue; 
+										}
+                                	}
+                                }
                             
 								if (
 									(!($va_values['_empty_'] ?? false)) &&

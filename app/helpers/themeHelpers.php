@@ -1372,95 +1372,97 @@ function caGetComparisonList($po_request, $ps_table, $pa_options=null) {
  * recursive loop to display all collection children and objects
  * 
  */	
-function caGetCollectionLevelSummary($po_request, $va_collection_ids, $vn_level) {
-	$va_access_values = caGetUserAccessValues($po_request);
+function caGetCollectionLevelSummary($request, $collection_ids, $level) {
+	$access_values = caGetUserAccessValues($request);
 	# --- get collections configuration
 	$o_collections_config = caGetCollectionsConfig();
-	if($o_collections_config->get("export_max_levels") && ($vn_level > $o_collections_config->get("export_max_levels"))){
+	if($o_collections_config->get("export_max_levels") && ($level > $o_collections_config->get("export_max_levels"))){
 		return null;
 	}
-	$t_list = new ca_lists();
-	$va_exclude_collection_type_ids = array();
-	if($va_exclude_collection_type_idnos = $o_collections_config->get("export_exclude_collection_types")){
-		# --- convert to type_ids
-		$va_exclude_collection_type_ids = $t_list->getItemIDsFromList("collection_types", $va_exclude_collection_type_idnos, array("dontIncludeSubItems" => true));
-	}
-	$vs_output = "";
-	$qr_collections = caMakeSearchResult("ca_collections", $va_collection_ids);
 	
-	$vs_sub_collection_label_template = $o_collections_config->get("export_sub_collection_label_template");
-	$vs_sub_collection_desc_template = $o_collections_config->get("export_sub_collection_description_template");
-	$vs_sub_collection_sort = $o_collections_config->get("export_sub_collection_sort");
-	if(!$vs_sub_collection_sort){
-		$vs_sub_collection_sort = "ca_collections.idno_sort";
+	$omit_objects = $o_collections_config->get('export_omit_objects');
+	
+	$t_list = new ca_lists();
+	$exclude_collection_type_ids = array();
+	if($exclude_collection_type_idnos = $o_collections_config->get("export_exclude_collection_types")){
+		# --- convert to type_ids
+		$exclude_collection_type_ids = $t_list->getItemIDsFromList("collection_types", $exclude_collection_type_idnos, array("dontIncludeSubItems" => true));
 	}
-	$vb_dont_show_top_level_description = false;
-	if($o_collections_config->get("dont_show_top_level_description") && ($vn_level == 1)){
-		$vb_dont_show_top_level_description = true;
+	$output = "";
+	$qr_collections = caMakeSearchResult("ca_collections", $collection_ids);
+	
+	$sub_collection_label_template = $o_collections_config->get("export_sub_collection_label_template");
+	$sub_collection_desc_template = $o_collections_config->get("export_sub_collection_description_template");
+	$sub_collection_sort = $o_collections_config->get("export_sub_collection_sort");
+	if(!$sub_collection_sort){
+		$sub_collection_sort = "ca_collections.idno_sort";
 	}
-	$vs_object_template = $o_collections_config->get("export_object_label_template");
-	$va_collection_type_icons = array();
-	$va_collection_type_icons_by_idnos = $o_collections_config->get("export_collection_type_icons");
-	if(is_array($va_collection_type_icons_by_idnos) && sizeof($va_collection_type_icons_by_idnos)){
-		foreach($va_collection_type_icons_by_idnos as $vs_idno => $vs_icon){
-			$va_collection_type_icons[$t_list->getItemId("collection_types", $vs_idno)] = $vs_icon;
+	$dont_show_top_level_description = false;
+	if($o_collections_config->get("dont_show_top_level_description") && ($level == 1)){
+		$dont_show_top_level_description = true;
+	}
+	$object_template = $o_collections_config->get("export_object_label_template");
+	$collection_type_icons = array();
+	$collection_type_icons_by_idnos = $o_collections_config->get("export_collection_type_icons");
+	if(is_array($collection_type_icons_by_idnos) && sizeof($collection_type_icons_by_idnos)){
+		foreach($collection_type_icons_by_idnos as $idno => $icon){
+			$collection_type_icons[$t_list->getItemId("collection_types", $idno)] = $icon;
 		}
 	}
 	if($qr_collections->numHits()){
 		while($qr_collections->nextHit()) {
-			if($va_exclude_collection_type_ids && is_array($va_exclude_collection_type_ids) && (in_array($qr_collections->get("ca_collections.type_id"), $va_exclude_collection_type_ids))){
+			if($exclude_collection_type_ids && is_array($exclude_collection_type_ids) && (in_array($qr_collections->get("ca_collections.type_id"), $exclude_collection_type_ids))){
 				continue;
 			}
 	
-			$vs_icon = "";
-			if(is_array($va_collection_type_icons) && $va_collection_type_icons[$qr_collections->get("ca_collections.type_id")]){
-				$vs_icon = $va_collection_type_icons[$qr_collections->get("ca_collections.type_id")];
+			$icon = "";
+			if(is_array($collection_type_icons) && $collection_type_icons[$qr_collections->get("ca_collections.type_id")]){
+				$icon = $collection_type_icons[$qr_collections->get("ca_collections.type_id")];
 			}			
 			# --- related objects?
-			$va_object_ids = $qr_collections->get("ca_objects.object_id", array("returnAsArray" => true, 'checkAccess' => $va_access_values));
-			$vn_rel_object_count = sizeof($va_object_ids);
-			$va_child_ids = $qr_collections->get("ca_collections.children.collection_id", array("returnAsArray" => true, "checkAccess" => $va_access_values, "sort" => $vs_sub_collection_sort));
-			$vs_output .= "<div class='unit' style='margin-left:".(40*($vn_level - 1))."px;'>";
-			if($vs_icon){
-				$vs_output .= $vs_icon." ";
+			$object_ids = $qr_collections->get("ca_objects.object_id", array("returnAsArray" => true, 'checkAccess' => $access_values));
+			$rel_object_count = sizeof($object_ids);
+			$child_ids = $qr_collections->get("ca_collections.children.collection_id", array("returnAsArray" => true, "checkAccess" => $access_values, "sort" => $sub_collection_sort));
+			$output .= "<div class='unit' style='margin-left:".(40*($level - 1))."px;'>";
+			if($icon){
+				$output .= $icon." ";
 			}
-			$vs_output .= "<b>";
-			if($vs_sub_collection_label_template){
-				$vs_output .= $qr_collections->getWithTemplate($vs_sub_collection_label_template);
+
+			if($sub_collection_label_template){
+				$output .= $qr_collections->getWithTemplate($sub_collection_label_template);
 			}else{
-				$vs_output .= $qr_collections->get("ca_collections.preferred_labels");
+				$output .= $qr_collections->get("ca_collections.preferred_labels");
 			}
-			$vs_output .= "</b>";
 		
-			if($vn_rel_object_count){
-				$vs_output .= " <span class='small'>(".$vn_rel_object_count." record".(($vn_rel_object_count == 1) ? "" : "s").")</span>";
+			if($rel_object_count){
+				$output .= " <span class='small'>(".$rel_object_count." record".(($rel_object_count == 1) ? "" : "s").")</span>";
 			}
-			if(!$vb_dont_show_top_level_description){
-				$vs_desc = "";
-				if($vs_sub_collection_desc_template && ($vs_desc = $qr_collections->getWithTemplate($vs_sub_collection_desc_template))){
-					$vs_output .= "<p>".$vs_desc."</p>";
+			if(!$dont_show_top_level_description){
+				$desc = "";
+				if($sub_collection_desc_template && ($desc = $qr_collections->getWithTemplate($sub_collection_desc_template))){
+					$output .= "<p>".$desc."</p>";
 				}
 			}
 			# --- objects
-			if(sizeof($va_object_ids)){
-				$qr_objects = caMakeSearchResult("ca_objects", $va_object_ids);
+			if(!$omit_objects && is_array($object_ids) && sizeof($object_ids)){
+				$qr_objects = caMakeSearchResult("ca_objects", $object_ids);
 				while($qr_objects->nextHit()){
-					$vs_output .= "<div style='margin-left:20px;'>";
-					if($vs_object_template){
-						$vs_output .= $qr_objects->getWithTemplate($vs_object_template);
+					$output .= "<div style='margin-left:20px;'>";
+					if($object_template){
+						$output .= $qr_objects->getWithTemplate($object_template);
 					}else{
-						$vs_output .= $qr_objects->get("ca_objects.preferred_labels.name");
+						$output .= $qr_objects->get("ca_objects.preferred_labels.name");
 					}
-					$vs_output .= "</div>";
+					$output .= "</div>";
 				}
 			}
-			$vs_output .= "</div>";
-			if(sizeof($va_child_ids)) {
-				$vs_output .=  caGetCollectionLevelSummary($po_request, $va_child_ids, $vn_level + 1);
+			$output .= "</div>";
+			if(sizeof($child_ids)) {
+				$output .=  caGetCollectionLevelSummary($request, $child_ids, $level + 1);
 			}
 		}
 	}
-	return $vs_output;
+	return $output;
 }
 # ---------------------------------------
 /**

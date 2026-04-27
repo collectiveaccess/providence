@@ -44,7 +44,7 @@
     "tedivm/stash": "^1.0",
     "cache/predis-adapter": "^1.1",
     "cache/filesystem-adapter": "^1.1",
-    "firebase/php-jwt": "^6.0",
+    "firebase/php-jwt": "^7.0",
     "softonic/graphql-client": "^2.1",
     "whikloj/bagittools": "^3.0",
     "voku/stop-words": "^2.0",

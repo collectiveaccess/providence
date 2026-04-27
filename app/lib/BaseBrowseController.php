@@ -334,8 +334,6 @@ class BaseBrowseController extends BaseFindController {
 			$this->view->setVar('rowHeaders', $va_row_headers);
 		}
 		
-		$this->_setBottomLineValues($vo_result, $va_display_list, $t_display);
-		
 		switch($pa_options['output_format'] ?? null) {
 			# ------------------------------------
 			case 'LABELS':
@@ -352,6 +350,8 @@ class BaseBrowseController extends BaseFindController {
 			# ------------------------------------
 			case 'HTML': 
 			default:
+				$this->_setBottomLineValues($vo_result, $va_display_list, $t_display, ['total' => $this->view->getVar('num_hits')]);
+		
 				// generate type menu and type value list
 				if (method_exists($t_model, "getTypeList")) {
 					$this->view->setVar('type_list', $t_model->getTypeList());

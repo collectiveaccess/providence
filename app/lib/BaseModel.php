@@ -4501,8 +4501,41 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 					try {
 						$r = $media_url->fetch($vs_url);
 						if (is_array($r)) {
+							$log = caGetLogger();
 							if(!isset($this->_SET_FILES[$ps_field]['original_filename'])) { 
 								$this->_SET_FILES[$ps_field]['original_filename'] = !empty($r['originalFilename']) ? $r['originalFilename'] : pathinfo($r['file'], PATHINFO_BASENAME);
+							}
+							if(is_array($r['metadata'])) { 
+								if(is_array($media_url_mapping_config = $this->_CONFIG->get('fetched_media_metadata_import_mappings') ?? [])) {
+									foreach($media_url_mapping_config as $p => $v) {
+										$media_url_mapping_config[strtolower($p)] = $v;
+									}
+									
+									if($mapping_code = ($media_url_mapping_config[strtolower($r['plugin'])] ?? null)) { 
+										if($t_mapping = ca_data_importers::find(['importer_code' => $mapping_code], ['returnAs' => 'firstModelInstance'])) {
+											$format = $t_mapping->getSetting('inputFormats');
+											if(!is_array($format)) { $format = [$format]; }
+											if(!in_array('mediaurl', $format, true)) {
+												if ($log) { $log->logError(_t('Import mapping with code %1 configured for %2 urls is not for the MediaUrl format; not metadata was imported', $mapping_code, $r['plugin'], $mapping_code)); }	
+											} else {
+												$va_media_info = $this->getMediaInfo('media');
+												$format = array_shift($format);
+												if(!$t_mapping->importDataFromSource(json_encode($r['metadata'] ?? [], true), $t_mapping->getPrimaryKey(), [
+														'logLevel' => $this->_CONFIG->get('embedded_metadata_extraction_mapping_log_level'), 
+														'format' => $format, 'forceImportForPrimaryKeys' => [$this->getPrimaryKey(), 
+														'transaction' => $this->getTransaction()],
+														'environment' => ['source_url' => $vs_url, 'original_filename' => $va_media_info['ORIGINAL_FILENAME'] ?? null, '/original_filename' => $va_media_info['ORIGINAL_FILENAME'] ?? null]
+													])) {
+													if ($log) { $log->logError(_t('MediaUrl import mapping for %1 with code %2 failed', $r['plugin'], $mapping_code)); }	
+												}
+											}
+										} else {
+											if ($log) { $log->logWarn(_t('Could not find import mapping for %1 with code %2; no metadata was imported', $r['plugin'], $mapping_code)); }
+										}
+									} else {
+										if ($log) { $log->logDebug(_t('No MediaUrl import mapping configured for %1; no metadata was imported', $r['plugin'])); }
+									}
+								}
 							}
 							$vs_tmp_file = $r['file'];
 							$is_without_media = true;
@@ -10002,7 +10035,7 @@ $pa_options["display_form_field_tips"] = true;
 			$pn_type_id = $pm_type_id;
 		}
 		
-		if ((!is_numeric($pn_rel_id) && !caGetOption('primaryKeyOnly', $pa_options, false)) || caGetOption('idnoOnly', $pa_options, false)) {
+		if ((!is_numeric($pn_rel_id) && !is_null($pn_rel_id) && !caGetOption('primaryKeyOnly', $pa_options, false)) || caGetOption('idnoOnly', $pa_options, false)) {
 			if ($t_rel_item = Datamodel::getInstanceByTableName($va_rel_info['related_table_name'], true)) {
 				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
 				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load([$vs_idno_fld => $pn_rel_id, 'deleted' => 0])) {
@@ -10011,13 +10044,12 @@ $pa_options["display_form_field_tips"] = true;
 			}
 		}
 		
-		if ((!isset($pa_options['allowDuplicates']) || !$pa_options['allowDuplicates']) && !$this->getAppConfig()->get('allow_duplicate_relationships') && $this->relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_direction, array('relation_id' => $pn_relation_id))) {
+		if (!is_null($pn_rel_id) && (!isset($pa_options['allowDuplicates']) || !$pa_options['allowDuplicates']) && !$this->getAppConfig()->get('allow_duplicate_relationships') && $this->relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_direction, array('relation_id' => $pn_relation_id))) {
 			if (isset($pa_options['setErrorOnDuplicate']) && $pa_options['setErrorOnDuplicate']) {
 				$this->postError(1100, _t('Relationship already exists'), 'BaseModel->addRelationship', $t_rel_item->tableName());
 			}
 			return false;
 		}
-		
 		if ($va_rel_info['related_table_name'] == $this->tableName()) {
 			// is self relation
 			if ($pn_rel_id === $this->getPrimaryKey()) {
@@ -10025,16 +10057,18 @@ $pa_options["display_form_field_tips"] = true;
 				return false;
 			}
 			if ($t_item_rel->load($pn_relation_id)) {
-				if(!in_array($ps_direction, ['ltor', 'rtol'], true)) {	// if direction is not set preserve current direction
-					$ps_direction = ($t_item_rel->get($t_item_rel->getLeftTableFieldName()) == $this->getPrimaryKey()) ? 'ltor' : 'rtol';
-				}
-				if ($ps_direction == 'rtol') {
-					$t_item_rel->set($t_item_rel->getRightTableFieldName(), $this->getPrimaryKey());
-					$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $pn_rel_id);
-				} else {
-					// default is left-to-right
-					$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $this->getPrimaryKey());
-					$t_item_rel->set($t_item_rel->getRightTableFieldName(), $pn_rel_id);
+				if(!is_null($pn_rel_id)) {
+					if(!in_array($ps_direction, ['ltor', 'rtol'], true)) {	// if direction is not set preserve current direction
+						$ps_direction = ($t_item_rel->get($t_item_rel->getLeftTableFieldName()) == $this->getPrimaryKey()) ? 'ltor' : 'rtol';
+					}
+					if ($ps_direction == 'rtol') {
+						$t_item_rel->set($t_item_rel->getRightTableFieldName(), $this->getPrimaryKey());
+						$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $pn_rel_id);
+					} else {
+						// default is left-to-right
+						$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $this->getPrimaryKey());
+						$t_item_rel->set($t_item_rel->getRightTableFieldName(), $pn_rel_id);
+					}
 				}
 				if (!is_null($pn_rank)) { $t_item_rel->set('rank', $pn_rank);	}
 
@@ -10055,16 +10089,18 @@ $pa_options["display_form_field_tips"] = true;
 			switch(sizeof($va_rel_info['path'])) {
 				case 3:		// many-to-many relationship
 					if ($t_item_rel->load($pn_relation_id)) {
-						$vs_left_table = $t_item_rel->getLeftTableName();
-						$vs_right_table = $t_item_rel->getRightTableName();
-						if ($this->tableName() == $vs_left_table) {
-							// is lefty
-							$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $this->getPrimaryKey());
-							$t_item_rel->set($t_item_rel->getRightTableFieldName(), $pn_rel_id);
-						} else {
-							// is righty
-							$t_item_rel->set($t_item_rel->getRightTableFieldName(), $this->getPrimaryKey());
-							$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $pn_rel_id);
+						if(!is_null($pn_rel_id)) {
+							$vs_left_table = $t_item_rel->getLeftTableName();
+							$vs_right_table = $t_item_rel->getRightTableName();
+							if ($this->tableName() == $vs_left_table) {
+								// is lefty
+								$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $this->getPrimaryKey());
+								$t_item_rel->set($t_item_rel->getRightTableFieldName(), $pn_rel_id);
+							} else {
+								// is righty
+								$t_item_rel->set($t_item_rel->getRightTableFieldName(), $this->getPrimaryKey());
+								$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $pn_rel_id);
+							}
 						}
 						
 						if (!is_null($pn_rank)) { $t_item_rel->set('rank', $pn_rank);	}
@@ -10099,7 +10135,7 @@ $pa_options["display_form_field_tips"] = true;
 							return $t_item_rel;
 						}
 						
-						if ($t_item_rel->load($pn_rel_id)) {
+						if (!is_null($pn_rel_id) && $t_item_rel->load($pn_rel_id)) {
 							$t_item_rel->set($va_rel_info['rel_keys']['many_table_field'], $this->getPrimaryKey());
 							
 							if (is_array($cf = $t_item_rel->getChangedFieldValuesArray()) && (sizeof($cf) > 0)) {
@@ -10113,7 +10149,9 @@ $pa_options["display_form_field_tips"] = true;
 							return $t_item_rel;
 						}
 					} else {
-						$this->set($va_rel_info['rel_keys']['many_table_field'], $pn_rel_id);
+						if(!is_null($pn_rel_id)) {
+							$this->set($va_rel_info['rel_keys']['many_table_field'], $pn_rel_id);
+						}
 						
 						if (is_array($cf = $t_item_rel->getChangedFieldValuesArray()) && (sizeof($cf) > 0)) {
                             $this->update();
@@ -13911,7 +13949,19 @@ $pa_options["display_form_field_tips"] = true;
 		$tags = caGetTemplateTags($expression);
 		$data = [];
 		foreach($tags as $t) {
-			$data[$t] = $this->get($t);
+			$p = caParseTagOptions($t);
+			if(!is_array($p)) {
+				$p = ['tag' => $t, 'options' => []];
+			}
+			if(
+				!isset($p['options']['convertCodesToDisplayText']) && 
+				!isset($p['options']['convertCodesToIdno']) && 
+				!isset($p['options']['convertCodesToValue'])
+			) {
+				$p['options']['convertCodesToIdno'] =  true;
+			}
+			
+			$data[$t] = $this->get($p['tag'], $p['options']);
 		}
 		return ExpressionParser::evaluate($expression, $data);
 	}

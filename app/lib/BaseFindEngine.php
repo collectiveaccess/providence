@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2025 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -356,10 +356,12 @@ class BaseFindEngine extends BaseObject {
 	 */
 	public function _secondarySortHits(array $hits, array $page_hits, string $table, string $primary_field, string $primary_sort_direction, array $sort_fields, array $sort_directions, array $options=null) {
 		if(!sizeof($hits)) { return []; }
+		if (!is_array($sort_fields) || !sizeof($sort_fields)) { return $hits; }
 		$sort_spec = array_shift($sort_fields);
 		$sort_direction = self::sortDirection(array_shift($sort_directions));
 		list($sort_table, $sort_field, $sort_subfield) = array_pad(explode(".", $sort_spec), 3, null);
-	
+		if (!$table || !$sort_table || !$primary_field) { return $hits; }
+		
 		// Extract sortable values present on results page ($page_hits)
 		$values = $this->_getSortValues($page_hits, $table, $primary_field, $sort_direction);
 		// Get all ids for each key value 
@@ -948,12 +950,14 @@ class BaseFindEngine extends BaseObject {
 	 */
 	private function _getSortValues(array $hits, string $table, string $sort_field, string $direction='asc') {
 		if(!sizeof($hits)) { return []; }
+		if (!$sort_field) { return $hits; }
 		$t_table = Datamodel::getInstance($table, true);
 		$table = $t_table->tableName();
 		$table_pk = $t_table->primaryKey();
 		$table_num = $t_table->tableNum();
 		
 		list($sort_table, $sort_field, $sort_subfield) = array_pad(explode(".", $sort_field), 3, null);
+		if (!$sort_table) { return $hits; }
 		
 		$values = [];
 		

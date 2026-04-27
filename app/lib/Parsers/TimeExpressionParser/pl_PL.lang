@@ -23,6 +23,7 @@ monthTable = {
 
 # List of day names, starting with Sunday
 dayListDisplay = [ Niedziela, Poniedziałek, Wtorek, Środa, Czwartek, Piątek, Sobota ]
+dayListShortDisplay = [Nie, Pon, Wto, Śro, Czw, Pią, Sob]
 
 rangePreConjunctions = [ od, między ]
 rangeConjunctions = [–, -, do, a, ..]

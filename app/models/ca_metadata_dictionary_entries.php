@@ -327,8 +327,8 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 				'displayType' => DT_FIELD,
 				'width' => "660px", 'height' => "400px",
 				'takesLocale' => true,
+				'usewysiwygeditor' => (bool)Configuration::load()->get('use_wysiwyg_editor_for_dictionary_definitions'),
 				'label' => _t('Definition'),
-				'usewysiwygeditor' => true,
 				'description' => _t('Extended text describing standards for entry in this data entry bundle.')
 			),
 			'restrict_to_types' => array(

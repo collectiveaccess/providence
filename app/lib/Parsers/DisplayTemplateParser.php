@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2025 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1885,6 +1885,9 @@ class DisplayTemplateParser {
 				case 'expression':
 					$vs_acc .= $content = ExpressionParser::evaluate(DisplayTemplateParser::_processTemplateSubTemplates($o_node->children, $pa_values, array_merge($pa_options, ['quoteNonNumericValues' => true])), $pa_values);
 					if ($pb_is_case && $content) { break(2); }
+					break;
+				case 'unit':
+					// omit
 					break;
 				default:
 					$vs_acc .= DisplayTemplateParser::processSimpleTemplate($o_node->html(), $pa_values, $pa_options);

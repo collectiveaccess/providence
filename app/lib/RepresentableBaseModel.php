@@ -857,8 +857,16 @@ class RepresentableBaseModel extends BundlableLabelableBaseModelWithAttributes {
 					} elseif($t_rep->hasField($vs_element)) {
 						$t_rep->set($vs_element, $va_value);
 					} else {
-						// scalar value (simple single value attribute)
-						if ($va_value) {
+						// scalar attribute
+						if ($va_value === '' || is_null($va_value)) {
+							// remove attribute if cleared
+							if ($t_element = ca_metadata_elements::getInstance($vs_element)) {
+								$t_rep->removeAttributes(
+									$t_element->getPrimaryKey(),
+									['force' => true]
+								);
+							}
+						} else {
 							$t_rep->replaceAttribute(array(
 								'locale_id' => $pn_locale_id,
 								$vs_element => $va_value

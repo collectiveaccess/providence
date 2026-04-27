@@ -913,13 +913,20 @@ function caEditorFindResultNavigation($request, $instance, $result_context, $opt
 		} else {
 			$default_to_summary_view = (bool)$request->config->get("{$table_name}_editor_defaults_to_summary_view");
 		}
+			
+		$action = $request->getAction();	
+		$extra = $request->getActionExtra();
+		if($extra && !in_array($action, ['Access', 'Summary', 'Log'], true)) {
+			$action = "Edit/{$extra}";
+		}
+		
 		if ($prev_id > 0) {
 			if(
 				$request->user->canAccess($request->getModulePath(),$request->getController(),"Edit",array($pk => $prev_id))
 				&&
 				!$default_to_summary_view
 			){
-				$buf .= caNavLink($request, caNavIcon(__CA_NAV_ICON_SCROLL_LT__, 2), 'prev record', $request->getModulePath(), $request->getController(), 'Edit'.'/'.$request->getActionExtra(), array($pk => $prev_id)).'&nbsp;';
+				$buf .= caNavLink($request, caNavIcon(__CA_NAV_ICON_SCROLL_LT__, 2), 'prev record', $request->getModulePath(), $request->getController(), $action, array($pk => $prev_id)).'&nbsp;';
 			} else {
 				$buf .= caNavLink($request, caNavIcon(__CA_NAV_ICON_SCROLL_LT__, 2), 'prev record', $request->getModulePath(), $request->getController(), 'Summary', array($pk => $prev_id)).'&nbsp;';
 			}
@@ -937,7 +944,7 @@ function caEditorFindResultNavigation($request, $instance, $result_context, $opt
 				&&
 				!$default_to_summary_view
 			){
-				$buf .= '&nbsp;'.caNavLink($request,caNavIcon(__CA_NAV_ICON_SCROLL_RT__, 2), 'next record', $request->getModulePath(), $request->getController(), 'Edit'.'/'.$request->getActionExtra(), array($pk => $next_id));
+				$buf .= '&nbsp;'.caNavLink($request,caNavIcon(__CA_NAV_ICON_SCROLL_RT__, 2), 'next record', $request->getModulePath(), $request->getController(), $action, array($pk => $next_id));
 			} else {
 				$buf .= '&nbsp;'.caNavLink($request,caNavIcon(__CA_NAV_ICON_SCROLL_RT__, 2), 'next record', $request->getModulePath(), $request->getController(), 'Summary', array($pk => $next_id));
 			}
@@ -1620,7 +1627,7 @@ function caEditorInspector($view, $options=null) {
 			FooterManager::add($change_type_view->render("create_component_html.php"));
 		}
 		
-		$t_set_type = $t_item->getTypeInstance();		
+		$t_set_type = method_exists($t_item, 'getTypeInstance') ? $t_item->getTypeInstance() : null;		
 		$type_settings = $t_set_type ? $t_set_type->getSettings() : [];
 		if(($table_name === 'ca_sets') && (caGetOption('random_generation_mode', $type_settings, 0) > 0)) {
 			$tools[] = "<div id='inspectorRandomButton' class='inspectorActionButton'><a href='#' onclick='caRandomSetGenerationPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_RANDOM__, '20px', ['title' => _t('Add random items')])."</a></div>\n";
@@ -4106,50 +4113,73 @@ function caReturnToHomeLocationControlForRelatedBundle($po_request, $ps_id_prefi
 /**
  * 
  */
-function caProcessBottomLineTemplateForDisplay($po_request, $pt_display, $pr_res, $pa_options=null) {
-	if (!$pr_res) { return null; }
-	if (!$pt_display) { return null; }
-	$vs_template = $pt_display->getSetting('bottom_line');
+function caProcessBottomLineTemplateForDisplay($request, $t_display, $qr_res, $options=null) {
+	if (!$qr_res) { return null; }
+	if (!$t_display) { return null; }
+	$template = $t_display->getSetting('bottom_line');
+	$bundles_by_code = [];
+	if (!is_array($bundles = $t_display->getPlacementsInDisplay())) { return null; }
+	foreach($bundles as $vn_placement_id => $placement) {
+		$bundles_by_code[$placement['bundle_name'] ?? $placement['bundle'] ?? null] = $placement;
+	} 
+	
+	$tags = caGetTemplateTags($template, ['parseOptions' => true]);
+	$is_set = false;
 
-	$va_bundles_by_code = [];
-	if (!is_array($va_bundles = $pt_display->getPlacementsInDisplay())) { return null; }
-	foreach($va_bundles as $vn_placement_id => $va_placement) {
-		$va_bundles_by_code[$va_placement['bundle_name']] = $va_placement;
-	}
+	foreach($tags as $tag) {
+		$fields = preg_split("/[ ;,]+/", $tag['options']['fields']);
 
-	$va_tags = caGetTemplateTags($vs_template, ['parseOptions' => true]);
-	$vb_is_set = false;
-
-	foreach($va_tags as $va_tag) {
-		$va_fields = preg_split("/[ ;,]+/", $va_tag['options']['fields']);
-
-		$va_tag_bits = explode(':', $va_tag['tag']);
-		switch(strtolower($va_tag_bits[0])) {
+		$tag_bits = explode(':', $tag['tag']);
+		switch(strtolower($tag_bits[0])) {
 			case 'sum':
-				$va_placements = [];
-				foreach($va_fields as $vs_field) {
-					if (!isset($va_bundles_by_code[$vs_field])) { continue; }
-					$va_placements[] = $va_bundles_by_code[$vs_field];
+				$placements = [];
+				foreach($fields as $field) {
+					if (!isset($bundles_by_code[$field])) { continue; }
+					$placements[] = $bundles_by_code[$field];
 				}
 
-				$vs_val = caProcessBottomLineTemplateForPlacement($po_request, $va_placements, $pr_res, ['template' => '^SUM'.(isset($va_tag_bits[1]) ? ":{$va_tag_bits[1]}" : ""), 'multiple' => true]);
+				$val = caProcessBottomLineTemplateForPlacement($request, $placements, $qr_res, ['template' => '^SUM'.(isset($tag_bits[1]) ? ":{$tag_bits[1]}" : ""), 'multiple' => true]);
 
-				$vs_template = str_replace("^".$va_tag['originalTag'], $vs_val, $vs_template);
+				$template = str_replace("^".$tag['originalTag'], $val, $template);
 
-				$vb_is_set = true;
+				$is_set = true;
+				break;
+			case 'count':
+				$template = str_replace("^".$tag['originalTag'], caGetOption('total', $options, $qr_res->numHits()), $template);
+				$is_set = true;
+				break;
+			case 'pagecount':
+				$template = str_replace("^".$tag['originalTag'], $qr_res->numHits() ?? 0, $template);
+				$is_set = true;
 				break;
 		}
 	}
-	return $vb_is_set ? $vs_template : null;
+	return $is_set ? $template : null;
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caProcessBottomLineTemplateForDisplayPlacements($request, $t_display, $res, $options=null) {
+	if (!$res) { return null; }
+	if (!$t_display) { return null; }
+
+	if (!is_array($bundles = $t_display->getPlacementsInDisplay())) { return null; }
+	
+	$acc = [];
+	foreach($bundles as $placement_id => $placement) {
+		$acc[$placement_id] = caProcessBottomLineTemplateForPlacement($request, $placement, $res, $options);
+	}
+	return $acc;
 }
 # ---------------------------------------
 /**
  *
  */
-function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_res, $options=null) {
+function caProcessBottomLineTemplateForPlacement($request, $placement, $res, $options=null) {
 	global $g_ui_units_pref, $g_ui_locale;
 
-	if (!$pr_res) { return null; }
+	if (!$res) { return null; }
 
 	if ($is_multiple = caGetOption('multiple', $options, false)) {
 		$placements = $placement;
@@ -4157,34 +4187,33 @@ function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_re
 		$placements = [$placement];
 	}
 
-	if (($current_index = $pr_res->currentIndex()) < 0) { $current_index = 0; }
+	if (($current_index = $res->currentIndex()) < 0) { $current_index = 0; }
 
 	$page_start = caGetOption('pageStart', $options, 0);
-	$page_end = caGetOption('pageEnd', $options, $pr_res->numHits());
+	$page_end = caGetOption('pageEnd', $options, $res->numHits());
 
 	$subelements_to_process = $tag_values = [];
 
 	foreach($placements as $placement) {
-		$pr_res->seek(0);
+		$res->seek(0);
 
 		if (!($template = caGetOption('template', $options, $placement['settings']['bottom_line']))) { 
-			$pr_res->seek($current_index);	// Restore current position of search result
+			$res->seek($current_index);	// Restore current position of search result
 			return null; 
 		}
+		$bundle_name = $placement['bundle_name'] ?? $placement['bundle'] ?? null;
 		
-		$bundle_name = $placement['bundle_name'];
-
 		$tmp = explode(".", $bundle_name);
 
 		if (!($t_instance = Datamodel::getInstanceByTableName($tmp[0], true))) {
-			$pr_res->seek($current_index);	// Restore current position of search result
+			$res->seek($current_index);	// Restore current position of search result
 			return null;
 		}
 
 		$datatype = ca_metadata_elements::getElementDatatype($tmp[1]);
 		if (is_null($datatype)) { continue; }
 
-		if (!($user_currency = $po_request->user ? $po_request->user->getPreference('currency') : 'USD')) {
+		if (!($user_currency = $request->user ? $request->user->getPreference('currency') : 'USD')) {
 			$user_currency = 'USD';
 		}
 		$user_currency = caGetCurrencySymbol($user_currency, $tmp[1]);
@@ -4195,7 +4224,7 @@ function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_re
 		//		Ex. 	^SUM:valuation = sum of "valuation" sub-element
 		//				^SUM = sum of primary value in non-container element
 		if (!preg_match_all("!(\^[A-Z]+[\:]{0,1}[A-Za-z0-9\_\-]*[%]{0,1}[A-Za-z0-9\_\-=]*)!", $template, $tags)) {
-			$pr_res->seek($current_index);	// Restore current position of search result
+			$res->seek($current_index);	// Restore current position of search result
 			return $template;
 		}
 		$tags = $tags[1];
@@ -4226,7 +4255,7 @@ function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_re
 		$page_min = $page_max = null;
 		
 		$tag_values = array();
-		while($pr_res->nextHit()) {
+		while($res->nextHit()) {
 			foreach($subelements_to_process as $subelement => $subelement_datatype) {
 				$value_name = ($is_multiple) ? "Value_{$subelement_datatype}" : $subelement;
 
@@ -4244,16 +4273,18 @@ function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_re
 				
 				switch($subelement_datatype) {
 					case __CA_ATTRIBUTE_VALUE_LIST__:
-						$values = $pr_res->get($subelement, ['convertCodesToIdno' => true, 'returnAsArray' => true]);
-						if(is_array($values)) {
+						$values = $res->get($subelement, ['convertCodesToIdno' => true, 'returnAsArray' => true]);
+						if(is_array($values) && sizeof($values)) {
 							foreach($values as $index => $value) {
 								$tag_values[$value_name]['COUNTS'][$value]++; 
 							}
+						} else {
+							$tag_values[$value_name]['COUNTS'][null]++; 
 						}
 						break;
 					case __CA_ATTRIBUTE_VALUE_DATERANGE__:
-						$values = $pr_res->get($subelement, ['sortable' => true, 'returnAsArray' => true]);
-						$display_values = $pr_res->get($subelement, ['returnAsArray' => true]);
+						$values = $res->get($subelement, ['sortable' => true, 'returnAsArray' => true]);
+						$display_values = $res->get($subelement, ['returnAsArray' => true]);
 
 						if(is_array($values)) {
 							foreach($values as $index => $value) {
@@ -4284,7 +4315,7 @@ function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_re
 						}
 						break;
 					case __CA_ATTRIBUTE_VALUE_CURRENCY__:
-						$values = $pr_res->get($subelement, array('returnAsDecimalWithCurrencySpecifier' => true, 'returnAsArray' => true));
+						$values = $res->get($subelement, array('returnAsDecimalWithCurrencySpecifier' => true, 'returnAsArray' => true));
 
 						if(is_array($values)) {
 							foreach($values as $value) {
@@ -4305,7 +4336,7 @@ function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_re
 						break;
 					case __CA_ATTRIBUTE_VALUE_LENGTH__:
 					case __CA_ATTRIBUTE_VALUE_WEIGHT__:
-						$values = $pr_res->get($subelement, array('returnAsDecimalMetric' => true, 'returnAsArray' => true));
+						$values = $res->get($subelement, array('returnAsDecimalMetric' => true, 'returnAsArray' => true));
 
 						if(is_array($values)) {
 							foreach($values as $value) {
@@ -4324,7 +4355,7 @@ function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_re
 						}
 						break;
 					case __CA_ATTRIBUTE_VALUE_TIMECODE__:
-						$values = $pr_res->get($subelement, array('returnAsDecimal' => true, 'returnAsArray' => true));
+						$values = $res->get($subelement, array('returnAsDecimal' => true, 'returnAsArray' => true));
 
 						if(is_array($values)) {
 							foreach($values as $value) {
@@ -4344,7 +4375,7 @@ function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_re
 						break;
 					case __CA_ATTRIBUTE_VALUE_INTEGER__:	// integer
 					case __CA_ATTRIBUTE_VALUE_NUMERIC__:	// decimal
-						$values = $pr_res->get($subelement, array('returnAsArray' => true));
+						$values = $res->get($subelement, array('returnAsArray' => true));
 
 						if(is_array($values)) {
 							foreach($values as $value) {
@@ -4409,7 +4440,7 @@ function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_re
 								if($key = $parsed_tag['options']['filter'] ?? null) {
 									$c = $tag_values[$value_name]['COUNTS'][$key] ?? 0;
 								} else {
-									$c = array_reduce($tag_values[$value_name]['COUNTS'], function($c, $i) {
+									$c = array_reduce($tag_values[$value_name]['COUNTS'] ?? [], function($c, $i) {
 										return $c + $i;
 									}, 0);
 								}
@@ -4523,7 +4554,7 @@ function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_re
 	}
 
 	// Restore current position of search result
-	$pr_res->seek($current_index);
+	$res->seek($current_index);
 
 	return $template;
 }
@@ -6610,9 +6641,18 @@ function caNormalizeBundleLabel(?string $label, ?array $options=null) : ?string 
 				:
 				array_map(function($v) { return caUcFirstUTF8Safe($v); }, $config->getList('bundle_label_normalization_skip_words') ?: []);
 			
+			$acronyms = (MemoryCache::contains('normalizeBundleAcronyms')) ? 
+				MemoryCache::fetch('normalizeBundleAcronyms')
+				:
+				array_map(function($v) { return caUcFirstUTF8Safe($v); }, $config->getList('bundle_label_normalization_acronyms') ?: []);
+			
+			
 			// Clean up conjunctions and parentheticals that are now incorrectly capitalized
 			foreach($skip_words as $p) {
-				$label = str_replace($p, mb_strtolower($p), $label);
+				$label = preg_replace("!{$p}([\s\)]+)!", mb_strtolower($p)."\$1", $label);
+			}
+			foreach($acronyms as $p) {
+				$label = preg_replace("!(^|[\s\(]+)({$p})([\s\)]+|$)!i", "\$1".mb_strtoupper($p)."\$3", $label);
 			}
 			if(preg_match_all("!\(([\w]+)\)!", $label, $m)) {
 				 foreach($m as $p) {

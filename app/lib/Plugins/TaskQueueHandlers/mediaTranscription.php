@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2022-2025 Whirl-i-Gig
+ * Copyright 2022-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,7 +43,6 @@ include_once(__CA_LIB_DIR__."/ApplicationError.php");
  */
 class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlugTaskQueueHandler {
 	# --------------------------------------------------------------------------------
-	
 	public $error;
 
 	# --------------------------------------------------------------------------------
@@ -108,6 +107,8 @@ class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlug
 		
 		$logger = caGetLogger(['logLevel' => 'INFO']);
 		
+		$report = ['errors' => [], 'notes' => []];
+		
 		if(($t = Datamodel::getInstance($table)) && $t->load($id)) {
 			$media_input = $t->getMediaPath($field, 'original');
 			$vtt_output = caGetTempFileName('transcription', 'vtt', ['useAppTmpDir' => true]);
@@ -135,7 +136,7 @@ class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlug
 					$this->error->setError(551, _t("Could not add VTT transcription file to %1::%2: %3", $table, $id, join('; ', $t->getErrors())),"mediaTranscription->process()");	
 				} else {
 					@unlink($vtt_output);
-					return true;
+					return $report;
 				}
 			} else {
 				$logger->logError(_t('[TaskQueue::mediaTranscription::process] Could not transcribe media %1. Return code was %2; message was %3', $media_input, $return, join('; ', $output)));
@@ -156,7 +157,7 @@ class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlug
 	 *
 	 * Returns true on success, false on error
 	 */
-	public function cancel($pn_task_id, $parameters) {
+	public function cancel($task_id, $parameters) {
 		# delete tmp file
 		@unlink($parameters["FILENAME"]);
 		
