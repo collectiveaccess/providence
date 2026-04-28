@@ -304,7 +304,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					'table_name' => $table, 
 					'instance' => $this, 
 					'is_insert' => true, 
-					'for_duplication' => caGetOption('forDuplication', $pa_options, true)
+					'for_duplication' => caGetOption('forDuplication', $pa_options, false)
 				]
 			);
 		}
@@ -415,7 +415,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					'table_num' => $this->tableNum(), 
 					'table_name' => $this->tableName(), 
 					'instance' => $this, 'is_insert' => false, 
-					'for_duplication' => caGetOption('forDuplication', $pa_options, true)
+					'for_duplication' => caGetOption('forDuplication', $pa_options, false)
 				]
 			);
 		}
