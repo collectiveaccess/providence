@@ -17,8 +17,8 @@ html {
 body {
     font: 12px "Helvetica Neue", Arial, Helvetica, Sans-serif;
     background-color: #fff;
-    margin:0px;
-    padding:0px;
+    margin: 0px;
+    padding: 0px;
     height: 100%;
     overflow: auto !important;
 }
@@ -27,9 +27,10 @@ a, p, div {
     overflow-wrap: break-word;
 }
 
-form{
+form {
     display:inline;
 }
+
 form select {
 	border: 1px solid #ccc;
 	background-color: #fff;
@@ -97,35 +98,35 @@ h5 {
 }
 
 .width {
-    width: 1000px;
+    width: calc(100% - 150px);
+    margin-left: 19px;
 }
+
 .roundedNav {
     min-width: 800px;
-    max-width:1000px;
+    max-width: calc(100%-215px);
     background-color:#FFFFFF;
     height:30px;
-    margin-bottom:0px;
-    padding:7px 20px 0px 20px;
+    margin: 7px 20px 0px 12px;
+    padding: 0;
 }
+
 *:first-child+html .roundedNav{padding-right:0px;} * html .roundedNav{padding-right:0px;}
+
 #topNav {
     color: #FFFFFF;
     background-color:#fff;
     font-size: 13px;
-    z-index:1;
+    z-index: 1;
     position: fixed;
     top: 0px;
     left: 0px;
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
+    width: calc(100% - 45px);
+    margin: 0 20px 0 19px;
+    padding: 0;
     font-family:arial;
     background-image: none;
-    border: 0px;
-    border-radius: 0;
-    -moz-box-shadow: 0 0 1px #333;
-    -webkit-box-shadow: 0 0 1px #333;
-    box-shadow: 0 0 1px #333;
+    border: 1px solid #ddd;
     min-height: 20px;
     height: 58px;
 }
@@ -139,10 +140,12 @@ h5 {
     margin-bottom: 0px;
     height:30px;
 }
+
 #navWrapper {
 	float: right;
 	left: 50%;
 }
+
 #logo {
     background-repeat: no-repeat;
     height: 45px;
@@ -151,31 +154,31 @@ h5 {
 }
 
 *:first-child+html #logo {padding:0px 0px 0px 5px;} * html #logo {padding:0px 0px 0px 5px;} /* IE6 only fixes width */
+
 #main{
     background-color: #DDDDDD;
-    margin-top:0px;
-    padding:0px;
+    margin-top: 0px;
+    padding: 0px;
     text-align:left;
     position:relative;
 }
 
 #mainContent{
     background-color: #FFFFFF;
-    padding: 10px 20px 60px 20px;
-    width:744px;	/* .width 1000 - #leftNav (width + borders) 216 - 40px padding in mainContent = 744px */
+    padding: 10px 21px 60px 20px;
+    width: calc(100% - 150px);	/* .width 1000 - #leftNav (width + borders) 216 - 40px padding in mainContent = 744px */
     margin-left: 215px;
-    border-right: 2px solid #ddd;
+    border-right: 1px solid #ddd;
     margin-top: 28px;
     min-height: 1000px;
     position:absolute;
 }
-* html #mainContent { width:736px; margin-left: 0px;} /* IE6 only fixes width */
 
 #mainContentFull{ /* used to make content area extend full width of window when viewing dashboard */
     background-color: #FFFFFF;
     min-height: 1000px;
     padding: 10px 20px 0px 20px;
-    margin-top:28px;
+    margin-top: 28px;
 }
 
 .clear {
@@ -196,8 +199,8 @@ div.clear {
     position: fixed;
     height: 100%;
     padding-top:27px; 
-    border-right: #ddd solid 2px;
-    border-left: #ddd solid 2px;
+    border-right: #ddd solid 1px;
+    border-left: #ddd solid 1px;
 }
 
 #leftNav #leftNavSidebar {
@@ -662,7 +665,7 @@ h3.currentSort div {
 
 #footer{
     background-color: #444;
-    width:1000px;
+    width:100%;
     color: #fff;
     font-size: 11px;
     padding: 6px 0px 3px 0px;
@@ -671,8 +674,8 @@ h3.currentSort div {
 }
 #footer div{
     padding: 0px;
-    text-align:left;
-    width:784px;
+    text-align:center;
+    width:100%;
     margin-left:auto;
     margin-right: auto;
     font-family: 'DIN-Regular';

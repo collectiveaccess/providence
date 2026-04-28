@@ -75,4 +75,4 @@ $window_title = strip_tags($window_title);
 		</script>
 	</head>	
 	<body id="providenceApp">
-		<div align="center">
+		<div>
