@@ -387,8 +387,11 @@ class ca_entity_labels extends BaseLabel {
 	 */
 	public static function normalizeLabel(array $label_values, ?array $options=null) : array {
 		$is_org = (($t_entity = caGetOption('subject', $options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG'));
-		
-		$n =  DataMigrationUtils::splitEntityName(self::labelAsString($label_values), array_merge(['type' => $is_org ? 'ORG' : 'IND'], $options ?? []));
+	
+		$n = DataMigrationUtils::splitEntityName(self::labelAsString($label_values), array_merge(['type' => $is_org ? 'ORG' : 'IND'], $options ?? []));
+		if(strlen($label_values['displayname'] ?? '') && !strlen($label_values['forename'] ?? '') && !strlen($label_values['surname'] ?? '')) {
+			$label_values = $n;
+		}
 		
 		if((isset($label_values['suffix']) && strlen($label_values['suffix'])) || (isset($label_values['prefix']) && strlen($label_values['prefix']))) {
 			if(!($label_values['displayname'] ?? null)) {
@@ -397,7 +400,14 @@ class ca_entity_labels extends BaseLabel {
 			// assume name is already split if suffix or prefix is set
 			return $label_values;
 		}
-		return $n;
+		
+		foreach(['displayname'] as $k) {
+			if(!strlen($label_values[$k] ?? '')) {
+				$label_values[$k] = $n[$k];
+			}
+		}
+		
+		return $label_values;
 	}
 	# ------------------------------------------------------
 	/**
