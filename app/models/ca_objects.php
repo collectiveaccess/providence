@@ -973,6 +973,17 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 		return true;
 	}
+	# ------------------------------------------------------
+	/** 
+	 * 
+	 */
+	public function getComponentTypes(?array $options=null) {
+		$component_types = $this->getAppConfig()->getList('ca_objects_component_types') ?? [];
+		if(is_array($child_types = $this->getTypeList(['idsOnly' => true, 'childrenOfCurrentTypeOnly' => true]))) {
+			$component_types = array_intersect($component_types, caMakeTypeList($this->tableName(), $child_types) ?? []);
+		}	
+		return array_values($component_types);
+	}
  	# ------------------------------------------------------
  	# Object checkout 
  	# ------------------------------------------------------
