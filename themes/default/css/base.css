@@ -135,7 +135,7 @@ h5 {
     position: relative;
     margin-left: auto;
     margin-right: auto;
-    z-index: 30000;			/* menu bar should always be on top */
+    z-index: 999;			/* menu bar should always be on top */
     padding: 0px;
     margin-bottom: 0px;
     height:30px;
@@ -170,13 +170,19 @@ h5 {
     margin-left: 215px;
     border-right: 1px solid #ddd;
     margin-top: 28px;
-    min-height: 1000px;
-    position:absolute;
+    position: absolute;
+}
+
+#mainContent .control-box {
+	top: 60px;
+	left: 251px;
+	position: fixed;
+	z-index: 998 ;
+	width: calc(100% - 150px - 215px + 60px);
 }
 
 #mainContentFull{ /* used to make content area extend full width of window when viewing dashboard */
     background-color: #FFFFFF;
-    min-height: 1000px;
     padding: 10px 20px 0px 20px;
     margin-top: 28px;
 }
@@ -710,6 +716,7 @@ a.feed-icon img{
     margin:			0;
     padding-right:	0;
     list-style:		none;
+    
 }
 .sf-menu {
     line-height:	1.0;
@@ -718,7 +725,6 @@ a.feed-icon img{
     position:		absolute;
     top:			-999em;
     width:			14em; /* left offset of submenus need to match (see below) */
-    z-index: 100000;
 }
 .sf-menu ul li {
     width:			100%;
@@ -6485,7 +6491,7 @@ table.caSummaryDownloadOptionsPanelAlertControls {
     margin: 0px;
     padding:0px !important;
     border: 2px solid #999999;
-    z-index: 1000;			/* Menu Bar is now hidden when quickadd enabled. ck-editor bubbles are set to 1000, anything higher than this and ckeditor can't be used in quickadds */
+    z-index: 50000;			/* Menu Bar is now hidden when quickadd enabled. ck-editor bubbles are set to 1000, anything higher than this and ckeditor can't be used in quickadds */
     background-color: #FFFFFF;
 }
 
