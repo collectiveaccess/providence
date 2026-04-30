@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2025 Whirl-i-Gig
+ * Copyright 2012-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1349,8 +1349,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			
 			$format = $this->handle->getimageformat();
 			
-			// Set background color for transparent PNG or GIF
-			if ($background && in_array($format, ['PNG', 'GIF'])) {
+			// Set background color for transparent PNG, GIF or TIFF
+			if ($background && in_array($format, ['PNG', 'GIF', 'TIFF'])) {
 				$geometry = $this->handle->getimagegeometry();
 				$r = new Gmagick();
 				$r_new_image = $r->newimage($geometry['width'], $geometry['height'], $background, $format);
