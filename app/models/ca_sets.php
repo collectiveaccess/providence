@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -3778,7 +3778,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$o_view->setVar('placement_code', $placement_code);		
 		$o_view->setVar('request', $request);	
 		
-		$downloads = caGetPawtucketLightboxDownloadVersions(Datamodel::getTableName($this->get('table_num')));
+		$downloads = $this->get('table_num') ? caGetPawtucketLightboxDownloadVersions(Datamodel::getTableName($this->get('table_num'))) : [];
 		$o_view->setVar('downloads', $downloads);
 		
 		$initial_values = $this->getAnonymousAccessTokens();
