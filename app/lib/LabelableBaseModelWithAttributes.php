@@ -3675,5 +3675,88 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		
 		return $o_view->render('ca_user_roles.php');
 	}
-	# ------------------------------------------------------
+	# ------------------------------------------------------------------	
+	/**
+	 *
+	 */
+	public function getLogForBundle(string $bundle, ?array $options=null) : ?array {
+		$tmp = explode('.', $bundle);
+		if($tmp[0] === $this->tableName()) { array_shift($tmp); }
+		if(!in_array($tmp[0], ['preferred_labels', 'nonpreferred_labels'], true)) { 
+			return parent::getLogForBundle($bundle, $options);
+		}
+		$row_id = caGetOption('row_id', $options, $this->getPrimaryKey());
+		$return_with_structure = caGetOption('returnWithStructure', $options, false);
+		
+		$table_num = $this->tableNum();
+		$pk = $this->primaryKey();
+		
+		$t_label = $this->getLabelTableInstance();
+		$label_table_num = $t_label->tableNum();
+		$bundle_element = array_shift($tmp);
+		$bundle_subelement = array_shift($tmp) ?? $this->getLabelDisplayField();
+		
+		$guid = ca_guids::getForRow($this->tableNum(), $row_id);
+		$log = ca_change_log::getLog(0, null, ['forGUID' => $guid, 'forceValuesForAllAttributeSlots' => true]);
+		$acc = [];
+		foreach($log as $l) {
+			if((int)$l['logged_table_num'] == (int)$label_table_num) {
+				$s = $l['snapshot'];
+				if(isset($s[$bundle_subelement])) {
+					if(($bundle_element === 'preferred_labels') && array_key_exists('is_preferred', $s) && !$s['is_preferred']) { continue; }
+					if(($bundle_element === 'nonpreferred_labels') && !$s['is_preferred'] ?? false) { continue; }
+					
+					$k = $bundle_subelement ?? $bundle_element;
+					if($return_with_structure) {
+						$acc[$l['logged_row_id']]['intrinsicValues'][]= [
+							$k => $s[$k],
+							'log_id' => $l['log_id'],
+							'log_datetime' => $l['log_datetime'],
+							'log_datetime_display' => caGetLocalizedDate($l['log_datetime'], ['timeOmit' => false])
+						];
+					} else {
+						$acc[$l['logged_row_id']]['intrinsicValues'][$bundle_subelement][] = $s[$k];
+					}
+				}
+			}
+		}
+		return $acc;
+	}
+	# ------------------------------------------------------------------	
+	/**
+	 *
+	 */
+	public function getValueHistoryForBundle(string $bundle, ?array $options=null) : ?array {
+		$tmp = explode('.', $bundle);
+		if($tmp[0] === $this->tableName()) { array_shift($tmp); }
+		if(!in_array($tmp[0], ['preferred_labels', 'nonpreferred_labels'], true)) { 
+			return parent::getValueHistoryForBundle($bundle, $options);
+		}
+		$row_id = caGetOption('row_id', $options, $this->getPrimaryKey());
+		$return_with_structure = caGetOption('returnWithStructure', $options, false);
+		$log = $this->getLogForBundle($bundle, $options);
+		
+		$bundle_element = array_shift($tmp);
+		$bundle_subelement = array_shift($tmp) ?? $this->getLabelDisplayField();
+		
+		$acc = [];
+		foreach($log as $id => $d) {
+			if(!isset($d['intrinsicValues'])) { continue; }
+			if($return_with_structure) {
+				foreach($d['intrinsicValues'] as $f => $values) {
+					$acc[$row_id][$values['log_id']] = $values;
+					unset($acc[$row_id][$values['log_id']]['log_id']);
+				}
+			} else {
+				foreach($d['intrinsicValues'] as $f => $values) {
+					foreach($values as $v) {
+						$acc[] = $v;
+					}
+				}
+			}
+		}
+		ksort($acc);
+		return $acc;
+	}
+	# ------------------------------------------------------------------	
 }

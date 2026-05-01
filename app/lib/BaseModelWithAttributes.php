@@ -3897,7 +3897,16 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		$bundle_element = array_shift($tmp);
 		$bundle_subelement = array_shift($tmp);
 		
-		$guid = ca_guids::getForRow($this->tableNum(), $this->getPrimaryKey());
+		if(!ca_metadata_elements::getElementID($bundle_subelement ?? $bundle_element)) { 
+			return parent::getLogForBundle($bundle, $options);
+		}
+		
+		$row_id = caGetOption('row_id', $options, $this->getPrimaryKey());
+		
+		$table_num = $this->tableNum();
+		$pk = $this->primaryKey();
+		
+		$guid = ca_guids::getForRow($this->tableNum(), $row_id);
 		$log = ca_change_log::getLog(0, null, ['forGUID' => $guid, 'forceValuesForAllAttributeSlots' => true]);
 		$acc = [];
 		foreach($log as $l) {
@@ -3910,7 +3919,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 						'guid' => $l['guid'],
 						'element_id' => $element_id,
 						'element_code' => $element_code,
-						'values' => []
+						'attributeValues' => []
 					];
 					break;
 				case 3: // ca_attribute_values
@@ -3923,7 +3932,9 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 					
 					$s['log_id'] = $l['log_id'];
 					$s['element_code'] = $element_code;;
-					$acc[$l['snapshot']['attribute_id']]['values'][$element_code][] = $s;
+					$s['log_datetime'] = $l['log_datetime'];
+					$s['log_datetime_display'] = caGetLocalizedDate($l['log_datetime'], ['timeOmit' => false]);
+					$acc[$l['snapshot']['attribute_id']]['attributeValues'][$element_code][] = $s;
 					break;
 			}
 		}
@@ -3934,27 +3945,48 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	 *
 	 */
 	public function getValueHistoryForBundle(string $bundle, ?array $options=null) : ?array {
+		$tmp = explode('.', $bundle);
+		if($tmp[0] === $this->tableName()) { array_shift($tmp); }
+		$return_with_structure = caGetOption('returnWithStructure', $options, false);
+	
+		$row_id = caGetOption('row_id', $options, $this->getPrimaryKey());
+		
+		$bundle_element = array_shift($tmp);
+		$bundle_subelement = array_shift($tmp);
+		if(!ca_metadata_elements::getElementID($bundle_subelement ?? $bundle_element)) { 
+			return parent::getValueHistoryForBundle($bundle, $options);
+		}
 		$log = $this->getLogForBundle($bundle, $options);
 		
 		$acc = [];
 		foreach($log as $attr_id => $d) {
-			foreach($d['values'] as $element_code => $values) {
-				foreach($values as $snapshot) {
-					$o_val = \CA\Attributes\Attribute::getValueInstance(ca_metadata_elements::getElementDatatype($element_code), $snapshot);
-					$acc[] = $o_val->getDisplayValue($options);
+			if(isset($d['attributeValues'])) { 
+				foreach($d['attributeValues'] as $element_code => $values) {
+					foreach($values as $snapshot) {
+						$o_val = \CA\Attributes\Attribute::getValueInstance(ca_metadata_elements::getElementDatatype($element_code), $snapshot);
+						
+						if($return_with_structure) {
+							$acc[$row_id][$snapshot['log_id']] = [
+								$bundle_subelement ?? $bundle_element => $o_val->getDisplayValue($options),
+								'logged_datetime' => $snapshot['log_datetime'],
+								'logged_datetime_display' => $snapshot['log_datetime_display']
+							];
+						} else {
+							$acc[$snapshot['log_id']] = $o_val->getDisplayValue($options);	
+						}
+						
+					}
 				}
 			}
 		}
+		if($return_with_structure) {
+			foreach($acc as $i => $d) {
+				ksort($acc[$i]);
+			}
+		} else {
+			ksort($acc);
+		}
 		return $acc;
-	}
-	# ------------------------------------------------------------------
-	/**
-	 *
-	 */
-	public function getMostRecentValueForBundle(string $bundle, ?array $options=null) : mixed {
-		$values = $this->getValueHistoryForBundle($bundle, $options);
-		$values = array_filter($values, 'strlen');
-		return array_pop($values);
 	}
 	# ------------------------------------------------------------------
 }

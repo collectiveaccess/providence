@@ -13967,6 +13967,81 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 *
+	 */
+	public function getLogForBundle(string $bundle, ?array $options=null) : ?array {
+		$tmp = explode('.', $bundle);
+		if($tmp[0] === $this->tableName()) { array_shift($tmp); }
+		
+		$return_with_structure = caGetOption('returnWithStructure', $options, false);
+		$row_id = caGetOption('row_id', $options, $this->getPrimaryKey());
+		
+		$table_num = $this->tableNum();
+		$pk = $this->primaryKey();
+		
+		$bundle_element = array_shift($tmp);
+		if(!$this->hasField($bundle_element)) { return null; }
+		
+		$guid = ca_guids::getForRow($this->tableNum(), $row_id);
+		$log = ca_change_log::getLog(0, null, ['forGUID' => $guid, 'forceValuesForAllAttributeSlots' => true]);
+		$acc = [];
+		foreach($log as $l) {
+			if((int)$l['logged_table_num'] == (int)$table_num) {
+				$s = $l['snapshot'];
+				if(isset($s[$bundle_element])) {
+					if($return_with_structure) {
+						$acc[$row_id][] = [
+							$bundle_element => $s[$bundle_element],
+							'log_datetime' => $l['log_datetime'],
+							'log_datetime_display' => caGetLocalizedDate($l['log_datetime'], ['timeOmit' => false])
+						];
+					} else {
+						$acc[$l['logged_row_id']]['intrinsicValues'][$bundle_element][] = $s[$bundle_element];
+					}
+				}
+			}
+		}
+		return $acc;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getValueHistoryForBundle(string $bundle, ?array $options=null) : ?array {
+		$log = $this->getLogForBundle($bundle, $options);
+		$return_with_structure = caGetOption('returnWithStructure', $options, false);
+		
+		$acc = [];
+		foreach($log as $id => $d) {
+			if($return_with_structure) {
+				$acc[$id] = $d;
+			} else {
+				if(isset($d['intrinsicValues'])) { 
+					foreach($d['intrinsicValues'] as $f => $values) {
+						foreach($values as $v) {
+							$acc[] = $v;
+						}
+					}
+				}
+			}
+		}
+		ksort($acc);
+		return $acc;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getMostRecentValueForBundle(string $bundle, ?array $options=null) : mixed {
+		$return_with_structure = caGetOption('returnWithStructure', $options, false);
+		
+		$values = $this->getValueHistoryForBundle($bundle, $options);
+		if($return_with_structure) { return $values; }
+		$values = array_filter($values, 'strlen');
+		return array_pop($values);
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Destructor
 	 */
 	public function __destruct() {
