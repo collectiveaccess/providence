@@ -3677,15 +3677,22 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	}
 	# ------------------------------------------------------------------	
 	/**
+	 * Return simplified change history for label bundle of a row
 	 *
+	 * @param string $bundle Bundle (Eg. ca_objects.preferred_labels.name)
+	 * @param array $options Options include:
+	 * 		row_id = ID of row to fetch log for. If omitted currently loaded row is used. [Default is null]
+	 *
+	 * @return array
 	 */
-	public function getLogForBundle(string $bundle, ?array $options=null) : ?array {
-		$tmp = explode('.', $bundle);
-		if($tmp[0] === $this->tableName()) { array_shift($tmp); }
-		if(!in_array($tmp[0], ['preferred_labels', 'nonpreferred_labels'], true)) { 
-			return parent::getLogForBundle($bundle, $options);
+	public function getLogForBundleValueHistory(string $bundle, ?array $options=null) : ?array {
+		$bi = $this->_processBundleNameForValueHistory($bundle);
+		if(!in_array($bi['element'], ['preferred_labels', 'nonpreferred_labels'], true)) { 
+			return parent::getLogForBundleValueHistory($bundle, $options);
 		}
 		$row_id = caGetOption('row_id', $options, $this->getPrimaryKey());
+		if(!$row_id) { return null; }
+		
 		$return_with_structure = caGetOption('returnWithStructure', $options, false);
 		
 		$table_num = $this->tableNum();
@@ -3693,8 +3700,8 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		
 		$t_label = $this->getLabelTableInstance();
 		$label_table_num = $t_label->tableNum();
-		$bundle_element = array_shift($tmp);
-		$bundle_subelement = array_shift($tmp) ?? $this->getLabelDisplayField();
+		
+		if(!$bi['subelement']) { $bi['subelement'] = $this->getLabelDisplayField(); }
 		
 		$guid = ca_guids::getForRow($this->tableNum(), $row_id);
 		$log = ca_change_log::getLog(0, null, ['forGUID' => $guid, 'forceValuesForAllAttributeSlots' => true]);
@@ -3702,20 +3709,19 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		foreach($log as $l) {
 			if((int)$l['logged_table_num'] == (int)$label_table_num) {
 				$s = $l['snapshot'];
-				if(isset($s[$bundle_subelement])) {
-					if(($bundle_element === 'preferred_labels') && array_key_exists('is_preferred', $s) && !$s['is_preferred']) { continue; }
-					if(($bundle_element === 'nonpreferred_labels') && !$s['is_preferred'] ?? false) { continue; }
+				if(isset($s[$bi['subelement']])) {
+					if(($bi['element'] === 'preferred_labels') && array_key_exists('is_preferred', $s) && !$s['is_preferred']) { continue; }
+					if(($bi['element'] === 'nonpreferred_labels') && !$s['is_preferred'] ?? false) { continue; }
 					
-					$k = $bundle_subelement ?? $bundle_element;
 					if($return_with_structure) {
 						$acc[$l['logged_row_id']]['intrinsicValues'][]= [
-							$k => $s[$k],
+							$bi['key'] => $s[$bi['key']],
 							'log_id' => $l['log_id'],
 							'log_datetime' => $l['log_datetime'],
 							'log_datetime_display' => caGetLocalizedDate($l['log_datetime'], ['timeOmit' => false])
 						];
 					} else {
-						$acc[$l['logged_row_id']]['intrinsicValues'][$bundle_subelement][] = $s[$k];
+						$acc[$l['logged_row_id']]['intrinsicValues'][$bi['subelement']][] = $s[$bi['key']];
 					}
 				}
 			}
@@ -3724,20 +3730,25 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	}
 	# ------------------------------------------------------------------	
 	/**
+	 * Return history of changes to a bundle on a row.
 	 *
+	 * @string $bundle Bundle
+	 * @array $options Options include:
+	 *		row_id = ID of row to fetch history on. If omitted currently loaded row is used. [Default is null]
+	 *		returnWithStructure = Return values as array with additional date/time data. [Default is false]
+	 *
+	 * @return array
 	 */
 	public function getValueHistoryForBundle(string $bundle, ?array $options=null) : ?array {
-		$tmp = explode('.', $bundle);
-		if($tmp[0] === $this->tableName()) { array_shift($tmp); }
-		if(!in_array($tmp[0], ['preferred_labels', 'nonpreferred_labels'], true)) { 
+		$bi = $this->_processBundleNameForValueHistory($bundle);
+		if(!in_array($bi['element'], ['preferred_labels', 'nonpreferred_labels'], true)) { 
 			return parent::getValueHistoryForBundle($bundle, $options);
 		}
 		$row_id = caGetOption('row_id', $options, $this->getPrimaryKey());
 		$return_with_structure = caGetOption('returnWithStructure', $options, false);
-		$log = $this->getLogForBundle($bundle, $options);
+		$log = $this->getLogForBundleValueHistory($bundle, $options);
 		
-		$bundle_element = array_shift($tmp);
-		$bundle_subelement = array_shift($tmp) ?? $this->getLabelDisplayField();
+		if(!$bi['subelement']) { $bi['subelement'] = $this->getLabelDisplayField(); }
 		
 		$acc = [];
 		foreach($log as $id => $d) {

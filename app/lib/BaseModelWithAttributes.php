@@ -3888,20 +3888,23 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Return simplified change history for attribute bundle of a row
 	 *
+	 * @param string $bundle Bundle (Eg. ca_objects.description)
+	 * @param array $options Options include:
+	 * 		row_id = ID of row to fetch log for. If omitted currently loaded row is used. [Default is null]
+	 *
+	 * @return array
 	 */
-	public function getLogForBundle(string $bundle, ?array $options=null) : ?array {
-		$tmp = explode('.', $bundle);
-		if($tmp[0] === $this->tableName()) { array_shift($tmp); }
+	public function getLogForBundleValueHistory(string $bundle, ?array $options=null) : ?array { 
+		$bi = $this->_processBundleNameForValueHistory($bundle);
 		
-		$bundle_element = array_shift($tmp);
-		$bundle_subelement = array_shift($tmp);
-		
-		if(!ca_metadata_elements::getElementID($bundle_subelement ?? $bundle_element)) { 
-			return parent::getLogForBundle($bundle, $options);
+		if(!ca_metadata_elements::getElementID($bi['key'])) { 
+			return parent::getLogForBundleValueHistory($bundle, $options);
 		}
 		
 		$row_id = caGetOption('row_id', $options, $this->getPrimaryKey());
+		if(!$row_id) { return null; }
 		
 		$table_num = $this->tableNum();
 		$pk = $this->primaryKey();
@@ -3914,7 +3917,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 				case 4: // ca_attributes
 					$element_id = $l['snapshot']['element_id'];
 					$element_code = ca_metadata_elements::getElementCodeForId($element_id);
-					if($element_code != $bundle_element) { continue(2); }
+					if($element_code != $bi['element']) { continue(2); }
 					$acc[$l['snapshot']['attribute_id']] = [
 						'guid' => $l['guid'],
 						'element_id' => $element_id,
@@ -3928,7 +3931,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 					if(!isset($acc[$attribute_id])) { continue(2); }
 					$element_id = $s['element_id'];
 					$element_code = ca_metadata_elements::getElementCodeForId($element_id);
-					if(!is_null($bundle_subelement) && ($element_code != $bundle_subelement)) { continue(2); }
+					if(!is_null($bi['subelement']) && ($element_code != $bi['subelement'])) { continue(2); }
 					
 					$s['log_id'] = $l['log_id'];
 					$s['element_code'] = $element_code;;
@@ -3942,21 +3945,24 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Return history of changes to a bundle on a row.
 	 *
+	 * @string $bundle Bundle
+	 * @array $options Options include:
+	 *		row_id = ID of row to fetch history on. If omitted currently loaded row is used. [Default is null]
+	 *		returnWithStructure = Return values as array with additional date/time data. [Default is false]
+	 *
+	 * @return array
 	 */
 	public function getValueHistoryForBundle(string $bundle, ?array $options=null) : ?array {
-		$tmp = explode('.', $bundle);
-		if($tmp[0] === $this->tableName()) { array_shift($tmp); }
-		$return_with_structure = caGetOption('returnWithStructure', $options, false);
+		$bi = $this->_processBundleNameForValueHistory($bundle);
 	
 		$row_id = caGetOption('row_id', $options, $this->getPrimaryKey());
 		
-		$bundle_element = array_shift($tmp);
-		$bundle_subelement = array_shift($tmp);
-		if(!ca_metadata_elements::getElementID($bundle_subelement ?? $bundle_element)) { 
+		if(!ca_metadata_elements::getElementID($bi['key'])) { 
 			return parent::getValueHistoryForBundle($bundle, $options);
 		}
-		$log = $this->getLogForBundle($bundle, $options);
+		$log = $this->getLogForBundleValueHistory($bundle, $options);
 		
 		$acc = [];
 		foreach($log as $attr_id => $d) {
@@ -3965,26 +3971,18 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 					foreach($values as $snapshot) {
 						$o_val = \CA\Attributes\Attribute::getValueInstance(ca_metadata_elements::getElementDatatype($element_code), $snapshot);
 						
-						if($return_with_structure) {
-							$acc[$row_id][$snapshot['log_id']] = [
-								$bundle_subelement ?? $bundle_element => $o_val->getDisplayValue($options),
-								'logged_datetime' => $snapshot['log_datetime'],
-								'logged_datetime_display' => $snapshot['log_datetime_display']
-							];
-						} else {
-							$acc[$snapshot['log_id']] = $o_val->getDisplayValue($options);	
-						}
+						$acc[$row_id][$snapshot['log_id']] = [
+							$bi['key'] => $o_val->getDisplayValue($options),
+							'logged_datetime' => $snapshot['log_datetime'],
+							'logged_datetime_display' => $snapshot['log_datetime_display']
+						];
 						
 					}
 				}
 			}
 		}
-		if($return_with_structure) {
-			foreach($acc as $i => $d) {
-				ksort($acc[$i]);
-			}
-		} else {
-			ksort($acc);
+		foreach($acc as $i => $d) {
+			ksort($acc[$i]);
 		}
 		return $acc;
 	}

@@ -1810,7 +1810,7 @@ class SearchResult extends BaseObject {
 				if (in_array($va_path_components['field_name'], array('preferred_labels', 'nonpreferred_labels')) && ($t_instance instanceof LabelableBaseModelWithAttributes)) {
 					$vs_label_table_name = $t_instance->getLabelTableName();
 					if($va_path_components['previousvalue'] ?? false) {
-						$vm_val = $this->_getPreviousValues($va_path_components['field_name'], $t_instance, array_merge($va_val_opts, ['row_id' => $vn_row_id]));
+						$vm_val = $this->_getPreviousValues($va_path_components['field_name'].($va_path_components['subfield_name'] ? '.'.$va_path_components['subfield_name'] : ''), $t_instance, array_merge($va_val_opts, ['row_id' => $vn_row_id]));
 					} else {
 						if (!isset(self::$s_prefetch_cache[$vs_label_table_name][$vn_row_id][$vs_opt_md5])) {
 							$this->prefetchLabels($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), $pa_options);
@@ -1832,7 +1832,7 @@ class SearchResult extends BaseObject {
 					}
 					
 					if($va_path_components['previousvalue'] ?? false) {
-						$vm_val = $this->_getPreviousValues($va_path_components['field_name'], $t_instance, array_merge($va_val_opts, ['row_id' => $vn_row_id]));
+						$vm_val = $this->_getPreviousValues($va_path_components['field_name'].($va_path_components['subfield_name'] ? '.'.$va_path_components['subfield_name'] : ''), $t_instance, array_merge($va_val_opts, ['row_id' => $vn_row_id]));
 					} else {
 						$vm_val = $this->_getIntrinsicValue(self::$s_prefetch_cache[$va_path_components['table_name']][$vn_row_id][$vs_opt_md5], $t_instance, $va_val_opts);
 					}
@@ -1878,7 +1878,7 @@ class SearchResult extends BaseObject {
 					}
 					
 					if($va_path_components['previousvalue'] ?? false) {
-						$vm_val = $this->_getPreviousValues($va_path_components['field_name'], $t_instance, array_merge($va_val_opts, ['returnWithStructure' => $vb_return_with_structure, 'row_id' => $vn_row_id]));
+						$vm_val = $this->_getPreviousValues($va_path_components['field_name'].($va_path_components['subfield_name'] ? '.'.$va_path_components['subfield_name'] : ''), $t_instance, array_merge($va_val_opts, ['returnWithStructure' => $vb_return_with_structure, 'row_id' => $vn_row_id]));
 					} else {
 						$va_attributes = ca_attributes::getAttributes($this->opo_subject_instance->getDb(), $this->opn_table_num, $vn_row_id, array($vn_element_id), array());
 						$vm_val = $this->_getAttributeValue($va_attributes[$vn_element_id], $t_instance, $va_val_opts);
@@ -4242,7 +4242,12 @@ class SearchResult extends BaseObject {
 			$h = array_reverse($h, true);
 			$v = array_slice(array_values($h), $ci + 1, 1);
 		}
-		return $v;
+		
+		if ($options['returnAsArray']) {
+			return $v;
+		} else {
+			return (sizeof($v) > 0) ? join($options['delimiter'], $v) : null;
+		}
 	}
 	# ------------------------------------------------------------------
 }

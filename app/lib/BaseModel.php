@@ -13967,20 +13967,23 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Return simplified change history for intrinsic bundle of a row
 	 *
+	 * @param string $bundle Bundle (Eg. ca_objects.idno)
+	 * @param array $options Options include:
+	 * 		row_id = ID of row to fetch log for. If omitted currently loaded row is used. [Default is null]
+	 *
+	 * @return array
 	 */
-	public function getLogForBundle(string $bundle, ?array $options=null) : ?array {
-		$tmp = explode('.', $bundle);
-		if($tmp[0] === $this->tableName()) { array_shift($tmp); }
+	public function getLogForBundleValueHistory(string $bundle, ?array $options=null) : ?array {
+		$bi = $this->_processBundleNameForValueHistory($bundle);
+		if(!$this->hasField($bi['element'])) { return null; }
 		
-		$return_with_structure = caGetOption('returnWithStructure', $options, false);
 		$row_id = caGetOption('row_id', $options, $this->getPrimaryKey());
+		if(!$row_id) { return null; }
 		
 		$table_num = $this->tableNum();
 		$pk = $this->primaryKey();
-		
-		$bundle_element = array_shift($tmp);
-		if(!$this->hasField($bundle_element)) { return null; }
 		
 		$guid = ca_guids::getForRow($this->tableNum(), $row_id);
 		$log = ca_change_log::getLog(0, null, ['forGUID' => $guid, 'forceValuesForAllAttributeSlots' => true]);
@@ -13988,16 +13991,18 @@ $pa_options["display_form_field_tips"] = true;
 		foreach($log as $l) {
 			if((int)$l['logged_table_num'] == (int)$table_num) {
 				$s = $l['snapshot'];
-				if(isset($s[$bundle_element])) {
-					if($return_with_structure) {
-						$acc[$row_id][] = [
-							$bundle_element => $s[$bundle_element],
-							'log_datetime' => $l['log_datetime'],
-							'log_datetime_display' => caGetLocalizedDate($l['log_datetime'], ['timeOmit' => false])
+				if(isset($s[$bi['element']])) {
+					$v = [
+						$bi['element'] => $s[$bi['element']],
+						'log_datetime' => $l['log_datetime'],
+						'log_datetime_display' => caGetLocalizedDate($l['log_datetime'], ['timeOmit' => false])
+					];
+					if($bi['subelement'] && isset($v[$bi['subelement']])) {
+						$v = [
+							$bi['subelement'] => $v[$bi['subelement']]
 						];
-					} else {
-						$acc[$l['logged_row_id']]['intrinsicValues'][$bundle_element][] = $s[$bundle_element];
 					}
+					$acc[$row_id][] = $v;
 				}
 			}
 		}
@@ -14005,10 +14010,19 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Return history of changes to a bundle on a row.
 	 *
+	 * @string $bundle Bundle
+	 * @array $options Options include:
+	 *		row_id = ID of row to fetch history on. If omitted currently loaded row is used. [Default is null]
+	 *		returnWithStructure = Return values as array with additional date/time data. [Default is false]
+	 *
+	 * @return array
 	 */
 	public function getValueHistoryForBundle(string $bundle, ?array $options=null) : ?array {
-		$log = $this->getLogForBundle($bundle, $options);
+		$bi = $this->_processBundleNameForValueHistory($bundle);
+		
+		$log = $this->getLogForBundleValueHistory($bundle, $options);
 		$return_with_structure = caGetOption('returnWithStructure', $options, false);
 		
 		$acc = [];
@@ -14016,12 +14030,8 @@ $pa_options["display_form_field_tips"] = true;
 			if($return_with_structure) {
 				$acc[$id] = $d;
 			} else {
-				if(isset($d['intrinsicValues'])) { 
-					foreach($d['intrinsicValues'] as $f => $values) {
-						foreach($values as $v) {
-							$acc[] = $v;
-						}
-					}
+				foreach($d as $v) {
+					$acc[] = $v[$bi['key']] ?? null;
 				}
 			}
 		}
@@ -14030,15 +14040,47 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Return most recent previous value for a bundle, prior to the value currently set
 	 *
+	 * @param string $bundle Bundle
+	 * @param array $options Options include:
+	 *		returnWithStructure = Return values as array with additional date/time data. [Default is false]
+	 *
+	 * @return mixed String, array or null
 	 */
-	public function getMostRecentValueForBundle(string $bundle, ?array $options=null) : mixed {
+	public function getMostRecentPreviousValueForBundle(string $bundle, ?array $options=null) : mixed {
 		$return_with_structure = caGetOption('returnWithStructure', $options, false);
 		
 		$values = $this->getValueHistoryForBundle($bundle, $options);
 		if($return_with_structure) { return $values; }
 		$values = array_filter($values, 'strlen');
 		return array_pop($values);
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Extract element values from bundle specification
+	 * 
+	 * @param string $bundle Bundle
+	 *
+	 * @return array Array with four keys: table, element, subelement and key. In a bundle like ca_objects.description
+	 *				these correspond to: table = ca_objects; element = description; subelement = null; key = description
+	 *				For the bundle ca_objects.dimensions.width these correspond to:
+	 *				table = ca_objects; element = dimensions; subelement = width; key = width
+	 */
+	protected function _processBundleNameForValueHistory(string $bundle) {
+		$tmp = explode('.', $bundle);
+		$table = null;
+		if($tmp[0] === $this->tableName()) { $table = array_shift($tmp); }
+		
+		$bundle_element = array_shift($tmp);
+		$bundle_subelement = array_shift($tmp);
+		
+		return [
+			'table' => $table,
+			'element' => $bundle_element,
+			'subelement' => $bundle_subelement,
+			'key' => $bundle_subelement ?? $bundle_element
+		];
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
