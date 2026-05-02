@@ -14062,12 +14062,14 @@ $pa_options["display_form_field_tips"] = true;
 	 * 
 	 * @param string $bundle Bundle
 	 *
-	 * @return array Array with four keys: table, element, subelement and key. In a bundle like ca_objects.description
+	 * @return array Array with five keys: table, element, subelement, key and modifier. In a bundle like ca_objects.description
 	 *				these correspond to: table = ca_objects; element = description; subelement = null; key = description
 	 *				For the bundle ca_objects.dimensions.width these correspond to:
 	 *				table = ca_objects; element = dimensions; subelement = width; key = width
+	 *				For the bundle ca_objects.dimensions.width.log_datetime these correspond to:
+	 *				table = ca_objects; element = dimensions; subelement = width; key = width, modifier=log_datetime
 	 */
-	protected function _processBundleNameForValueHistory(string $bundle) {
+	protected function _processBundleNameForValueHistory(string $bundle) : array {
 		$tmp = explode('.', $bundle);
 		$table = null;
 		if($tmp[0] === $this->tableName()) { $table = array_shift($tmp); }
