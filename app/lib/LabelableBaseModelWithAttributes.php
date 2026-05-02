@@ -3701,7 +3701,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$t_label = $this->getLabelTableInstance();
 		$label_table_num = $t_label->tableNum();
 		
-		if(!$bi['subelement']) { $bi['subelement'] = $this->getLabelDisplayField(); }
+		if(!$bi['subelement']) { $bi['subelement'] = $bi['key'] = $this->getLabelDisplayField(); }
 		
 		$guid = ca_guids::getForRow($this->tableNum(), $row_id);
 		$log = ca_change_log::getLog(0, null, ['forGUID' => $guid, 'forceValuesForAllAttributeSlots' => true]);
@@ -3713,16 +3713,12 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 					if(($bi['element'] === 'preferred_labels') && array_key_exists('is_preferred', $s) && !$s['is_preferred']) { continue; }
 					if(($bi['element'] === 'nonpreferred_labels') && !$s['is_preferred'] ?? false) { continue; }
 					
-					if($return_with_structure) {
-						$acc[$l['logged_row_id']]['intrinsicValues'][]= [
-							$bi['key'] => $s[$bi['key']],
-							'log_id' => $l['log_id'],
-							'log_datetime' => $l['log_datetime'],
-							'log_datetime_display' => caGetLocalizedDate($l['log_datetime'], ['timeOmit' => false])
-						];
-					} else {
-						$acc[$l['logged_row_id']]['intrinsicValues'][$bi['subelement']][] = $s[$bi['key']];
-					}
+					$acc[$l['logged_row_id']]['intrinsicValues'][]= [
+						$bi['key'] => $s[$bi['key']],
+						'log_id' => $l['log_id'],
+						'log_datetime' => $l['log_datetime'],
+						'log_datetime_display' => caGetLocalizedDate($l['log_datetime'], ['timeOmit' => false])
+					];
 				}
 			}
 		}
@@ -3748,25 +3744,27 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$return_with_structure = caGetOption('returnWithStructure', $options, false);
 		$log = $this->getLogForBundleValueHistory($bundle, $options);
 		
-		if(!$bi['subelement']) { $bi['subelement'] = $this->getLabelDisplayField(); }
+		if(!$bi['subelement']) { $bi['subelement'] = $bi['key'] = $this->getLabelDisplayField(); }
 		
 		$acc = [];
 		foreach($log as $id => $d) {
 			if(!isset($d['intrinsicValues'])) { continue; }
-			if($return_with_structure) {
-				foreach($d['intrinsicValues'] as $f => $values) {
-					$acc[$row_id][$values['log_id']] = $values;
-					unset($acc[$row_id][$values['log_id']]['log_id']);
-				}
-			} else {
-				foreach($d['intrinsicValues'] as $f => $values) {
-					foreach($values as $v) {
-						$acc[] = $v;
-					}
-				}
+			foreach($d['intrinsicValues'] as $f => $values) {
+				$acc[$row_id][$values['log_id']] = $values;
+				unset($acc[$row_id][$values['log_id']]['log_id']);
 			}
 		}
 		ksort($acc);
+		
+		if(!$return_with_structure) {
+			$facc = [];
+			foreach($acc as $row_id => $l) {
+				foreach($l as $log_id => $v) {
+					$facc[$log_id] = $v[$bi['modifier'] ?? $bi['key']];
+				}
+			}
+			$acc = $facc;
+		}
 		return $acc;
 	}
 	# ------------------------------------------------------------------	

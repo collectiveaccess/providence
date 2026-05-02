@@ -3899,7 +3899,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	public function getLogForBundleValueHistory(string $bundle, ?array $options=null) : ?array { 
 		$bi = $this->_processBundleNameForValueHistory($bundle);
 		
-		if(!ca_metadata_elements::getElementID($bi['key'])) { 
+		if(!ca_metadata_elements::getElementID($bi['element'])) { 
 			return parent::getLogForBundleValueHistory($bundle, $options);
 		}
 		
@@ -3912,6 +3912,8 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		$guid = ca_guids::getForRow($this->tableNum(), $row_id);
 		$log = ca_change_log::getLog(0, null, ['forGUID' => $guid, 'forceValuesForAllAttributeSlots' => true]);
 		$acc = [];
+		
+		$bundle_subelement_id = $bi['subelement'] ? ca_metadata_elements::getElementID($bi['subelement']) : null; // is subelement an actual element? Or additional log data?
 		foreach($log as $l) {
 			switch((int)$l['logged_table_num']) {
 				case 4: // ca_attributes
@@ -3931,7 +3933,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 					if(!isset($acc[$attribute_id])) { continue(2); }
 					$element_id = $s['element_id'];
 					$element_code = ca_metadata_elements::getElementCodeForId($element_id);
-					if(!is_null($bi['subelement']) && ($element_code != $bi['subelement'])) { continue(2); }
+					if(!is_null($bundle_subelement_id) && ($element_code != $bi['subelement'])) { continue(2); }
 					
 					$s['log_id'] = $l['log_id'];
 					$s['element_code'] = $element_code;;
@@ -3956,34 +3958,66 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	 */
 	public function getValueHistoryForBundle(string $bundle, ?array $options=null) : ?array {
 		$bi = $this->_processBundleNameForValueHistory($bundle);
-	
+
 		$row_id = caGetOption('row_id', $options, $this->getPrimaryKey());
+		$return_with_structure = caGetOption('returnWithStructure', $options, false);
+		$delimiter = caGetOption('delimiter', $options, ';');
 		
-		if(!ca_metadata_elements::getElementID($bi['key'])) { 
+		if(!ca_metadata_elements::getElementID($bi['element'])) { 
 			return parent::getValueHistoryForBundle($bundle, $options);
 		}
-		$log = $this->getLogForBundleValueHistory($bundle, $options);
 		
+		$log = $this->getLogForBundleValueHistory($bundle, $options);
 		$acc = [];
+		
+		$dt = ca_metadata_elements::getElementDatatype($bi['element']);
+		$is_container = ($dt === 0);
+		
 		foreach($log as $attr_id => $d) {
 			if(isset($d['attributeValues'])) { 
+				$buf = $vacc = [];
 				foreach($d['attributeValues'] as $element_code => $values) {
-					foreach($values as $snapshot) {
-						$o_val = \CA\Attributes\Attribute::getValueInstance(ca_metadata_elements::getElementDatatype($element_code), $snapshot);
+					$vdt = ca_metadata_elements::getElementDatatype($element_code);
+					foreach($values as $i => $snapshot) {
+						//if (!$return_with_structure && !$is_container && ($element_code !== $bi['key'])) { continue; }
+						$o_val = \CA\Attributes\Attribute::getValueInstance($vdt, $snapshot);
 						
-						$acc[$row_id][$snapshot['log_id']] = [
-							$bi['key'] => $o_val->getDisplayValue($options),
-							'logged_datetime' => $snapshot['log_datetime'],
-							'logged_datetime_display' => $snapshot['log_datetime_display']
-						];
-						
+						if(!is_array($buf[$i])) { 
+							$buf[$i] = [
+								'log_datetime' => $snapshot['log_datetime'],
+								'log_datetime_display' => $snapshot['log_datetime_display']
+							]; 
+						}
+						$buf[$i][$element_code] = $vacc[$i][] = $o_val->getDisplayValue($options);
+					}
+				}
+				
+				foreach($buf as $i => $e) {
+					$buf[$i][$bi['element']] = join($delimiter, $vacc[$i] ?? []);
+				}
+				$acc[$row_id] = $buf;
+				
+			}
+		}
+		
+		foreach($acc as $row_id => $d) {
+			ksort($acc[$row_id]);
+		}
+		
+		if(!$return_with_structure) {
+			$facc = [];
+			foreach($acc as $row_id => $data) {
+				foreach($data as $i => $d) {
+					if($bi['modifier']) {
+						$facc[] = $d[$bi['modifier']] ?? null;
+					} else {
+						$facc[] = $d[$bi['key']] ?? null;
 					}
 				}
 			}
+			$acc = $facc;
 		}
-		foreach($acc as $i => $d) {
-			ksort($acc[$i]);
-		}
+		
 		return $acc;
 	}
 	# ------------------------------------------------------------------

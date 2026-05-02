@@ -14031,7 +14031,7 @@ $pa_options["display_form_field_tips"] = true;
 				$acc[$id] = $d;
 			} else {
 				foreach($d as $v) {
-					$acc[] = $v[$bi['key']] ?? null;
+					$acc[] = $v[$bi['modifier'] ?? $bi['key']] ?? null;
 				}
 			}
 		}
@@ -14075,10 +14075,18 @@ $pa_options["display_form_field_tips"] = true;
 		$bundle_element = array_shift($tmp);
 		$bundle_subelement = array_shift($tmp);
 		
+		$modifier = array_shift($tmp);
+		
+		if(in_array($bundle_subelement, ['log_datetime', 'log_datetime_display'])) {
+			$modifier = $bundle_subelement;
+			$bundle_subelement = null;
+		}
+		
 		return [
 			'table' => $table,
 			'element' => $bundle_element,
 			'subelement' => $bundle_subelement,
+			'modifier' => $modifier,
 			'key' => $bundle_subelement ?? $bundle_element
 		];
 	}
