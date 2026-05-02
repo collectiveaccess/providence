@@ -4217,9 +4217,15 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Return previous values for bundle
 	 *
+	 * @param string $bundle Bundle
+	 * @param BaseModel $pt_instance Current row instance
+	 * @param array $options Options include:
+	 *		returnAsArray = Return value as array. [Default is false]
+	 * 		returnWithStructure = Return value as nested array with additional information. [Default is false]
 	 */
-	protected function _getPreviousValues($bundle, $pt_instance, $options) {
+	protected function _getPreviousValues(string $bundle, BaseModel $pt_instance, ?array $options=null) {
 		$path_components =& $options['pathComponents'];
 		$return_with_structure = caGetOption('returnWithStructure', $options, false);
 
