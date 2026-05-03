@@ -675,7 +675,7 @@ class DisplayTemplateParser {
 						$vs_relative_to_container = null;
 						
 						$is_simple = false;
-						$simple_values = null;
+						$simple_values = $simple_prefix = null;
 						switch(strtolower($va_relative_to_tmp[1] ?? null)) {
 							case 'hierarchy':
 								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".hierarchy.".$t_rel_instance->primaryKey(), $va_get_options);
@@ -713,6 +713,7 @@ class DisplayTemplateParser {
 								$is_simple = true;
 								$simple_values = $pr_res->get($o_node->relativeTo, array_merge($va_get_options, ['returnWithStructure' => true]));
 								$simple_values = is_array($simple_values) ? array_shift($simple_values) : [];
+								$simple_prefix = preg_replace("!\.previousvalues!i", '', $o_node->relativeTo);
 								break;
 							// allow labels as units
 							case 'preferred_labels':
@@ -750,24 +751,11 @@ class DisplayTemplateParser {
 									$o_node->getInnerText(), $sv,
 									array_merge(
 										$pa_options,
-										!is_null($vb_omit_blanks) ? ['includeBlankValuesInArray' => !$vb_omit_blanks] : [],
 										[
-											'sort' => $va_get_options['sort'] ?? null,
-											'sortDirection' => $va_get_options['sortDirection'] ?? null,
 											'returnAsArray' => true,
 											'delimiter' => $vs_unit_delimiter,
-											'skipIfExpression' => $vs_unit_skip_if_expression,
-											'skipWhen' => $vs_unit_skip_when,
-											'placeholderPrefix' => (string)$o_node->relativeTo,
-											'isUnit' => true,
-											'unitStart' => $vn_start,
-											'unitLength' => $vn_length,
-											'fullValueCount' => $vn_num_vals,
-											'relativeToContainer' => $vs_relative_to_container,
-											'includeBlankValuesInTopLevelForPrefetch' => false,
-											'unique' => $vb_unique,
-											'aggregateUnique' => $vb_aggregate_unique,
-											'checkAccess' => $va_get_options['checkAccess'],
+											'removePrefix' => "{$simple_prefix}.",
+											'isUnit' => true
 										]
 									)
 								);
@@ -2038,8 +2026,8 @@ class DisplayTemplateParser {
 				
 				$ps_template = preg_replace("/\^".preg_quote($vs_tag, '/')."(?![A-Za-z0-9]+)/", $vs_gotten_val, $ps_template);
 			} else {
-				if(isset($pa_values[$vs_tag])) { 
-					$vs_val = $pa_values[$vs_tag];
+				if(isset($pa_values[$vs_proc_tag])) { 
+					$vs_val = $pa_values[$vs_proc_tag];
 					if(is_array($vs_val)) {
 						$vs_val = join(" ", $vs_val);
 					}
