@@ -3713,12 +3713,21 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 					if(($bi['element'] === 'preferred_labels') && array_key_exists('is_preferred', $s) && !$s['is_preferred']) { continue; }
 					if(($bi['element'] === 'nonpreferred_labels') && !$s['is_preferred'] ?? false) { continue; }
 					
-					$acc[$l['logged_row_id']]['intrinsicValues'][]= [
+					$v = [
 						$bi['key'] => $s[$bi['key']],
 						'log_id' => $l['log_id'],
 						'log_datetime' => $l['log_datetime'],
-						'log_datetime_display' => caGetLocalizedDate($l['log_datetime'], ['timeOmit' => false])
+						'log_datetime_display' => caGetLocalizedDate($l['log_datetime'], ['timeOmit' => false]),						
+						'user_id' => $l['user_id'],
+						'user_name' => $l['user_name'],
+						'user_email' => $l['user_email'],
+						'user_fname' => $l['user_fname'],
+						'user_lname' => $l['user_lname']
 					];
+					if($u = $this->_processUserDataForValueHistory($l['user_id'])) {
+						$v = array_merge($v, $u); 
+					}
+					$acc[$l['logged_row_id']]['intrinsicValues'][] = $v;
 				}
 			}
 		}

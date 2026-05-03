@@ -3939,6 +3939,11 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 					$s['element_code'] = $element_code;;
 					$s['log_datetime'] = $l['log_datetime'];
 					$s['log_datetime_display'] = caGetLocalizedDate($l['log_datetime'], ['timeOmit' => false]);
+					
+					if($u = $this->_processUserDataForValueHistory($l['user_id'])) {
+						$s = array_merge($s, $u);
+					}
+					
 					$acc[$l['snapshot']['attribute_id']]['attributeValues'][$element_code][] = $s;
 					break;
 			}
@@ -3972,7 +3977,6 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		
 		$dt = ca_metadata_elements::getElementDatatype($bi['element']);
 		$is_container = ($dt === 0);
-		
 		foreach($log as $attr_id => $d) {
 			if(isset($d['attributeValues'])) { 
 				$buf = $vacc = [];
@@ -3985,7 +3989,12 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 						if(!is_array($buf[$i])) { 
 							$buf[$i] = [
 								'log_datetime' => $snapshot['log_datetime'],
-								'log_datetime_display' => $snapshot['log_datetime_display']
+								'log_datetime_display' => $snapshot['log_datetime_display'],
+								'user_id' => $snapshot['user_id'],
+								'user_name' => $snapshot['user_name'],
+								'user_email' => $snapshot['user_email'],
+								'user_fname' => $snapshot['user_fname'],
+								'user_lname' => $snapshot['user_lname']
 							]; 
 						}
 						$buf[$i][$element_code] = $vacc[$i][] = $o_val->getDisplayValue($options);

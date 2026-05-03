@@ -293,6 +293,13 @@ class BaseModel extends BaseObject {
 	 * @access private
 	 */
 	private $opb_log_changes = true;
+	
+	/**
+	 * Cache of user data user for value history functions
+	 *
+	 * @access protected
+	 */
+	protected static $s_value_history_user_data = [];
 
 	/**
 	 *
@@ -13995,8 +14002,17 @@ $pa_options["display_form_field_tips"] = true;
 					$v = [
 						$bi['element'] => $s[$bi['element']],
 						'log_datetime' => $l['log_datetime'],
-						'log_datetime_display' => caGetLocalizedDate($l['log_datetime'], ['timeOmit' => false])
+						'log_datetime_display' => caGetLocalizedDate($l['log_datetime'], ['timeOmit' => false]),
+						'user_id' => $l['user_id'],
+						'user_name' => $l['user_name'],
+						'user_email' => $l['user_email'],
+						'user_fname' => $l['user_fname'],
+						'user_lname' => $l['user_lname']
 					];
+					
+					if($u = $this->_processUserDataForValueHistory($l['user_id'])) {
+						$v = array_merge($v, $u);
+					}
 					if($bi['subelement'] && isset($v[$bi['subelement']])) {
 						$v = [
 							$bi['subelement'] => $v[$bi['subelement']]
@@ -14079,7 +14095,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 		$modifier = array_shift($tmp);
 		
-		if(in_array($bundle_subelement, ['log_datetime', 'log_datetime_display'])) {
+		if(in_array($bundle_subelement, ['log_datetime', 'log_datetime_display', 'user_id', 'user_name', 'user_email', 'user_fname', 'user_lname'])) {
 			$modifier = $bundle_subelement;
 			$bundle_subelement = null;
 		}
@@ -14091,6 +14107,33 @@ $pa_options["display_form_field_tips"] = true;
 			'modifier' => $modifier,
 			'key' => $bundle_subelement ?? $bundle_element
 		];
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Get data for user id in value history log
+	 * 
+	 * @param int $user_id User ID
+	 *
+	 * @return array Array with user information
+	 */
+	protected function _processUserDataForValueHistory(?int $user_id) : ?array {
+		if(!$user_id) { return []; }
+		if(isset(BaseModel::$s_value_history_user_data[$user_id])) {	
+			return BaseModel::$s_value_history_user_data[$user_id];
+		}
+		
+		if($u = ca_users::find(['user_id' => $user_id], ['returnAs' => 'arrays'])) {
+			$u = array_shift($u);
+			$u = [
+				'user_id' => $u['user_id'],
+				'user_name' => $u['user_name'],
+				'user_email' => $u['email'],
+				'user_fname' => $u['fname'],
+				'user_lname' => $u['lname'],
+			];
+			return BaseModel::$s_value_history_user_data[$user_id] = $u;
+		}
+		return null;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
