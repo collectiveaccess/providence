@@ -3706,12 +3706,22 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		$guid = ca_guids::getForRow($this->tableNum(), $row_id);
 		$log = ca_change_log::getLog(0, null, ['forGUID' => $guid, 'forceValuesForAllAttributeSlots' => true]);
 		$acc = [];
+		
+		$base_log_entries = [];
 		foreach($log as $l) {
 			if((int)$l['logged_table_num'] == (int)$label_table_num) {
 				$s = $l['snapshot'];
+				
+				if($l['changetype'] === 'I') {
+					$base_log_entries[$s['label_id']] = $s;
+					
+				} elseif($base_log_entries[$l['logged_row_id']] ?? null) {
+					$s = array_merge(($base_log_entries[$l['logged_row_id']] ?? []), $s);
+				}
+				
 				if(isset($s[$bi['subelement']])) {
 					if(($bi['element'] === 'preferred_labels') && array_key_exists('is_preferred', $s) && !$s['is_preferred']) { continue; }
-					if(($bi['element'] === 'nonpreferred_labels') && !$s['is_preferred'] ?? false) { continue; }
+					if(($bi['element'] === 'nonpreferred_labels') && ($s['is_preferred'] ?? false)) { continue; }
 					
 					$v = [
 						$bi['key'] => $s[$bi['key']],
@@ -3774,6 +3784,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 			}
 			$acc = $facc;
 		}
+		if(!$return_with_structure) { $acc = array_values($acc); }
 		return $acc;
 	}
 	# ------------------------------------------------------------------	

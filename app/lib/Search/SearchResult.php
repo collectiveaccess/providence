@@ -1809,8 +1809,8 @@ class SearchResult extends BaseObject {
 //
 				if (in_array($va_path_components['field_name'], array('preferred_labels', 'nonpreferred_labels')) && ($t_instance instanceof LabelableBaseModelWithAttributes)) {
 					$vs_label_table_name = $t_instance->getLabelTableName();
-					if($va_path_components['previousvalue'] ?? false) {
-						$vm_val = $this->_getPreviousValues(join('.', $va_path_components['components']), $t_instance, array_merge($va_val_opts, ['row_id' => $vn_row_id]));
+					if($va_path_components['valuehistory'] ?? false) {
+						$vm_val = $this->_getValueHistory(join('.', $va_path_components['components']), $t_instance, array_merge($va_val_opts, ['row_id' => $vn_row_id]));
 					} else {
 						if (!isset(self::$s_prefetch_cache[$vs_label_table_name][$vn_row_id][$vs_opt_md5])) {
 							$this->prefetchLabels($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), $pa_options);
@@ -1831,8 +1831,8 @@ class SearchResult extends BaseObject {
 						$this->prefetch($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), $pa_options);	
 					}
 					
-					if($va_path_components['previousvalue'] ?? false) {
-						$vm_val = $this->_getPreviousValues(join('.', $va_path_components['components']), $t_instance, array_merge($va_val_opts, ['row_id' => $vn_row_id]));
+					if($va_path_components['valuehistory'] ?? false) {
+						$vm_val = $this->_getValueHistory(join('.', $va_path_components['components']), $t_instance, array_merge($va_val_opts, ['row_id' => $vn_row_id]));
 					} else {
 						$vm_val = $this->_getIntrinsicValue(self::$s_prefetch_cache[$va_path_components['table_name']][$vn_row_id][$vs_opt_md5], $t_instance, $va_val_opts);
 					}
@@ -1877,8 +1877,8 @@ class SearchResult extends BaseObject {
 						ca_attributes::prefetchAttributes($this->opo_subject_instance->getDb(), $this->opn_table_num, $this->getRowIDsToPrefetch($this->opo_engine_result->currentRow(), $this->getOption('prefetch')), $va_element_ids, array('dontFetchAlreadyCachedValues' => true));
 					}
 					
-					if($va_path_components['previousvalue'] ?? false) {
-						$vm_val = $this->_getPreviousValues(join('.', $va_path_components['components']), $t_instance, array_merge($va_val_opts, ['returnWithStructure' => $vb_return_with_structure, 'row_id' => $vn_row_id]));
+					if($va_path_components['valuehistory'] ?? false) {
+						$vm_val = $this->_getValueHistory(join('.', $va_path_components['components']), $t_instance, array_merge($va_val_opts, ['returnWithStructure' => $vb_return_with_structure, 'row_id' => $vn_row_id]));
 					} else {
 						$va_attributes = ca_attributes::getAttributes($this->opo_subject_instance->getDb(), $this->opn_table_num, $vn_row_id, array($vn_element_id), array());
 						$vm_val = $this->_getAttributeValue($va_attributes[$vn_element_id], $t_instance, $va_val_opts);
@@ -3903,7 +3903,7 @@ class SearchResult extends BaseObject {
 			$vb_is_change = true;
 			$change_index = (int)$m[1] - 1;
 			if($change_index < 0) { $previous_index = 0; }
-		} elseif($modifier == 'previousvalues') {	
+		} elseif($modifier == 'valuehistory') {	
 			array_splice($va_tmp, 1, 1);
 			$vb_is_change = true;
 			$change_index = null;
@@ -3990,8 +3990,8 @@ class SearchResult extends BaseObject {
 			'num_components'		=> sizeof($va_tmp),
 			'components'			=> $va_tmp,
 			'related'				=> $vb_is_related,
-			'previousvalue'			=> $vb_is_change,
-			'previousvalue_index'	=> $change_index,
+			'valuehistory'			=> $vb_is_change,
+			'valuehistory_index'	=> $change_index,
 			'is_count'				=> $vb_is_count,
 			'hierarchical_modifier' => $vs_hierarchical_modifier,
 			'mse'					=> $vs_subfield_name ? $vs_subfield_name : ($vs_field_name ? $vs_field_name : $vs_table_name)	// most specific element
@@ -4225,11 +4225,11 @@ class SearchResult extends BaseObject {
 	 *		returnAsArray = Return value as array. [Default is false]
 	 * 		returnWithStructure = Return value as nested array with additional information. [Default is false]
 	 */
-	protected function _getPreviousValues(string $bundle, BaseModel $pt_instance, ?array $options=null) {
+	protected function _getValueHistory(string $bundle, BaseModel $pt_instance, ?array $options=null) {
 		$path_components =& $options['pathComponents'];
 		$return_with_structure = caGetOption('returnWithStructure', $options, false);
 
-		$ci = $path_components['previousvalue_index'] ?? null;
+		$ci = $path_components['valuehistory_index'] ?? null;
 		$h = $pt_instance->getValueHistoryForBundle($bundle, $options);
 		
 		if(is_null($ci)) {

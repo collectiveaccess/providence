@@ -3935,8 +3935,9 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 					$element_code = ca_metadata_elements::getElementCodeForId($element_id);
 					if(!is_null($bundle_subelement_id) && ($element_code != $bi['subelement'])) { continue(2); }
 					
+					$s['changetype'] = $l['changetype'];
 					$s['log_id'] = $l['log_id'];
-					$s['element_code'] = $element_code;;
+					$s['element_code'] = $element_code;
 					$s['log_datetime'] = $l['log_datetime'];
 					$s['log_datetime_display'] = caGetLocalizedDate($l['log_datetime'], ['timeOmit' => false]);
 					
@@ -3944,7 +3945,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 						$s = array_merge($s, $u);
 					}
 					
-					$acc[$l['snapshot']['attribute_id']]['attributeValues'][$element_code][] = $s;
+					$acc[$l['snapshot']['attribute_id']]['attributeValues'][$element_code][$s['log_id']] = $s;
 					break;
 			}
 		}
@@ -3977,15 +3978,17 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		
 		$dt = ca_metadata_elements::getElementDatatype($bi['element']);
 		$is_container = ($dt === 0);
+		$acc[$row_id] = [];
+		
+		$deleted = [];
 		foreach($log as $attr_id => $d) {
 			if(isset($d['attributeValues'])) { 
 				$buf = $vacc = [];
 				foreach($d['attributeValues'] as $element_code => $values) {
 					$vdt = ca_metadata_elements::getElementDatatype($element_code);
 					foreach($values as $i => $snapshot) {
-						//if (!$return_with_structure && !$is_container && ($element_code !== $bi['key'])) { continue; }
 						$o_val = \CA\Attributes\Attribute::getValueInstance($vdt, $snapshot);
-						
+						$log_id = $snapshot['log_id'];
 						if(!is_array($buf[$i])) { 
 							$buf[$i] = [
 								'log_datetime' => $snapshot['log_datetime'],
@@ -3997,22 +4000,22 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 								'user_lname' => $snapshot['user_lname']
 							]; 
 						}
-						$buf[$i][$element_code] = $vacc[$i][] = $o_val->getDisplayValue($options);
+						$buf[$log_id][$element_code] = $vacc[$log_id][] = $o_val->getDisplayValue($options);
+						
+						$buf[$log_id]['value_id'] = $snapshot['value_id'];
 					}
 				}
 				
-				foreach($buf as $i => $e) {
-					$buf[$i][$bi['element']] = join($delimiter, $vacc[$i] ?? []);
+				foreach($buf as $log_id => $e) {
+					$buf[$log_id][$bi['element']] = join($delimiter, $vacc[$log_id] ?? []);
 				}
-				$acc[$row_id] = $buf;
-				
+				$acc[$row_id] = ($acc[$row_id] +  $buf);
 			}
 		}
 		
 		foreach($acc as $row_id => $d) {
 			ksort($acc[$row_id]);
 		}
-		
 		if(!$return_with_structure) {
 			$facc = [];
 			foreach($acc as $row_id => $data) {
