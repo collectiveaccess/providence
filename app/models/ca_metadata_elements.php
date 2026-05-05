@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -138,6 +138,8 @@ BaseModel::$s_ca_models_definitions['ca_metadata_elements'] = array(
 
 class ca_metadata_elements extends LabelableBaseModelWithAttributes implements ITakesSettings {
 	use SyncableBaseModel;
+	use ModelSettings;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -568,170 +570,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$va_available_settings = $this->getAvailableSettings();
 		return (isset($va_available_settings[$ps_setting])) ? true : false;
 	}
-	# ------------------------------------------------------
-	/**
-	 * Returns HTML form element for editing of setting
-	 */
-	public function settingHTMLFormElement($ps_setting, $pa_options=null) {
-		if(!$this->isValidSetting($ps_setting)) {
-			return false;
-		}
-		$va_available_settings = $this->getAvailableSettings();
-		$va_properties = $va_available_settings[$ps_setting];
-
-		if (((int)$this->get('parent_id') > 0) && isset($va_properties['validForRootOnly']) && $va_properties['validForRootOnly']) {
-			return false;
-		}
-
-		if (((int)$this->get('parent_id') == 0) && isset($va_properties['validForNonRootOnly']) && $va_properties['validForNonRootOnly']) {
-			return false;
-		}
-
-		$vs_input_name = "setting_$ps_setting";
-
-		if(isset($pa_options['label_id'])) {
-			$vs_label_id = $pa_options['label_id'];
-		} else {
-			$vs_label_id = "setting_{$ps_setting}_label";
-		}
-
-
-		$vs_return = "\n".'<div class="formLabel">'."\n";
-		$vs_return .= '<span class="'.$vs_label_id.'">'.$va_properties['label'].'</span><br />'."\n";
-
-		switch($va_properties['displayType']){
-			# --------------------------------------------
-			case DT_FIELD:
-				if($va_properties["height"]==1){
-					$vs_return .= '<input name="'.$vs_input_name.'" id="'.$vs_input_name.'" type="text" size="'.$va_properties["width"].'" value="'.$this->getSetting($ps_setting).'" />'."\n";
-				} else if($va_properties["height"]>1){
-					$vs_return .= '<textarea name="'.$vs_input_name.'" id="'.$vs_input_name.'"  cols="'.$va_properties["width"].'" rows="'.$va_properties["height"].'">'.$this->getSetting($ps_setting).'</textarea>'."\n";
-				}
-				break;
-			# --------------------------------------------
-			case DT_PASSWORD:
-				$vs_return .= '<input name="'.$vs_input_name.'" type="password" size="'.$va_properties["width"].'" value="'.$this->getSetting($ps_setting).'" />'."\n";
-				break;
-			# --------------------------------------------
-			case DT_CHECKBOXES:
-				$attributes = ['value' => '1'];
-				if (trim($this->getSetting($ps_setting))) {
-					$attributes['checked'] = '1';
-				}
-				if (isset($va_properties['hideOnSelect'])) {
-					if (!is_array($va_properties['hideOnSelect'])) { $va_properties['hideOnSelect'] = array($va_properties['hideOnSelect']); }
-					
-					$ids = [];
-					foreach($va_properties['hideOnSelect'] as $vs_n) {
-						$ids[] = "#setting_container_{$vs_n}";
-					}
-					$attributes['onchange'] = 'jQuery(this).prop("checked") ? jQuery("'.join(",", $ids).'").slideUp(250).find("input, textarea").val("") : jQuery("'.join(",", $ids).'").slideDown(250);';
-					
-					if ($attributes['checked'] ?? false) {
-						$vs_return .= "<script type='text/javascript'>
-	jQuery(document).ready(function() {
-		jQuery('".join(",", $ids)."').hide();
-	});
-	</script>\n";
-					}
-				}
-				if (isset($va_properties['showOnSelect'])) {
-					if (!is_array($va_properties['showOnSelect'])) { $va_properties['showOnSelect'] = array($va_properties['showOnSelect']); }
-					
-					$ids = [];
-					foreach($va_properties['showOnSelect'] as $vs_n) {
-						$ids[] = "#setting_container_{$vs_n}";
-					}
-					$attributes['onchange'] = 'jQuery(this).prop("checked") ? jQuery("'.join(",", $ids).'").slideDown(250).find("input, textarea").val("") : jQuery("'.join(",", $ids).'").slideUp(250);';
-					
-					if (!($attributes['checked'] ?? false)) {
-						$vs_return .= "<script type='text/javascript'>
-	jQuery(document).ready(function() {
-		jQuery('".join(",", $ids)."').hide();
-	});
-	</script>\n";
-					}
-				}
-				$vs_return .= caHTMLCheckboxInput($vs_input_name, $attributes, ['id' => $vs_input_name]);
-				break;
-			# --------------------------------------------
-			case DT_SELECT:
-				$vn_width = (isset($va_properties['width']) && (strlen($va_properties['width']) > 0)) ? $va_properties['width'] : "100px";
-				$vn_height = (isset($va_properties['height']) && (strlen($va_properties['height']) > 0)) ? $va_properties['height'] : "50px";
-
-				$attributes = ['id' => $vs_input_name];
-				if ($vn_height > 1) { $attributes['multiple'] = 1; $vs_input_name .= '[]'; }
-				$va_opts = array('id' => $vs_input_name, 'width' => $vn_width, 'height' => $vn_height);
-				
-				
- 				if($va_properties['showMediaElementBundles'] ?? false) {
- 				    if (!is_array($va_restrictions = $this->getTypeRestrictions())) { $va_restrictions = []; }
- 				    
-                    $va_select_opts = ['-' => ''];
- 				    foreach($va_restrictions as $va_restriction) {
-                        // find metadata elements that are either (a) Media or (b) a container that includes a media element
-                        if (is_array($va_elements = ca_metadata_elements::getElementsAsList(false, $va_restriction['table_num'], null, true, false, false, null))) {
-                            foreach($va_elements as $vn_element_id => $va_element_info) {
-                                if ($va_element_info['datatype'] == __CA_ATTRIBUTE_VALUE_MEDIA__) {
-                                    if ($va_element_info['parent_id'] > 0) {
-                                        $va_select_opts[$va_elements[$va_element_info['hier_element_id']]['display_label']." &gt; ".$va_element_info['display_label']] = $va_elements[$va_element_info['hier_element_id']]['element_code'].".".$va_element_info['element_code'];
-                                    } else {
-                                        $va_select_opts[$va_element_info['display_label']] = $va_element_info['element_code'];
-                                    }
-                                }
-                            }
-                        }
-                        $va_properties['options'] = $va_select_opts;
-                    } 
-                } elseif(($va_properties['showLocaleList'] ?? false)) {
-                	// showLocaleList = list all available locales
-                	$locales = ca_locales::getLocaleList(['available_for_cataloguing_only' => false]);
-                	$va_properties['options'] = [];
-                	foreach($locales as $locale_id => $l) {
-                		$va_properties['options'][$l['name']] = $l['language'].'_'.$l['country'];
-                	}
-                } elseif($va_properties['useLocaleList'] ?? false) {
-                	// useLocaleList = show cataloguing locales only
-                	$locales = ca_locales::getLocaleList(['available_for_cataloguing_only' => true]);
-                	$va_properties['options'] = [];
-                	foreach($locales as $locale_id => $l) {
-                		$va_properties['options'][$l['name']] = $l['language'].'_'.$l['country'];
-                	}
-                }
-
-				$vm_value = $this->getSetting($ps_setting);
-
-				if(is_array($vm_value)) {
-					$va_opts['values'] = $vm_value;
-				} else {
-					$va_opts['value'] = $vm_value;
-					if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
-				}
-
-				// reload settings form when value for this element changes
-				if (isset($va_properties['refreshOnChange']) && (bool)$va_properties['refreshOnChange']) {
-					$attributes['onchange'] = "caSetElementsSettingsForm({ {$vs_input_name} : jQuery(this).val() }); return false;";
-				}
-				
-				if($va_properties['useList'] ?? false) {
-                	$t_list = new ca_lists($va_properties['useList']);
-					if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
-					$vs_return .= $t_list->getListAsHTMLFormElement($va_properties['useList'], $vs_input_name, $attributes, $va_opts);
-                } else {
-					$vs_return .= caHTMLSelect($vs_input_name, $va_properties['options'], $attributes, $va_opts);
-				}
-				break;
-			# --------------------------------------------
-			default:
-				break;
-			# --------------------------------------------
-		}
-		$vs_return .= '</div>'."\n";
-
-		TooltipManager::add('.'.$vs_label_id, "<h3>".$va_properties["label"]."</h3>".$va_properties["description"]);
-
-		return "<div id='setting_container_{$ps_setting}'>{$vs_return}</div>";
-	}
+	
 	# ------------------------------------------------------
 	# Static
 	# ------------------------------------------------------
