@@ -592,7 +592,7 @@ trait ModelSettings {
 							if ($vb_show_lists) {
 								$t_list = new ca_lists();
 								$va_lists = caExtractValuesByUserLocale($t_list->getListOfLists());
-								
+								$va_lists = caSortArrayByKeyInValue($va_lists, ['name']);
 								$va_rel_opts = array();
 								if (isset($va_properties['allowNull']) && $va_properties['allowNull']) {
 									$va_rel_opts['-'] = null;

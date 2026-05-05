@@ -2642,6 +2642,21 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 							$va_tmp[] = $qr_primary_items->get("item_id");
 						}
 						$va_primary_set_item_ids_for_set[$vn_set_id] = $va_tmp;
+					} else {
+						$va_tmp = array();
+						$qr_any = $o_db->query("
+							SELECT si.item_id, si.row_id
+							FROM ca_set_items si 
+							INNER JOIN ca_objects as o on o.object_id = si.row_id
+							INNER JOIN ca_objects_x_object_representations as oxr on oxr.object_id = o.object_id
+							INNER JOIN ca_object_representations as r on r.representation_id = oxr.representation_id
+							WHERE si.set_id = ?		AND r.access = 1
+							ORDER BY rand()
+							", array($vn_set_id));
+						if($qr_any && $qr_any->nextRow()) {
+							$va_tmp[] = $qr_any->get("item_id");
+						}
+						$va_primary_set_item_ids_for_set[$vn_set_id] = $va_tmp;
 					}					
 				}			
 			}
@@ -2779,7 +2794,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		return $vn_table_num;
 	}
 	# ------------------------------------------------------
-	# new functions for pawtucket lightbox
+	# New functions for pawtucket lightbox
 	# ------------------------------------------------------
 	/*
 	* options
@@ -2928,7 +2943,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 									FROM ca_sets cs
 									INNER JOIN ca_users AS cu ON cs.user_id = cu.user_id
 									INNER JOIN ca_set_labels AS csl ON csl.set_id = cs.set_id
-									LEFT JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
 									".join("\n", $va_extra_joins)."
 									".(sizeof($va_sql_wheres) ? "WHERE " : "")." ".join(" AND ", $va_sql_wheres)."
 									{$sort_sql}
@@ -2962,7 +2976,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				
 				$vs_type = $this->getTypeName($qr_res->get('type_id'));
 			
-				//$created = $this->getCreationTimestamp($set_id);
 				$va_sets[$set_id = $qr_res->get('set_id')] = array_merge($qr_res->getRow(), [
 					'set_content_type' => $vs_set_type, 'set_type' => $vs_type,
 					'label' => $labels[$set_id], 'count' => isset($counts[$set_id]) ? $counts[$set_id] : 0,
