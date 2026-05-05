@@ -6453,6 +6453,9 @@ function caGetFindViewList($table_name_or_num) : ?array {
 			];
 			break;
 		case 'ca_object_representations':
+		case 'ca_entities':
+		case 'ca_occurrences':
+		case 'ca_collections':
 			return [
 				'list' => _t('list'),
 				'thumbnail' => _t('thumbnails'),
