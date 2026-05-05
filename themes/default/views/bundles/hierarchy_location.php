@@ -705,6 +705,7 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 				defaultSecondarySelection: [<?= $t_subject->getPrimaryKey() ?>],
 				
 				onSelection: function(id, parent_id, name, formattedDisplay) {
+					if(id) { id = '' + id; }
 					// Update "move" status message
 <?php
 	if (($subject_table == 'ca_collections')) {
