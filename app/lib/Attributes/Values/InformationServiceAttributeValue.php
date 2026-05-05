@@ -329,7 +329,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 					if(!$selected_result) { $selected_result = array_shift($res['results']); }
 				}
 				if($selected_result && !caGetOption('isRecursive', $pa_options, false)) {
-					return self::parseValue($selected_result['url'], $pa_element_info, array_merge($pa_options, ['isRecursive' => true]));
+					return self::parseValue($selected_result['url'] ?? null, $pa_element_info, array_merge($pa_options ?? [], ['isRecursive' => true]));
 				}
 				if(!$selected_result) {
 					return null;
