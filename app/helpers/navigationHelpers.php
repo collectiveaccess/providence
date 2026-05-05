@@ -134,6 +134,7 @@ define('__CA_NAV_ICON_ICON_POS_BOTTOM__', 3);
  *		absolute = return absolute URL. [Default is to return relative URL]
  *      useQueryString = encode other parameters as query string rather than in url path [Default is false]
  *		isServiceUrl = assume URL is a web-services call (Eg. use service.php rather than index.php) [Default is false]
+ *		allowEmptyParameters = Output empty URL parameters as-is, otherwise they are stripped. [Default is false]
  *
  * @return string
  */
@@ -179,7 +180,7 @@ function caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_
 					$vs_value = join(";", $vs_value);
 				}
 				
-				if((strlen($vs_value) === 0) && ($vn_i < (sizeof($pa_other_params) - 1))) { continue; }	// Don't output null params - will break url
+				if((strlen($vs_value) === 0) && !caGetOption('allowEmptyParameters', $pa_options, false)) { continue; }	// Don't output null params - will break url
 				
 				if ($use_query_string) { 
 					$query_params[$vs_name] = $vs_value;
@@ -1201,7 +1202,7 @@ function caEditorUrl($po_request, $ps_table, $pn_id=null, $pb_return_url_as_piec
 	} else {
 		if (!is_array($pa_additional_parameters)) { $pa_additional_parameters = array(); }
 		$pa_additional_parameters = array_merge(array($vs_pk => $pn_id), $pa_additional_parameters);
-		return caNavUrl($po_request, $vs_module, $vs_controller, $action_extra ? "{$vs_action}/{$action_extra}" : $vs_action, $pa_additional_parameters, $pa_options);
+		return caNavUrl($po_request, $vs_module, $vs_controller, $action_extra ? "{$vs_action}/{$action_extra}" : $vs_action, $pa_additional_parameters, array_merge($pa_options ?? [], ['allowEmptyParameters' => true]));
 	}
 }
 # ------------------------------------------------------------------------------------------------

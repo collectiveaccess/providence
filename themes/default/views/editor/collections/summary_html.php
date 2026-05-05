@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2021 Whirl-i-Gig
+ * Copyright 2010-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,11 +25,13 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_item 				= $this->getVar('t_subject');
-	$item_id 				= $this->getVar('subject_id');
-	
-	$t_display 				= $this->getVar('t_display');
-	$placements 			= $this->getVar("placements");
+$t_item 				= $this->getVar('t_subject');
+$item_id 				= $this->getVar('subject_id');
+
+$t_display 				= $this->getVar('t_display');
+$placements 			= $this->getVar("placements");
+$collection_config = caGetCollectionsConfig();
+$include_objects = !$collection_config->get('export_omit_objects');
 ?>
 <div id="summary" style="clear: both;">
 	<?= caEditorPrintSummaryControls($this); ?>
@@ -68,7 +70,7 @@
 				$template = "<l>^ca_collections.preferred_labels.name</l> (^ca_collections.idno)";
 			}
 			
-			$hierarchy = $t_item->hierarchyWithTemplate($template, array('collection_id' => $item_id, 'sort' => $sort_fields, 'objectTemplate' => $t_item->getAppConfig()->get('ca_objects_hierarchy_summary_display_settings')));
+			$hierarchy = $t_item->hierarchyWithTemplate($template, array('collection_id' => $item_id, 'sort' => $sort_fields, 'includeObjects' => $include_objects, 'objectTemplate' => $t_item->getAppConfig()->get('ca_objects_hierarchy_summary_display_settings')));
 			foreach($hierarchy as $vn_i => $hierarchy_item) {
 				$margin = $hierarchy_item['level']*20;
 				print "<div style='margin-left:".$margin."px;margin-bottom:10px;'><i class='fa fa-angle-right' ></i> ".$hierarchy_item['display']."</div>";

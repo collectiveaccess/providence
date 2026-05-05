@@ -194,15 +194,16 @@ class ExternalMediaAttributeValue extends AttributeValue implements IAttributeVa
 				return false;
 			}
 		}
-
-		if(!($info = caGetExternalMediaUrlInfo($value))) {
+		
+		$m = new \CA\MediaUrl();
+		if(!($info = $m->validate($value))) {
 			$this->postError(1970, _t('%1 is not a valid external media url. Only %2 are supported.', $element_info['displayLabel'], caMakeCommaListWithConjunction(caGetExternalMediaUrlSupportedFormats(['names' => true]))), 'ExternalMediaAttributeValue->parseValue()');
 			return false;
 		}
 
         return [
             'value_longtext1' => $value,									// media url
-            'value_longtext2' => $info['source'].':'.$info['code']			// media source
+            'value_longtext2' => strtoupper($info['service']).':'.$info['code']			// media source
         ];
     }
     # ------------------------------------------------------------------

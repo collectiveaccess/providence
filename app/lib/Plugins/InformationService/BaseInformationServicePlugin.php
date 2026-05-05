@@ -235,16 +235,22 @@ abstract class BaseInformationServicePlugin Extends WLPlug {
     		$default_type = caGetDefaultItemID('list_item_types');
     		$default_locale = defined('__CA_DEFAULT_LOCALE__') ? __CA_DEFAULT_LOCALE__ : null;
     		foreach($data as $d) {
-    			$parent_id = DataMigrationUtils::getListItemID($list_id, $d['id'], $d['type'] ?? $default_type, $d['locale'] ?? $default_locale, [
+    			$locales = array_keys($d['labels']);
+    			$locale = array_shift($locales);
+    			$label = array_shift($d['labels']);
+    			$t_parent = DataMigrationUtils::getListItemID($list_id, $d['id'], $d['type'] ?? $default_type, $locale ?? $default_locale, [
     				'parent_id' => $parent_id,
-    				'preferred_labels' => [
-    					'name_singular' => $d['name_singular'],
-    					'name_plural' => $d['name_plural'],
-    					'description' => $d['description']
-    				],
+    				'preferred_labels' => $label,
     				'access' => $d['access']
-    			], ['outputErrors' => false]);
-    			if(!$parent_id) { return null; }
+    			], ['outputErrors' => false, 'returnInstance' => true, 'matchOn' => ['labels']]);
+    			if(!$t_parent) { return null; }
+
+				foreach($d['labels'] as $locale => $l) {
+					if(!$t_parent->preferredLabelExistsForLocale($locale)) {
+						$t_parent->addLabel($l, $locale, null, true);
+					}
+				}
+				$parent_id = $t_parent->getPrimaryKey();
     		}
     	}
     	

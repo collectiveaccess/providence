@@ -4106,50 +4106,73 @@ function caReturnToHomeLocationControlForRelatedBundle($po_request, $ps_id_prefi
 /**
  * 
  */
-function caProcessBottomLineTemplateForDisplay($po_request, $pt_display, $pr_res, $pa_options=null) {
-	if (!$pr_res) { return null; }
-	if (!$pt_display) { return null; }
-	$vs_template = $pt_display->getSetting('bottom_line');
+function caProcessBottomLineTemplateForDisplay($request, $t_display, $qr_res, $options=null) {
+	if (!$qr_res) { return null; }
+	if (!$t_display) { return null; }
+	$template = $t_display->getSetting('bottom_line');
+	$bundles_by_code = [];
+	if (!is_array($bundles = $t_display->getPlacementsInDisplay())) { return null; }
+	foreach($bundles as $vn_placement_id => $placement) {
+		$bundles_by_code[$placement['bundle_name'] ?? $placement['bundle'] ?? null] = $placement;
+	} 
+	
+	$tags = caGetTemplateTags($template, ['parseOptions' => true]);
+	$is_set = false;
 
-	$va_bundles_by_code = [];
-	if (!is_array($va_bundles = $pt_display->getPlacementsInDisplay())) { return null; }
-	foreach($va_bundles as $vn_placement_id => $va_placement) {
-		$va_bundles_by_code[$va_placement['bundle_name']] = $va_placement;
-	}
+	foreach($tags as $tag) {
+		$fields = preg_split("/[ ;,]+/", $tag['options']['fields']);
 
-	$va_tags = caGetTemplateTags($vs_template, ['parseOptions' => true]);
-	$vb_is_set = false;
-
-	foreach($va_tags as $va_tag) {
-		$va_fields = preg_split("/[ ;,]+/", $va_tag['options']['fields']);
-
-		$va_tag_bits = explode(':', $va_tag['tag']);
-		switch(strtolower($va_tag_bits[0])) {
+		$tag_bits = explode(':', $tag['tag']);
+		switch(strtolower($tag_bits[0])) {
 			case 'sum':
-				$va_placements = [];
-				foreach($va_fields as $vs_field) {
-					if (!isset($va_bundles_by_code[$vs_field])) { continue; }
-					$va_placements[] = $va_bundles_by_code[$vs_field];
+				$placements = [];
+				foreach($fields as $field) {
+					if (!isset($bundles_by_code[$field])) { continue; }
+					$placements[] = $bundles_by_code[$field];
 				}
 
-				$vs_val = caProcessBottomLineTemplateForPlacement($po_request, $va_placements, $pr_res, ['template' => '^SUM'.(isset($va_tag_bits[1]) ? ":{$va_tag_bits[1]}" : ""), 'multiple' => true]);
+				$val = caProcessBottomLineTemplateForPlacement($request, $placements, $qr_res, ['template' => '^SUM'.(isset($tag_bits[1]) ? ":{$tag_bits[1]}" : ""), 'multiple' => true]);
 
-				$vs_template = str_replace("^".$va_tag['originalTag'], $vs_val, $vs_template);
+				$template = str_replace("^".$tag['originalTag'], $val, $template);
 
-				$vb_is_set = true;
+				$is_set = true;
+				break;
+			case 'count':
+				$template = str_replace("^".$tag['originalTag'], caGetOption('total', $options, $qr_res->numHits()), $template);
+				$is_set = true;
+				break;
+			case 'pagecount':
+				$template = str_replace("^".$tag['originalTag'], $qr_res->numHits() ?? 0, $template);
+				$is_set = true;
 				break;
 		}
 	}
-	return $vb_is_set ? $vs_template : null;
+	return $is_set ? $template : null;
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caProcessBottomLineTemplateForDisplayPlacements($request, $t_display, $res, $options=null) {
+	if (!$res) { return null; }
+	if (!$t_display) { return null; }
+
+	if (!is_array($bundles = $t_display->getPlacementsInDisplay())) { return null; }
+	
+	$acc = [];
+	foreach($bundles as $placement_id => $placement) {
+		$acc[$placement_id] = caProcessBottomLineTemplateForPlacement($request, $placement, $res, $options);
+	}
+	return $acc;
 }
 # ---------------------------------------
 /**
  *
  */
-function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_res, $options=null) {
+function caProcessBottomLineTemplateForPlacement($request, $placement, $res, $options=null) {
 	global $g_ui_units_pref, $g_ui_locale;
 
-	if (!$pr_res) { return null; }
+	if (!$res) { return null; }
 
 	if ($is_multiple = caGetOption('multiple', $options, false)) {
 		$placements = $placement;
@@ -4157,34 +4180,33 @@ function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_re
 		$placements = [$placement];
 	}
 
-	if (($current_index = $pr_res->currentIndex()) < 0) { $current_index = 0; }
+	if (($current_index = $res->currentIndex()) < 0) { $current_index = 0; }
 
 	$page_start = caGetOption('pageStart', $options, 0);
-	$page_end = caGetOption('pageEnd', $options, $pr_res->numHits());
+	$page_end = caGetOption('pageEnd', $options, $res->numHits());
 
 	$subelements_to_process = $tag_values = [];
 
 	foreach($placements as $placement) {
-		$pr_res->seek(0);
+		$res->seek(0);
 
 		if (!($template = caGetOption('template', $options, $placement['settings']['bottom_line']))) { 
-			$pr_res->seek($current_index);	// Restore current position of search result
+			$res->seek($current_index);	// Restore current position of search result
 			return null; 
 		}
+		$bundle_name = $placement['bundle_name'] ?? $placement['bundle'] ?? null;
 		
-		$bundle_name = $placement['bundle_name'];
-
 		$tmp = explode(".", $bundle_name);
 
 		if (!($t_instance = Datamodel::getInstanceByTableName($tmp[0], true))) {
-			$pr_res->seek($current_index);	// Restore current position of search result
+			$res->seek($current_index);	// Restore current position of search result
 			return null;
 		}
 
 		$datatype = ca_metadata_elements::getElementDatatype($tmp[1]);
 		if (is_null($datatype)) { continue; }
 
-		if (!($user_currency = $po_request->user ? $po_request->user->getPreference('currency') : 'USD')) {
+		if (!($user_currency = $request->user ? $request->user->getPreference('currency') : 'USD')) {
 			$user_currency = 'USD';
 		}
 		$user_currency = caGetCurrencySymbol($user_currency, $tmp[1]);
@@ -4195,7 +4217,7 @@ function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_re
 		//		Ex. 	^SUM:valuation = sum of "valuation" sub-element
 		//				^SUM = sum of primary value in non-container element
 		if (!preg_match_all("!(\^[A-Z]+[\:]{0,1}[A-Za-z0-9\_\-]*[%]{0,1}[A-Za-z0-9\_\-=]*)!", $template, $tags)) {
-			$pr_res->seek($current_index);	// Restore current position of search result
+			$res->seek($current_index);	// Restore current position of search result
 			return $template;
 		}
 		$tags = $tags[1];
@@ -4226,7 +4248,7 @@ function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_re
 		$page_min = $page_max = null;
 		
 		$tag_values = array();
-		while($pr_res->nextHit()) {
+		while($res->nextHit()) {
 			foreach($subelements_to_process as $subelement => $subelement_datatype) {
 				$value_name = ($is_multiple) ? "Value_{$subelement_datatype}" : $subelement;
 
@@ -4244,16 +4266,18 @@ function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_re
 				
 				switch($subelement_datatype) {
 					case __CA_ATTRIBUTE_VALUE_LIST__:
-						$values = $pr_res->get($subelement, ['convertCodesToIdno' => true, 'returnAsArray' => true]);
-						if(is_array($values)) {
+						$values = $res->get($subelement, ['convertCodesToIdno' => true, 'returnAsArray' => true]);
+						if(is_array($values) && sizeof($values)) {
 							foreach($values as $index => $value) {
 								$tag_values[$value_name]['COUNTS'][$value]++; 
 							}
+						} else {
+							$tag_values[$value_name]['COUNTS'][null]++; 
 						}
 						break;
 					case __CA_ATTRIBUTE_VALUE_DATERANGE__:
-						$values = $pr_res->get($subelement, ['sortable' => true, 'returnAsArray' => true]);
-						$display_values = $pr_res->get($subelement, ['returnAsArray' => true]);
+						$values = $res->get($subelement, ['sortable' => true, 'returnAsArray' => true]);
+						$display_values = $res->get($subelement, ['returnAsArray' => true]);
 
 						if(is_array($values)) {
 							foreach($values as $index => $value) {
@@ -4284,7 +4308,7 @@ function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_re
 						}
 						break;
 					case __CA_ATTRIBUTE_VALUE_CURRENCY__:
-						$values = $pr_res->get($subelement, array('returnAsDecimalWithCurrencySpecifier' => true, 'returnAsArray' => true));
+						$values = $res->get($subelement, array('returnAsDecimalWithCurrencySpecifier' => true, 'returnAsArray' => true));
 
 						if(is_array($values)) {
 							foreach($values as $value) {
@@ -4305,7 +4329,7 @@ function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_re
 						break;
 					case __CA_ATTRIBUTE_VALUE_LENGTH__:
 					case __CA_ATTRIBUTE_VALUE_WEIGHT__:
-						$values = $pr_res->get($subelement, array('returnAsDecimalMetric' => true, 'returnAsArray' => true));
+						$values = $res->get($subelement, array('returnAsDecimalMetric' => true, 'returnAsArray' => true));
 
 						if(is_array($values)) {
 							foreach($values as $value) {
@@ -4324,7 +4348,7 @@ function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_re
 						}
 						break;
 					case __CA_ATTRIBUTE_VALUE_TIMECODE__:
-						$values = $pr_res->get($subelement, array('returnAsDecimal' => true, 'returnAsArray' => true));
+						$values = $res->get($subelement, array('returnAsDecimal' => true, 'returnAsArray' => true));
 
 						if(is_array($values)) {
 							foreach($values as $value) {
@@ -4344,7 +4368,7 @@ function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_re
 						break;
 					case __CA_ATTRIBUTE_VALUE_INTEGER__:	// integer
 					case __CA_ATTRIBUTE_VALUE_NUMERIC__:	// decimal
-						$values = $pr_res->get($subelement, array('returnAsArray' => true));
+						$values = $res->get($subelement, array('returnAsArray' => true));
 
 						if(is_array($values)) {
 							foreach($values as $value) {
@@ -4409,7 +4433,7 @@ function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_re
 								if($key = $parsed_tag['options']['filter'] ?? null) {
 									$c = $tag_values[$value_name]['COUNTS'][$key] ?? 0;
 								} else {
-									$c = array_reduce($tag_values[$value_name]['COUNTS'], function($c, $i) {
+									$c = array_reduce($tag_values[$value_name]['COUNTS'] ?? [], function($c, $i) {
 										return $c + $i;
 									}, 0);
 								}
@@ -4523,7 +4547,7 @@ function caProcessBottomLineTemplateForPlacement($po_request, $placement, $pr_re
 	}
 
 	// Restore current position of search result
-	$pr_res->seek($current_index);
+	$res->seek($current_index);
 
 	return $template;
 }
@@ -4610,7 +4634,7 @@ function caRepresentationList($request, $subject, ?array $options=null) : ?array
 		
 		$display_version = $display_info['display_version'] ?? null;
 		
-		$iiif_url = $request->getBaseUrlPath().'/service/IIIF/representation:'.$rep_id.'/info.json';
+		$iiif_url = $request->getBaseUrlPath().(caUseCleanUrls() ? '/service' : '/service.php').'/IIIF/representation:'.$rep_id.'/info.json';
 		
 		$vtt_captions = null;
 		if(is_array($vtt_caption_list = $t_rep->getCaptionFileList($rep_id))) {
@@ -4624,10 +4648,19 @@ function caRepresentationList($request, $subject, ?array $options=null) : ?array
 				];
 			}
 		}
+		
+		$embedded_player = null;
+		if(is_array($media_data = $qr->getMediaInfo('ca_object_representations.media')) && is_array($media_data['INPUT'] ?? null)) {
+			if(($media_data['INPUT']['FETCHED_BY'] ?? null) && ($media_data['INPUT']['FETCHED_FROM'] ?? null)) {
+				$embedded_player = caGetExternalMediaEmbedCode($media_data['INPUT']['FETCHED_FROM']);
+			}
+		}
+		$use_embedded_player = ($embedded_player && (!$mimetype || $display_info['use_embedded_when_available'] ?? false));
+		
 		$rep = [
 			'representation_id' => $rep_id,
 			'mimetype' => $mimetype,
-			'media_class' => caGetMediaClass($qr->get('ca_object_representations.mimetype')),
+			'media_class' => $use_embedded_player ? 'embed' : caGetMediaClass($mimetype),
 			'original_url' => $qr->get("ca_object_representations.media.original.url"),
 			'url' => $qr->get("ca_object_representations.media.{$display_version}.url"),
 			'original_tag' => $qr->get("ca_object_representations.media.original.tag"),
@@ -4637,6 +4670,7 @@ function caRepresentationList($request, $subject, ?array $options=null) : ?array
 			'no_overlay' => (bool)($display_info['no_overlay'] ?? false),
 			'caption' => caProcessTemplateForIDs($caption_template, $qr->tableName(), [$rep_id]),
 			'vttCaptions' => $vtt_captions,
+			'embeddedPlayer' => $embedded_player,
 			'download_version' => $allow_download ? caGetOption('download_version', $download_info, null) : null
 		];
 		
@@ -4648,17 +4682,17 @@ function caRepresentationList($request, $subject, ?array $options=null) : ?array
 			
 			$rep['pages'] = [];
 			foreach($rep['pages_previews'] as $i => $p) {
-				$rep['pages'][] = $request->getBaseUrlPath().'/service/IIIF/representation:'.$rep_id.':'.($i+1).'/info.json';
+				$rep['pages'][] = $request->getBaseUrlPath().(caUseCleanUrls() ? '/service' : '/service.php').'/IIIF/representation:'.$rep_id.':'.($i+1).'/info.json';
 			}
 		}
 		
 		
-		$rep['display_class'] = $display_info['display_class'] ?? null;
+		$rep['display_class'] = $use_embedded_player ? 'embed' : ($display_info['display_class'] ?? null);
 		
-		$opts = MediaViewerManager::viewerOptionsForDisplayClass($display_type, $display_info['display_class']);
+		$opts = MediaViewerManager::viewerOptionsForDisplayClass($display_type, $display_info['display_class'] ?? null);
 		$rep['options'] = $opts;
 		
-		$opts = MediaViewerManager::viewerOptionsForDisplayClass('overlay', $display_info['display_class']);
+		$opts = MediaViewerManager::viewerOptionsForDisplayClass('overlay', $display_info['display_class'] ?? null);
 		$rep['overlay_options'] = $opts;
 		
 		
@@ -4678,13 +4712,9 @@ function caRepresentationList($request, $subject, ?array $options=null) : ?array
  * using per-mimetype settings in media_display.conf. Renders HTML using  views/bundles/representation_viewer_html.php.
  * This will render media viewers for many items. To render a viewer for a specific item see caGetMediaViewerHTML()
  *
- * @param RequestHTTP $po_request The current request
- * @param BaseModel|SearchResult $po_data A model instance (ca_object_representations or a model inheriting from RepresentableBaseModel) or a search result (for a RepresentableBaseModel table) for which to render the viewer. 
- * @param RepresentableBaseModel $pt_subject = A model instance loaded with the subject (the record the media is shown in the context of. Eg. if a representation is shown for an object this is an instance for that object record)
- * @param array $pa_options Options include:
- *		primaryOnly = return only primary representations. [Default is false]
- *		currentRepClass = CSS class to apply to thumbnail of currently visible representation. [Default is "active"]
- *		dontShowPlaceholder = Don't use placeholder when no representation is available. [Default is false]
+ * @param RequestHTTP $request The current request
+ * @param RepresentableBaseModel $subject = A model instance loaded with the subject (the record the media is shown in the context of. Eg. if a representation is shown for an object this is an instance for that object record)
+ * @param array $options Options include:
  *		display = media_display.conf display version to use. [Default is 'detail']
  *		displayAnnotations = Mode of display for annotations on representation. Valid values are: viewer (in viewer), div (in external div with class #detailAnnotations), none (no display) [Default is none]
  *		displayAnnotationTemplate = Template to use when formatting list of annotations [Default is the annotation title (^ca_representation_annotations.preferred_labels.name)]
@@ -4693,245 +4723,66 @@ function caRepresentationList($request, $subject, ?array $options=null) : ?array
  *
  * @see caGetMediaViewerHTML
  */
-# DEPRECATED: Still used by Pawtucket; will be removed in next version of Pawtucket
-function caRepresentationViewer($request, $data, $subject, $options=null) {
-	$o_view = new View($request, $request->getViewsDirectoryPath().'/bundles/');
+function caRepresentationViewer($request, $subject, ?array $options=null) {
+	$o_view = new View($request, $request->getViewsDirectoryPath().'/Details/');
 	
-	$va_detail_config = caGetDetailConfig()->get($data->tableName());
+	$detail_config = caGetDetailConfig()->get($subject->tableName());
+	$access_values = caGetUserAccessValues($request);
 	
-	// If item-level ACL is enabled rely upon ACL to do filtering
-	$va_access_values = caAclIsEnabled($data) ? null : caGetUserAccessValues($request);
+	$t_instance = null;
+	if(is_a($subject, 'RepresentableBaseModel')) {
+		$t_instance = $subject;
+	} elseif(is_a($subject, 'SearchResult')) {
+		$t_instance = $subject->getInstance();
+	} else {
+		return null;
+	}
+	if (method_exists($t_instance, 'filterNonPrimaryRepresentations')) { $t_instance->filterNonPrimaryRepresentations(false); }
 
 	// options
-	$pb_primary_only 					= caGetOption('primaryOnly', $options, false);
-	
-	$show_only_media_types 				= caGetOption('representationViewerShowOnlyMediaTypes', $options, null);
-	if(($show_only_media_types) && !is_array($show_only_media_types)) { $show_only_media_types = [$show_only_media_types]; }
-	
-	$show_only_media_types_when_present = caGetOption('representationViewerShowOnlyMediaTypesWhenPresent', $options, null);
-	if(($show_only_media_types_when_present) && !is_array($show_only_media_types_when_present)) { $show_only_media_types_when_present = [$show_only_media_types_when_present]; }
+	$index = caGetOption('index', $options, null);
+	$display_type = caGetOption('display', $options, 'detail');
 
-	
-	$ps_active_representation_class 	= caGetOption('currentRepClass', $options, 'active');
-	$pb_dont_show_placeholder 			= caGetOption('dontShowPlaceholder', $options, false);
-	$ps_display_annotations	 			= caGetOption('displayAnnotations', $options, false);
-	$ps_annotation_display_template 	= caGetOption('displayAnnotationTemplate', $options, caGetOption('displayAnnotationTemplate', $va_detail_config['options'], '^ca_representation_annotations.preferred_labels.name'));
-	$default_annotation_id		 		= caGetOption('defaultAnnotationID', $options, null);
-	$start_timecode		 				= caGetOption('startTimecode', $options, null);
-	$ps_display_type		 			= caGetOption('display', $options, false);
-	$always_use_clover_viewer		 	= caGetOption('alwaysUseCloverViewer', $options, false);
+	$media_list = caRepresentationList($request, $t_instance, $options);
 
-	$vs_slides = '';
-	$slide_list = [];
+	$o_view->setVar('media_list', $media_list);
 	
-	$t_instance = Datamodel::getInstanceByTableName($data->tableName(), true);
-	
-	$vo_data = null;
-	if(is_a($data, 'SearchResult') && ($t_instance) && (is_a($t_instance, 'RepresentableBaseModel'))) {
-		$vo_data = $data;
-	} elseif(is_a($data, 'ca_object_representations')) {
-		$vo_data = caMakeSearchResult('ca_object_representations', [$data->getPrimaryKey()]);
-	} elseif(is_a($data, 'RepresentableBaseModel')) {
-		$vo_data = caMakeSearchResult($data->tableName(), [$data->getPrimaryKey()]);
+	if (is_null($index) || !isset($media_list[$index])) {
+		$t_rep = $t_instance->getPrimaryRepresentationInstance($options);
 	} else {
-		return _t('No media');
+		$rep_info = $media_list[$index];
+		$t_rep = ca_object_representations::findAsInstance(['representation_id' => $rep_info['representation_id']]);
+	}
+	$display_classes = array_unique(array_map(function($v) { return ($v['display_class']); }, $media_list));
+	
+	$viewer_html = $viewer_overlay_html = [];
+
+	foreach($display_classes as $display_class) {
+		$o_viewer = MediaViewerManager::getViewerByDisplayClass($display_type, $display_class);
+		if(!$o_viewer) { print "no viewer for $display_class";return ''; }
+		
+		$opts = MediaViewerManager::viewerOptionsForDisplayClass($display_type, $display_class);	
+		$viewer_html[$display_class] = $o_viewer->getViewerHTML(
+			$request,
+			array_merge(['displayClass' => $display_class, 'id' => 'mediaviewer'], $opts)
+		);
+		
+		if(!($o_viewer = MediaViewerManager::getViewerByDisplayClass('overlay', $display_class))) {
+			continue;
+		}
+		$opts = MediaViewerManager::viewerOptionsForDisplayClass('overlay', $display_class);
+		$viewer_overlay_html[$display_class] = $o_viewer->getViewerOverlayHTML(
+			$request,
+			array_merge(['displayClass' => $display_class, 'id' => 'mediaviewer'], $opts)
+		);
 	}
 	
-	$o_view->setVar('t_subject', $subject);
-	$o_view->setVar('active_representation_class', $ps_active_representation_class);
-	$o_view->setVar('context', ($vs_context = $request->getParameter('context', pString)) ? $vs_context : $vs_context = $request->getAction());
-
-	$va_rep_ids = array();
-	if (method_exists($vo_data, 'filterNonPrimaryRepresentations')) { $vo_data->filterNonPrimaryRepresentations(false); }
-	while($vo_data->nextHit()) {
-		if (!($vn_representation_id = $vo_data->get('ca_object_representations.representation_id', ['checkAccess' => $va_access_values, 'limit' => 1]))) { continue; }
-		$t_instance->load($vo_data->getPrimaryKey());
-		if($t_instance->getPrimaryRepresentationId()){
-			$vn_representation_id = $t_instance->getPrimaryRepresentationId();
-		}
-		if($pn_representation_id = $request->getParameter("representation_id", pInteger)){
-			$vn_representation_id = $pn_representation_id;
-		}
-					
-		// Assemble id's for representations to display
-		if($pb_primary_only){
-			$va_rep_ids[] = $vn_representation_id;
-		}elseif(sizeof($va_rep_ids = $t_instance->getRepresentationIDs(["checkAccess" => $va_access_values]))) {
-			# --- are there multiple reps?
-			if($vn_primary_id = array_search(1, $va_rep_ids)){
-				unset($va_rep_ids[$vn_primary_id]);
-				$va_rep_ids = array_merge([$vn_primary_id], array_keys($va_rep_ids));
-			}else{
-				$va_rep_ids = array_keys($va_rep_ids);
-			}
-		}
-		
-		// Fetch representations for display
-		if(sizeof($va_rep_ids) > 0){
-			$qr_reps = caMakeSearchResult('ca_object_representations', $va_rep_ids);
-			$va_rep_tags = $qr_reps->getRepresentationViewerHTMLBundles($request, $subject, array_merge($options, ['context' => $vs_context]));
-
-			$va_rep_info = array();
-
-			$qr_reps->seek(0);
-			$mimetypes_present = $show_only_media_types_when_present_reduced = [];
-
-			if ($show_only_media_types_when_present) {
-				while($qr_reps->nextHit()) {
-					$mimetypes_present[$qr_reps->getMediaInfo('ca_object_representations.media', 'original', 'mimetype')] = true;
-				}
-				foreach($show_only_media_types_when_present as $t) {
-					if (caMimetypeIsValid($t, array_keys($mimetypes_present))) {
-						$show_only_media_types_when_present_reduced[] = $t;
-					}
-				}
-			}
-			$qr_reps->seek(0);
-
-			$filtered_rep_ids = [];
-			while($qr_reps->nextHit()) {
-				if(!($mimetype = $qr_reps->getMediaInfo('ca_object_representations.media', 'original', 'mimetype'))) { continue; }
-				if($show_only_media_types && !caMimetypeIsValid($mimetype, $show_only_media_types)) { continue; }
-
-				if($show_only_media_types_when_present_reduced && !caMimetypeIsValid($mimetype, $show_only_media_types_when_present_reduced)) { continue; }
-
-				$filtered_rep_ids[] =  $vn_rep_id = $qr_reps->get('representation_id');
-
-				$vn_index = null;
-				if($vn_rep_id == $vn_primary_id){
-					$vn_index = 0;
-				}elseif (!($vn_index = (int)$qr_reps->get(RepresentableBaseModel::getRepresentationRelationshipTableName($subject->tableName()).'.rank'))) {
-					$vn_index = $qr_reps->get('ca_object_representations.representation_id');
-				}
-				$va_rep_info[$vn_index] = array("rep_id" => $vn_rep_id, "tag" => $va_rep_tags[$vn_rep_id]);
-			}
-			$va_rep_ids = $filtered_rep_ids;
-
-			// reset rep_ids  to ensure same order as slides as order may change if primary is not in first location
-			$o_view->setVar('representation_ids', array_values(array_map(function($v) { return $v['rep_id']; }, $va_rep_info)));
-
-			$vn_count = 0;
-
-			$slide_list = [];
-			foreach($va_rep_info as $vn_order => $va_rep){
-				if(sizeof($va_rep_ids) > 1){ 
-					$vs_slides .= "<li id='slide{$va_rep['rep_id']}' class='{$va_rep['rep_id']}'>"; 
-				}
-				$vs_slides .= ($vn_count == 0) ? "<div id='slideContent{$va_rep['rep_id']}'>".$va_rep["tag"]."</div>" : "<div id='slideContent{$va_rep['rep_id']}'></div>";	// initially only load first one
-
-				if(sizeof($va_rep_ids) > 1) { 
-					$vs_slides .= "</li>"; 
-				}
-				$slide_list[] = $va_rep["tag"];
-
-				$vn_count++;
-			}
-		} elseif(!$pb_dont_show_placeholder) {
-			if(!$request->config->get("disable_lightbox")){
-				$o_lightbox_config = caGetLightboxConfig();
-
-				if(!($vs_lightbox_icon = $o_lightbox_config->get("addToLightboxIcon"))){
-					$vs_lightbox_icon = "<i class='fa fa-suitcase'></i>";
-				}
-				$va_lightboxDisplayName = caGetLightboxDisplayName($o_lightbox_config);
-				$vs_lightbox_displayname = $va_lightboxDisplayName["singular"];
-				$vs_lightbox_displayname_plural = $va_lightboxDisplayName["plural"];
-				$vs_tool_bar = "<div id='detailMediaToolbar'>";
-				if ($request->isLoggedIn()) {
-					$vs_tool_bar .= " <a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($request, '', 'Lightbox', 'addItemForm', array($subject->primaryKey() => $subject->getPrimaryKey()))."\"); return false;' aria-label='"._t("Add item to %1", $vs_lightbox_displayname)."' title='"._t("Add item to %1", $vs_lightbox_displayname)."'>".$vs_lightbox_icon."</a>\n";
-				}else{
-					$vs_tool_bar .= " <a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($request, '', 'LoginReg', 'LoginForm')."\"); return false;' aria-label='"._t("Login to add item to %1", $vs_lightbox_displayname)."' title='"._t("Login to add item to %1", $vs_lightbox_displayname)."'>".$vs_lightbox_icon."</a>\n";
-				}
-				$vs_tool_bar .= "</div><!-- end detailMediaToolbar -->\n";
-			}
-
-			$vs_placeholder = "<div class='detailMediaPlaceholder' aria-label='No media available'>".caGetPlaceholder($subject->getTypeCode(), "placeholder_large_media_icon")."</div>".$vs_tool_bar;
-		}
-	}	
+	$o_view->setVar('media_viewers', $viewer_html);
+	$o_view->setVar('media_viewer_overlays', $viewer_overlay_html);
+	$o_view->setVar('subject', $subject);
+	$o_view->setVar('detail_options', $options['detail_options'] ?? null);
 	
-	$o_view->setVar('representation_id', $vn_representation_id);
-	$o_view->setVar('representation_count', sizeof($va_rep_ids));
-	$o_view->setVar('representation_ids', $va_rep_ids);
-	$o_view->setVar('placeholder', $vs_placeholder);
-	$o_view->setVar('slides', $vs_slides);
-	$o_view->setVar('slide_list', $slide_list);
-	$o_view->setVar('display_annotations', $ps_display_annotations);
-	$o_view->setVar('default_annotation_id', $default_annotation_id);
-	$o_view->setVar('start_timecode', $start_timecode);
-
 	return $o_view->render('representation_viewer_html.php');
-}
-# ---------------------------------------
-/*
- * Toolbar for representation when displayed on object detail pages and in gallery
- *
- * @param RequestHTTP $po_request The current request
- * @param ca_object_representations $pt_representation  A ca_object_representations instance to render the toolbar for
- * @param RepresentableBaseModel|int $pt_subject = A model instance loaded with the subject (the record the media is shown in the context of. Eg. if a representation is shown for an object this is an instance for that object record) or an integer object_id
- 
- * @param $pa_options array includes:
- *			display = media_display.conf display version to use. [Default is 'detail']
- *			context = viewer context value to pass in toolbar. For Pawtucket details this is the detail name. [Default is null]
- *			set_id = ID for set item being display is part of. [Default is null]
- *
- * @return string HTML toolbar output
- */
-function caRepToolbar($po_request, $pt_representation, $pt_subject, $pa_options=null){
-	$ps_display_type 		= caGetOption('display', $pa_options, 'detail');
-	$ps_context 			= caGetOption('context', $pa_options, null);
-	$o_media_display_config = caGetMediaDisplayConfig();
-
-	$ps_table = is_object($pt_subject) ? $pt_subject->tablename() : "ca_objects";
-	$pn_subject_id = is_object($pt_subject) ? $pt_subject->getPrimaryKey() : (int)$pt_subject;
-
-	$va_rep_display_info = caGetMediaDisplayInfo($ps_display_type, $pt_representation->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
-	$va_rep_display_info['poster_frame_url'] = $pt_representation->getMediaUrl('media', $va_rep_display_info['poster_frame_version']);
-
-	$va_add_to_set_link_info = caGetAddToSetInfo($po_request);
-
-	$vs_tool_bar = "<div class='detailMediaToolbar'>";
-	$vn_rep_id = $pt_representation->getPrimaryKey();
-
-	$va_detail_type_config = caGetDetailTypeConfig($ps_context);
-
-	if (!caGetOption(['no_overlay'], $va_rep_display_info, false)) {
-		$overlay_icon = $o_media_display_config->get('overlay_icon');
-		
-		$apm = new ApplicationPluginManager();
-		$toolbar_dtl = $apm->hookRepToolBarZoomButton([
-			'request' => $po_request, 'representation_id' => $vn_rep_id, 
-			'table' => $ps_table, 'subject_id' => $pn_subject_id, 
-			'options' => $pa_options,
-			'zoomParams' => $zoom_params = ['context' => $ps_context, 'id' => $pn_subject_id, 'representation_id' => $vn_rep_id, 'set_id' => caGetOption('set_id', $pa_options, 0), 'overlay' => 1]
-		]);
-		if(isset($toolbar_dtl['zoomParams']) && is_array($toolbar_dtl['zoomParams'])) {
-			$zoom_params = $toolbar_dtl['zoomParams'];
-		}
-		$vs_tool_bar .= "<a href='#' class='zoomButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', 'Detail', 'GetMediaOverlay', $zoom_params)."\", function() { var url = jQuery(\"#\" + caMediaPanel.getPanelID()).data(\"reloadUrl\"); if(url) { window.location = url; } }); return false;' aria-label='"._t("Open Media View")."' title='"._t("Open Media View")."'>{$overlay_icon}</a>\n";	
-	}
-	if (is_null($vb_show_compare = caGetOption('compare', $va_detail_type_config['options'], null))) {
-		$vb_show_compare = caGetOption('compare', $va_rep_display_info, false);
-	}
-	if ($vb_show_compare) {
-	   $compare_icon = $o_media_display_config->get('compare_icon'); 
-	   $vs_tool_bar .= "<a href='#' class='compare_link' aria-label='Compare' data-id='representation:{$vn_rep_id}'>{$compare_icon}</a>";
-	}
-
-	if(($ps_table == "ca_objects") && is_array($va_add_to_set_link_info) && sizeof($va_add_to_set_link_info)){
-		$vs_tool_bar .= " <a href='#' class='setsButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($po_request, '', $va_add_to_set_link_info['controller'], 'addItemForm', array('context' => $ps_context, (is_object($pt_subject) && $pt_subject->primaryKey()) ? $pt_subject->primaryKey() : "object_id" => $pn_subject_id))."\"); return false;' aria-label='".$va_add_to_set_link_info['link_text']."' title='".$va_add_to_set_link_info['link_text']."'>".$va_add_to_set_link_info['icon']."</a>\n";
-	}
-	if(caObjectsDisplayDownloadLink($po_request, $pn_subject_id, $pt_representation)){
-		# -- get version to download configured in media_display.conf
-		$vs_download_version = caGetAvailableDownloadVersions($po_request, $pt_representation->getMediaInfo('media', 'INPUT', 'MIMETYPE'), ['returnVersionForUser' => true]);
-		
-		if($vs_download_version){
-			$download_icon = $o_media_display_config->get('download_icon');
-			$vs_tool_bar .= caNavLink($po_request, $download_icon, 'dlButton', 'Detail', 'DownloadRepresentation', '', array('context' => $ps_context, 'representation_id' => $pt_representation->getPrimaryKey(), "id" => $pn_subject_id, "download" => 1, "version" => $vs_download_version), array("aria-label" => _t("Download")));
-		}
-	}
-	$vs_tool_bar .= "</div><!-- end detailMediaToolbar -->\n";
-
-	return $vs_tool_bar;
 }
 # ---------------------------------------
 /**
@@ -5411,8 +5262,6 @@ function caRepresentationViewerHTMLBundles($po_request, $po_data, $pt_subject, $
 				['t_instance' => $t_instance, 't_subject' => $pt_subject, 'display' => $va_display_info, 'display_type' => $ps_display_type],
 				['viewerWrapper' => 'viewerInline', 'context' => caGetOption('context', $pa_options, null), 'checkAccess' => caGetOption('checkAccess', $pa_options, null)]
 			).$vs_tool_bar.$vs_caption."</div></div>";
-
-			//if (sizeof($va_reps) > 10) { break(2); }
 		}
 	}
 	return $va_reps;
@@ -6610,9 +6459,18 @@ function caNormalizeBundleLabel(?string $label, ?array $options=null) : ?string 
 				:
 				array_map(function($v) { return caUcFirstUTF8Safe($v); }, $config->getList('bundle_label_normalization_skip_words') ?: []);
 			
+			$acronyms = (MemoryCache::contains('normalizeBundleAcronyms')) ? 
+				MemoryCache::fetch('normalizeBundleAcronyms')
+				:
+				array_map(function($v) { return caUcFirstUTF8Safe($v); }, $config->getList('bundle_label_normalization_acronyms') ?: []);
+			
+			
 			// Clean up conjunctions and parentheticals that are now incorrectly capitalized
 			foreach($skip_words as $p) {
-				$label = str_replace($p, mb_strtolower($p), $label);
+				$label = preg_replace("!{$p}([\s\)]+)!", mb_strtolower($p)."\$1", $label);
+			}
+			foreach($acronyms as $p) {
+				$label = preg_replace("!(^|[\s\(]+)({$p})([\s\)]+|$)!i", "\$1".mb_strtoupper($p)."\$3", $label);
 			}
 			if(preg_match_all("!\(([\w]+)\)!", $label, $m)) {
 				 foreach($m as $p) {

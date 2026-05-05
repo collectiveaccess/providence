@@ -1377,7 +1377,7 @@ div.formLabelUploadSizeNote {
 
 .caDupeLabelMessageBox {
     margin: 0 auto;
-    width: 200px;
+    min-width: 200px;
     font-family: Helvetica Neue, sans-serif;
     color: #EB0000;
 }
