@@ -491,16 +491,17 @@ function caExifToolInstalled($ps_exiftool_path=null, $options=null) {
  */
 function caWhisperInstalled(array $options=null) {
 	$detect = caGetOption('returnPathToDetect', $options, false);
-	if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains($detect ? "mediahelper_whisper_detect_installed" : "mediahelper_whisper_installed", "mediaPluginInfo")) { return CompositeCache::fetch($detect ? "mediahelper_whisper_detect_installed" : "mediahelper_whisper_installed", "mediaPluginInfo"); }
 	
 	$logger = caGetLogger();
-	
 	if($python_venv_path = caGetExternalApplicationPath('python_venv_path')) {
 		$shell_path = getenv('PATH');
 		$shell_path = "{$python_venv_path}:{$shell_path}";
 		putenv("PATH=$shell_path");
 		$logger->logInfo(_t('[mediaPluginHelpers::caWhisperInstalled] Added python venv path %1 to environment PATH variable. Full path is now %2', $python_venv_path, $shell_path));	
 	}
+	
+	if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains($detect ? "mediahelper_whisper_detect_installed" : "mediahelper_whisper_installed", "mediaPluginInfo")) { return CompositeCache::fetch($detect ? "mediahelper_whisper_detect_installed" : "mediahelper_whisper_installed", "mediaPluginInfo"); }
+	
 	$path = __CA_BASE_DIR__.($detect ? '/support/scripts/whisper_detect.py' : '/support/scripts/whisper_transcribe.py');
 	caExec("{$path} 2>&1", $output, $return);
 	
@@ -1173,7 +1174,6 @@ function caTranscribeAVMedia(string $mimetype) : bool {
 	
 	// Check that Whisper is installed
 	if(!caWhisperInstalled()) { return false; }
-	print_R($types);
 	return true;
 }
 # ------------------------------------------------------------------------------------------------
