@@ -775,7 +775,7 @@ trait CLIUtilsMedia {
 			$t_rep = $qr->getInstance();
 			if(!($input_mimetype = $t_rep->get('mimetype'))) { continue; }
 			if(caTranscribeAVMedia($input_mimetype)) {
-				if(($t_rep->numCaptionFiles() == 0)) { 
+				if(($t_rep->numCaptionFiles() >= 1)) { 
 					$t_rep->removeAllCaptionFiles();
 				}
 				if(is_array($mimetypes) && sizeof($mimetypes)) {
