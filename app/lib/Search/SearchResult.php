@@ -1205,7 +1205,7 @@ class SearchResult extends BaseObject {
 		$vs_template 						= isset($pa_options['template']) ? (string)$pa_options['template'] : null;
 		
 		
-		$va_path_components = isset(SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field]) ? SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field] : self::parseFieldPathComponents($this->ops_table_name, $ps_field);
+		$va_path_components = isset(SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field]) ? SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field] : self::parseFieldPathComponents($this->ops_table_name, $ps_field, $pa_options);
 		if ($va_path_components['is_count']) { 
 			$vb_return_as_count = true; 
 		} elseif($vb_return_as_count) {
@@ -1827,6 +1827,7 @@ class SearchResult extends BaseObject {
 //
 // [PRIMARY TABLE] Plain old intrinsic
 //
+
 					if (!isset(self::$s_prefetch_cache[$va_path_components['table_name']][$vn_row_id][$vs_opt_md5])) {
 						$this->prefetch($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), $pa_options);	
 					}
@@ -2764,7 +2765,6 @@ class SearchResult extends BaseObject {
 		$locale_no_fallback = $pa_options['noLocaleFallback'] ?? false;
 	
 		$vs_table_name = $pt_instance->tableName();
-		
 		if (!is_array($pa_value_list)) { $pa_value_list = []; }
 		
 		// Handle specific intrinsic types
@@ -3879,10 +3879,15 @@ class SearchResult extends BaseObject {
 	/**
 	  * 
 	  */
-	static public function parseFieldPathComponents(string $table, string $ps_path) : array {
+	static public function parseFieldPathComponents(string $table, string $ps_path, ?array $options=null) : array {
 		if (isset(SearchResult::$s_parsed_field_component_cache[$table.'/'.$ps_path])) { return SearchResult::$s_parsed_field_component_cache[$table.'/'.$ps_path]; }
 		$va_tmp = explode('.', $ps_path);
-		$modifier = strtolower($va_tmp[1] ?? null);
+		if($modifier = caGetOption('modifier', $options, null)) {
+			array_splice($va_tmp, 1, 0, [$modifier]);
+		} else {
+			$modifier = strtolower($va_tmp[1] ?? null);
+		}
+		
 		$vb_is_related = $vb_is_change = false;
 		
 		if ($modifier == 'related') {

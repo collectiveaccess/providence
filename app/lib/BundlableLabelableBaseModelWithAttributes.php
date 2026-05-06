@@ -837,8 +837,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 */
 	public function get($ps_field, $pa_options=null) {
 		$vn_s = sizeof($va_tmp = explode('.', $ps_field));
-		if ((($vn_s == 1) && ($vs_field = $ps_field)) || (($vn_s == 2) && ($va_tmp[0] == $this->tableName()) && ($vs_field = $va_tmp[1]))) {
-			if ($this->hasField($vs_field) || (in_array(strtolower($vs_field), ['created', 'lastmodified']))) { return BaseModel::get($vs_field, $pa_options); }
+		if (!isset($pa_options['modifier']) && ((($vn_s == 1) && ($vs_field = $ps_field)) || (($vn_s == 2) && ($va_tmp[0] == $this->tableName()) && ($vs_field = $va_tmp[1])))) {
+			if ($this->hasField($vs_field) || (in_array(strtolower($vs_field), ['created', 'lastmodified']))) { 
+				return BaseModel::get($vs_field, $pa_options); 
+			}
 		}
 		if($this->_rowAsSearchResult) {
 			if (method_exists($this->_rowAsSearchResult, "filterPrimaryRepresentations")) {
@@ -9017,9 +9019,9 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return bool True if change succeeded, false if error
 	 */
 	public function changeType($pm_type) {
-		if (!$this->getPrimaryKey()) { return false; }					// row must be loaded
-		if (!method_exists($this, 'getTypeID')) { return false; }		// model must be type-able
-		
+		if(!$this->getPrimaryKey()) { return false; }					// row must be loaded
+		if(!method_exists($this, 'getTypeID')) { return false; }		// model must be type-able
+		if(!$pm_type && !$this->typeIDIsOptional()) { return false; }
 		unset($_REQUEST['form_timestamp']);
 		
 		if (!($vb_already_in_transaction = $this->inTransaction())) {
@@ -10203,6 +10205,17 @@ side. For many self-relations the direction determines the nature and display te
 			$rel_tables = array_filter($rel_tables, function($v) use ($skip_relationships) { return !in_array($v, $skip_relationships); } );
 		}
 		return $rel_tables;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param string $bundle
+	 * @return bool
+	 */
+	public function valueDidChange(string $bundle) : ?bool {
+		// TODO: handle changes on relationship?
+		return parent::valueDidChange($bundle);
 	}
 	# -------------------------------------------------------
 }

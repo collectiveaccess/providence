@@ -3783,12 +3783,12 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	 * @param $pm_element_code_or_id
 	 * @return bool
 	 */
-	public function attributeDidChange($pm_element_code_or_id) {
+	public function attributeDidChange($pm_element_code_or_id) : ?bool {
 		$vs_code = ca_metadata_elements::getElementCodeForId($pm_element_code_or_id);
 		$vn_id = ca_metadata_elements::getElementID($pm_element_code_or_id);
 
 		// not an element?
-		if(!$vs_code || (!$this->hasElement($vs_code, null, true))) { return false; }
+		if(!$vs_code || (!$this->hasElement($vs_code, null, true))) { return null; }
 
 		return isset($this->_FIELD_VALUE_DID_CHANGE['_ca_attribute_'.$vn_id]) ? $this->_FIELD_VALUE_DID_CHANGE['_ca_attribute_'.$vn_id] : false;
 	}
@@ -3804,6 +3804,19 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		if(sizeof($cf) === 0) { return false; }
 		if (sizeof(array_filter(array_keys($cf), function($v) { return substr($v, 0, 14) === '_ca_attribute_'; })) > 0) { return true; }
 		return false;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param string $bundle
+	 * @return bool
+	 */
+	public function valueDidChange(string $bundle) : ?bool {
+		if(!is_null($ret = self::attributeDidChange($bundle))) {
+			return $ret;
+		}
+		return parent::valueDidChange($bundle);
 	}
 	# --------------------------------------------------------------------------------
 	/**
