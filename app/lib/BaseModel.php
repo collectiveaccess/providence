@@ -4538,7 +4538,6 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 								}
 							}
 							$vs_tmp_file = $r['file'];
-							$is_without_media = true;
 							if(!$vs_tmp_file) {
 								$is_embed = true;
 								if(isset($r['previewPath'])) {
@@ -4658,12 +4657,12 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 						if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
 						return false;
 					}
-
 					$va_media_objects['_original'] = $m;
 				
 					// preserve center setting from any existing media
 					$va_center = null;
 					if (is_array($va_tmp = $this->getMediaInfo($ps_field))) { $va_center = caGetOption('_CENTER', $va_tmp, []); }
+					
 					$media_desc = [
 						"ORIGINAL_FILENAME" => $this->_SET_FILES[$ps_field]['original_filename'],
 						"_CENTER" => $va_center,

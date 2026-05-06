@@ -75,15 +75,6 @@ class WLPlugInformationServiceNomisma extends BaseNomismaLODServicePlugin implem
 		return 'nomisma';
 	}
 	# ------------------------------------------------
-	/** 
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return WLPlugInformationServiceNomisma::$s_settings;
-	}
-	# ------------------------------------------------
 	# Data
 	# ------------------------------------------------
 	/** 
