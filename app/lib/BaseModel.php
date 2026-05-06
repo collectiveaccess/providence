@@ -2486,10 +2486,16 @@ class BaseModel extends BaseObject {
 
 		$va_need_to_set_rank_for = array();
 		foreach($this->FIELDS as $vs_field => $va_attr) {
-
 			$vs_field_type = $va_attr["FIELD_TYPE"];				# field type
 			$vs_field_value = self::get($vs_field, array("TIMECODE_FORMAT" => "RAW"));
 			
+			if(in_array($vs_field, ['access', 'status'], true)) {
+				// Force access and status to valid defaults
+				if(strlen($vs_field_value) === 0) {
+					$vs_field_value = caGetDefaultItemValue($va_attr['LIST']);
+				}
+			}
+
 			if (isset($va_attr['DONT_PROCESS_DURING_INSERT_UPDATE']) && (bool)$va_attr['DONT_PROCESS_DURING_INSERT_UPDATE']) { continue; }
 			
 			# --- check bounds (value, length and choice lists)
