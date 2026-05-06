@@ -54,15 +54,6 @@ class WLPlugInformationServiceIconclass Extends BaseInformationServicePlugin Imp
 		$this->description = _t('Provides access to Iconclass service');
 	}
 	# ------------------------------------------------
-	/** 
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return WLPlugInformationServiceIconclass::$s_settings;
-	}
-	# ------------------------------------------------
 	# Data
 	# ------------------------------------------------
 	/** 

@@ -221,7 +221,6 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
 				]
 			]);
 			$response_data = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
-
 			if(is_array($response_data)) {
 				foreach($response_data as $index => $data) {
 					$url = $data['mainEntityOfPage'] ?? null;

@@ -237,7 +237,7 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 		if($ancestor_id === '') {
 			$path[] = "<a href='#'>"._t('New %1', $t_subject->getTypeName())."</a>";
 		} else {
-			$label = $template_values[$id] ?? $va_item['label'];
+			$label = $template_values[$item_id] ?? $va_item['label'];
 			if (($va_item['table'] != $subject_table) || ($va_item['item_id'] && ($va_item['item_id'] != $id))) {
 				$path[] = '<a href="'.caEditorUrl($this->request, $va_item['table'], $va_item['item_id']).'">'.$label.'</a>';
 			} else {
@@ -705,11 +705,12 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 				defaultSecondarySelection: [<?= $t_subject->getPrimaryKey() ?>],
 				
 				onSelection: function(id, parent_id, name, formattedDisplay) {
+					if(id) { id = '' + id; }
 					// Update "move" status message
 <?php
 	if (($subject_table == 'ca_collections')) {
 ?>
-					if (id.substr(0, 10) == 'ca_objects') {
+					if (id && (id.substr(0, 10) == 'ca_objects')) {
 						formattedDisplay = <?= json_encode(_t("Cannot move collection under object")); ?>;
 						jQuery("#<?= $id_prefix; ?>HierarchyBrowserSelectionMessage").html(formattedDisplay);
 						return;

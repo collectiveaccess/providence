@@ -1,13 +1,13 @@
 <?php
-/* ----------------------------------------------------------------------
- * app/views/administrate/setup/ajax_elements_settings_form_html.php :
+/** ---------------------------------------------------------------------
+ * app/helpers/informationServiceHelpers.php : miscellaneous system functions
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2026 Whirl-i-Gig
+ * Copyright 2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -23,21 +23,30 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
+ * @package    CollectiveAccess
+ * @subpackage utils
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
  * ----------------------------------------------------------------------
  */
-$t_element = $this->getVar('t_element');
-$element_id = $t_element->getPrimaryKey();
-
-if(is_array($available_settings = $this->getVar('available_settings')) && sizeof($available_settings)) {
-?>
-	<div class='formLabel'><span id="_ca_metadata_element_labels_"><?= _t("Datatype-specific options"); ?></span><br/></div>
-	<div style="margin-left: 20px;">
-<?php
-		foreach($available_settings as $code => $properties) {
-			print $t_element->settingHTMLFormElement($code, ['label_id' => "setting_{$code}_datatype_label_{$element_id}"]);
-		}	
-?>
-	</div>
-<?php
-}	
-print TooltipManager::getLoadHTML();
+# ---------------------------------------
+/** 
+ * 
+ */
+function caGetInformationServiceMirrorListInformation(ca_metadata_elements $t_element) : ?array {
+	$element_type = $t_element->get('datatype');
+	if($element_type !== __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__) { return null; }
+	
+	if($use_mirror_list = (bool)$t_element->getSetting('useMirrorList')) {
+		$mirror_list = $t_element->getSetting('mirrorToList');
+		$mirror_access = $t_element->getSetting('mirrorToListAccess');
+		
+		return [
+			'list' => $mirror_list,
+			'access' => $mirror_access
+		];
+	}
+	
+	return null;
+}
+# ---------------------------------------

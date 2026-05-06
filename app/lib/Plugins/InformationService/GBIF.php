@@ -525,11 +525,22 @@ class WLPlugInformationServiceGBIF extends BaseInformationServicePlugin implemen
 				$params[] = "limit={$limit}";
 				$params[] = "datasetKey={$dataset}";
 				$params[] = "q=".urlencode($search);
-				$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_OCCURRENCE_LOOKUP."/search?".join("&", $params), [
-					'headers' => [
-						'Accept' => 'application/json'
-					]
-				]);
+				
+				$c = 0;
+				do {
+					try {
+						$response = $client->request("GET", self::GBIF_SERVICES_BASE_URL."/".self::GBIF_OCCURRENCE_LOOKUP."/search?".join("&", $params), [
+								'headers' => [
+									'Accept' => 'application/json'
+								]
+							]);
+						break;
+					} catch(Exception $e) {
+						$c++;
+						if($c > 5) { break; }
+					}
+				} while(true);
+				if(!$response) { return ['results' => []]; }
 	
 				$response_data = json_decode($response->getBody(), true, 512, JSON_BIGINT_AS_STRING);
 			}
@@ -736,7 +747,7 @@ class WLPlugInformationServiceGBIF extends BaseInformationServicePlugin implemen
 			];
 			if($item_id = $this->mirrorToList($settings, $hier)) {
 				$info['item_id'] = $item_id;
-			}			
+			}
 			return $info;
    		}
    		return null;
@@ -786,7 +797,6 @@ class WLPlugInformationServiceGBIF extends BaseInformationServicePlugin implemen
 						'description' => ''
     				];
     			}
-    			
     			return [
     				'id' => $d['id'],
     				'access' => $access,

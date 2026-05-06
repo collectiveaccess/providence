@@ -2124,7 +2124,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		
 		
 		if (!is_array($pa_locale_ids)) { $pa_locale_ids = $pa_locale_ids ? [$pa_locale_ids] : []; }
-		$pa_locale_ids = array_map(function($v) { return is_numeric($v) ? $v : ca_locales::codeToID($v); }, $pa_locale_ids);
+		$pa_locale_ids = array_map(function($v) { return is_numeric($v) ? $v : ca_locales::codeToID($v); }, array_filter($pa_locale_ids, 'strlen'));
 
 		if (is_array($pa_locale_ids) && (sizeof($pa_locale_ids) > 0)) {
 			$vs_label_where_sql .= ' AND (l.locale_id IN ('.join(',', $pa_locale_ids).'))';

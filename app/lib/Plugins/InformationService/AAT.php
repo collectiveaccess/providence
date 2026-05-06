@@ -102,16 +102,6 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 		return 'aat';
 	}
 	# ------------------------------------------------
-
-	/**
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return WLPlugInformationServiceAAT::$s_settings;
-	}
-
 	/**
 	 * Clean results
 	 *
