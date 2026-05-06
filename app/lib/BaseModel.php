@@ -676,6 +676,19 @@ class BaseModel extends BaseObject {
 	public function didChange($ps_field) {
 		return isset($this->_FIELD_VALUE_DID_CHANGE[$ps_field]) ? $this->_FIELD_VALUE_DID_CHANGE[$ps_field] : null;
 	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param string $bundle
+	 * @return bool
+	 */
+	public function valueDidChange(string $bundle) : ?bool {
+		if(!is_null($ret = self::didChange($bundle))) {
+			return $ret;
+		}
+		return null;
+	}
 	# --------------------------------------------------------------------------------
 	/**
 	 * Has this instance changed and saved since it's been loaded?
@@ -692,6 +705,7 @@ class BaseModel extends BaseObject {
 	 * @return bool Always true
 	 */
 	public function setAsChanged($ps_field) {
+		print "SET $ps_field AS changeed\n";
 		$this->_FIELD_VALUE_CHANGED[$ps_field] = true;
 		return true;
 	}
@@ -14040,8 +14054,26 @@ $pa_options["display_form_field_tips"] = true;
 		$log = $this->getLogForBundleValueHistory($bundle, $options);
 		$return_with_structure = caGetOption('returnWithStructure', $options, false);
 		
+		$fi = $this->getFieldInfo($bi['element']);
+		$is_list = $fi['LIST_CODE'] ?? false;
+		
+		$convert_codes_to_display_text = caGetOption('convertCodesToDisplayText', $options, false);
+		$convert_codes_to_idno = caGetOption('convertCodesToIdno', $options, false);
+		$convert_codes_to_value = caGetOption('convertCodesToIdno', $options, false);
+		
 		$acc = [];
 		foreach($log as $id => $d) {
+			if($is_list && ($convert_codes_to_display_text || $convert_codes_to_idno || $convert_codes_to_value)) {
+				foreach($d as $k => $v) {
+					if($convert_codes_to_display_text) {
+						$d[$k][$bi['element']] = caGetListItemByIDForDisplay($v[$bi['element']]);
+					} elseif($convert_codes_to_idno) {
+						$d[$k][$bi['element']] = caGetListItemIdno($v[$bi['element']]);
+					} elseif($convert_codes_to_value) {
+						$d[$k][$bi['element']] = caGetListItemValueForID($v[$bi['element']]);
+					}
+				}
+			}
 			if($return_with_structure) {
 				$acc[$id] = $d;
 			} else {
