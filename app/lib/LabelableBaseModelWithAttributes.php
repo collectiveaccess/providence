@@ -3676,5 +3676,16 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		
 		return $o_view->render('ca_user_roles.php');
 	}
-	# ------------------------------------------------------
+	# -------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param string $bundle
+	 * @return bool
+	 */
+	public function valueDidChange(string $bundle) : ?bool {
+		// TODO: handle changes on labels?
+		return parent::valueDidChange($bundle);
+	}
+	# -------------------------------------------------------
 }
