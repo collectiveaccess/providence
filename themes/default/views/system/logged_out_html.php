@@ -32,7 +32,7 @@
 		<title><?= $this->request->config->get("app_display_name"); ?></title>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		
-		<link href="<?= caGetThemeUrlPath() ?>/css/login.css" rel="stylesheet" type="text/css" />
+		<link href="<?= $this->request->getDefaultThemeUrlPath() ?>/css/login.css" rel="stylesheet" type="text/css" />
 		<?= AssetLoadManager::getLoadHTML($this->request); ?>
 
 		<script type="text/javascript">
