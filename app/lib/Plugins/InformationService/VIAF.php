@@ -78,13 +78,6 @@ class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implemen
 	/** 
 	 *
 	 */
-    public function getAvailableSettings() {
-        return WLPlugInformationServiceVIAF::$s_settings;
-    }
-	# ------------------------------------------------
-	/** 
-	 *
-	 */
     public function lookup($settings, $search, $options = null)  {
    		if(preg_match("!^http[s]{0,1}://www.viaf.org/viaf/([\d]+)!", $search, $m)) {
    			$search = $m[1];

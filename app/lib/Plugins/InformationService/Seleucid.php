@@ -52,15 +52,6 @@ class WLPlugInformationServiceSeleucid extends BaseInformationServicePlugin Impl
 		$this->description = _t('Provides access to Seleucid Coins Online numismatic data service (http://numismatics.org/sco/)');
 	}
 	# ------------------------------------------------
-	/** 
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return WLPlugInformationServiceSeleucid::$s_settings;
-	}
-	# ------------------------------------------------
 	# Data
 	# ------------------------------------------------
 	/** 

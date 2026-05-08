@@ -304,7 +304,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					'table_name' => $table, 
 					'instance' => $this, 
 					'is_insert' => true, 
-					'for_duplication' => caGetOption('forDuplication', $pa_options, true)
+					'for_duplication' => caGetOption('forDuplication', $pa_options, false)
 				]
 			);
 		}
@@ -415,7 +415,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					'table_num' => $this->tableNum(), 
 					'table_name' => $this->tableName(), 
 					'instance' => $this, 'is_insert' => false, 
-					'for_duplication' => caGetOption('forDuplication', $pa_options, true)
+					'for_duplication' => caGetOption('forDuplication', $pa_options, false)
 				]
 			);
 		}
@@ -1267,7 +1267,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			if ($t_user->getBundleAccessLevel($this->tableName(), $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
 		}
 		
-		if ((defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ == "PAWTUCKET") && ($this->hasField('access')))) {
+		if (!caACLIsEnabled($this) && (defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ == "PAWTUCKET") && ($this->hasField('access')))) {
 			$va_access = caGetUserAccessValues($po_request);
 			if (is_array($va_access) && sizeof($va_access) && !in_array($this->get('access'), $va_access)) { return false; }
 		}
@@ -1326,6 +1326,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($ps_bundle_name) {
 			if ($t_user->getBundleAccessLevel($this->tableName(), $ps_bundle_name) < __CA_BUNDLE_ACCESS_EDIT__) { return false; }
 		}
+		
+		if (!caACLIsEnabled($this) && (defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ == "PAWTUCKET") && ($this->hasField('access')))) {
+			$va_access = caGetUserAccessValues($po_request);
+			if (is_array($va_access) && sizeof($va_access) && !in_array($this->get('access'), $va_access)) { return false; }
+		}
  		
  		return true;
  	}
@@ -1382,6 +1387,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		if (!$this->getPrimaryKey() || !$t_user->canDoAction("can_delete_{$table}")) {
  			return false;
  		}
+ 		
+		if (!caACLIsEnabled($this) && (defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ == "PAWTUCKET") && ($this->hasField('access')))) {
+			$va_access = caGetUserAccessValues($po_request);
+			if (is_array($va_access) && sizeof($va_access) && !in_array($this->get('access'), $va_access)) { return false; }
+		}
  		
  		return true;
  	}
@@ -4168,13 +4178,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							$va_inserted_attributes_by_element[$vn_element_id][$vn_c]['value_source'] = $va_attributes_to_insert[$vn_c]['value_source'] = $value_source; 
 						}
 						$va_inserted_attributes_by_element[$vn_element_id][$vn_c][$va_matches[1]] = $va_attributes_to_insert[$vn_c][$va_matches[1]] = $vs_val;
-					} else {
+					} elseif(preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\d]+)_delete/', $vs_key, $va_matches)) {
 						// is it a delete key?
-						if (preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\d]+)_delete/', $vs_key, $va_matches)) {
-							$vn_attribute_id = intval($va_matches[1]);
-							$va_attributes_to_delete[$vn_attribute_id] = true;
-						}
-					}
+						$vn_attribute_id = intval($va_matches[1]);
+						$va_attributes_to_delete[$vn_attribute_id] = true;
+					} 
 				}
 				
 				if(isset($va_inserted_attributes_by_element[$vn_element_id])) {
@@ -4234,7 +4242,7 @@ if (!$batch) {
 						}
 						
 						//
-						// Check to see if there are any values in the element set that are not in the  attribute we're editing
+						// Check to see if there are any values in the element set that are not in the attribute we're editing
 						// If additional sub-elements were added to the set after the attribute we're updating was created
 						// those sub-elements will not have corresponding values returned by $o_attr->getValues() above.
 						// Because we use the element_ids in those values to pull request parameters, if an element_id is missing
@@ -4261,7 +4269,17 @@ if (!$batch) {
 									continue;
 								}
 							} 
-							$va_attr_update[$sub_element_id] = $vs_attr_val;
+							
+							if($po_request->getParameter("{$vs_k}_clear", pInteger)) {
+								// is it a media clear key?
+								$va_attr_update[$sub_element_id] = [
+									'tmp_name' => '__CLEAR__',
+									'_uploaded_file' => true,
+									'size' => 0
+								];
+							} else {
+								$va_attr_update[$sub_element_id] = $vs_attr_val;
+							}
 							$isset = true;
 						}
 						if (!$isset) { continue; }
@@ -4270,7 +4288,8 @@ if (!$batch) {
 						if(!$this->editAttribute($vn_attribute_id, $vn_element_set_id, $va_attr_update, null, ['batch' => $batch])) {
 							$po_request->addActionErrors($this->errors);
 						}
-						 $ifv[$vs_element_set_code][] = ($va_attr_update + ['attribute_id' => $vn_attribute_id]);
+						$ifv[$vs_element_set_code][] = ($va_attr_update + ['attribute_id' => $vn_attribute_id]);
+						
 					}
 				}
 			}
@@ -7877,6 +7896,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		primaryTable = When search result is for a relationship, the related table to consider as context. Paths to related tables will be generated as if they were relative to the primary. Mostly useful when sorting on related records from a relationship, to ensure that the path to the sort record is. [Default is null]
 	 *		start = Zero-based index to begin returned items at. [Default is 0]
  	 *		limit = Maximum number of items to return. [Default is null; no limit]
+ 	 *		dontFilterByACL = do not filter results using item-level access control, if when enabled. [Default is false]
 	 * @return SearchResult A search result of for the specified table
 	 */
 	public function makeSearchResult($pm_rel_table_name_or_num, $pa_ids, $pa_options=null) {
@@ -7891,6 +7911,13 @@ $pa_options["display_form_field_tips"] = true;
 				$va_ids[$vn_k] = $vn_id;
 			}
 		}
+		
+		if(!caGetOption('dontfilterByACL', $pa_options, false) && caACLIsEnabled($pm_rel_table_name_or_num)) {
+			global $AUTH_CURRENT_USER_ID;
+			$s = new ObjectSearch();
+			$va_ids = $s->filterHitsByACL($va_ids, $t_instance->tableNum(), $AUTH_CURRENT_USER_ID, __CA_ACL_READONLY_ACCESS__);
+		}
+		
 		// sort?
 		if ($pa_sort = caGetOption('sort', $pa_options, null)) {
 			if (!is_array($pa_sort)) { $pa_sort = [$pa_sort]; }

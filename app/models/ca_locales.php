@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -85,6 +85,112 @@ BaseModel::$s_ca_models_definitions['ca_locales'] = array(
 class ca_locales extends BaseModel {
 
     use SyncableBaseModel;
+    
+    static $s_code3_to_name = [
+        'ara' => 'arabic',
+        'aze' => 'azeri',
+        'ben' => 'bengali',
+        'bul' => 'bulgarian',
+        'ceb' => 'cebuano',
+        'ces' => 'czech',
+        'crp' => 'pidgin',
+        'cym' => 'welsh',
+        'dan' => 'danish',
+        'deu' => 'german',
+        'eng' => 'english',
+        'est' => 'estonian',
+        'fas' => 'farsi',
+        'fin' => 'finnish',
+        'fra' => 'french',
+        'hau' => 'hausa',
+        'haw' => 'hawaiian',
+        'hin' => 'hindi',
+        'hrv' => 'croatian',
+        'hun' => 'hungarian',
+        'ind' => 'indonesian',
+        'isl' => 'icelandic',
+        'ita' => 'italian',
+        'kaz' => 'kazakh',
+        'kir' => 'kyrgyz',
+        'lat' => 'latin',
+        'lav' => 'latvian',
+        'lit' => 'lithuanian',
+        'mkd' => 'macedonian',
+        'mon' => 'mongolian',
+        'nep' => 'nepali',
+        'nld' => 'dutch',
+        'nor' => 'norwegian',
+        'pol' => 'polish',
+        'por' => 'portuguese',
+        'pus' => 'pashto',
+        'rom' => 'romanian',
+        'rus' => 'russian',
+        'slk' => 'slovak',
+        'slv' => 'slovene',
+        'som' => 'somali',
+        'spa' => 'spanish',
+        'sqi' => 'albanian',
+        'srp' => 'serbian',
+        'swa' => 'swahili',
+        'swe' => 'swedish',
+        'tgl' => 'tagalog',
+        'tur' => 'turkish',
+        'ukr' => 'ukrainian',
+        'urd' => 'urdu',
+        'uzb' => 'uzbek',
+        'vie' => 'vietnamese',
+    ];
+     static $s_code2_to_name = [
+        'ar' => 'arabic',
+        'az' => 'azeri',
+        'bg' => 'bulgarian',
+        'bn' => 'bengali',
+        'cs' => 'czech',
+        'cy' => 'welsh',
+        'da' => 'danish',
+        'de' => 'german',
+        'en' => 'english',
+        'es' => 'spanish',
+        'et' => 'estonian',
+        'fa' => 'farsi',
+        'fi' => 'finnish',
+        'fr' => 'french',
+        'ha' => 'hausa',
+        'hi' => 'hindi',
+        'hr' => 'croatian',
+        'hu' => 'hungarian',
+        'id' => 'indonesian',
+        'is' => 'icelandic',
+        'it' => 'italian',
+        'kk' => 'kazakh',
+        'ky' => 'kyrgyz',
+        'la' => 'latin',
+        'lt' => 'lithuanian',
+        'lv' => 'latvian',
+        'mk' => 'macedonian',
+        'mn' => 'mongolian',
+        'ne' => 'nepali',
+        'nl' => 'dutch',
+        'no' => 'norwegian',
+        'pl' => 'polish',
+        'ps' => 'pashto',
+        'pt' => 'portuguese',
+        'ro' => 'romanian',
+        'ru' => 'russian',
+        'sk' => 'slovak',
+        'sl' => 'slovene',
+        'so' => 'somali',
+        'sq' => 'albanian',
+        'sr' => 'serbian',
+        'sv' => 'swedish',
+        'sw' => 'swahili',
+        'tl' => 'tagalog',
+        'tr' => 'turkish',
+        'uk' => 'ukrainian',
+        'ur' => 'urdu',
+        'uz' => 'uzbek',
+        'vi' => 'vietnamese'
+    ];
 
 	# ---------------------------------
 	# --- Object attribute properties
@@ -173,24 +279,24 @@ class ca_locales extends BaseModel {
 	
 
 	# ------------------------------------------------------
-	public function insert($pa_options=null) {
-		$vm_rc = parent::insert($pa_options);
+	public function insert($options=null) {
+		$vm_rc = parent::insert($options);
 		
-		$this->setGUID($pa_options);
+		$this->setGUID($options);
 		$this->flushLocaleListCache();
 		return $vm_rc;
 	}
 	# ------------------------------------------------------
-	public function update($pa_options=null) {
-		$vm_rc = parent::update($pa_options);
+	public function update($options=null) {
+		$vm_rc = parent::update($options);
 		$this->flushLocaleListCache();
 		return $vm_rc;
 	}
 	# ------------------------------------------------------
-	public function delete($pb_delete_related = false, $pa_options = NULL, $pa_fields = NULL, $pa_table_list = NULL) {
-		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
+	public function delete($delete_related = false, $options = NULL, $fields = NULL, $table_list = NULL) {
+		$rc = parent::delete($delete_related, $options, $fields, $table_list);
 		$this->flushLocaleListCache();
-		return $vn_rc;
+		return $rc;
 	}
 	# ------------------------------------------------------
 	/**
@@ -199,15 +305,15 @@ class ca_locales extends BaseModel {
 	 * very, very rarely anyway.
 	 */
 	private function flushLocaleListCache() {
-		foreach($this->getFields() as $vs_field) {
-			foreach(array('asc', 'desc') as $vs_sort_direction) {
-				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/0/0/0", 'LocaleList');
-				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/0/0/1", 'LocaleList');
-				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/0/1/0", 'LocaleList');
-				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/0/1/1", 'LocaleList');
-				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/1/0/0", 'LocaleList');
-				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/1/0/1", 'LocaleList');
-				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/1/1/1", 'LocaleList');
+		foreach($this->getFields() as $field) {
+			foreach(array('asc', 'desc') as $sort_direction) {
+				CompositeCache::delete("{$field}/{$sort_direction}/0/0/0", 'LocaleList');
+				CompositeCache::delete("{$field}/{$sort_direction}/0/0/1", 'LocaleList');
+				CompositeCache::delete("{$field}/{$sort_direction}/0/1/0", 'LocaleList');
+				CompositeCache::delete("{$field}/{$sort_direction}/0/1/1", 'LocaleList');
+				CompositeCache::delete("{$field}/{$sort_direction}/1/0/0", 'LocaleList');
+				CompositeCache::delete("{$field}/{$sort_direction}/1/0/1", 'LocaleList');
+				CompositeCache::delete("{$field}/{$sort_direction}/1/1/1", 'LocaleList');
 			}
 		}
 	}
@@ -223,20 +329,20 @@ class ca_locales extends BaseModel {
 		}
 		global $g_ui_locale_id;
 		
-		if(!is_array($va_locale_list = ca_locales::getLocaleList(array('available_for_cataloguing_only' => true))) || !sizeof($va_locale_list)) {
-			$va_locale_list = ca_locales::getLocaleList();
+		if(!is_array($locale_list = ca_locales::getLocaleList(array('available_for_cataloguing_only' => true))) || !sizeof($locale_list)) {
+			$locale_list = ca_locales::getLocaleList();
 		}
 		
-		$vn_default_id = null;
-		if (isset($va_locale_list[$g_ui_locale_id])) { 
-			$vn_default_id = $g_ui_locale_id; 
+		$default_id = null;
+		if (isset($locale_list[$g_ui_locale_id])) { 
+			$default_id = $g_ui_locale_id; 
 		} else {
-			$va_tmp = array_keys($va_locale_list);
-			$vn_default_id =  array_shift($va_tmp);
+			$tmp = array_keys($locale_list);
+			$default_id =  array_shift($tmp);
 		}
 
-		MemoryCache::save('default_locale_id', $vn_default_id);
-		return $vn_default_id;
+		MemoryCache::save('default_locale_id', $default_id);
+		return $default_id;
 	}
 	# ------------------------------------------------------
 	/**
@@ -251,82 +357,82 @@ class ca_locales extends BaseModel {
 	/**
 	 *
 	 */
-	static public function getLocaleList($pa_options=null) {
-		$vs_sort_field 				= isset($pa_options['sort_field']) ? $pa_options['sort_field'] : '';
-		$vs_sort_direction 			= isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : 'asc';
-		$vb_index_by_code 			= (isset($pa_options['index_by_code']) && $pa_options['index_by_code']) ? true : false;
-		$vb_return_display_values 	= (isset($pa_options['return_display_values']) && $pa_options['return_display_values']) ? true : false;
-		$vb_available_for_cataloguing_only 	= (isset($pa_options['available_for_cataloguing_only']) && $pa_options['available_for_cataloguing_only']) ? true : false;
+	static public function getLocaleList($options=null) {
+		$sort_field 			= isset($options['sort_field']) ? $options['sort_field'] : '';
+		$sort_direction 		= isset($options['sort_direction']) ? $options['sort_direction'] : 'asc';
+		$index_by_code 			= (isset($options['index_by_code']) && $options['index_by_code']) ? true : false;
+		$return_display_values 	= (isset($options['return_display_values']) && $options['return_display_values']) ? true : false;
+		$available_for_cataloguing_only 	= (isset($options['available_for_cataloguing_only']) && $options['available_for_cataloguing_only']) ? true : false;
 
-		$va_valid_sorts = array('name', 'language', 'country', 'dialect');
-		if (!in_array($vs_sort_field, $va_valid_sorts)) {
-			$vs_sort_field = 'name';
+		$valid_sorts = array('name', 'language', 'country', 'dialect');
+		if (!in_array($sort_field, $valid_sorts)) {
+			$sort_field = 'name';
 		}
 	
-		$vs_cache_key = $vs_sort_field.'/'.$vs_sort_direction.'/'.($vb_index_by_code ? 1 : 0).'/'.($vb_return_display_values ? 1 : 0).'/'.($vb_available_for_cataloguing_only ? 1 : 0);
-		if(CompositeCache::contains($vs_cache_key, 'LocaleList')) {
-			$va_locales = CompositeCache::fetch($vs_cache_key, 'LocaleList');
+		$cache_key = $sort_field.'/'.$sort_direction.'/'.($index_by_code ? 1 : 0).'/'.($return_display_values ? 1 : 0).'/'.($available_for_cataloguing_only ? 1 : 0);
+		if(CompositeCache::contains($cache_key, 'LocaleList')) {
+			$locales = CompositeCache::fetch($cache_key, 'LocaleList');
 
 			// Check if memory cache has been populated with necessary data yet.
-			// This might not be the case if $va_locales comes from disk and the SQL code below was not executed.
+			// This might not be the case if $locales comes from disk and the SQL code below was not executed.
 			// Unfortunately the other helpers like loadLocaleByCode() rely on this side-effect of getLocaleList().
 			if(MemoryCache::itemCountForNamespace('LocaleCodeToId') == 0) {
-				foreach($va_locales as $va_locale) {
-					if ($vb_available_for_cataloguing_only && $va_locale['dont_use_for_cataloguing']) { continue; }
-					if($va_locale['dialect'] ?? null) {
-						MemoryCache::save($va_locale['locale_id'], $va_locale['language'].'_'.$va_locale['country'].'_'.$va_locale['dialect'], 'LocaleIdToCode');
-						MemoryCache::save(mb_strtolower($va_locale['language'].'_'.$va_locale['country'].'_'.$va_locale['dialect']), $va_locale['locale_id'], 'LocaleCodeToId');
+				foreach($locales as $locale) {
+					if ($available_for_cataloguing_only && $locale['dont_use_for_cataloguing']) { continue; }
+					if($locale['dialect'] ?? null) {
+						MemoryCache::save($locale['locale_id'], $locale['language'].'_'.$locale['country'].'_'.$locale['dialect'], 'LocaleIdToCode');
+						MemoryCache::save(mb_strtolower($locale['language'].'_'.$locale['country'].'_'.$locale['dialect']), $locale['locale_id'], 'LocaleCodeToId');
 					} else {
-						MemoryCache::save($va_locale['locale_id'], $va_locale['language'].'_'.$va_locale['country'], 'LocaleIdToCode');
-						MemoryCache::save(mb_strtolower($va_locale['language'].'_'.$va_locale['country']), $va_locale['locale_id'], 'LocaleCodeToId');
+						MemoryCache::save($locale['locale_id'], $locale['language'].'_'.$locale['country'], 'LocaleIdToCode');
+						MemoryCache::save(mb_strtolower($locale['language'].'_'.$locale['country']), $locale['locale_id'], 'LocaleCodeToId');
 					}
-					MemoryCache::save($va_locale['locale_id'], $va_locale['name'], 'LocaleIdToName');
+					MemoryCache::save($locale['locale_id'], $locale['name'], 'LocaleIdToName');
 				}
 			}
 
-			return $va_locales;
+			return $locales;
 		}
 		
 		$o_db = new Db();
-		$vs_sort = 'ORDER BY '.$vs_sort_field;
+		$sort = 'ORDER BY '.$sort_field;
 
 		$qr_locales = $o_db->query("
 			SELECT *
 			FROM ca_locales
-			$vs_sort
+			$sort
 		");
 		
-		$va_locales = array();
+		$locales = array();
 		while($qr_locales->nextRow()) {
-			if ($vb_available_for_cataloguing_only && $qr_locales->get('dont_use_for_cataloguing')) { continue; }
-			$vs_name = $qr_locales->get('name');
-			if ($vb_return_display_values) {
-				$vm_val = $vs_name;
+			if ($available_for_cataloguing_only && $qr_locales->get('dont_use_for_cataloguing')) { continue; }
+			$name = $qr_locales->get('name');
+			if ($return_display_values) {
+				$vm_val = $name;
 			} else {
 				$vm_val = $qr_locales->getRow();
 			}
-			$vs_code = ($qr_locales->get('language').'_'.$qr_locales->get('country'));
+			$code = ($qr_locales->get('language').'_'.$qr_locales->get('country'));
 			if($dialect = $qr_locales->get('dialect')) {
-				$vs_code .= "_{$dialect}";
+				$code .= "_{$dialect}";
 			}
-			$vn_id = $qr_locales->get('locale_id');
+			$id = $qr_locales->get('locale_id');
 			
-			if (!$vb_return_display_values) {
-				$vm_val['code'] = $vs_code;
+			if (!$return_display_values) {
+				$vm_val['code'] = $code;
 			}
-			if ($vb_index_by_code) {
-				$va_locales[$vs_code] = $vm_val;
+			if ($index_by_code) {
+				$locales[$code] = $vm_val;
 			} else {
- 				$va_locales[$vn_id] = $vm_val;
+ 				$locales[$id] = $vm_val;
  			}
 
-			MemoryCache::save(mb_strtolower($vs_code), $vn_id, 'LocaleCodeToId');
-			MemoryCache::save($vn_id, $vs_code, 'LocaleIdToCode');
-			MemoryCache::save($vn_id, $vs_name, 'LocaleIdToName');
+			MemoryCache::save(mb_strtolower($code), $id, 'LocaleCodeToId');
+			MemoryCache::save($id, $code, 'LocaleIdToCode');
+			MemoryCache::save($id, $name, 'LocaleIdToName');
  		}
 
-		CompositeCache::save($vs_cache_key, $va_locales, 'LocaleList');
-		return $va_locales;
+		CompositeCache::save($cache_key, $locales, 'LocaleList');
+		return $locales;
 	}
 	# ------------------------------------------------------
 	/**
@@ -358,37 +464,42 @@ class ca_locales extends BaseModel {
 	 *
 	 */
 	public function getCode() {
-		return ($this->get('country')) ? ($this->get('language')."_".$this->get('country')) : $this->get('language');
+		$acc = [];
+		foreach(['language', 'country', 'dialect'] as $f) {
+			if(strlen($v = $this->get($f)) > 0 ) {
+			    $acc[] = $v;
+			}
+		}
+		return join('_', $acc);
 	}
 	# ------------------------------------------------------
 	/**
 	 * Returns number of locales configured
 	 *
-	 * @param array $pa_options Array of options. Supported options include:
+	 * @param array $options Array of options. Supported options include:
 	 *			forCataloguing - if set then only locales that are marked as available for cataloguing are counted
 	 * @return int Number of locales
 	 */
-	public function numberOfLocales($pa_options=null) {
-		
-		$vs_for_cataloguing_sql = '';
-		$vs_cache_key = 'all';
-		if (isset($pa_options['forCataloguing']) && (bool)$pa_options['forCataloguing']) {
-			$vs_for_cataloguing_sql = " WHERE dont_use_for_cataloguing = 0";
-			$vs_cache_key = 'forCataloguing';
+	public function numberOfLocales($options=null) {
+		$for_cataloguing_sql = '';
+		$cache_key = 'all';
+		if (isset($options['forCataloguing']) && (bool)$options['forCataloguing']) {
+			$for_cataloguing_sql = " WHERE dont_use_for_cataloguing = 0";
+			$cache_key = 'forCataloguing';
 		}
 
-		if(MemoryCache::contains($vs_cache_key, 'LocaleCount')) {
-			return MemoryCache::fetch($vs_cache_key, 'LocaleCount');
+		if(MemoryCache::contains($cache_key, 'LocaleCount')) {
+			return MemoryCache::fetch($cache_key, 'LocaleCount');
 		}
 		
-		$qr_res = $this->getDb()->query("SELECT count(*) c FROM ca_locales {$vs_for_cataloguing_sql}");
-		$vn_num_locales = 0;
+		$qr_res = $this->getDb()->query("SELECT count(*) c FROM ca_locales {$for_cataloguing_sql}");
+		$num_locales = 0;
 		if ($qr_res->nextRow()) {
-			$vn_num_locales = $qr_res->get('c');
+			$num_locales = $qr_res->get('c');
 		}
 
-		MemoryCache::save($vs_cache_key, $vn_num_locales, 'LocaleCount');
-		return $vn_num_locales;
+		MemoryCache::save($cache_key, $num_locales, 'LocaleCount');
+		return $num_locales;
 	}
 	# ------------------------------------------------------
 	/**
@@ -405,16 +516,16 @@ class ca_locales extends BaseModel {
 	 * Loads model with locale record having specifed code and returns the locale_id. Once the 
 	 * model is loaded you can use get() and other model methods to get at fields in the locale's record
 	 *
-	 * @param string $ps_code A language code in the form <language>_<country> (eg. en_US)
+	 * @param string $code A language code in the form <language>_<country> (eg. en_US)
 	 * @return int The locale_id of the locale, or null if the code is invalid
 	 */
-	public function loadLocaleByCode($ps_code) {
-		$ps_code = mb_strtolower($ps_code);
-		if (!MemoryCache::contains($ps_code, 'LocaleCodeToId')){
-			ca_locales::getLocaleList(array('index_by_code' => true));
+	public function loadLocaleByCode($code) {
+		$code = mb_strtolower($code);
+		if (!MemoryCache::contains($code, 'LocaleCodeToId')){
+			ca_locales::getLocaleList(['index_by_code' => true]);
 		}
 		
-		$this->load(MemoryCache::fetch($ps_code, 'LocaleCodeToId'));
+		$this->load(MemoryCache::fetch($code, 'LocaleCodeToId'));
 		
 		return $this->getPrimaryKey();
 	}
@@ -422,12 +533,12 @@ class ca_locales extends BaseModel {
 	/**
 	 * Non-static version of ca_locales::codeToID() offered for compatibility reasons
 	 *
-	 * @param string $ps_code A language code in the form <language>_<country> (eg. en_US)
+	 * @param string $code A language code in the form <language>_<country> (eg. en_US)
 	 * @return int The locale_id of the locale, or null if the code is invalid
 	 * @seealso ca_locales::codeToID()
 	 */
-	public function localeCodeToID($ps_code) {
-		return ca_locales::codeToID($ps_code);
+	public function localeCodeToID($code) {
+		return ca_locales::codeToID($code);
 	}
 	# ------------------------------------------------------
 	/**
@@ -435,17 +546,17 @@ class ca_locales extends BaseModel {
 	 * change the state of the model - it just returns the locale_id. If you want to actually load a model instance
 	 * with a locale record, use loadLocaleByCode()
 	 *
-	 * @param string $ps_code A language code in the form <language>_<country> (eg. en_US)
+	 * @param string $code A language code in the form <language>_<country> (eg. en_US)
 	 * @return int The locale_id of the locale, or null if the code is invalid
 	 */
-	static public function codeToID($ps_code) {
-		if (strlen($ps_code) == 0) { return null; }
-		if(is_numeric($ps_code)) { return (int)$ps_code; }
-		$ps_code = mb_strtolower($ps_code);
-		if (!MemoryCache::contains($ps_code, 'LocaleCodeToId')){
+	static public function codeToID($code) {
+		if (strlen($code) == 0) { return null; }
+		if(is_numeric($code)) { return (int)$code; }
+		$code = mb_strtolower($code);
+		if (!MemoryCache::contains($code, 'LocaleCodeToId')){
 			ca_locales::getLocaleList(['index_by_code' => true]);
 		}
-		return MemoryCache::fetch($ps_code, 'LocaleCodeToId');
+		return MemoryCache::fetch($code, 'LocaleCodeToId');
 	}
 	# ------------------------------------------------------
 	/**
@@ -477,53 +588,55 @@ class ca_locales extends BaseModel {
 	/**
 	 * Non-static version of ca_locales::IDToName() offered for compatibility reasons
 	 *
-	 * @param int $pn_id The locale_id of the locale, or null if the code is invalid
+	 * @param int $id The locale_id of the locale, or null if the code is invalid
 	 * @return string The name of the locale
 	 * @seealso ca_locales::IDToName()
 	 */
-	public function localeIDToName($pn_id) {
-		return ca_locales::IDToName($pn_id);
+	public function localeIDToName($id) {
+		return ca_locales::IDToName($id);
 	}
 	# ------------------------------------------------------
 	/**
 	 * Returns the locale name of the specified locale_id, or null if the id is invalid. Note that this does not
 	 * change the state of the model - it just returns the locale.
 	 *
-	 * @param int $pn_id The locale_id of the locale, or null if the code is invalid
+	 * @param int $id The locale_id of the locale, or null if the code is invalid
 	 * @return string The name of the locale
 	 */
-	static public function IDToName($pn_id) {
-		if (strlen($pn_id) == 0) { return null; }
-		if (!MemoryCache::contains($pn_id, 'LocaleIdToName')){
+	static public function IDToName($id) {
+		if (strlen($id) == 0) { return null; }
+		if (!MemoryCache::contains($id, 'LocaleIdToName')){
 			ca_locales::getLocaleList();
 		}
-		return MemoryCache::fetch($pn_id, 'LocaleIdToName');
+		return MemoryCache::fetch($id, 'LocaleIdToName');
 	}
 	# ------------------------------------------------------
 	/**
 	 * Return list of locales for the specified language. 
 	 *
-	 * @param string $ps_language A locale (ex. "en_US") or langage (ex. "en") code.
-	 * @param array $pa_options Options include:
+	 * @param string $language A locale (ex. "en_US") or langage (ex. "en") code.
+	 * @param array $options Options include:
 	 *		codesOnly = Return a list of locale codes for the given language. If not set then a list of arrays with details about each relevant locale is returned. [Default is false]
+	 *		cataloguingOnly = 
 	 *
 	 * @return array An array of arrays, each containing information about a locale. If the "codesOnly" option is set then a simple list of locale codes is returned.
 	 */
-	static function localesForLanguage($ps_language, $pa_options=null) {
-		$va_language = explode('_', $ps_language);
-		$ps_language = array_shift($va_language);
-		$pb_codes_only = caGetOption('codesOnly', $pa_options, false);
-		//$va_locales =  array_filter(ca_locales::getLocaleList(['index_by_code' => true]), function($v, $k) use ($ps_language) { return ($ps_language == array_shift(explode('_', $k))); }, ARRAY_FILTER_USE_BOTH);
-	
-	    $va_locales = [];
-	    $va_list = ca_locales::getLocaleList(['index_by_code' => true]);
-	    foreach($va_list as $k => $v) {
-	        if ($ps_language == array_shift(explode('_', $k))) { 
-	            $va_locales[$k] = $v;
+	static function localesForLanguage($language, $options=null) {
+		$language_bits = explode('_', $language);
+		$language = array_shift($language_bits);
+		$codes_only = caGetOption('codesOnly', $options, false);
+		$cataloguing_only = caGetOption('cataloguingOnly', $options, false);
+		
+	    $locales = [];
+	    $list = ca_locales::getLocaleList(['index_by_code' => true]);
+	    foreach($list as $k => $v) {
+	    	if($cataloguing_only && ($v['dont_use_for_cataloguing'] == 1)) { continue; }
+	        if ($language == array_shift(explode('_', $k))) { 
+	            $locales[$k] = $v;
 	        }
 	    }
 	    
-		return $pb_codes_only ? array_keys($va_locales) : $va_locales;
+		return $codes_only ? array_keys($locales) : $locales;
 	}
 	# ------------------------------------------------------
 	/**
@@ -539,6 +652,20 @@ class ca_locales extends BaseModel {
 			return 'rtl';
 		}
 		return 'ltr';
+	}
+	# ------------------------------------------------------
+	/**
+	 * Convert 3-letter language code to 2-letter language code
+	 *
+	 * @param string $code3
+	 *
+	 * @return string 
+	 */
+	static function code3ToLanguage(string $code3) : ?string {
+		if(!($name = ca_locales::$s_code3_to_name[$code3] ?? null)) { return null; }
+		
+		$t = array_flip(ca_locales::$s_code2_to_name);
+		return $t[$name] ?? null;
 	}
 	# ------------------------------------------------------
 }

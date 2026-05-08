@@ -594,11 +594,12 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 	 */
 	public function sortableValue(?string $value) {
 		$sort_by_specificity = Configuration::load('datetime.conf')->get('sort_dates_by_specificity');
+		$sort_undated_at = strtolower(Configuration::load('datetime.conf')->get('sort_undated_at') ?? 'end');
 		
 		if(DateRangeAttributeValue::$o_tep->parse($value)) { 
 			$dates = DateRangeAttributeValue::$o_tep->getHistoricTimestamps();
-			if(!($dates[0] ?? null)) { $dates[0] = "9999999999.999999999999"; }
-			if(!($dates[1] ?? null)) { $dates[1] = "9999999999.999999999999"; }
+			if(!($dates[0] ?? null)) { $dates[0] = ($sort_undated_at === 'start') ? "-9999999999.999999999999" : "9999999999.999999999999"; }
+			if(!($dates[1] ?? null)) { $dates[1] = ($sort_undated_at === 'start') ? "-9999999999.999999999999" : "9999999999.999999999999"; }
 			$sdate_bits = explode('.', $dates[0] ?? '.');
 			$edate_bits = explode('.', $dates[1] ?? '.');
 			

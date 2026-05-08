@@ -92,8 +92,31 @@ $table = $t_subject->tableName();
 	<br class='clear'/>
 <?php
 	if($this->request->user->canDoAction('can_download_ca_object_representations')) {
-		$options = []; 
-		
+		$options = [];
+		$options_types = [];
+
+		$t_list = new ca_lists();
+		$va_representation_types = $t_list->getItemsForList('object_representation_types');
+
+
+		if (is_array($va_representation_types) && sizeof($va_representation_types)) {
+			foreach ($va_representation_types as $item_id => $va_type_by_locale) {
+				if (!is_array($va_type_by_locale)) { continue; }
+
+				$vn_locale_id = $this->request->getUser()->getPreferredUILocaleID();
+				if (isset($va_type_by_locale[$vn_locale_id])) {
+					$va_type = $va_type_by_locale[$vn_locale_id];
+				} else {
+					$va_type = reset($va_type_by_locale);
+				}
+
+				if (!empty($va_type['name_singular']) && !empty($va_type['item_id'])) {
+					$label = _t('All results: %1 (representation)', $va_type['name_singular']);
+					$options_types[$label] = 'type_'.$va_type['item_id'];
+				}
+			}
+		}
+
 		if($this->request->user->canDoAction('can_download_ca_object_representations') && in_array($table, $this->request->config->get('allow_representation_downloads_from_find_for'))) {
 			foreach($this->getVar('ca_object_representation_download_versions') as $version) {
 				foreach([
@@ -116,8 +139,10 @@ $table = $t_subject->tableName();
 				$options[$label] = "{$mode}_attribute{$element['element_id']}";
 			}
 		}
-		
-		ksort($options);
+
+		uksort($options_types, 'strnatcasecmp');
+		uksort($options, 'strnatcasecmp');
+		$options = $options + $options_types;
 		
 		if(sizeof($options)) {
 ?>	
@@ -222,7 +247,13 @@ $table = $t_subject->tableName();
 		var tmp = mode.split('_');
 		if(tmp[0] == 'all') {	// download all search results
 			jQuery(window).attr('location', '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?= $table; ?>/all/version/' + tmp[1] + '/download/1');
-		} else {
+		}
+		else if (tmp[0] === 'type') {
+
+			jQuery(window).attr('location', '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?= $table; ?>/all/type/' + tmp[1] + '/download/1');
+
+		}
+		else {
 			jQuery(window).attr('location', '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'DownloadMedia'); ?>' + '/<?= $table; ?>/' + caGetSelectedItemIDsToAddToSet().join(';') + '/version/' + tmp[1] + '/download/1');
 		}
 	}
