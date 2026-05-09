@@ -3923,7 +3923,8 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		$pk = $this->primaryKey();
 		
 		$guid = ca_guids::getForRow($this->tableNum(), $row_id);
-		$log = ca_change_log::getLog(0, null, ['forGUID' => $guid, 'forceValuesForAllAttributeSlots' => true]);
+		$log = ca_change_log::getLog(0, null, ['forGUID' => $guid, 'telescope' => true, 'forceValuesForAllAttributeSlots' => true]);
+
 		$acc = [];
 		
 		$bundle_subelement_id = $bi['subelement'] ? ca_metadata_elements::getElementID($bi['subelement']) : null; // is subelement an actual element? Or additional log data?
@@ -3960,6 +3961,12 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 					
 					$acc[$l['snapshot']['attribute_id']]['attributeValues'][$element_code][$s['log_id']] = $s;
 					break;
+			}
+		}
+		
+		foreach($acc as $id => $info) {
+			if(!isset($info['values']) || !sizeof($info['values'])) {
+				unset($acc[$id]);
 			}
 		}
 		return $acc;
@@ -4017,6 +4024,16 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 						
 						$buf[$log_id]['value_id'] = $snapshot['value_id'];
 					}
+=======
+			foreach($d['values'] as $element_code => $values) {
+				foreach($values as $snapshot) {
+					$o_val = \CA\Attributes\Attribute::getValueInstance(ca_metadata_elements::getElementDatatype($element_code), $snapshot);
+					$acc[] = [
+						'value' => $o_val->getDisplayValue($options),
+						'datetime' => $snapshot['datetime'],
+						'datetime_display' => $snapshot['datetime_display']
+					];
+>>>>>>> dev/2.0
 				}
 				
 				foreach($buf as $log_id => $e) {
@@ -4044,6 +4061,17 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		}
 		
 		return $acc;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getMostRecentValueForBundle(string $bundle, ?array $options=null) : mixed {
+		$values = $this->getValueHistoryForBundle($bundle, $options);
+		$values = array_filter($values, function($v) {
+			return !(!is_array($v) || !isset($v['value']) || !strlen($v['value']));
+		});
+		return array_pop($values);
 	}
 	# ------------------------------------------------------------------
 }

@@ -3788,4 +3788,15 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		return $acc;
 	}
 	# ------------------------------------------------------------------	
+	/**
+	 * 
+	 *
+	 * @param string $bundle
+	 * @return bool
+	 */
+	public function valueDidChange(string $bundle) : ?bool {
+		// TODO: handle changes on labels?
+		return parent::valueDidChange($bundle);
+	}
+	# ------------------------------------------------------------------	
 }
