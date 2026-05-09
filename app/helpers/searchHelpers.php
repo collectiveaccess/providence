@@ -2024,6 +2024,23 @@ function caSearchIsForSets($ps_search, $pa_options=null) {
 function caFlattenContainers(ca_search_forms $t_search_form, string $table, Configuration $search_builder_config, ?array $options=null) {
 	$return_all = caGetOption('returnAll', $options, false);
 	
+	if(!isset($options['restrictToEditorUIs'])) { 		
+		$editor_ui_codes = [];
+		if($editor_ui_code = $search_builder_config->get('search_builder_restrict_to_editor_ui_'.$table)) {
+			$editor_ui_codes[] = $editor_ui_code;
+		}
+		if(is_array($types = caGetOption('restrictToTypes', $options, null))) {
+			if(is_array($type_codes = caMakeTypeList($table, $types))) {
+				foreach($type_codes as $t) {
+					if($editor_ui_code = $search_builder_config->get('search_builder_restrict_to_editor_ui_'.$table.'_'.$t)) {
+						$editor_ui_codes[] = $editor_ui_code;
+					}
+				}
+			}
+		}
+		$options['restrictToEditorUIs'] = $editor_ui_codes;
+	}
+	
 	$user_bundles = $return_all ? null : caGetUserBundlesForSearchBuilder($table, $search_builder_config, $options);
 	if(!is_array($user_bundles) || !sizeof($user_bundles)) { 
 		$user_bundles = null;
@@ -2045,7 +2062,8 @@ function caFlattenContainers(ca_search_forms $t_search_form, string $table, Conf
 	}, $user_bundles);
 	
 	$use_disambiguation_labels = caGetOption('useDisambiguationLabels', $options, false);
-	$bundles = $t_search_form->getAvailableBundles($table, ['useDisambiguationLabels' => $use_disambiguation_labels, 'omitGeneric' => true, 'omitBundles' => ['deleted'], 'restrictToTypes' => caGetOption('restrictToTypes', $options, null)]);
+	
+	$bundles = $t_search_form->getAvailableBundles($table, ['restrictToEditorUIs' => $options['restrictToEditorUIs'] ?? null, 'useDisambiguationLabels' => $use_disambiguation_labels, 'omitGeneric' => true, 'omitBundles' => ['deleted'], 'restrictToTypes' => caGetOption('restrictToTypes', $options, null)]);
 	
 	foreach($bundles as $id => $bundle_info) {
 		$b = $bundle_info['bundle'];
@@ -2152,7 +2170,7 @@ function caGetUserBundlesForSearchBuilder(string $table, Configuration $search_b
 	}
 	if(!is_array($user_bundles) || !sizeof($user_bundles)) {
 		$t_search_form = new ca_search_forms();
-	 	$user_bundles = array_values(array_map(function($v) { return $v['bundle']; }, $t_search_form->getAvailableBundles($table, ['useDisambiguationLabels' => true, 'omitGeneric' => true, 'omitBundles' => ['deleted']])));
+	 	$user_bundles = array_values(array_map(function($v) { return $v['bundle']; }, $t_search_form->getAvailableBundles($table, ['restrictToEditorUIs' => $options['restrictToEditorUIs'] ?? null, 'useDisambiguationLabels' => true, 'omitGeneric' => true, 'omitBundles' => ['deleted']])));
 		$user_bundles = caExpandWithSubBundlesForSearchBuilder($user_bundles);
 	}
 	
@@ -2174,6 +2192,7 @@ function caGetUserBundlesForSearchBuilder(string $table, Configuration $search_b
  */
 function caGetSearchBuilderFilters(BaseModel $t_subject, Configuration $search_builder_config, ?array $options=null) {
 	global $g_request;
+	
 	$t_user = $g_request ? $g_request->getUser() : null;
 	
 	$show_container_in_labels = caGetOption('showContainerInLabel', $options, false);
