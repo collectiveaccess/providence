@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2025 Whirl-i-Gig
+ * Copyright 2025-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,6 +71,7 @@ var caUI = caUI || {};
 			currentSortDirection: null,
 			
 			lookupURL: null,
+			restrictLookupToTypes: null,
 			itemListURL: null,
 			addItemToInventoryURL: null,
 			removeItemFromInventoryURL: null,
@@ -105,7 +106,7 @@ var caUI = caUI || {};
 			// setup autocompleter
 			jQuery('#' + that.inventoryItemAutocompleteID).autocomplete(
 				{
-					source: that.lookupURL + "?quickadd=0&noInline=1&set_id=" + that.inventoryID,
+					source: that.lookupURL + "?quickadd=0&noInline=1&set_id=" + that.inventoryID + (that.restrictLookupToTypes ? ("&types=" + that.restrictLookupToTypes.join(',')) : ''),
 					minLength: 3, max: 50, html: true,
 					select: function(event, ui) {
 						jQuery.getJSON(that.addItemToInventoryURL, {'set_id': that.inventoryID, 'table_num': that.table_num, 'row_id': ui.item.id } , 

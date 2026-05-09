@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2543,6 +2543,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *		user_id = Restricts access to sets accessible by the current user. If omitted then all sets, regardless of access are returned.
 	 *		checkAccess = Restricts returned sets to those with an public access level with the specified values. If omitted sets are returned regardless of public access (ca_sets.access) value. Can be a single value or array if you wish to filter on multiple public access values.
 	 *		includeParents =  Include parent types in the returned type list. [Default is false]
+	 *		returnIdnos = Return idnos for types. [Default is false]
 	 * @return array List of types. Keys are integer type_ids, values are plural type names for the current locale
 	 */
 	public function getTypesForItems($pa_options=null) {
@@ -2554,6 +2555,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		if (!($t_rel_table = Datamodel::getInstanceByTableNum($this->get('table_num'), true))) { return null; }
 		if (!($vs_type_id_fld = $t_rel_table->getTypeFieldName())) { return array(); }
+		
+		$return_idnos = caGetOption('returnIdnos', $pa_options, false);
 		
 		// get set items
 		$vs_access_sql = '';
@@ -2578,7 +2581,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$va_type_ids = array();
 		while($qr_res->nextRow()) {
-			$va_type_ids[$vn_type_id = $qr_res->get($vs_type_id_fld)] = $va_type_list[$vn_type_id]['name_plural'];
+			$va_type_ids[$vn_type_id = $qr_res->get($vs_type_id_fld)] = $return_idnos ? caGetListItemIdno($vn_type_id) : $va_type_list[$vn_type_id]['name_plural'];
 		}
 		
 		if (caGetOption('includeParents', $pa_options, false)) {
@@ -2588,7 +2591,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			foreach($va_type_ids as $vn_type_id => $vs_type) {
 				if (is_array($va_parents = $t_item->getHierarchyAncestors($vn_type_id, array('idsOnly' => true)))) {
 					foreach($va_parents as $vn_parent_id) {
-						$va_expanded_types[$vn_parent_id] = $va_labels[$vn_parent_id] ?? null;
+						$va_expanded_types[$vn_parent_id] = $return_idnos ? caGetListItemIdno($vn_parent_id) : ($va_labels[$vn_parent_id] ?? null);
 					}
 				}
 			}

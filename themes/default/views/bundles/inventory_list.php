@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2025 Whirl-i-Gig
+ * Copyright 2025-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,6 +36,7 @@ $id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
 
 $t_set 				= $this->getVar('t_set');		// set
 $set_id 			= $t_set->getPrimaryKey();
+$item_types			= array_values($t_set->getTypesForItems(['returnIdnos' => true]) ?? []);
 
 $t_item 			= $this->getVar('t_item');			// ca_set_item
 $t_row				= $this->getVar('t_item');
@@ -167,6 +168,7 @@ if(!$dont_show_delete) {
 			sortControlID: '<?= $id_prefix; ?>inventorySortControl',
 			unsavedChangesID: '<?= $id_prefix; ?>unsavedChanges',
 			lookupURL: <?= json_encode($lookup_urls['search']); ?>,
+			restrictLookupToTypes: <?= json_encode($item_types); ?>,
 			addItemToInventoryURL: <?= json_encode(caNavUrl($this->request, 'manage/sets', 'SetEditor', 'addItemToInventory')); ?>,
 			removeItemFromInventoryURL: <?= json_encode(caNavUrl($this->request, 'manage/sets', 'SetEditor', 'removeItemFromInventory')); ?>,
 			
