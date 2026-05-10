@@ -4024,16 +4024,6 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 						
 						$buf[$log_id]['value_id'] = $snapshot['value_id'];
 					}
-=======
-			foreach($d['values'] as $element_code => $values) {
-				foreach($values as $snapshot) {
-					$o_val = \CA\Attributes\Attribute::getValueInstance(ca_metadata_elements::getElementDatatype($element_code), $snapshot);
-					$acc[] = [
-						'value' => $o_val->getDisplayValue($options),
-						'datetime' => $snapshot['datetime'],
-						'datetime_display' => $snapshot['datetime_display']
-					];
->>>>>>> dev/2.0
 				}
 				
 				foreach($buf as $log_id => $e) {
