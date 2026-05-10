@@ -3992,6 +3992,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$va_errors = [];
 		
 		$ifv = [];	// incoming form values
+		$npl = [];	// values on screen but not present in incoming form values
 			
 		$vb_read_only_because_deaccessioned = ($this->hasField('is_deaccessioned') && (bool)$this->getAppConfig()->get('deaccession_dont_allow_editing') && (bool)$this->get('is_deaccessioned'));
 
@@ -4182,7 +4183,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						// is it a delete key?
 						$vn_attribute_id = intval($va_matches[1]);
 						$va_attributes_to_delete[$vn_attribute_id] = true;
-					} 
+					} else {
+						$npl[$vn_element_id] = true;
+					}
 				}
 				
 				if(isset($va_inserted_attributes_by_element[$vn_element_id])) {
@@ -4194,6 +4197,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					if (preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_locale_id_new_([\d]+)/', $vs_key, $va_locale_matches)) { 
 						$vn_locale_c = intval($va_locale_matches[1]);
 						$va_locales[$vn_locale_c] = $vs_val;
+						unset($npl[$vn_element_id]);
 						continue; 
 					}
 					// is it a newly created attribute?
@@ -4205,6 +4209,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$va_inserted_attributes_by_element[$vn_element_id][$vn_c]['locale_id'] = $va_attributes_to_insert[$vn_c]['locale_id'] = $va_locales[$vn_c]; 
 						$va_val['_uploaded_file'] = true;
 						$va_inserted_attributes_by_element[$vn_element_id][$vn_c][$va_matches[1]] = $va_attributes_to_insert[$vn_c][$va_matches[1]] = $va_val;
+						unset($npl[$vn_element_id]);
 					}
 				}
 if (!$batch) {				
@@ -4288,6 +4293,7 @@ if (!$batch) {
 						if(!$this->editAttribute($vn_attribute_id, $vn_element_set_id, $va_attr_update, null, ['batch' => $batch])) {
 							$po_request->addActionErrors($this->errors);
 						}
+						unset($npl[$vn_element_set_id]);
 						$ifv[$vs_element_set_code][] = ($va_attr_update + ['attribute_id' => $vn_attribute_id]);
 						
 					}
@@ -4297,9 +4303,19 @@ if (!$batch) {
 			// do inserts
 			foreach($va_attributes_to_insert as $va_attribute_to_insert) {
 				$this->clearErrors();
+				unset($npl[$vn_element_id]);
 				if(!$this->addAttribute($va_attribute_to_insert, $vn_element_id, null, ['batch' => $batch])) {
 					$po_request->addActionErrors($this->errors);
 				}
+			}
+		}
+		
+		// Check counts on elements not otherwise added, edited or deleted
+		// Provides for display of min/max errors on elements with no associated values
+		foreach(array_keys($npl) as $element_id) {
+			$this->clearErrors();
+			if(!$this->checkAttributeRepeatCounts($element_id)) {
+				$po_request->addActionErrors($this->errors);
 			}
 		}
 }

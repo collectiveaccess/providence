@@ -87,6 +87,46 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Check max/min repeat counts for a metadata on the currently loaded record and post errors if counts 
+	 * are out of bounds.
+	 *
+	 * @param mixed $element_code_or_id
+	 * @param string $error_source
+	 * @param array $options Options include:
+	 *		postErrors = Post errors on currently loaded row. [Default is true[
+	 *
+	 * @return bool True if counts are in bounds, false if not.
+	 */
+	public function checkAttributeRepeatCounts($element_code_or_id, ?string $error_source=null, ?array $options=null) {
+		if (!($t_element = ca_metadata_elements::getInstance($element_code_or_id))) { return false; }
+		// check restriction min/max settings
+		$t_restriction = $t_element->getTypeRestrictionInstanceForElement($this->tableNum(), $this->getTypeID());
+		if (!$t_restriction) { return null; }		// attribute not bound to this type
+		
+		$post_errors = caGetOption('postErrors', $options, true);
+		
+		$element_id = $t_element->getPrimaryKey();
+		
+		if(!$error_source) {
+			$error_source = $this->tableName().'.'.$t_element->get('ca_metadata_elements.element_code');
+		}
+		
+		$min = $t_restriction->getSetting('minAttributesPerRow');
+		$max = $t_restriction->getSetting('maxAttributesPerRow');
+		
+		$count = $this->getAttributeCountByElement($element_id, ['includeBlanks' => true]);
+		if (($max > 0) && $count >= $max) { 
+			if($post_errors) { $this->postError(1990, ($max == 1) ? _t('Too many values exist; only %1 value is allowed', $max) : _t('Too many values exist; only %1 values are allowed', $max), 'BaseModelWithAttributes->checkAttributeRepeatCounts()', $error_source); }
+			return false;
+		}
+		if (($min > 0) && ($count <= $min)) { 
+			if($post_errors) { $this->postError(1992, ($min == 1) ? _t('A value is required') : _t('At least %1 values are required', $min), 'BaseModelWithAttributes->checkAttributeRepeatCounts()', $error_source); }
+			return false;
+		}
+		return true;
+	}
+	# ------------------------------------------------------------------
+	/**
 	 * create an attribute linked to the current row using values in $pa_values
 	 *
 	 * @param array $pa_values
