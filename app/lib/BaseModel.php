@@ -705,7 +705,6 @@ class BaseModel extends BaseObject {
 	 * @return bool Always true
 	 */
 	public function setAsChanged($ps_field) {
-		print "SET $ps_field AS changeed\n";
 		$this->_FIELD_VALUE_CHANGED[$ps_field] = true;
 		return true;
 	}
