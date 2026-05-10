@@ -6011,7 +6011,7 @@ function caGetMediaDownloadArchiveName($table, $id, $options=null) {
  * @return string
  */
 function caGetBrandingLogo(string $type, array $options=null) : ?string {
-	if(!in_array($type, ['menuBar', 'login', 'report'], true)) { return null; }
+	//if(!in_array($type, ['menuBar', 'login', 'report'], true)) { return null; }
 	
 	$abs = caGetOption('absolute', $options, false);
 	
@@ -6066,10 +6066,13 @@ function caGetLoginLogo() {
 /**
  * Return currently configured logo graphic for report headers
  *
+ * @param array $options Options include:
+ *		name = key in branding configuration to use; if omitted "report" is used
+ *
  * @return string
  */
-function caGetReportLogo() {
-	return caGetBrandingLogo('report', ['absolute' => true]);
+function caGetReportLogo(?array $options=null) {
+	return caGetBrandingLogo(caGetOption('name', $options, 'report'), ['absolute' => true]);
 }
 # ------------------------------------------------------------------
 /**

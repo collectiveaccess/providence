@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1354,7 +1354,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			return $t_list_item->getPrimaryKey();
 		}
 		
-		return caGetOption('useFirstElementAsDefaultDefault', $pa_options, false) ? array_shift($this->getItemsForList($vn_list_id, array_merge($pa_options, array('idsOnly' => true)))) : null; 
+		$item = $this->getItemsForList($vn_list_id, array_merge($pa_options, array('idsOnly' => true))) ?? [];
+		return caGetOption('useFirstElementAsDefaultDefault', $pa_options, false) ? array_shift($item) : null; 
 	}
 	# ------------------------------------------------------
 	/**
