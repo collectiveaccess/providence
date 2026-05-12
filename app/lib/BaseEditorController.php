@@ -518,9 +518,9 @@ class BaseEditorController extends ActionController {
 		// if we came here through a rel link, show save and return button
 		$this->getView()->setVar('show_save_and_return', (bool) $this->getRequest()->getParameter('rel', pInteger));
 
-		if(((int)$t_subject->get('access') !== (int)$orig_access) && ($t_subject->tableName() === 'ca_collections')) {
-			ca_acl::applyAccessInheritanceToRelatedObjectsFromCollection($t_subject);
-		}
+		// if(((int)$t_subject->get('access') !== (int)$orig_access) && ($t_subject->tableName() === 'ca_collections')) {
+// 			ca_acl::applyAccessInheritanceToRelatedObjectsFromCollection($t_subject);
+// 		}
 
 		// Are there metadata dictionary alerts?
 		$violations_to_prompt = $t_subject->getMetadataDictionaryRuleViolations(null, ['limitToShowAsPrompt' => true, 'screen_id' => $this->request->getActionExtra()]);
@@ -1022,8 +1022,8 @@ class BaseEditorController extends ActionController {
 	public function Access(?array $options=null) {
 		AssetLoadManager::register('tableList');
 		list($subject_id, $t_subject) = $this->_initView($options);
-		if(!method_exists($t_subject, 'supportsACL') || !$t_subject->supportsACL()) {  throw new ApplicationException(_t('ACL not enabled')); }
-
+		
+		if(!caShowAccessControlScreen($t_subject, ['anywhere' => true])) { throw new ApplicationException(_t('ACL not enabled')); }
 		if(!$this->verifyAccess($t_subject)) { return; }
 
 		if ((!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) {
@@ -1041,120 +1041,19 @@ class BaseEditorController extends ActionController {
 	 */
 	public function SetAccess(?array $options=null) {
 		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
-	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	$this->Edit();
 	    	return;
 	    }
 		list($subject_id, $t_subject) = $this->_initView($options);
-		if(!method_exists($t_subject, 'supportsACL') || !$t_subject->supportsACL()) {  throw new ApplicationException(_t('ACL not enabled')); }
-
-		if(!$this->verifyAccess($t_subject)) { return; }
-
-		if ((!$t_subject->isSaveable($this->request)) || (!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) {
-			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2570?r='.urlencode($this->request->getFullUrlPath()));
-			return;
+		
+		if(!$t_subject->setACLAccessFromForm($this->request) && ($t_subject->numErrors() > 0)) {
+			$error = array_shift($t_subject->errors);
+			$error_num = $error->getErrorNumber();
+			$this->response->setRedirect($this->request->config->get('error_display_url')."/n/{$error_num}?r=".urlencode($this->request->getFullUrlPath()));
 		}
 		
-		$subject_table = $t_subject->tableName();
-		$subject_pk = $t_subject->primaryKey();
-		
-		$form_prefix = $this->request->getParameter('_formName', pString);
-
-		$this->opo_app_plugin_manager->hookBeforeSaveItem(array(
-			'id' => $subject_id,
-			'table_num' => $t_subject->tableNum(),
-			'table_name' => $subject_table, 
-			'instance' => &$t_subject,
-			'is_insert' => false)
-		);
-		
-		// Force all?
-		if(($set_all = $this->request->getParameter('set_all_acl_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_acl_inherit_from_parent', pInteger))) {
-			if(!ca_acl::setInheritanceSettingForAllChildRows($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
-				$this->postError(1250, _t('Could not set ACL inheritance settings on child items'),"BaseEditorController->SetAccess()");
-			}
-			$_REQUEST['form_timestamp'] = time();
-		}
-		if(
-			($subject_table === 'ca_collections')
-			&&
-			($set_all = $this->request->getParameter('set_all_acl_inherit_from_ca_collections', pInteger)) || ($set_none = $this->request->getParameter('set_none_acl_inherit_from_ca_collections', pInteger))
-		) {
-			if(!ca_acl::setInheritanceSettingForRelatedObjects($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
-				$this->postError(1250, _t('Could not set ACL inheritance settings on related objects'),"BaseEditorController->SetAccess()");
-			}
-			$_REQUEST['form_timestamp'] = time();
-		}
-		if(
-			($subject_table === 'ca_collections')
-			&&
-			($set_all = $this->request->getParameter('set_all_access_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_access_inherit_from_parent', pInteger))
-		) {
-			if(!ca_acl::setAccessInheritanceSettingToRelatedObjectsFromCollection($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
-				$this->postError(1250, _t('Could not set public access inheritance settings on related objects'),"BaseEditorController->SetAccess()");
-			}
-			$_REQUEST['form_timestamp'] = time();
-		}
-
-		// Save user ACL's
-		$users_to_set = [];
-		foreach($_REQUEST as $key => $val) {
-			if (preg_match("!^{$form_prefix}_user_id(.*)$!", $key, $matches)) {
-				$user_id = (int)$this->request->getParameter($form_prefix.'_user_id'.$matches[1], pInteger);
-				$access = $this->request->getParameter($form_prefix.'_user_access_'.$matches[1], pInteger);
-				if ($access >= 0) {
-					$users_to_set[$user_id] = $access;
-				}
-			}
-		}
-		$t_subject->setACLUsers($users_to_set, ['preserveInherited' => true]);
-
-		// Save group ACL's
-		$groups_to_set = [];
-		foreach($_REQUEST as $key => $val) {
-			if (preg_match("!^{$form_prefix}_group_id(.*)$!", $key, $matches)) {
-				$group_id = (int)$this->request->getParameter($form_prefix.'_group_id'.$matches[1], pInteger);
-				$access = $this->request->getParameter($form_prefix.'_group_access_'.$matches[1], pInteger);
-				if ($access >= 0) {
-					$groups_to_set[$group_id] = $access;
-				}
-			}
-		}
-		$t_subject->setACLUserGroups($groups_to_set, ['preserveInherited' => true]);
-
-		// Save "world" ACL
-		$t_subject->setACLWorldAccess($this->request->getParameter("{$form_prefix}_access_world", pInteger));
-
-		// Set ACL-related intrinsic fields
-		if ($t_subject->hasField('acl_inherit_from_ca_collections') || $t_subject->hasField('acl_inherit_from_parent') || $t_subject->hasField('access_inherit_from_parent')) {
-			if ($t_subject->hasField('acl_inherit_from_ca_collections')) {
-				$t_subject->set('acl_inherit_from_ca_collections', $this->request->getParameter('acl_inherit_from_ca_collections', pInteger));
-			}
-			if ($t_subject->hasField('acl_inherit_from_parent')) {
-				$t_subject->set('acl_inherit_from_parent', $this->request->getParameter('acl_inherit_from_parent', pInteger));
-			}
-			if ($t_subject->hasField('access_inherit_from_parent')) {
-				$t_subject->set('access_inherit_from_parent', $this->request->getParameter('access_inherit_from_parent', pInteger));
-			}
-			$t_subject->update();
-
-			if ($t_subject->numErrors()) {
-				$this->postError(1250, _t('Could not set ACL inheritance settings: %1', join("; ", $t_subject->getErrors())),"BaseEditorController->SetAccess()");
-			}
-		}
-		
-		ca_acl::updateACLInheritanceForRow($t_subject);
-
-		$this->opo_app_plugin_manager->hookSaveItem(
-			[
-				'id' => $subject_id,
-				'table_num' => $t_subject->tableNum(),
-				'table_name' => $subject_table,
-				'instance' => &$t_subject,
-				'is_insert' => false,
-				'request' => $this->request
-			]
-		);
-
+		$this->notification->addNotification(_t('Saved settings'), __NOTIFICATION_TYPE_INFO__);
+		ca_acl::removeRedundantACLEntries($t_subject->getDb());
 		$this->Access();
 	}
 	# -------------------------------------------------------
@@ -1860,7 +1759,7 @@ class BaseEditorController extends ActionController {
 				$this->view->setVar('object_collection_collection_ancestors', []); // collections to display as object parents when ca_objects_x_collections_hierarchy_enabled is enabled
 				if (($t_item->tableName() == 'ca_objects') && $t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) {
 					// Is object part of a collection?
-					if(is_array($va_collections = $t_item->getRelatedItems('ca_collections', array('restrictToRelationshipTypes' => array($t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')))))) {
+					if(is_array($va_collections = $t_item->getRelatedItems('ca_collections', array('restrictToRelationshipTypes' => caGetObjectCollectionHierarchyRelationshipTypes())))) {
 						$this->view->setVar('object_collection_collection_ancestors', $va_collections);
 					}
 				}

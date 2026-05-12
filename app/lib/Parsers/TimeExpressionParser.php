@@ -135,8 +135,10 @@ class TimeExpressionParser {
 	# -------------------------------------------------------------------
 	private $ops_language = null;				// iso-639-1 + country code for current language [default is US english]
 	private $opo_language_settings = null;		// Configuration object
-	private $opo_datetime_settings = null;			// Configuration object
+	private $opo_datetime_settings = null;		// Configuration object
 	private $opa_tokens;
+	
+	private $ja_jp_language_data = null;		// arry with Japanese language settings needed to parse Japanese calendar dates
 	
 	private $ops_error = "";					// error message
 	private $opn_error = 0;						// error code (one of the TEP_ERROR_* codes above; 0 indicates no error)
@@ -188,11 +190,11 @@ class TimeExpressionParser {
 		if (!$ps_iso_code) { $ps_iso_code = $g_ui_locale; }
 		if (!$ps_iso_code) { $ps_iso_code = $o_config->get('locale_default'); }
 		
-		$this->opa_error_messages = array(
+		$this->opa_error_messages = [
 			_t("No error"), _t("Start must be before date in range"), _t("Invalid date"), _t("Invalid time"), 
 			_t("Invalid uncertainty"), _t("Uncertainty must not exceed 9 digits"), _t("Invalid expression"), 
 			_t("Trailing characters in otherwise valid expression"), _t("Parser error")
-		);
+		];
 		
 		if (!$this->setLanguage($ps_iso_code)) {
 			die("Could not load language '$ps_iso_code'");
@@ -210,6 +212,15 @@ class TimeExpressionParser {
 		$this->opn_start_historic = $this->opn_end_historic = null;
 		$this->opn_start_time = $this->opn_end_time = null;
 		
+		$ja_jp_language_settings = Configuration::load(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser/ja_JP.lang');
+		$gengo_map = [];
+		foreach($ja_jp_language_settings->getAssoc('gengo_eras') as $k => $v) {
+			$gengo_map[$v['kanji']] = $v;
+		}
+		$this->ja_jp_language_data = [
+			'gengo_eras' => $ja_jp_language_settings->getAssoc('gengo_eras'),
+			'gengo_map' => array_reverse($gengo_map)
+		];
 		$this->ops_error = "";
 		$this->opn_error = 0;
 	}
@@ -1888,6 +1899,44 @@ class TimeExpressionParser {
 		
 		$vs_token = trim(array_shift($this->opa_tokens));
 		$vs_token_lc = mb_strtolower($vs_token, 'UTF-8');
+		
+		// Japanese date?
+		//
+		// Ex. 2003年2月16日 or 平成15年2月16日
+		// 年 (nen = year
+		// 月 (gatsu = month)
+		// 日 (nichi = day)
+		
+		// Numeric year
+		if(preg_match("!^([\d]{3,4})年([\d]{1,2})月([\d]{1,2})日$!", trim($vs_token), $m)) {
+			return ['value' => $vs_token, 'month' => $m[2], 'day' => $m[3], 'year' => $m[1], 'type' => TEP_TOKEN_DATE];
+		}
+		if(preg_match("!^([\d]{3,4})年([\d]{1,2})月$!", trim($vs_token), $m)) {
+			return ['value' => $vs_token, 'month' => $m[2], 'day' => null, 'year' => $m[1], 'type' => TEP_TOKEN_DATE];
+		}
+		if(preg_match("!^([\d]{3,4})年$!", trim($vs_token), $m)) {
+			return ['value' => $vs_token, 'month' => null, 'day' => null, 'year' => $m[1], 'type' => TEP_TOKEN_DATE];
+		}
+		
+		// Gengo year
+		$gengo_map = $this->ja_jp_language_data['gengo_map'];
+		foreach($gengo_map as $era => $info) {
+			if (preg_match("!^{$era}!u", $vs_token)) {
+				if(preg_match("!^{$era}([\d]{1,3})年([\d]{1,2})月([\d]{1,2})日$!", trim($vs_token), $m)) {
+					return ['value' => $vs_token, 'month' => $m[2], 'day' => $m[3], 'year' => ($m[1] - 1) + $info['year'], 'type' => TEP_TOKEN_DATE];
+				}
+				if(preg_match("!^{$era}([\d]{1,3})年([\d]{1,2})月$!", trim($vs_token), $m)) {
+					return ['value' => $vs_token, 'month' => $m[2], 'day' => null, 'year' => ($m[1] - 1) + $info['year'], 'type' => TEP_TOKEN_DATE];
+				}
+				if(preg_match("!^{$era}([\d]{1,3})年$!", trim($vs_token), $m)) {
+					return ['value' => $vs_token, 'month' => null, 'day' => null, 'year' => ($m[1] - 1) + $info['year'], 'type' => TEP_TOKEN_DATE];
+				}
+				
+				if(preg_match("!^{$era}([\d]{1,3})$!", trim($vs_token), $m)) {
+					return ['value' => $vs_token, 'month' => null, 'day' => null, 'year' => ($m[1] - 1) + $info['year'], 'type' => TEP_TOKEN_DATE];
+				}
+			}
+		}
 		
 		// undated
 		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("undatedDate"))) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2025 Whirl-i-Gig
+ * Copyright 2012-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1282,35 +1282,26 @@ final class ConfigurationExporter {
 			// restrictions (left side)
 			/** @var BaseRelationshipModel $t_instance */
 			$t_instance = Datamodel::getInstanceByTableNum($qr_types->get("table_num"));
-
-			if($qr_types->get("sub_type_left_id")) {
-				/** @var BaseModelWithAttributes $t_left_instance */
-				$vs_left_table = $t_instance->getLeftTableName();
-				$t_left_instance = Datamodel::getInstanceByTableNum($vs_left_table);
-
-				$vs_type_code = $t_left_instance->getTypeListCode();
-				$va_item = $t_list->getItemFromListByItemID($vs_type_code, $qr_types->get("sub_type_left_id"));
-
-				$vo_type->setAttribute("typeRestrictionLeft", $va_item["idno"]);
-				$vo_type->setAttribute("includeSubtypesLeft", (bool)$qr_types->get("include_subtypes_left") ? 1 : 0);
+			
+			if(
+				($qr_rtr = $this->opo_db->query("SELECT * FROM ca_relationship_type_restrictions WHERE type_id = ?", [$qr_types->get("type_id")]))
+				&&
+				($qr_rtr->numRows() > 0)
+			) {
+				$vo_type_res_list = $this->opo_dom->createElement("typeRestrictions");
+				while($qr_rtr->nextRow()) {
+					$vo_type_res = $this->opo_dom->createElement("restriction");
+					$vo_type_res->setAttribute('left', caGetListItemIdno($qr_rtr->get('sub_type_left_id')));
+					$vo_type_res->setAttribute('right', caGetListItemIdno($qr_rtr->get('sub_type_right_id')));
+					$vo_type_res->setAttribute('includeSubtypesLeft', $qr_rtr->get('include_subtypes_left') ? "1" : "0");
+					$vo_type_res->setAttribute('includeSubtypesRight', $qr_rtr->get('include_subtypes_right') ? "1" : "0");
+					
+					$vo_type_res_list->appendChild($vo_type_res);
+				}
+				$vo_type->appendChild($vo_type_res_list);
 			}
-
-			// restrictions (right side)
-
-			if($qr_types->get("sub_type_right_id")) {
-				/** @var BaseModelWithAttributes $t_right_instance */
-				$vs_right_table = $t_instance->getRightTableName();
-				$t_right_instance = Datamodel::getInstanceByTableNum($vs_right_table);
-
-				$vs_type_code = $t_right_instance->getTypeListCode();
-				$va_item = $t_list->getItemFromListByItemID($vs_type_code, $qr_types->get("sub_type_right_id"));
-
-				$vo_type->setAttribute("typeRestrictionRight", $va_item["idno"]);
-				$vo_type->setAttribute("includeSubtypesRight", (bool)$qr_types->get("include_subtypes_right") ? 1 : 0);
-			}
-
+			
 			// subtypes
-
 			if($vo_subtypes = $this->getRelationshipTypesForParentAsDOM($qr_types->get("type_id"), $pn_table_num)) {
 				$vo_type->appendChild($vo_subtypes);
 			}

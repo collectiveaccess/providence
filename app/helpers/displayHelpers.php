@@ -1588,7 +1588,7 @@ function caEditorInspector($view, $options=null) {
 		
 		// Get component information
 		$object_container_types = $view->request->config->getList('ca_objects_container_types');
-		$object_component_types = $view->request->config->getList('ca_objects_component_types');
+		$object_component_types = method_exists($t_item, 'getComponentTypes') ? $t_item->getComponentTypes() : [];
 		$takes_components = (method_exists($t_item, "getTypeCode") && (in_array($t_item->getTypeCode(), $object_container_types) || in_array('*', $object_container_types)));
 		
 		$can_add_component = (($table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($view->request->user->canDoAction('can_create_ca_objects')) && ($t_item->canTakeComponents() || $t_item->isComponent()));
@@ -2319,7 +2319,59 @@ function caEditorACLEditor(View $view, BaseModel $t_instance, ?array $options=nu
 	// Get inheritance usage stats
 	$o_view->setVar('statistics', ca_acl::getStatisticsForRow($t_instance, $t_instance->getPrimaryKey()));
 	
+	$config = $t_instance->getAppConfig();
+	
+	// Get inheritance usage stats
+	$o_view->setVar('statistics', ca_acl::getStatisticsForRow($t_instance, $t_instance->getPrimaryKey()));
+	$o_view->setVar('allow_rep_access_inheritance', $z=$config->get('ca_object_representations_allow_access_inheritance'));
+	
+	
+	$o_view->setVar('acl_enabled', caACLIsEnabled($t_instance));
+	$o_view->setVar('pawtucket_only_acl_enabled', caACLIsEnabled($t_instance, ['forPawtucket' => true]));
+	
+	$o_view->setVar('pawtucket_only_acl_separate_inheritance_controls', ($config->get('pawtucket_only_acl_separate_inheritance_controls') || $config->get("{tablename}_pawtucket_only_acl_separate_inheritance_controls")));
+	$o_view->setVar('show_public_access_controls', ($config->get('acl_show_public_access_controls') || $config->get("{$tablename}_acl_show_public_access_controls")));
+	$o_view->setVar('show_public_access_counts', ($config->get('acl_show_public_access_counts') || $config->get("{$tablename}_acl_show_public_access_counts")));
+		
+	$o_view->setVar('typename', mb_strtolower($t_instance->getTypeName(null, ['useSingular' => true])));
+	
 	return $o_view->render('ca_acl_access.php');
+}
+# ------------------------------------------------------------------------------------------------
+/**
+ * Generates access control list (ACL) editor for batch editor
+ *
+ * @param View $view Inspector view object
+ * @param RecordSelection $rs 
+ * @param array $options None implemented yet
+ *
+ * @return string HTML implementing the inspector
+ */
+function caBatchEditorACLEditor(View $view, RecordSelection $rs, ?array $options=null) : ?string {
+	$view_path = (isset($options['viewPath']) && $options['viewPath']) ? $options['viewPath'] : $view->request->getViewsDirectoryPath();
+	$o_view = new View($view->request, "{$view_path}/bundles/");
+
+	$o_view->setVar('rs', $rs);
+	$o_view->assignVars($view->getAllVars());	// copy vars from parent view
+	
+	// Get inheritance usage stats
+	$o_view->setVar('statistics', ca_acl::getStatisticsForBatch($rs));
+	
+	$t_instance = Datamodel::getInstance($rs->tableName());
+	$config = $t_instance->getAppConfig();
+	
+	// Get inheritance usage stats
+	$o_view->setVar('allow_rep_access_inheritance', $config->get('ca_object_representations_allow_access_inheritance'));
+	
+	$o_view->setVar('acl_enabled', caACLIsEnabled($t_instance));
+	$o_view->setVar('pawtucket_only_acl_enabled', caACLIsEnabled($t_instance, ['forPawtucket' => true]));
+
+	$o_view->setVar('pawtucket_only_acl_separate_inheritance_controls', ($config->get('pawtucket_only_acl_separate_inheritance_controls') || $config->get("{tablename}_pawtucket_only_acl_separate_inheritance_controls")));
+	$o_view->setVar('show_public_access_controls', ($config->get('acl_show_public_access_controls') || $config->get("{$tablename}_acl_show_public_access_controls")));
+	
+	$o_view->setVar('typename', mb_strtolower($t_instance->getTypeName(null, ['useSingular' => true])));
+	
+	return $o_view->render('ca_acl_batch_access.php');
 }
 # ------------------------------------------------------------------------------------------------
 /**

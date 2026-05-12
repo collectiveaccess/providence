@@ -43,7 +43,7 @@ $group = $this->getVar('group');
 	print caFormTag($this->request, 'Save', 'PreferencesForm');
 	
 	$prefs = $t_user->getValidPreferences($group);
-	
+
 	foreach($prefs as $pref) {
 		print $t_user->preferenceHtmlFormElement($pref, null, array());
 	}
@@ -53,6 +53,7 @@ $group = $this->getVar('group');
 ?>
 	<h3><?= _t("Included searches"); ?></h3>
 	<div class="bundleDisplayPlacementEditorContainer">
+
 		<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">
 			<div class="bundleDisplayPlacementEditorHelpText"><?= _t("Drag your selection from column to column to edit the content and order of results in the quick search interface."); ?></div>
 			<table>

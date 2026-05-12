@@ -1811,17 +1811,8 @@
             <placement code="is_default">
               <bundle>is_default</bundle>
             </placement>
-            <placement code="sub_type_left_id">
-              <bundle>sub_type_left_id</bundle>
-            </placement>
-            <placement code="include_subtypes_left">
-              <bundle>include_subtypes_left</bundle>
-            </placement>
-            <placement code="sub_type_right_id">
-              <bundle>sub_type_right_id</bundle>
-            </placement>
-            <placement code="include_subtypes_right">
-              <bundle>include_subtypes_right</bundle>
+            <placement code="ca_relationship_type_restrictions">
+              <bundle>ca_relationship_type_restrictions</bundle>
             </placement>
             <placement code="rank">
               <bundle>rank</bundle>

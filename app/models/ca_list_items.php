@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_LIB_DIR__.'/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/RepresentableBaseModel.php');
 require_once(__CA_LIB_DIR__.'/IHierarchy.php');
@@ -121,6 +120,31 @@ BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
+		),
+		'acl_inherit_from_parent' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Do not inherit') => 0,
+				_t('Inherit') => 1
+			),
+			'LABEL' => _t('Inherit item access control settings from parents?'), 'DESCRIPTION' => _t('Determines whether item access control settings set from parent objects are applied to this object.')
+		),
+		'access_inherit_from_parent' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
+			'DONT_ALLOW_IN_UI' => true,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Do not inherit') => 0,
+				_t('Inherit') => 1
+			),
+			'LABEL' => _t('Inherit public access settings from parent?'), 'DESCRIPTION' => _t('Determines whether public access settings (used by Pawtucket-based sites) set for parent object is applied to this object.')
 		),
 		'hier_left' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 

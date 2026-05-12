@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * bundles/ca_acl_users.php : 
+ * bundles/ca_acl_batch_user_groups.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2026 Whirl-i-Gig
+ * Copyright 2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,22 +25,23 @@
  *
  * ----------------------------------------------------------------------
  */
-$id_prefix 		= $this->getVar('id_prefix').'_user';
+$id_prefix 		= $this->getVar('id_prefix').'_group';
 $t_instance 	= $this->getVar('t_instance');
-$t_item 		= $this->getVar('t_user');
+$t_item 		= $this->getVar('t_group');
 $t_subject 		= $this->getVar('t_subject');		
 $settings 		= $this->getVar('settings');
-$add_label 		= $this->getVar('add_label') ?? _t("Add user exception");
+$add_label 		= $this->getVar('add_label') ?? _t("Add group exception");
 
 $pawtucket_only_acl_enabled 	= $this->getVar('pawtucket_only_acl_enabled');
 $allow_rep_access_inheritance 	= $this->getVar('allow_rep_access_inheritance');
 $show_rep_access_inheritance_controls = $this->getVar('show_rep_access_inheritance_controls');
 
-$initial_values 				= $this->getVar('initialValues');
-$t_acl 							= new ca_acl(); 
 $read_only = false;
 
-if (!is_array($initial_values)) { $initial_values = []; }	
+$t_acl = new ca_acl();
+
+$initial_values = $this->getVar('initialValues');
+if (!is_array($initial_values)) { $initial_values = []; }
 ?>
 <div id="<?= $id_prefix.$t_item->tableNum().'_rel'; ?>">
 <?php
@@ -53,17 +54,20 @@ if (!is_array($initial_values)) { $initial_values = []; }
 			<table class="caListItem">
 				<tr>
 					<td class="formLabel aclLabel">
-						<input type="text" size="60" name="<?= $id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?= $id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
+						<?= caHTMLSelect("{$id_prefix}_action_{n}", [
+							_t('Maintain') => '', _t('Add') => 'ADD', _t('Remove') => 'REMOVE'
+						], ['id' => "{$id_prefix}_action_{n}"]); ?>
+						<input type="text" size="50" name="<?= $id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?= $id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
 						<?= $t_acl->htmlFormElement('access', '^ELEMENT', ['name' => "{$id_prefix}_access_{n}", 'id' => "{$id_prefix}_access_{n}", 'value' => '{{access}}', 'no_tooltips' => true, 'forPawtucket' => $pawtucket_only_acl_enabled]); ?>
 						<?= $show_rep_access_inheritance_controls ? $t_acl->htmlFormElement('include_representations', '^ELEMENT ^LABEL', ['name' => "{$id_prefix}_include_representations_{n}", 'id' => "{$id_prefix}_include_representations_{n}", 'value' => '{{include_representations}}', 'no_tooltips' => true, 'forPawtucket' => $pawtucket_only_acl_enabled]) : ''; ?>
 						<input type="hidden" name="<?= $id_prefix; ?>_id{n}" id="<?= $id_prefix; ?>_id{n}" value="{id}"/>
-						<div class="inheritName">{inheritance_link}</div>
+						<div class="inheritName">{refcount_display}</div>
 					</td>
 					<td>
 <?php
 	if (!$read_only) {
 ?>	
-						<a href="#" class="caDeleteItemButton" aria-label='<?= htmlspecialchars(_t('Delete')); ?>'><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+		<a href="#" class="caDeleteItemButton" aria-label='<?= htmlspecialchars(_t('Delete')); ?>'><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 <?php
 	}
 ?>
@@ -75,17 +79,19 @@ if (!is_array($initial_values)) { $initial_values = []; }
 	
 	<div class="bundleContainer">
 		<div class="control">
-			<?= _t('Users'); ?>
+			<?= _t('Groups'); ?> 	
 		</div>
-		<div class="caItemList"></div>
+		<div class="caItemList">
+		
+		</div>
 		<div class="control">
-		<?php
+<?php
 	if (!$read_only) {
 ?>	
 		<div class='button labelInfo caAddItemButton' aria-label='<?= htmlspecialchars($add_label); ?>'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px').' '.$add_label; ?></a></div>
 <?php
 	}
-?>
+?>	
 		</div>
 	</div>
 </div>
@@ -94,8 +100,9 @@ if (!is_array($initial_values)) { $initial_values = []; }
 	jQuery(document).ready(function() {
 		caUI.initRelationBundle('#<?= $id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?= $id_prefix; ?>_',
-			templateValues: ['label', 'effective_date', 'access', 'id', 'inheritance_link', 'include_representations'],
+			templateValues: ['label', 'id', 'access', 'refcount', 'refcount_display'],
 			initialValues: <?= json_encode($initial_values); ?>,
+			initialValueOrder: <?= json_encode(array_keys($initial_values)); ?>,
 			defaultValues: <?= json_encode(['access' => __CA_ACL_READONLY_ACCESS__]); ?>,
 			itemID: '<?= $id_prefix; ?>Item_',
 			templateClassName: 'caItemTemplate',
@@ -104,8 +111,7 @@ if (!is_array($initial_values)) { $initial_values = []; }
 			deleteButtonClassName: 'caDeleteItemButton',
 			showEmptyFormsOnLoad: 0,
 			readonly: <?= $read_only ? "true" : "false"; ?>,
-			readonlyWhenSet: ['inheritance_link'],
-			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'User', 'Get',[]); ?>'
+			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'UserGroup', 'Get', array()); ?>'
 		});
 	});
 </script>
