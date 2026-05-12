@@ -10271,6 +10271,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param mixed $pm_type_id If set to a relationship type code or numeric type_id, only relationships with the specified type are removed.
 	 * @param array $pa_options Options include:
 	 *		restrictToTypes = 
+	 *		restrictToRelationshipTypes = 
 	 *
 	 * @return boolean True on success, false on error
 	 */
@@ -10290,7 +10291,13 @@ $pa_options["display_form_field_tips"] = true;
 		if (!method_exists($t_item_rel, "isRelationship") || !$t_item_rel->isRelationship()){ return false; }
 		$va_sql_params = array();
 		
-		$pa_relationship_type_ids = caMakeRelationshipTypeIDList($t_item_rel->tableName(), $pm_relationship_type_id);
+		$rel_types = [];
+		if($pm_relationship_type_id) { $rel_types[] = $pm_relationship_type_id; }
+		if(is_array($rel_type_opt = caGetOption('restrictToRelationshipTypes', $pa_options, null))) {
+			$rel_types = array_merge($rel_types, $rel_type_opt);
+		}
+		
+		$pa_relationship_type_ids = sizeof($rel_types) ? caMakeRelationshipTypeIDList($t_item_rel->tableName(), $rel_types) : null;
 		
 		$vs_join_sql = '';
 		$vs_type_limit_sql = '';
