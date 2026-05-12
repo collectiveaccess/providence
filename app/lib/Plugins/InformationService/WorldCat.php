@@ -125,15 +125,6 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 		$this->description = _t('Provides access to WorldCat data');
 	}
 	# ------------------------------------------------
-	/**
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return WLPlugInformationServiceWorldCat::$s_settings;
-	}
-	# ------------------------------------------------
 	# Data
 	# ------------------------------------------------
 	/**
