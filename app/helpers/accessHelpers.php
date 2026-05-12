@@ -555,8 +555,9 @@ function caMakeSourceIDList($pm_table_name_or_num, $pa_sources, $pa_options=null
  * @return array List of numeric type_ids
  */
 function caMakeRelationshipTypeIDList($pm_table_name_or_num, $pa_types, $pa_options=null) {
-	if (!$pa_types) { return []; }
-	if (!is_array($pa_types)) { $pa_types = [$pa_types]; }
+	if(!$pa_types) { return []; }
+	if(!is_array($pa_types)) { $pa_types = [$pa_types]; }
+	if(!sizeof($pa_types)) { return []; }
 	
 	if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
 	

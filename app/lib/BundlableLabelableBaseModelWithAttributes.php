@@ -304,7 +304,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					'table_name' => $table, 
 					'instance' => $this, 
 					'is_insert' => true, 
-					'for_duplication' => caGetOption('forDuplication', $pa_options, true)
+					'for_duplication' => caGetOption('forDuplication', $pa_options, false)
 				]
 			);
 		}
@@ -420,7 +420,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					'table_num' => $this->tableNum(), 
 					'table_name' => $this->tableName(), 
 					'instance' => $this, 'is_insert' => false, 
-					'for_duplication' => caGetOption('forDuplication', $pa_options, true)
+					'for_duplication' => caGetOption('forDuplication', $pa_options, false)
 				]
 			);
 		}
@@ -4083,6 +4083,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$va_errors = [];
 		
 		$ifv = [];	// incoming form values
+		$npl = [];	// values on screen but not present in incoming form values
 			
 		$vb_read_only_because_deaccessioned = ($this->hasField('is_deaccessioned') && (bool)$this->getAppConfig()->get('deaccession_dont_allow_editing') && (bool)$this->get('is_deaccessioned'));
 
@@ -4269,12 +4270,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							$va_inserted_attributes_by_element[$vn_element_id][$vn_c]['value_source'] = $va_attributes_to_insert[$vn_c]['value_source'] = $value_source; 
 						}
 						$va_inserted_attributes_by_element[$vn_element_id][$vn_c][$va_matches[1]] = $va_attributes_to_insert[$vn_c][$va_matches[1]] = $vs_val;
-					} else {
+					} elseif(preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\d]+)_delete/', $vs_key, $va_matches)) {
 						// is it a delete key?
-						if (preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\d]+)_delete/', $vs_key, $va_matches)) {
-							$vn_attribute_id = intval($va_matches[1]);
-							$va_attributes_to_delete[$vn_attribute_id] = true;
-						}
+						$vn_attribute_id = intval($va_matches[1]);
+						$va_attributes_to_delete[$vn_attribute_id] = true;
+					} else {
+						$npl[$vn_element_id] = true;
 					}
 				}
 				
@@ -4287,6 +4288,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					if (preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_locale_id_new_([\d]+)/', $vs_key, $va_locale_matches)) { 
 						$vn_locale_c = intval($va_locale_matches[1]);
 						$va_locales[$vn_locale_c] = $vs_val;
+						unset($npl[$vn_element_id]);
 						continue; 
 					}
 					// is it a newly created attribute?
@@ -4298,6 +4300,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$va_inserted_attributes_by_element[$vn_element_id][$vn_c]['locale_id'] = $va_attributes_to_insert[$vn_c]['locale_id'] = $va_locales[$vn_c]; 
 						$va_val['_uploaded_file'] = true;
 						$va_inserted_attributes_by_element[$vn_element_id][$vn_c][$va_matches[1]] = $va_attributes_to_insert[$vn_c][$va_matches[1]] = $va_val;
+						unset($npl[$vn_element_id]);
 					}
 				}
 if (!$batch) {				
@@ -4335,7 +4338,7 @@ if (!$batch) {
 						}
 						
 						//
-						// Check to see if there are any values in the element set that are not in the  attribute we're editing
+						// Check to see if there are any values in the element set that are not in the attribute we're editing
 						// If additional sub-elements were added to the set after the attribute we're updating was created
 						// those sub-elements will not have corresponding values returned by $o_attr->getValues() above.
 						// Because we use the element_ids in those values to pull request parameters, if an element_id is missing
@@ -4362,7 +4365,17 @@ if (!$batch) {
 									continue;
 								}
 							} 
-							$va_attr_update[$sub_element_id] = $vs_attr_val;
+							
+							if($po_request->getParameter("{$vs_k}_clear", pInteger)) {
+								// is it a media clear key?
+								$va_attr_update[$sub_element_id] = [
+									'tmp_name' => '__CLEAR__',
+									'_uploaded_file' => true,
+									'size' => 0
+								];
+							} else {
+								$va_attr_update[$sub_element_id] = $vs_attr_val;
+							}
 							$isset = true;
 						}
 						if (!$isset) { continue; }
@@ -4371,7 +4384,9 @@ if (!$batch) {
 						if(!$this->editAttribute($vn_attribute_id, $vn_element_set_id, $va_attr_update, null, ['batch' => $batch])) {
 							$po_request->addActionErrors($this->errors);
 						}
-						 $ifv[$vs_element_set_code][] = ($va_attr_update + ['attribute_id' => $vn_attribute_id]);
+						unset($npl[$vn_element_set_id]);
+						$ifv[$vs_element_set_code][] = ($va_attr_update + ['attribute_id' => $vn_attribute_id]);
+						
 					}
 				}
 			}
@@ -4379,9 +4394,19 @@ if (!$batch) {
 			// do inserts
 			foreach($va_attributes_to_insert as $va_attribute_to_insert) {
 				$this->clearErrors();
+				unset($npl[$vn_element_id]);
 				if(!$this->addAttribute($va_attribute_to_insert, $vn_element_id, null, ['batch' => $batch])) {
 					$po_request->addActionErrors($this->errors);
 				}
+			}
+		}
+		
+		// Check counts on elements not otherwise added, edited or deleted
+		// Provides for display of min/max errors on elements with no associated values
+		foreach(array_keys($npl) as $element_id) {
+			$this->clearErrors();
+			if(!$this->checkAttributeRepeatCounts($element_id)) {
+				$po_request->addActionErrors($this->errors);
 			}
 		}
 }

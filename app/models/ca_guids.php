@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2024 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -155,6 +155,22 @@ class ca_guids extends BaseModel {
 	 * @var resource|null
 	 */
 	static $s_lock_resource = null;
+	
+	
+	/**
+	 *
+	 */
+	static $s_is_deleted = [];
+	
+	/**
+	 *
+	 */
+	static $s_guid_info = [];
+	
+	/**
+	 *
+	 */
+	static $s_guid_for_row = [];
 
 
 	# ------------------------------------------------------
@@ -167,6 +183,11 @@ class ca_guids extends BaseModel {
 	 */
 	public static function getForRow($pn_table_num, $pn_row_id, $pa_options=null) {
 		if(!$pn_table_num || !$pn_row_id) { return false; }
+		$key = $pn_table_num.'/'.$pn_row_id;
+		if(isset(self::$s_guid_for_row[$key])) {
+			return self::$s_guid_for_row[$key];
+		}
+		if(sizeof(self::$s_guid_for_row) > 65535) { self::$s_guid_for_row = []; }
 
 		/** @var Transaction $o_tx */
 		if($o_tx = caGetOption('transaction', $pa_options, null)) {
@@ -181,16 +202,16 @@ class ca_guids extends BaseModel {
 
 		if($qr_guid->nextRow()) {
 			$vs_guid = $qr_guid->get('guid');
-			return $vs_guid;
+			return self::$s_guid_for_row[$key] = $vs_guid;
 		} else {
 			if(!caGetOption('dontAdd', $pa_options, false) && ($t_instance = Datamodel::getInstance($pn_table_num, true))) {
 				if($vs_guid = self::addForRow($pn_table_num, $pn_row_id, $pa_options)) {
-					return $vs_guid;
+					return self::$s_guid_for_row[$key] = $vs_guid;
 				}
 			}
 		}
 
-		return false;
+		return self::$s_guid_for_row[$key] = false;
 	}
 	# ------------------------------------------------------
 	/**
@@ -223,6 +244,10 @@ class ca_guids extends BaseModel {
 	 * 			keys are 'row_id' and 'table_num'
 	 */
 	public static function getInfoForGUID($ps_guid, $pa_options=null) {
+		if(isset(self::$s_guid_info[$ps_guid])) {
+			return self::$s_guid_info[$ps_guid];
+		}
+		if(sizeof(self::$s_guid_info) > 65535) { self::$s_guid_info = []; }
 		/** @var Transaction $o_tx */
 		if($o_tx = caGetOption('transaction', $pa_options, null)) {
 			$o_db = $o_tx->getDb();
@@ -235,10 +260,10 @@ class ca_guids extends BaseModel {
 		', $ps_guid);
 
 		if($qr_guid->nextRow()) {
-			return $qr_guid->getRow();
+			return self::$s_guid_info[$ps_guid] = $qr_guid->getRow();
 		}
 
-		return null;
+		return self::$s_guid_info[$ps_guid] = null;
 	}
 	# ------------------------------------------------------
 	/**
@@ -394,11 +419,16 @@ class ca_guids extends BaseModel {
 	 * @return bool
 	 */
 	public static function isDeleted($ps_guid, $pa_options = null) {
+		if(isset(self::$s_is_deleted[$ps_guid])) {
+			return self::$s_is_deleted[$ps_guid];
+		}
+		if(sizeof(self::$s_is_deleted) > 65535) { self::$s_is_deleted = []; }
+		
 		$va_info = self::getInfoForGUID($ps_guid, $pa_options);
-		if(!$va_info) { return false; }
+		if(!$va_info) { return self::$s_is_deleted[$ps_guid] = false; }
 
 		$t_instance = Datamodel::getInstance($va_info['table_num'], true);
-		if(!$t_instance) { return false; }
+		if(!$t_instance) { return self::$s_is_deleted[$ps_guid] = false; }
 
 		/** @var Transaction $o_tx */
 		if($o_tx = caGetOption('transaction', $pa_options, null)) {
@@ -407,15 +437,16 @@ class ca_guids extends BaseModel {
 			$o_db = new Db();
 		}
 
-		if(!$t_instance->hasField('deleted')) { return false; }
+		if(!$t_instance->hasField('deleted')) { return self::$s_is_deleted[$ps_guid] = false; }
 
 		$qr_record = $o_db->query(
 			"SELECT {$t_instance->primaryKey()}, deleted FROM {$t_instance->tableName()} WHERE {$t_instance->primaryKey()} = ?",
 			$va_info['row_id']
 		);
-		if(!$qr_record->nextRow()) { return false; }
+		if(!$qr_record->nextRow()) { return self::$s_is_deleted[$ps_guid] = false; }
+		
 
-		return (bool) $qr_record->get('deleted');
+		return self::$s_is_deleted[$ps_guid] = (bool) $qr_record->get('deleted');
 	}
 	# ------------------------------------------------------
 	/**

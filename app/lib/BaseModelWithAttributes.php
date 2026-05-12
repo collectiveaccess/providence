@@ -87,6 +87,46 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Check max/min repeat counts for a metadata on the currently loaded record and post errors if counts 
+	 * are out of bounds.
+	 *
+	 * @param mixed $element_code_or_id
+	 * @param string $error_source
+	 * @param array $options Options include:
+	 *		postErrors = Post errors on currently loaded row. [Default is true[
+	 *
+	 * @return bool True if counts are in bounds, false if not.
+	 */
+	public function checkAttributeRepeatCounts($element_code_or_id, ?string $error_source=null, ?array $options=null) {
+		if (!($t_element = ca_metadata_elements::getInstance($element_code_or_id))) { return false; }
+		// check restriction min/max settings
+		$t_restriction = $t_element->getTypeRestrictionInstanceForElement($this->tableNum(), $this->getTypeID());
+		if (!$t_restriction) { return null; }		// attribute not bound to this type
+		
+		$post_errors = caGetOption('postErrors', $options, true);
+		
+		$element_id = $t_element->getPrimaryKey();
+		
+		if(!$error_source) {
+			$error_source = $this->tableName().'.'.$t_element->get('ca_metadata_elements.element_code');
+		}
+		
+		$min = $t_restriction->getSetting('minAttributesPerRow');
+		$max = $t_restriction->getSetting('maxAttributesPerRow');
+		
+		$count = $this->getAttributeCountByElement($element_id, ['includeBlanks' => true]);
+		if (($max > 0) && $count >= $max) { 
+			if($post_errors) { $this->postError(1990, ($max == 1) ? _t('Too many values exist; only %1 value is allowed', $max) : _t('Too many values exist; only %1 values are allowed', $max), 'BaseModelWithAttributes->checkAttributeRepeatCounts()', $error_source); }
+			return false;
+		}
+		if (($min > 0) && ($count <= $min)) { 
+			if($post_errors) { $this->postError(1992, ($min == 1) ? _t('A value is required') : _t('At least %1 values are required', $min), 'BaseModelWithAttributes->checkAttributeRepeatCounts()', $error_source); }
+			return false;
+		}
+		return true;
+	}
+	# ------------------------------------------------------------------
+	/**
 	 * create an attribute linked to the current row using values in $pa_values
 	 *
 	 * @param array $pa_values
@@ -3898,7 +3938,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		$bundle_subelement = array_shift($tmp);
 		
 		$guid = ca_guids::getForRow($this->tableNum(), $this->getPrimaryKey());
-		$log = ca_change_log::getLog(0, null, ['forGUID' => $guid, 'forceValuesForAllAttributeSlots' => true]);
+		$log = ca_change_log::getLog(0, null, ['forGUID' => $guid, 'telescope' => true, 'forceValuesForAllAttributeSlots' => true]);
 		$acc = [];
 		foreach($log as $l) {
 			switch((int)$l['logged_table_num']) {
@@ -3922,9 +3962,17 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 					if(!is_null($bundle_subelement) && ($element_code != $bundle_subelement)) { continue(2); }
 					
 					$s['log_id'] = $l['log_id'];
-					$s['element_code'] = $element_code;;
+					$s['element_code'] = $element_code;
+					$s['datetime'] = $l['log_datetime'];
+					$s['datetime_display'] = caGetLocalizedDate($l['log_datetime']);
 					$acc[$l['snapshot']['attribute_id']]['values'][$element_code][] = $s;
 					break;
+			}
+		}
+		
+		foreach($acc as $id => $info) {
+			if(!isset($info['values']) || !sizeof($info['values'])) {
+				unset($acc[$id]);
 			}
 		}
 		return $acc;
@@ -3935,13 +3983,16 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	 */
 	public function getValueHistoryForBundle(string $bundle, ?array $options=null) : ?array {
 		$log = $this->getLogForBundle($bundle, $options);
-		
 		$acc = [];
 		foreach($log as $attr_id => $d) {
 			foreach($d['values'] as $element_code => $values) {
 				foreach($values as $snapshot) {
 					$o_val = \CA\Attributes\Attribute::getValueInstance(ca_metadata_elements::getElementDatatype($element_code), $snapshot);
-					$acc[] = $o_val->getDisplayValue($options);
+					$acc[] = [
+						'value' => $o_val->getDisplayValue($options),
+						'datetime' => $snapshot['datetime'],
+						'datetime_display' => $snapshot['datetime_display']
+					];
 				}
 			}
 		}
@@ -3953,7 +4004,9 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	 */
 	public function getMostRecentValueForBundle(string $bundle, ?array $options=null) : mixed {
 		$values = $this->getValueHistoryForBundle($bundle, $options);
-		$values = array_filter($values, 'strlen');
+		$values = array_filter($values, function($v) {
+			return !(!is_array($v) || !isset($v['value']) || !strlen($v['value']));
+		});
 		return array_pop($values);
 	}
 	# ------------------------------------------------------------------

@@ -1263,9 +1263,12 @@ trait CLIUtilsMaintenance {
 		);
 
 		/* reduce informationservices to the list of elements */
-		if($vs_element = $po_opts->getOption('id')) {
-			$va_elements =  preg_split('/\s*[,;]\s*/', $vs_element, -1, PREG_SPLIT_NO_EMPTY);
-			$va_infoservice_elements = array_intersect_key($va_infoservice_elements, array_flip($va_elements));
+		if($element = $opts->getOption('ids')) {
+			$elements =  preg_split('/\s*[,;]\s*/', $element, -1, PREG_SPLIT_NO_EMPTY);
+			
+			$infoservice_elements = array_filter($infoservice_elements, function($v) use ($elements) {
+				return in_array($v['element_code'], $elements);
+			});
 		}
 
 		$o_db = new Db();
@@ -1275,6 +1278,8 @@ trait CLIUtilsMaintenance {
 				SELECT * FROM ca_attribute_values
 				WHERE element_id = ?
 			", $element['element_id']);
+			
+			$t_element = new ca_metadata_elements($element['element_id']);
 
 			print CLIProgressBar::start($qr_values->numRows(), "Reloading values for element code ".$element['element_code']);
 			$t_value = new ca_attribute_values();
@@ -1289,7 +1294,7 @@ trait CLIUtilsMaintenance {
 				if(!$t_value->load($qr_values->get('value_id'))) { continue; }
 
 				$t_value->editValue($uri);
-
+			
 				if($t_value->numErrors() > 0) {
 					print _t('There were errors updating an attribute row: ') . join(' ', $t_value->getErrors());
 				}

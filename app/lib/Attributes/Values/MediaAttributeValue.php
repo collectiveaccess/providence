@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -267,7 +267,18 @@ class MediaAttributeValue extends AttributeValue implements IAttributeValue {
 				if ($pa_options['showMediaInfo']) {
 					$vs_val .= "<div class='attributeMediaInfo' style='float: right; width: 200px; padding: 0 0 0 10px;'>{$vs_filename}<br/>{$vs_dimensions}</div>";
 				}
-				$vs_val .= "<div style='float: left;'>".urlDecode(caNavLink($pa_options['request'], caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1, array('align' => 'middle')), '', $pa_options['request']->getModulePath(), $pa_options['request']->getController(), 'DownloadAttributeFile', array('download' => 1, 'value_id' => $this->opn_value_id), array('class' => 'attributeDownloadButton')))."</div>";
+				$vs_val .= "<div style='float: left;'>".urlDecode(
+					caNavLink(
+							$pa_options['request'], 
+							caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 
+							1, 
+							array('align' => 'middle')
+						), 
+						'', 
+						$pa_options['request']->getModulePath(), 
+						$pa_options['request']->getController(), 'DownloadAttributeFile', array('download' => 1, 'value_id' => $this->opn_value_id), array('class' => 'attributeDownloadButton')
+					)
+				)."</div>";
 				$vs_val .= "<a href='#' onclick='caMediaPanel.showPanel(\"{$vs_view_url}\"); return false;'>{$vs_tag}</a>";
 				$vs_val .= "</div>";
 				
@@ -304,6 +315,15 @@ class MediaAttributeValue extends AttributeValue implements IAttributeValue {
 		$config = Configuration::load();
 		
 		if(!is_array($ps_value) || (isset($ps_value['tmp_name']))) {
+			if(is_array($ps_value) && ($ps_value['tmp_name'] === '__CLEAR__')) {
+				return array(
+					'value_blob' => '__CLEAR__',
+					'value_longtext2' => '__CLEAR__',
+					'value_decimal1' => null,
+					'value_decimal2' => null,
+					'_media' => true
+				);
+			}
 			foreach(caGetAvailableMediaUploadPaths() as $d) {
 				$va_files = caBatchFindMatchingMedia($d.$media_prefix, is_array($ps_value) ? $ps_value['tmp_name'] : $ps_value, ['matchMode' => caGetOption('matchMode', $pa_options,'FILE_NAME'), 'matchType' => caGetOption('matchType', $pa_options, null), 'log' => caGetOption('log', $pa_options, null)]);
 				foreach($va_files as $vs_file) {
@@ -374,9 +394,21 @@ class MediaAttributeValue extends AttributeValue implements IAttributeValue {
 	 */
 	public function htmlFormElement($pa_element_info, $pa_options=null) {
 		$vs_element = '<div '._caHTMLMakeAttributeString(['class' => caGetOption('class', $pa_options, null)]).'>';
-		$vs_element .= '<div>{'.$pa_element_info['element_id'].'}</div>';
+		$vs_element .= '<div id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_content">{'.$pa_element_info['element_id'].'}</div>';
+		$vs_element .= '<div id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_clear_control">'.caHTMLCHeckboxInput('{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_clear', ['value' => 1, 'data-exclude' => 1, 'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_clear_control']).' '._t('Clear').'</div>';
+		
 		$vs_element .= '<div id="{fieldNamePrefix}upload_control_{n}" class="attributeMediaDownloadControl">'._t("Upload").': <input type="file" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}"></div>' ;
 		$vs_element .= '</div>';
+		
+		$vs_element .= "
+			<script>
+				jQuery(document).ready(function() {
+					if(jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_content').html() == 0) {
+						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_clear_control').hide();
+					}
+				});
+			</script>
+		";
 		return $vs_element;
 	}
 	# ------------------------------------------------------------------

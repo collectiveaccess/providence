@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2124,7 +2124,7 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		
 		
 		if (!is_array($pa_locale_ids)) { $pa_locale_ids = $pa_locale_ids ? [$pa_locale_ids] : []; }
-		$pa_locale_ids = array_map(function($v) { return is_numeric($v) ? $v : ca_locales::codeToID($v); }, $pa_locale_ids);
+		$pa_locale_ids = array_map(function($v) { return is_numeric($v) ? $v : ca_locales::codeToID($v); }, array_filter($pa_locale_ids, 'strlen'));
 
 		if (is_array($pa_locale_ids) && (sizeof($pa_locale_ids) > 0)) {
 			$vs_label_where_sql .= ' AND (l.locale_id IN ('.join(',', $pa_locale_ids).'))';
@@ -2603,11 +2603,12 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		}
 		$o_view->setVar('bundle_preview', $bundle_preview);
 		
-		if(is_array($label_locales = $po_request->config->get(["{$table}_{$type}_preferred_label_locales", "{$table}_preferred_label_locales", "preferred_label_locales"])) && sizeof($label_locales)) {
+		$label_locales = (is_array($pa_bundle_settings['allowLocales'] ?? null) && sizeof($pa_bundle_settings['allowLocales'])) ? array_values($pa_bundle_settings['allowLocales']) : $po_request->config->get(["{$table}_{$type}_preferred_label_locales", "{$table}_preferred_label_locales", "preferred_label_locales"]);
+		if(is_array($label_locales) && sizeof($label_locales)) {
 			$label_locales = array_map(function($v) { return (int)ca_locales::codeToID($v); }, $label_locales);
 		}
 		$locale_list = $t_label->htmlFormElement('locale_id', ($t_label->tableName() === 'ca_entity_labels') ? "^LABEL<br/>^ELEMENT" : "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "{locale_id}", 'no_tooltips' => true, 'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 'WHERE' => (is_array($label_locales) && sizeof($label_locales)) ? ['(locale_id IN ('.join(',', $label_locales).'))'] : ['(dont_use_for_cataloguing = 0)']));
-	
+
 		$o_view->setVar('locale_list', $locale_list);
 		
 		return $o_view->render($this->getLabelTableName().'_preferred.php');
@@ -2719,7 +2720,8 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		}
 		$o_view->setVar('bundle_preview', $bundle_preview);
 		
-		if(is_array($label_locales = $po_request->config->get(["{$table}_{$type}_nonpreferred_label_locales", "{$table}_nonpreferred_label_locales", "nonpreferred_label_locales"])) && sizeof($label_locales)) {
+		$label_locales = (is_array($pa_bundle_settings['allowLocales'] ?? null) && sizeof($pa_bundle_settings['allowLocales'])) ? array_values($pa_bundle_settings['allowLocales']) : $po_request->config->get(["{$table}_{$type}_nonpreferred_label_locales", "{$table}_nonpreferred_label_locales", "nonpreferred_label_locales"]);
+		if(is_array($label_locales) && sizeof($label_locales)) {
 			$label_locales = array_map(function($v) { return (int)ca_locales::codeToID($v); }, $label_locales);
 		}
 		$locale_list = $t_label->htmlFormElement('locale_id', ($t_label->tableName() === 'ca_entity_labels') ? "^LABEL<br/>^ELEMENT" : "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "{locale_id}", 'no_tooltips' => true, 'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 'WHERE' => (is_array($label_locales) && sizeof($label_locales)) ? ['(locale_id IN ('.join(',', $label_locales).'))'] : ['(dont_use_for_cataloguing = 0)']));
@@ -3673,5 +3675,16 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		
 		return $o_view->render('ca_user_roles.php');
 	}
-	# ------------------------------------------------------
+	# -------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param string $bundle
+	 * @return bool
+	 */
+	public function valueDidChange(string $bundle) : ?bool {
+		// TODO: handle changes on labels?
+		return parent::valueDidChange($bundle);
+	}
+	# -------------------------------------------------------
 }
