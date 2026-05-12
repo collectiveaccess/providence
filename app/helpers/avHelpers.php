@@ -54,7 +54,7 @@ function caMediaInfoGuessFileFormat($ps_path) {
 					return 'video/mxf';
 					break;
 				default:
-					return 'video/MP2T';
+					return 'video/mp2t';
 					break;
 			}
 		case 'AVI':

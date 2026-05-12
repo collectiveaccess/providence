@@ -1622,7 +1622,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		// Analyze mapping for figure out where type, idno, preferred label and other mandatory fields are coming from
 		$vs_parent_id_fld = $t_subject->getProperty('HIERARCHY_PARENT_ID_FLD');
 		
-		$vn_primary_key_mapping_item_id = $vn_type_id_mapping_item_id = $vn_idno_mapping_item_id = $vn_list_mapping_list_id 
+		$vn_primary_key_mapping_item_id = $vn_type_id_mapping_item_id = $vn_idno_mapping_item_id = $vn_base_idno_mapping_item_id = $vn_list_mapping_list_id 
 			= $vn_parent_id_mapping_item_id = $vn_erp_alt_idno_mapping_item_id = null;
 		$va_preferred_label_mapping_ids = $va_nonpreferred_label_mapping_ids = [];
 		$va_mandatory_field_mapping_ids = [];
@@ -1662,7 +1662,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$vn_type_id_mapping_item_id = $vn_item_id;
 					break;
 				case "{$vs_subject_table}.{$vs_idno_fld}":
-					$vn_idno_mapping_item_id = $vn_item_id;
+					$vn_base_idno_mapping_item_id = $vn_idno_mapping_item_id = $vn_item_id;
 					break;
 				case "{$vs_subject_table}.{$vs_subject_primary_key}":
 					$vn_primary_key_mapping_item_id = $vn_item_id;
@@ -1889,6 +1889,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			
 			// Get idno
 			$vs_idno = $va_idnos_for_row = null;
+			$vn_idno_mapping_item_id = $vn_base_idno_mapping_item_id;
 			if ($vn_idno_mapping_item_id) {
 				// idno is specified in row
 				$vs_idno = ca_data_importers::getValueFromSource($va_mapping_items[$vn_idno_mapping_item_id], $o_reader, ['otherValues' => $va_rule_set_values, 'environment' => $va_environment]);				

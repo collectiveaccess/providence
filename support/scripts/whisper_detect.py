@@ -21,6 +21,8 @@ parser.add_argument('--tmpdir', nargs=1, default='/tmp',
 args = parser.parse_args()
 
 def detect(input, model, tmpdir):
+    if isinstance(model, list):
+        model = model[0]
     model = whisper.load_model(model, None, tmpdir)
     audio = whisper.load_audio(input)
     audio = whisper.pad_or_trim(audio)

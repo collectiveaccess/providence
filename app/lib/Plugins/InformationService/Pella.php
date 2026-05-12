@@ -54,15 +54,6 @@ class WLPlugInformationServicePella extends BaseInformationServicePlugin Impleme
 		$this->description = _t('Provides access to PELLA numismatic data service (http://numismatics.org/pella/)');
 	}
 	# ------------------------------------------------
-	/** 
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return WLPlugInformationServicePella::$s_settings;
-	}
-	# ------------------------------------------------
 	# Data
 	# ------------------------------------------------
 	/** 

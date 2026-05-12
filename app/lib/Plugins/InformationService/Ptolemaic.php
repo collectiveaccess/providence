@@ -52,15 +52,6 @@ class WLPlugInformationServicePtolemaic extends BaseInformationServicePlugin Imp
 		$this->description = _t('Provides access to Ptolemaic Coins Online numismatic data service (http://numismatics.org/pco/)');
 	}
 	# ------------------------------------------------
-	/** 
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return WLPlugInformationServicePtolemaic::$s_settings;
-	}
-	# ------------------------------------------------
 	# Data
 	# ------------------------------------------------
 	/** 
