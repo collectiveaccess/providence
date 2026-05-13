@@ -285,7 +285,7 @@ var caUI = caUI || {};
 			let c = 1;
 			let lastFormData = null;
 			jQuery.each(that.items, function(k, v) {
-				v['n'] = c;
+				v['lnum'] = c;
 				v['fieldNamePrefix'] = that.fieldNamePrefix;
 				
 				let filterThis = false;
