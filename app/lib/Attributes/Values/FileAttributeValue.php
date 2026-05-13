@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -271,13 +271,25 @@ class FileAttributeValue extends AttributeValue implements IAttributeValue {
 	public function htmlFormElement($pa_element_info, $pa_options=null) {
 		// TODO: this should be prettier
 		$vs_element = '<div '._caHTMLMakeAttributeString(['class' => caGetOption('class', $pa_options, null)]).'>';
-		$vs_element .= '<div>{'.$pa_element_info['element_id'].'}</div>';
+		$vs_element .= '<div id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_content">{'.$pa_element_info['element_id'].'}</div>';
+		
+		$vs_element .= caHTMLCHeckboxInput('{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_clear', ['value' => 1, 'data-exclude' => 1, 'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_clear_control']).' '._t('Clear');
 		$vs_element .= '<div id="{fieldNamePrefix}upload_control_{n}" class="attributeFileDownloadControl">'._t("Set file").': <input type="file" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}"></div>' ;
 
 		if(caGetOption('forSimpleForm', $pa_options, false)) {
 			$vs_element .= "<div style='float: left;'>".urlDecode(caNavLink($pa_options['request'], caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1, array('align' => 'middle')), '', $pa_options['request']->getModulePath(), $pa_options['request']->getController(), 'DownloadAttributeFile', array('download' => 1, 'value_id' => "{{".$pa_element_info['element_id']."_value_id}}"), array('class' => 'attributeDownloadButton')))."</div>";
 		}
 		$vs_element .= '</div>';
+		
+		$vs_element .= "
+			<script>
+				jQuery(document).ready(function() {
+					if(jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_content').html() == 0) {
+						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_clear_control').hide();
+					}
+				});
+			</script>
+		";
 		return $vs_element;
 	}
 	# ------------------------------------------------------------------

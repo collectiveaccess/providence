@@ -27,6 +27,8 @@ def transcribe_audio(input, output, model, tmpdir):
     if pathlib.PurePath(vttFilename).suffix != '.vtt':
         vttFilename = vttFilename + '.vtt'
     
+    if isinstance(model, list):
+        model = model[0]
     model = whisper.load_model(model, None, tmpdir)
     
     try:
@@ -42,7 +44,7 @@ def transcribe_audio(input, output, model, tmpdir):
             endTime = str(0)+str(timedelta(seconds=int(segment['end'])))+'.000'
             text = segment['text']
             segmentId = segment['id']+1
-            segment = f"{segmentId}\n{startTime} --> {endTime}\n{text[1:] if text[0] == ' ' else text}\n\n"
+            segment = f"{segmentId}\n{startTime} --> {endTime}\n{text[1:] if (len(text) and text[0] == ' ') else text}\n\n"
 
             vttFile.write(segment)
 

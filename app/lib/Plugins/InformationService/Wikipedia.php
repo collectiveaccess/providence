@@ -61,15 +61,6 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 		$this->description = _t('Provides access to Wikipedia service');
 	}
 	# ------------------------------------------------
-	/** 
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return WLPlugInformationServiceWikipedia::$s_settings;
-	}
-	# ------------------------------------------------
 	# Data
 	# ------------------------------------------------
 	/** 

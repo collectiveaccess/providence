@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2025 Whirl-i-Gig
+ * Copyright 2012-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -112,7 +112,7 @@ class EditorController extends ActionController {
 				$va_last_settings,
 				["priority" => 100, "entity_key" => $vs_entity_key, "row_key" => $vs_row_key, 'user_id' => $this->request->getUserID()]))
 			{
-				//$this->postError(100, _t("Couldn't queue batch processing for"),"EditorContro->_processMedia()");
+				//$this->postError(100, _t("Couldn't queue batch processing for"),"EditorController->_processMedia()");
 				
 			}
 			$this->render('editor/batch_queued_html.php');
@@ -181,8 +181,7 @@ class EditorController extends ActionController {
 				array_merge($va_last_settings, array('isBatchTypeChange' => true, 'new_type_id' => $vn_new_type_id)),
 				array("priority" => 100, "entity_key" => $vs_entity_key, "row_key" => $vs_row_key, 'user_id' => $this->request->getUserID())))
 			{
-				//$this->postError(100, _t("Couldn't queue batch processing for"),"EditorContro->_processMedia()");
-				
+				//$this->postError(100, _t("Couldn't queue batch processing for"),"EditorController->_processMedia()");
 			}
 			$this->render('editor/batch_queued_html.php');
 		} else { 
@@ -193,6 +192,59 @@ class EditorController extends ActionController {
 		}
 		
 		$this->request->user->setVar('batch_editor_last_settings', $va_last_settings);
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 *
+	 * @param array $pa_options Array of options passed through to _initView
+	 */
+	public function Access(?array $options=null) {
+		AssetLoadManager::register('tableList');
+		if (!is_array($options)) { $options = []; }
+		list($rs, $t_subject, $t_ui) = $this->_initView($options);
+		
+		if(!caShowAccessControlScreen($t_subject, ['anywhere' => true])) { throw new ApplicationException(_t('ACL not enabled')); }
+		//if(!$this->verifyAccess($t_subject)) { return; }
+		
+		$this->view->setVar('rs', $rs);
+		$this->view->setVar('t_subject', $t_subject);
+
+		if ((!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) {
+			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2570?r='.urlencode($this->request->getFullUrlPath()));
+			return;
+		}
+
+		$this->render('editor/access_html.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 *
+	 * @param array $pa_options Array of options passed through to _initView
+	 */
+	public function SetAccess(?array $options=null) {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	$this->Edit();
+	    	return;
+	    }
+		list($rs, $t_subject, $t_ui) = $this->_initView($options);
+		
+		$ids = $rs->getItemRowIDs();
+		
+		$qr = caMakeSearchResult($rs->tableName(), $ids);
+		while($qr->nextHit()) {
+			$t = $qr->getInstance();
+			if(!$t->setACLAccessFromForm($this->request, ['batch' => true]) && ($t->numErrors() > 0)) {
+				$error = array_shift($t_subject->errors);
+				$error_num = $error->getErrorNumber();
+				print "ERROR!";print_r($t->getErrors());
+				//$this->response->setRedirect($this->request->config->get('error_display_url')."/n/{$error_num}?r=".urlencode($this->request->getFullUrlPath()));
+			}
+		}
+		$this->notification->addNotification(_t('Saved settings'), __NOTIFICATION_TYPE_INFO__);
+		ca_acl::removeRedundantACLEntries($t_subject->getDb());
+		$this->Access();
 	}
 	# -------------------------------------------------------
 	/**
