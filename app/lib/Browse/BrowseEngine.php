@@ -1846,6 +1846,19 @@ class BrowseEngine extends BaseFindEngine {
 									if ($vn_row_id !== 'null') {
 										if (!$o_tep->parse($vn_row_id)) { continue; } // invalid date?
 										$va_dates = $o_tep->getHistoricTimestamps();
+
+										// normalize broken BCE decade ranges
+										if (
+											($vs_normalization === 'decades')
+											&& isset($va_dates['start'], $va_dates['end'])
+											&& ((float)$va_dates['start'] < 0)
+											&& ((float)$va_dates['end'] > 1000)
+										) {
+											$vn_decade = abs((int)$va_dates['start']);
+
+											$va_dates['start'] = -1 * ($vn_decade + 9);
+											$va_dates['end'] = -1 * $vn_decade;
+										}
 										
 										$tmp = explode('.', $va_dates['start']);
 										if (substr($tmp[1], 0, 10) == '0101000000') { // rewrite start date to encompass circa dates
