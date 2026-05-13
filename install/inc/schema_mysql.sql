@@ -7087,6 +7087,8 @@ create table ca_sql_search_word_index (
   word_index tinyint unsigned not null default 0,
   word_count tinyint unsigned not null default 0,
   field_index tinyint unsigned not null default 0,
+  timecode_start decimal(10,3) not null default 0,
+  timecode_end decimal(10,3) not null default 0,
   primary key (index_id)
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
@@ -7102,6 +7104,8 @@ CREATE index i_index_field_num on ca_sql_search_word_index(word_id, table_num, f
 CREATE index i_index_delete ON ca_sql_search_word_index(table_num, row_id, field_table_num, field_num);
 CREATE INDEX i_index_field_num_container on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, field_container_id, rel_type_id, row_id, access, boost, field_index);
 CREATE INDEX i_field_word on ca_sql_search_word_index(field_num, field_table_num, table_num, word_id, row_id);
+CREATE INDEX i_timecode_start on ca_sql_search_word_index(timecode_start, timecode_end);
+CREATE INDEX i_timecode_end on ca_sql_search_word_index(timecode_end);
 
 /*==========================================================================*/
 create table ca_sql_search_ngrams (
@@ -8022,4 +8026,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (211, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (212, unix_timestamp());
