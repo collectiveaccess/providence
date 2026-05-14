@@ -6661,7 +6661,7 @@ function caGetActiveInventoryTypes($table, ca_users $user, ?array $options=null)
 	if(is_array($user_limits = $user->getPreference('inventory_limit_to_types'))) {
 		$user_limits = caMakeTypeList($table, $user_limits);
 	}
-	if(sizeof($user_limits)) {
+	if(sizeof($user_limits ?? [])) {
 		return array_intersect($user_limits, $inventory_types[$table]);
 	}
 	
