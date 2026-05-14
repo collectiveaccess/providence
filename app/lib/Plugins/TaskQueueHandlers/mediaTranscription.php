@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2022-2025 Whirl-i-Gig
+ * Copyright 2022-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,7 +43,6 @@ include_once(__CA_LIB_DIR__."/ApplicationError.php");
  */
 class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlugTaskQueueHandler {
 	# --------------------------------------------------------------------------------
-	
 	public $error;
 
 	# --------------------------------------------------------------------------------
@@ -107,6 +106,14 @@ class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlug
 		$id = 			$parameters["PK_VAL"];				// Value of primary key
 		
 		$logger = caGetLogger(['logLevel' => 'INFO']);
+		$config = Configuration::load();
+		if(!($model = $config->get('whisper_model'))) { $model = 'base'; }
+		$tmp = explode('.', $model);
+		$end = array_pop($tmp);
+		
+		// Don't try to detect language if model is language-specific
+		$dont_detect = ((sizeof($tmp) > 0) && (strlen($end) >= 2) && (strlen($end) <= 3));
+		$report = ['errors' => [], 'notes' => []];
 		
 		if(($t = Datamodel::getInstance($table)) && $t->load($id)) {
 			$media_input = $t->getMediaPath($field, 'original');
@@ -119,23 +126,27 @@ class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlug
 			}
 			
 			$locale = __CA_DEFAULT_LOCALE__;
-			if($detect_path = caWhisperInstalled(['returnPathToDetect' => true])) {
-				caExec("{$detect_path} --input={$media_input} --tmpdir=".__CA_TEMP_DIR__, $output, $return);
-				$lang = preg_quote(join('', $output ?? []), '/');
-				if(($return == 0) && strlen($lang) && !preg_match("/^{$lang}_/", $locale) && ($locales = ca_locales::localesForLanguage($lang, ['codesOnly' => true])) && is_array($locales) && sizeof($locales)) {
-					$locale = array_shift($locales);
-				} else {
-					$logger->logNotice(_t('[TaskQueue::mediaTranscription::process] Could not detect language of media. Using default locale %1.', $locale));
+			
+			if(!$dont_detect) {
+				if($detect_path = caWhisperInstalled(['returnPathToDetect' => true])) {
+					caExec("{$detect_path} --model={$model} --input={$media_input} --tmpdir=".__CA_TEMP_DIR__, $output, $return);
+					$lang = preg_quote(join('', $output ?? []), '/');
+					if(($return == 0) && strlen($lang) && !preg_match("/^{$lang}_/", $locale) && ($locales = ca_locales::localesForLanguage($lang, ['codesOnly' => true])) && is_array($locales) && sizeof($locales)) {
+						$locale = array_shift($locales);
+					} else {
+						$logger->logNotice(_t('[TaskQueue::mediaTranscription::process] Could not detect language of media. Using default locale %1.', $locale));
+					}
 				}
 			}
-			caExec("{$app_path} --input={$media_input} --output={$vtt_output} --tmpdir=".__CA_TEMP_DIR__, $output, $return);
+			caExec("{$app_path} --model={$model}  --input={$media_input} --output={$vtt_output} --tmpdir=".__CA_TEMP_DIR__, $output, $return);
+
 			if($return == 0) {
 				if(!$t->addCaptionFile($vtt_output, $locale)) {
 					$logger->logError(_t('[TaskQueue::mediaTranscription::process] Could not add VTT transcription file to %1::%2: %3', $table, $id, join('; ', $t->getErrors())));
 					$this->error->setError(551, _t("Could not add VTT transcription file to %1::%2: %3", $table, $id, join('; ', $t->getErrors())),"mediaTranscription->process()");	
 				} else {
 					@unlink($vtt_output);
-					return true;
+					return $report;
 				}
 			} else {
 				$logger->logError(_t('[TaskQueue::mediaTranscription::process] Could not transcribe media %1. Return code was %2; message was %3', $media_input, $return, join('; ', $output)));
@@ -156,7 +167,7 @@ class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlug
 	 *
 	 * Returns true on success, false on error
 	 */
-	public function cancel($pn_task_id, $parameters) {
+	public function cancel($task_id, $parameters) {
 		# delete tmp file
 		@unlink($parameters["FILENAME"]);
 		

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2017 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,8 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
-	$va_locale_list = $this->getVar('locale_list');
-
+$locale_list = $this->getVar('locale_list');
 ?>
 <script language="JavaScript" type="text/javascript">
 /* <![CDATA[ */
@@ -61,21 +60,21 @@
 		</thead>
 		<tbody>
 <?php
-	foreach($va_locale_list as $va_locale) {
+	foreach($locale_list as $locale) {
 ?>
 			<tr>
 				<td>
-					<?= $va_locale['name']; ?>
+					<?= $locale['name']; ?>
 				</td>
 				<td>
-					<?= $va_locale['language']."_".$va_locale['country']; ?>
+					<?= $locale['language']."_".$locale['country'].(strlen($locale['dialect'] ?? '') ? '_'.$locale['dialect'] : ''); ?>
 				</td>
 				<td>
-					<?= (bool)$va_locale['dont_use_for_cataloguing'] ? _t('no') : _t('yes') ; ?>
+					<?= (bool)$locale['dont_use_for_cataloguing'] ? _t('no') : _t('yes') ; ?>
 				</td>
 				<td class="listtableEditDelete">
-					<?= caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), 'editIcon', 'administrate/setup', 'Locales', 'Edit', array('locale_id' => $va_locale['locale_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-					<?= caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'deleteIcon', 'administrate/setup', 'Locales', 'Delete', array('locale_id' => $va_locale['locale_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?= caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), 'editIcon', 'administrate/setup', 'Locales', 'Edit', array('locale_id' => $locale['locale_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?= caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'deleteIcon', 'administrate/setup', 'Locales', 'Delete', array('locale_id' => $locale['locale_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 
 				</td>
 			</tr>

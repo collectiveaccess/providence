@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -770,7 +770,16 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		if(is_array($restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) && sizeof($restrict_to_types)) {
 			$restrict_to_types = caMakeTypeIDList($pm_table_name_or_num, $restrict_to_types);
 		}
-
+		
+		$t_uis = [];
+		if($restrict_to_uis = caGetOption('restrictToEditorUIs', $pa_options, null)) {
+			foreach($restrict_to_uis as $r) {
+				if(($ui = new ca_editor_uis(['editor_code' => $r])) && ($ui->isLoaded())) {
+					$t_uis[] = $ui;
+				}
+			}
+		}
+		
 		$t_instance = Datamodel::getInstanceByTableNum($pm_table_name_or_num, true);
 		$va_search_settings = $this->opo_search_indexing_config->getAssoc(Datamodel::getTableName($pm_table_name_or_num));
 
@@ -844,7 +853,6 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		// get fields 
 		if (is_array($va_search_settings)) { 
 			foreach($va_search_settings as $vs_table => $va_fields) {
-			
 				if (preg_match("!\.related$!", $vs_table)) { continue; }
 				if (!is_array($va_fields['fields'] ?? null)) { continue; }
 
@@ -892,6 +900,17 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 						$label = caGetOption('LABEL', $va_field_indexing_info, null);
 						$bundle_bits = explode('.', $vs_field);
 						
+						if(is_array($t_uis) && sizeof($t_uis)) {
+							$is_present = false;
+							foreach($t_uis as $t_ui) {
+								$r = $t_ui->getPlacementsForBundle("{$vs_table}.{$vs_field}");
+								if(is_array($r) && sizeof($r)) { 
+									$is_present = true; 
+									break; 
+								}
+							}
+							if(!$is_present) { continue; }
+						}
                         $policy = $policy_label = null;
                         $tmp = explode('|', $vs_field);
                         if ($tmp[0] == 'CV') {
@@ -919,7 +938,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 								'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
 								'settings' => $va_additional_settings
 							);
-
+							
 							TooltipManager::add(
 								"#searchFormEditor_{$vs_table}_{$vs_field}",
 								"<h2>{$vs_label}</h2>{$vs_description}"
@@ -977,14 +996,26 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 						}
 					}
 				} else {
-					// related table
+					// related table or label
+					$is_label = false;
 					if ($this->getAppConfig()->get($vs_table.'_disable')) { continue; }
 					$t_table = Datamodel::getInstanceByTableName($vs_table, true);
 					if ((method_exists($t_table, "getSubjectTableName") && $vs_subject_table = $t_table->getSubjectTableName())) {
 						if ($this->getAppConfig()->get($vs_subject_table.'_disable')) { continue; }
+						$is_label = true;
+						
 					}
 					if (caGetBundleAccessLevel($vs_primary_table, $vs_subject_table) == __CA_BUNDLE_ACCESS_NONE__) { continue;}
 				
+					if(is_array($t_uis) && sizeof($t_uis) && !$is_label) {
+						$is_present = false;
+						foreach($t_uis as $t_ui) {
+							$r = $t_ui->getPlacementsForBundle("{$vs_table}");
+							if(is_array($r) && sizeof($r)) { $is_present = true; break; }
+						}
+						if(!$is_present) { continue; }
+					}
+						
 					$va_element_codes = (method_exists($t_table, 'getApplicableElementCodes') ? $t_table->getApplicableElementCodes(null, false, false) : []);
 				
 					$va_field_list = [];

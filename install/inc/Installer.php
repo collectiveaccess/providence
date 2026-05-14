@@ -1433,8 +1433,6 @@ class Installer {
 			// create relationship type root if necessary
 			$t_rel_type->set('parent_id', null);
 			$t_rel_type->set('type_code', $root_type_code);
-			$t_rel_type->set('sub_type_left_id', null);
-			$t_rel_type->set('sub_type_right_id', null);
 			$t_rel_type->set('table_num', $table_num);
 			$t_rel_type->set('rank', 10);
 			$t_rel_type->set('is_default', 0);
@@ -1510,42 +1508,33 @@ class Installer {
 			} else {
 				$t_rel_type->insert();
 			}
-
-			// As of February 2017 "typeRestrictionLeft" is preferred over "subTypeLeft"
-			if(
-				($left_subtype_code = ($type["typeRestrictionLeft"] ?? null))
-			) {
-				$t_obj = \Datamodel::getInstance($left_table);
-				$list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
-
-				$this->logStatus(_t('Adding left type restriction %1 for relationship type with code %2', $left_subtype_code, $type_code));
-				if (isset($list_item_ids[$list_code][$left_subtype_code])) {
-					$t_rel_type->set('sub_type_left_id', $list_item_ids[$list_code][$left_subtype_code]);
-					if(
-						($include_subtypes = $type["includeSubtypesLeft"])
-					) {
-						$t_rel_type->set('include_subtypes_left', (bool)$include_subtypes ? 1 : 0);
-					}
-					$t_rel_type->update();
-				}
-			}
 			
-			if(
-				($right_subtype_code = ($type["typeRestrictionRight"] ?? null))
-			) {
-				$t_obj = \Datamodel::getInstance($right_table);
-				$list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
-
-				$this->logStatus(_t('Adding right type restriction %1 for relationship type with code %2', $right_subtype_code, $type_code));
-				if (isset($list_item_ids[$list_code][$right_subtype_code])) {
-					$t_rel_type->set('sub_type_right_id', $list_item_ids[$list_code][$right_subtype_code]);
-					
-					if(
-						($include_subtypes = $type["includeSubtypesRight"])
-					) {
-						$t_rel_type->set('include_subtypes_right', (bool)$include_subtypes ? 1 : 0);
+			if(is_array($type['typeRestrictions'] ?? null)) {
+				$t_left = \Datamodel::getInstance($left_table);
+				$t_right = \Datamodel::getInstance($right_table);
+				foreach($type['typeRestrictions'] as $r) {
+					if(strlen($r['sub_type_left_id'])) {
+						$r['sub_type_left_id'] = $t_left->getTypeIDForCode($r['sub_type_left_id']);
+					} else {
+						$r['sub_type_left_id'] = null;
 					}
-					$t_rel_type->update();
+					if(strlen($r['sub_type_right_id'])) {
+						$r['sub_type_right_id'] = $t_right->getTypeIDForCode($r['sub_type_right_id']);
+					} else {
+						$r['sub_type_right_id'] = null;
+					}
+					if(!$r['sub_type_left_id'] && !$r['sub_type_right_id']) { 
+						$this->logStatus(_t('Skipping relationship type restriction for table %1 and code %2 because the related type codes were invalid', $table_num, $type_code));
+						continue;
+					}
+					if(!$t_rel_type->addTypeRestriction($r['sub_type_left_id'], $r['sub_type_right_id'], [
+						'include_subtypes_left' => $r['include_subtypes_left'],
+						'include_subtypes_right' => $r['include_subtypes_right']
+					])) {
+						$this->logStatus(_t('Skipping relationship type restriction for table %1 and code %2 because the restriction could not be written', $table_num, $type_code));
+					} else {
+						$this->logStatus(_t('Added relationship type restriction for table %1 and code %2 for left type %3 and right type %4', $table_num, $type_code, $r['sub_type_left_id'], $r['sub_type_right_id']));
+					}
 				}
 			}
 
