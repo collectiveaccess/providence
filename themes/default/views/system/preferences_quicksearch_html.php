@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2025 Whirl-i-Gig
+ * Copyright 2016-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -53,7 +53,6 @@ $group = $this->getVar('group');
 ?>
 	<h3><?= _t("Included searches"); ?></h3>
 	<div class="bundleDisplayPlacementEditorContainer">
-
 		<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">
 			<div class="bundleDisplayPlacementEditorHelpText"><?= _t("Drag your selection from column to column to edit the content and order of results in the quick search interface."); ?></div>
 			<table>

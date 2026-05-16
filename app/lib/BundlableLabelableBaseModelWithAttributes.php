@@ -3004,6 +3004,17 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 			}
 			
+			$readonly_when = $this->getAppConfig()->get("{$vs_table_name}_readonly_when");
+			if(is_array($readonly_when)) {
+				foreach($readonly_when as $k => $skipinfo) {
+					if($this->evaluateExpression($skipinfo['rule'])) {
+						$readonly_when[$k]['readonly'] = true;
+					} else {
+						unset($readonly_when[$k]);
+					}
+				}
+			}
+			
 			$vn_c = 0;
 			foreach($va_bundles as $va_bundle) {
 				if ($va_bundle['bundle_name'] === $vs_type_id_fld) { continue; }	// skip type_id
@@ -3045,6 +3056,18 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// no edit access so bail
 					//$this->postError(2320, _t('Access denied to screen %1', $pm_screen), "BundlableLabelableBaseModelWithAttributes->getBundleFormHTMLForScreen()");				
 					continue;
+				}
+				
+				if(is_array($readonly_when)) {
+					foreach($readonly_when as $k => $skipinfo) {
+						if(
+							!in_array("{$vs_table_name}.{$va_bundle['bundle_name']}", $skipinfo['skip'] ?? [])
+							&&
+							!in_array($va_bundle['bundle_name'], $skipinfo['skip'] ?? [])
+						) {
+							$va_bundle['settings']['readonly'] = true;	
+						}
+					}	
 				}
 				
 				// Apply policy relationship type restriction for related, if set
