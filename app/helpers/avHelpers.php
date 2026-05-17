@@ -238,4 +238,66 @@ function caGetID3IsMpeg4($pa_getid3_info) {
 	return false;
 }
 # ------------------------------------------------------------------------------------------------
+/**
+ * Convert Whisper JSON transcription output to VTT format
+ *
+ * @param string $filepath Path to Whisper JSON file
+ * @param string $vttpath Path to file containing VTT output
+ * @param array $options Options include:
+ *		returnContent = return decoded JSON sdata as array
+ *
+ * @return mixed path to VTT output, array of data (if returnContent option is set), or null on error
+ */
+function caWhisperTranscriptionToVTT(string $filepath, string $vttpath, ?array $options=null) {
+	if(!($json_str = file_get_contents($filepath))) { return null; }
+	print "JSON=$json_str\n";
+	if (!($json = json_decode($json_str, true))) { return null; }
+	print_R($json);
+	if(!is_array($segments = $json['segments'] ?? null)) { return null; }
+	print_r($segments);
+	
+	if(!($r = fopen($vttpath, "w"))) { return null; }
+	$tc = new TimecodeParser();
+	fputs($r, "WEBVTT\n\n");
+	foreach($segments as $s) {
+		$tc->parse((float)$s['start']);
+		$start = $tc->getText();
+		$tc->parse((float)$s['end']);
+		$end = $tc->getText();
+		$text = trim($s['text']);
+		$id = $s['id'] + 1;
+		
+		$line = "{$id}\n{$start} --> {$end}\n{$text}\n\n";
+		fputs($r, $line);
+	}
+	fclose($r);
+	return !caGetOption('returnContent', $options, false) ? $vttpath : $json;
+}
+# ------------------------------------------------------------------------------------------------
+/**
+ * Convert Whisper JSON transcription output to VTT format
+ *
+ * @param array $data 
+ * @param array $options
+ *
+ * @return array
+ */
+function caWhisperTranscriptionSegmentsToWords(array $data, ?array $options=null) : ?array {
+	if(!is_array($data['segments'] ?? null)) { return null; }
+	
+	$words = [];
+	foreach($data['segments'] as $s) {
+		if(is_array($s['words'])) {
+			foreach($s['words'] as $w) {
+				$words[] = [
+					'word' => $w['word'],
+					'start' => $w['start'],
+					'end' => $w['end']
+				];
+			}
+		}
+	}
+	return $words;
+}
+# ------------------------------------------------------------------------------------------------
 
