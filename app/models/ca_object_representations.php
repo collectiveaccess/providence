@@ -1702,7 +1702,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		$t_caption->set('caption_file', $ps_filepath, array('original_filename' => caGetOption('originalFilename', $options, array_pop($va_tmp))));
  		$t_caption->set('locale_id', $pn_locale_id);
  		
- 		$t_caption->insert();
+ 		$t_caption->insert(['content' => caGetOption('content', $options, null)]);
  		
  		if ($t_caption->numErrors()) {
  			$this->errors = array_merge($this->errors, $t_caption->errors);
