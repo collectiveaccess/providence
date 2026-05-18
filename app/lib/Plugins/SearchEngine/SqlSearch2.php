@@ -1263,6 +1263,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		
 		if (!isset($options['datatype'])) { $options['datatype'] = null; }
 		
+		$transcribed_content = null;
+		
 		if ($content_fieldname[0] == 'A') {
 			$field_num_proc = (int)substr($content_fieldname, 1);
 			
@@ -1280,7 +1282,17 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						return;
 				}
 			}
-		} 
+		} elseif(($content_fieldname[0] == 'I') && ($t_instance = Datamodel::getInstance($content_tablenum, true))) {
+			$fn = Datamodel::getFieldName($content_tablenum, (int)substr($content_fieldname, 1));
+			$field_info = $t_instance->getFieldInfo($fn);
+			
+			if($field_info['TRANSCRIBED_CONTENT'] ?? false) {
+				if(is_array($d = json_decode($content[0] ?? '', true))) {
+					$transcribed_content = $d;
+				}
+			}
+		}
+		
 		if ((!is_array($content) && !strlen($content)) || !sizeof($content) || (((sizeof($content) == 1) && strlen((string)$content[0]) == 0)) || ((sizeof($content) === 1) && ((string)mb_strtolower($content[0]) === mb_strtolower(caGetBlankLabelText(Datamodel::getTableName($content_tablenum)))))){ 
 			$words = null;
 		} else {
@@ -1301,8 +1313,22 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if (!defined("__CollectiveAccess_IS_REINDEXING__") && $incremental_reindexing && !($options['dontRemoveExistingIndexing'] ?? false)) {
 			$this->removeRowIndexing($this->indexing_subject_tablenum, $this->indexing_subject_row_id, $content_tablenum, array($content_fieldname), $content_row_id, $rel_type_id);
 		}
-		if (!$words) {
-			$this->doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$content_tablenum.',\''.$content_fieldname.'\','.$container_id.','.$content_row_id.',0,0,'.$private.','.$rel_type_id.',0,0,'.$fi.')';
+		
+		if(is_array($transcribed_content)) {
+			$wc = sizeof($transcribed_content);
+			if($wc > 255) { $wc = 255; }
+			foreach($transcribed_content as $i => $w) {
+				if(!strlen($w['word'])) { continue; }
+				if (!($word_id = (int)$this->getWordID($w['word']))) { continue; }
+				
+				$timecode_start = (float)$w['start'];
+				$timecode_end = (float)$w['end'];
+				
+				$this->doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$content_tablenum.',\''.$content_fieldname.'\','.$container_id.','.$content_row_id.','.$word_id.','.$boost.','.$private.','.$rel_type_id.','.(($i >= 255) ? 255 : $i).','.$wc.','.$fi.",{$timecode_start},{$timecode_end})";
+	
+			}
+		} elseif (!$words) {
+			$this->doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$content_tablenum.',\''.$content_fieldname.'\','.$container_id.','.$content_row_id.',0,0,'.$private.','.$rel_type_id.',0,0,'.$fi.',0,0)';
 		} else {
 			if((bool)$this->search_config->get('group_index_for_repeating_terms_in_field')) {
 				$u = array_unique($words);
@@ -1316,7 +1342,9 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				if(!strlen($vs_word)) { continue; }
 				if (!($word_id = (int)$this->getWordID($vs_word))) { continue; }
 				
-				$this->doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$content_tablenum.',\''.$content_fieldname.'\','.$container_id.','.$content_row_id.','.$word_id.','.$boost.','.$private.','.$rel_type_id.','.(($i >= 255) ? 255 : $i).','.$wc.','.$fi.')';
+				$timecode_start = $timecode_end = 0;
+				
+				$this->doc_content_buffer[] = '('.$this->indexing_subject_tablenum.','.$this->indexing_subject_row_id.','.$content_tablenum.',\''.$content_fieldname.'\','.$container_id.','.$content_row_id.','.$word_id.','.$boost.','.$private.','.$rel_type_id.','.(($i >= 255) ? 255 : $i).','.$wc.','.$fi.",{$timecode_start},{$timecode_end})";
 			}
 		}
 	}
@@ -1739,7 +1767,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		
 		$this->insert_word_index_sql = "
 			INSERT INTO ca_sql_search_word_index
-			(table_num, row_id, field_table_num, field_num, field_container_id, field_row_id, word_id, boost, access, rel_type_id, word_index, word_count, field_index)
+			(table_num, row_id, field_table_num, field_num, field_container_id, field_row_id, word_id, boost, access, rel_type_id, word_index, word_count, field_index, timecode_start, timecode_end)
 			VALUES
 		";
 		
