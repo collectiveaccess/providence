@@ -8212,7 +8212,8 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 			";
 		} else { // path of length 2, i.e. direct relationship like ca_objects.lot_id = ca_object_lots.lot_id ==> join relative_to and browse target tables directly
 			$va_rel_info = Datamodel::getRelationships($ps_relative_to_table, $t_rel_item->tableName());
-			$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON {$ps_relative_to_table}.{$va_rel_info[$t_rel_item->tableName()][$ps_relative_to_table][1][1]} = {$t_rel_item->tableName()}.{$va_rel_info[$ps_relative_to_table][$t_rel_item->tableName()][1][1]}";
+			$vn_rel_index = isset($va_rel_info[$t_rel_item->tableName()][$ps_relative_to_table][1]) ? 1 : 0;
+			$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON {$ps_relative_to_table}.{$va_rel_info[$t_rel_item->tableName()][$ps_relative_to_table][$vn_rel_index][1]} = {$t_rel_item->tableName()}.{$va_rel_info[$ps_relative_to_table][$t_rel_item->tableName()][$vn_rel_index][1]}";
 		}
 
 		return array(
