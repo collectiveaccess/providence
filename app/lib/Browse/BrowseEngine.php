@@ -652,8 +652,10 @@ class BrowseEngine extends BaseFindEngine {
 				}
 				$vn_element_id = $t_element->getPrimaryKey();
 				$element_type = $t_element->get('datatype');
-				
-				$is_information_service_mirror_list = caGetInformationServiceMirrorListInformation($t_element);
+
+				$is_information_service_mirror_list = function_exists('caGetInformationServiceMirrorListInformation')
+					? caGetInformationServiceMirrorListInformation($t_element)
+					: false;
 				if($is_information_service_mirror_list) {
 					$element_type = __CA_ATTRIBUTE_VALUE_LIST__;
 				}
@@ -1657,8 +1659,10 @@ class BrowseEngine extends BaseFindEngine {
 								if ($t_user->getBundleAccessLevel($this->ops_browse_table_name, $va_facet_info['element_code']) < __CA_BUNDLE_ACCESS_READONLY__) { break; }
 								$element_type = $t_element->get('datatype');
 								$list_id = $t_element->get('list_id');
-								
-								$is_information_service_mirror_list = caGetInformationServiceMirrorListInformation($t_element);
+
+								$is_information_service_mirror_list = function_exists('caGetInformationServiceMirrorListInformation')
+									? caGetInformationServiceMirrorListInformation($t_element)
+									: false;
 								if($is_information_service_mirror_list) {
 									$element_type = __CA_ATTRIBUTE_VALUE_LIST__;
 									$list_id = $is_information_service_mirror_list['list'];
@@ -4459,8 +4463,10 @@ class BrowseEngine extends BaseFindEngine {
 						$va_suppress_values = caGetOption('exclude_values', $va_facet_info, null);
 					}
 					$access = null;
-					
-					$is_information_service_mirror_list = caGetInformationServiceMirrorListInformation($t_element);
+
+					$is_information_service_mirror_list = function_exists('caGetInformationServiceMirrorListInformation')
+						? caGetInformationServiceMirrorListInformation($t_element)
+						: false;
 					if($is_information_service_mirror_list) {
 						$element_type = __CA_ATTRIBUTE_VALUE_LIST__;
 					}
