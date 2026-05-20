@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2025 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  * This file originally contributed 2014 by Gaia Resources
  *
  * For more information visit http://www.CollectiveAccess.org
@@ -29,6 +29,12 @@
 require_once(__CA_APP_DIR__."/plugins/prepopulate/lib/applyPrepopulateRulesTool.php");
 
 class prepopulatePlugin extends BaseApplicationPlugin {
+	# --------------------------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private $used_for = [];
+	
 	# --------------------------------------------------------------------------------------------
 	/**
 	 * Plugin config
@@ -57,33 +63,33 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	# --------------------------------------------------------------------------------------------
 	public function hookBeforeInsertItem(&$pa_params) {
 		if($this->opo_plugin_config->get('enabled') && !caGetOption('for_duplication', $pa_params, false)) {
-			$this->prepopulateFields($pa_params, ['hook' => 'beforeInsert']);
+			$this->prepopulateFields($pa_params, ['hook' => 'beforeInsert', 'use' => 'beforeInsert']);
 		}
 		return $pa_params;
 	}
 	public function hookInsertItem(&$pa_params) {
 		if($this->opo_plugin_config->get('enabled') && !caGetOption('for_duplication', $pa_params, false)) {
-			$this->prepopulateFields($pa_params, ['hook' => 'save']);
+			$this->prepopulateFields($pa_params, ['hook' => 'insertItem', 'use' => 'save']);
 		}
 		return $pa_params;
 	}
 	public function hookUpdateItem(&$pa_params) {
 		if($this->opo_plugin_config->get('enabled') && !caGetOption('for_duplication', $pa_params, false)) {
-			$this->prepopulateFields($pa_params, ['hook' => 'save']);
+			$this->prepopulateFields($pa_params, ['hook' => 'updateItem', 'use' => 'save']);
 		}
 		return $pa_params;
 	}
 	# --------------------------------------------------------------------------------------------
 	public function hookSaveItem(&$pa_params) {
 		if($this->opo_plugin_config->get('enabled') && !caGetOption('for_duplication', $pa_params, false)) {
-			$this->prepopulateFields($pa_params, ['hook' => 'save']);
+			$this->prepopulateFields($pa_params, ['hook' => 'saveItem', 'use' => 'save']);
 		}
 		return $pa_params;
 	}
 	# --------------------------------------------------------------------------------------------
 	public function hookEditItem(&$pa_params) {
 		if ($this->opo_plugin_config->get('enabled') && !caGetOption('for_duplication', $pa_params, false)) {
-			$this->prepopulateFields($pa_params, ['hook' => 'edit']);
+			$this->prepopulateFields($pa_params, ['hook' => 'editItem', 'use' => 'edit']);
 		}
 		return $pa_params;
 	}
@@ -131,7 +137,6 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	 */
 	public function prepopulateFields(&$params, $options=null) {
 		global $g_ui_locale_id;
-		
 		if(!($t_instance = caGetOption('instance', $params, null))) { return false; }
 		
 		//
@@ -149,6 +154,10 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		}
 
 		$hook = caGetOption('hook', $options, null, ['forceLowercase' => true]);
+		$use = caGetOption('use', $options, null, ['forceLowercase' => true]);
+		if($this->used_for[$use] ?? false) { return null; }	// already ran
+		$this->used_for[$use] = true;
+		
 		$default_prepop_on_save  = (bool)$this->opo_plugin_config->get('prepopulate_fields_on_save');
 		$default_prepop_on_edit  = (bool)$this->opo_plugin_config->get('prepopulate_fields_on_edit');
 		$default_prepop_before_insert = (bool)$this->opo_plugin_config->get('prepopulate_fields_before_insert');
@@ -198,12 +207,12 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			if ($useFor && !is_array($useFor)) { $useFor = [$useFor]; }
 			$useFor = is_array($useFor) ? array_map(function($v) { return strtolower($v); }, $useFor) : null;
 
-			if (is_array($useFor) && !is_null($hook) && !in_array($hook, $useFor, true)) {
+			if (is_array($useFor) && !is_null($use) && !in_array($use, $useFor, true)) {
 				continue;
 			} elseif(!$useFor) {
-				if (($hook === 'edit') && !$default_prepop_on_edit) { continue; }
-				if (($hook === 'save') && !$default_prepop_on_save) { continue; }
-				if (($hook === 'beforeinsert') && !$default_prepop_before_insert) { continue; }
+				if (($use === 'edit') && !$default_prepop_on_edit) { continue; }
+				if (($use === 'save') && !$default_prepop_on_save) { continue; }
+				if (($use === 'beforeinsert') && !$default_prepop_before_insert) { continue; }
 			}
 			$vs_mode = strtolower(caGetOption('mode', $va_rule, 'merge'));
 
@@ -243,6 +252,29 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 				if(ExpressionParser::evaluate($va_rule['skipIfExpression'] ?? null, $va_expression_vars)) {
 					Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because skipIfExpression evaluated true");
 					continue;
+				}
+			}
+			
+			if(is_array($va_rule['onChange'] ?? null)) {
+				foreach($va_rule['onChange'] as $bundle => $cinfo) {
+					if($t_instance->valueDidChange($bundle)) {
+						$old_value = $t_instance->get($bundle, ['modifier' => 'previousvalue', 'convertCodesToIdno' => true]);
+						$cur_value = $t_instance->get($bundle, ['convertCodesToIdno' => true]);
+						if($old_value != $cur_value) {
+							if(is_array($cinfo['originalValues']) && sizeof($cinfo['originalValues'])) {
+								if(!in_array($old_value, $cinfo['originalValues'], true)) {
+									Debug::msg("[prepopulateFields()] skipping rule {$vs_rule_key} because onChange originalValues list for bundle {$bundle} did not contain value '{$old_value}'");
+									continue(2);
+								}
+							}
+							if(is_array($cinfo['newValues']) && sizeof($cinfo['newValues'])) {
+								if(!in_array($cur_value, $cinfo['newValues'], true)) {
+									Debug::msg("[prepopulateFields()] skipping rule {$vs_rule_key} because onChange newValues list for bundle {$bundle} did not contain value '{$cur_value}'");
+									continue(2);
+								}
+							}
+						}
+					}
 				}
 			}
 

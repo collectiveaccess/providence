@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2025 Whirl-i-Gig
+ * Copyright 2000-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -293,6 +293,13 @@ class BaseModel extends BaseObject {
 	 * @access private
 	 */
 	private $opb_log_changes = true;
+	
+	/**
+	 * Cache of user data user for value history functions
+	 *
+	 * @access protected
+	 */
+	protected static $s_value_history_user_data = [];
 
 	/**
 	 *
@@ -668,6 +675,19 @@ class BaseModel extends BaseObject {
 	 */
 	public function didChange($ps_field) {
 		return isset($this->_FIELD_VALUE_DID_CHANGE[$ps_field]) ? $this->_FIELD_VALUE_DID_CHANGE[$ps_field] : null;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param string $bundle
+	 * @return bool
+	 */
+	public function valueDidChange(string $bundle) : ?bool {
+		if(!is_null($ret = self::didChange($bundle))) {
+			return $ret;
+		}
+		return null;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -2347,7 +2367,7 @@ class BaseModel extends BaseObject {
 						$msg = _t("The value of %1 must be unique", $last_name);
 					}
 				} else {
-					$msg = $e->getMessage();
+					$msg = _t('The value already exists');
 				}
 				$this->postError($e->getNumber(), $msg, $context, $source);
 				$o_db->postError($e->getNumber(), $msg, $context, $source);
@@ -2465,10 +2485,16 @@ class BaseModel extends BaseObject {
 
 		$va_need_to_set_rank_for = array();
 		foreach($this->FIELDS as $vs_field => $va_attr) {
-
 			$vs_field_type = $va_attr["FIELD_TYPE"];				# field type
 			$vs_field_value = self::get($vs_field, array("TIMECODE_FORMAT" => "RAW"));
 			
+			if(in_array($vs_field, ['access', 'status'], true)) {
+				// Force access and status to valid defaults
+				if(strlen($vs_field_value) === 0) {
+					$vs_field_value = caGetDefaultItemValue($va_attr['LIST']);
+				}
+			}
+
 			if (isset($va_attr['DONT_PROCESS_DURING_INSERT_UPDATE']) && (bool)$va_attr['DONT_PROCESS_DURING_INSERT_UPDATE']) { continue; }
 			
 			# --- check bounds (value, length and choice lists)
@@ -4538,7 +4564,6 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 								}
 							}
 							$vs_tmp_file = $r['file'];
-							$is_without_media = true;
 							if(!$vs_tmp_file) {
 								$is_embed = true;
 								if(isset($r['previewPath'])) {
@@ -4658,12 +4683,12 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 						if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
 						return false;
 					}
-
 					$va_media_objects['_original'] = $m;
 				
 					// preserve center setting from any existing media
 					$va_center = null;
 					if (is_array($va_tmp = $this->getMediaInfo($ps_field))) { $va_center = caGetOption('_CENTER', $va_tmp, []); }
+					
 					$media_desc = [
 						"ORIGINAL_FILENAME" => $this->_SET_FILES[$ps_field]['original_filename'],
 						"_CENTER" => $va_center,
@@ -9693,7 +9718,7 @@ $pa_options["display_form_field_tips"] = true;
 
 
 						if (!isset($pa_options['no_tooltips']) || !$pa_options['no_tooltips']) {
-							TooltipManager::add('#'.$vs_field_id, "<h3>{$vs_field_label}</h3>".((isset($pa_options["description"]) && $pa_options["description"]) ? $pa_options["description"] : $va_attr["DESCRIPTION"]), $pa_options['tooltip_namespace']);
+							TooltipManager::add('#'.$vs_field_id, "<div class='tooltipHead'>{$vs_field_label}</div>".((isset($pa_options["description"]) && $pa_options["description"]) ? $pa_options["description"] : $va_attr["DESCRIPTION"]), $pa_options['tooltip_namespace']);
 						}
 					}
 
@@ -10035,7 +10060,7 @@ $pa_options["display_form_field_tips"] = true;
 			$pn_type_id = $pm_type_id;
 		}
 		
-		if ((!is_numeric($pn_rel_id) && !caGetOption('primaryKeyOnly', $pa_options, false)) || caGetOption('idnoOnly', $pa_options, false)) {
+		if ((!is_numeric($pn_rel_id) && !is_null($pn_rel_id) && !caGetOption('primaryKeyOnly', $pa_options, false)) || caGetOption('idnoOnly', $pa_options, false)) {
 			if ($t_rel_item = Datamodel::getInstanceByTableName($va_rel_info['related_table_name'], true)) {
 				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
 				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load([$vs_idno_fld => $pn_rel_id, 'deleted' => 0])) {
@@ -10044,13 +10069,12 @@ $pa_options["display_form_field_tips"] = true;
 			}
 		}
 		
-		if ((!isset($pa_options['allowDuplicates']) || !$pa_options['allowDuplicates']) && !$this->getAppConfig()->get('allow_duplicate_relationships') && $this->relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_direction, array('relation_id' => $pn_relation_id))) {
+		if (!is_null($pn_rel_id) && (!isset($pa_options['allowDuplicates']) || !$pa_options['allowDuplicates']) && !$this->getAppConfig()->get('allow_duplicate_relationships') && $this->relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_direction, array('relation_id' => $pn_relation_id))) {
 			if (isset($pa_options['setErrorOnDuplicate']) && $pa_options['setErrorOnDuplicate']) {
 				$this->postError(1100, _t('Relationship already exists'), 'BaseModel->addRelationship', $t_rel_item->tableName());
 			}
 			return false;
 		}
-		
 		if ($va_rel_info['related_table_name'] == $this->tableName()) {
 			// is self relation
 			if ($pn_rel_id === $this->getPrimaryKey()) {
@@ -10058,16 +10082,18 @@ $pa_options["display_form_field_tips"] = true;
 				return false;
 			}
 			if ($t_item_rel->load($pn_relation_id)) {
-				if(!in_array($ps_direction, ['ltor', 'rtol'], true)) {	// if direction is not set preserve current direction
-					$ps_direction = ($t_item_rel->get($t_item_rel->getLeftTableFieldName()) == $this->getPrimaryKey()) ? 'ltor' : 'rtol';
-				}
-				if ($ps_direction == 'rtol') {
-					$t_item_rel->set($t_item_rel->getRightTableFieldName(), $this->getPrimaryKey());
-					$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $pn_rel_id);
-				} else {
-					// default is left-to-right
-					$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $this->getPrimaryKey());
-					$t_item_rel->set($t_item_rel->getRightTableFieldName(), $pn_rel_id);
+				if(!is_null($pn_rel_id)) {
+					if(!in_array($ps_direction, ['ltor', 'rtol'], true)) {	// if direction is not set preserve current direction
+						$ps_direction = ($t_item_rel->get($t_item_rel->getLeftTableFieldName()) == $this->getPrimaryKey()) ? 'ltor' : 'rtol';
+					}
+					if ($ps_direction == 'rtol') {
+						$t_item_rel->set($t_item_rel->getRightTableFieldName(), $this->getPrimaryKey());
+						$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $pn_rel_id);
+					} else {
+						// default is left-to-right
+						$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $this->getPrimaryKey());
+						$t_item_rel->set($t_item_rel->getRightTableFieldName(), $pn_rel_id);
+					}
 				}
 				if (!is_null($pn_rank)) { $t_item_rel->set('rank', $pn_rank);	}
 
@@ -10088,16 +10114,18 @@ $pa_options["display_form_field_tips"] = true;
 			switch(sizeof($va_rel_info['path'])) {
 				case 3:		// many-to-many relationship
 					if ($t_item_rel->load($pn_relation_id)) {
-						$vs_left_table = $t_item_rel->getLeftTableName();
-						$vs_right_table = $t_item_rel->getRightTableName();
-						if ($this->tableName() == $vs_left_table) {
-							// is lefty
-							$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $this->getPrimaryKey());
-							$t_item_rel->set($t_item_rel->getRightTableFieldName(), $pn_rel_id);
-						} else {
-							// is righty
-							$t_item_rel->set($t_item_rel->getRightTableFieldName(), $this->getPrimaryKey());
-							$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $pn_rel_id);
+						if(!is_null($pn_rel_id)) {
+							$vs_left_table = $t_item_rel->getLeftTableName();
+							$vs_right_table = $t_item_rel->getRightTableName();
+							if ($this->tableName() == $vs_left_table) {
+								// is lefty
+								$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $this->getPrimaryKey());
+								$t_item_rel->set($t_item_rel->getRightTableFieldName(), $pn_rel_id);
+							} else {
+								// is righty
+								$t_item_rel->set($t_item_rel->getRightTableFieldName(), $this->getPrimaryKey());
+								$t_item_rel->set($t_item_rel->getLeftTableFieldName(), $pn_rel_id);
+							}
 						}
 						
 						if (!is_null($pn_rank)) { $t_item_rel->set('rank', $pn_rank);	}
@@ -10132,7 +10160,7 @@ $pa_options["display_form_field_tips"] = true;
 							return $t_item_rel;
 						}
 						
-						if ($t_item_rel->load($pn_rel_id)) {
+						if (!is_null($pn_rel_id) && $t_item_rel->load($pn_rel_id)) {
 							$t_item_rel->set($va_rel_info['rel_keys']['many_table_field'], $this->getPrimaryKey());
 							
 							if (is_array($cf = $t_item_rel->getChangedFieldValuesArray()) && (sizeof($cf) > 0)) {
@@ -10146,7 +10174,9 @@ $pa_options["display_form_field_tips"] = true;
 							return $t_item_rel;
 						}
 					} else {
-						$this->set($va_rel_info['rel_keys']['many_table_field'], $pn_rel_id);
+						if(!is_null($pn_rel_id)) {
+							$this->set($va_rel_info['rel_keys']['many_table_field'], $pn_rel_id);
+						}
 						
 						if (is_array($cf = $t_item_rel->getChangedFieldValuesArray()) && (sizeof($cf) > 0)) {
                             $this->update();
@@ -10241,6 +10271,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param mixed $pm_type_id If set to a relationship type code or numeric type_id, only relationships with the specified type are removed.
 	 * @param array $pa_options Options include:
 	 *		restrictToTypes = 
+	 *		restrictToRelationshipTypes = 
 	 *
 	 * @return boolean True on success, false on error
 	 */
@@ -10260,7 +10291,13 @@ $pa_options["display_form_field_tips"] = true;
 		if (!method_exists($t_item_rel, "isRelationship") || !$t_item_rel->isRelationship()){ return false; }
 		$va_sql_params = array();
 		
-		$pa_relationship_type_ids = caMakeRelationshipTypeIDList($t_item_rel->tableName(), $pm_relationship_type_id);
+		$rel_types = [];
+		if($pm_relationship_type_id) { $rel_types[] = $pm_relationship_type_id; }
+		if(is_array($rel_type_opt = caGetOption('restrictToRelationshipTypes', $pa_options, null))) {
+			$rel_types = array_merge($rel_types, $rel_type_opt);
+		}
+		
+		$pa_relationship_type_ids = sizeof($rel_types) ? caMakeRelationshipTypeIDList($t_item_rel->tableName(), $rel_types) : null;
 		
 		$vs_join_sql = '';
 		$vs_type_limit_sql = '';
@@ -13944,9 +13981,202 @@ $pa_options["display_form_field_tips"] = true;
 		$tags = caGetTemplateTags($expression);
 		$data = [];
 		foreach($tags as $t) {
-			$data[$t] = $this->get($t);
+			$p = caParseTagOptions($t);
+			if(!is_array($p)) {
+				$p = ['tag' => $t, 'options' => []];
+			}
+			if(
+				!isset($p['options']['convertCodesToDisplayText']) && 
+				!isset($p['options']['convertCodesToIdno']) && 
+				!isset($p['options']['convertCodesToValue'])
+			) {
+				$p['options']['convertCodesToIdno'] =  true;
+			}
+			
+			$data[$t] = $this->get($p['tag'], $p['options']);
 		}
 		return ExpressionParser::evaluate($expression, $data);
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Return simplified change history for intrinsic bundle of a row
+	 *
+	 * @param string $bundle Bundle (Eg. ca_objects.idno)
+	 * @param array $options Options include:
+	 * 		row_id = ID of row to fetch log for. If omitted currently loaded row is used. [Default is null]
+	 *
+	 * @return array
+	 */
+	public function getLogForBundleValueHistory(string $bundle, ?array $options=null) : ?array {
+		$bi = $this->_processBundleNameForValueHistory($bundle);
+		if(!$this->hasField($bi['element'])) { return null; }
+		
+		$row_id = caGetOption('row_id', $options, $this->getPrimaryKey());
+		if(!$row_id) { return null; }
+		
+		$table_num = $this->tableNum();
+		$pk = $this->primaryKey();
+		
+		$guid = ca_guids::getForRow($this->tableNum(), $row_id);
+		$log = ca_change_log::getLog(0, null, ['forGUID' => $guid, 'forceValuesForAllAttributeSlots' => true]);
+		$acc = [];
+		foreach($log as $l) {
+			if((int)$l['logged_table_num'] == (int)$table_num) {
+				$s = $l['snapshot'];
+				if(isset($s[$bi['element']])) {
+					$v = [
+						$bi['element'] => $s[$bi['element']],
+						'log_datetime' => $l['log_datetime'],
+						'log_datetime_display' => caGetLocalizedDate($l['log_datetime'], ['timeOmit' => false]),
+						'user_id' => $l['user_id'],
+						'user_name' => $l['user_name'],
+						'user_email' => $l['user_email'],
+						'user_fname' => $l['user_fname'],
+						'user_lname' => $l['user_lname']
+					];
+					
+					if($u = $this->_processUserDataForValueHistory($l['user_id'])) {
+						$v = array_merge($v, $u);
+					}
+					if($bi['subelement'] && isset($v[$bi['subelement']])) {
+						$v = [
+							$bi['subelement'] => $v[$bi['subelement']]
+						];
+					}
+					$acc[$row_id][] = $v;
+				}
+			}
+		}
+		return $acc;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Return history of changes to a bundle on a row.
+	 *
+	 * @string $bundle Bundle
+	 * @array $options Options include:
+	 *		row_id = ID of row to fetch history on. If omitted currently loaded row is used. [Default is null]
+	 *		returnWithStructure = Return values as array with additional date/time data. [Default is false]
+	 *
+	 * @return array
+	 */
+	public function getValueHistoryForBundle(string $bundle, ?array $options=null) : ?array {
+		$bi = $this->_processBundleNameForValueHistory($bundle);
+		
+		$log = $this->getLogForBundleValueHistory($bundle, $options);
+		$return_with_structure = caGetOption('returnWithStructure', $options, false);
+		
+		$fi = $this->getFieldInfo($bi['element']);
+		$is_list = $fi['LIST_CODE'] ?? false;
+		
+		$convert_codes_to_display_text = caGetOption('convertCodesToDisplayText', $options, false);
+		$convert_codes_to_idno = caGetOption('convertCodesToIdno', $options, false);
+		$convert_codes_to_value = caGetOption('convertCodesToIdno', $options, false);
+		
+		$acc = [];
+		foreach($log as $id => $d) {
+			if($is_list && ($convert_codes_to_display_text || $convert_codes_to_idno || $convert_codes_to_value)) {
+				foreach($d as $k => $v) {
+					if($convert_codes_to_display_text) {
+						$d[$k][$bi['element']] = caGetListItemByIDForDisplay($v[$bi['element']]);
+					} elseif($convert_codes_to_idno) {
+						$d[$k][$bi['element']] = caGetListItemIdno($v[$bi['element']]);
+					} elseif($convert_codes_to_value) {
+						$d[$k][$bi['element']] = caGetListItemValueForID($v[$bi['element']]);
+					}
+				}
+			}
+			if($return_with_structure) {
+				$acc[$id] = $d;
+			} else {
+				foreach($d as $v) {
+					$acc[] = $v[$bi['modifier'] ?? $bi['key']] ?? null;
+				}
+			}
+		}
+		ksort($acc);
+		return $acc;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Return most recent previous value for a bundle, prior to the value currently set
+	 *
+	 * @param string $bundle Bundle
+	 * @param array $options Options include:
+	 *		returnWithStructure = Return values as array with additional date/time data. [Default is false]
+	 *
+	 * @return mixed String, array or null
+	 */
+	public function getMostRecentPreviousValueForBundle(string $bundle, ?array $options=null) : mixed {
+		$return_with_structure = caGetOption('returnWithStructure', $options, false);
+		
+		$values = $this->getValueHistoryForBundle($bundle, $options);
+		if($return_with_structure) { return $values; }
+		$values = array_filter($values, 'strlen');
+		return array_pop($values);
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Extract element values from bundle specification
+	 * 
+	 * @param string $bundle Bundle
+	 *
+	 * @return array Array with five keys: table, element, subelement, key and modifier. In a bundle like ca_objects.description
+	 *				these correspond to: table = ca_objects; element = description; subelement = null; key = description
+	 *				For the bundle ca_objects.dimensions.width these correspond to:
+	 *				table = ca_objects; element = dimensions; subelement = width; key = width
+	 *				For the bundle ca_objects.dimensions.width.log_datetime these correspond to:
+	 *				table = ca_objects; element = dimensions; subelement = width; key = width, modifier=log_datetime
+	 */
+	protected function _processBundleNameForValueHistory(string $bundle) : array {
+		$tmp = explode('.', $bundle);
+		$table = null;
+		if($tmp[0] === $this->tableName()) { $table = array_shift($tmp); }
+		
+		$bundle_element = array_shift($tmp);
+		$bundle_subelement = array_shift($tmp);
+		
+		$modifier = array_shift($tmp);
+		
+		if(in_array($bundle_subelement, ['log_datetime', 'log_datetime_display', 'user_id', 'user_name', 'user_email', 'user_fname', 'user_lname'])) {
+			$modifier = $bundle_subelement;
+			$bundle_subelement = null;
+		}
+		
+		return [
+			'table' => $table,
+			'element' => $bundle_element,
+			'subelement' => $bundle_subelement,
+			'modifier' => $modifier,
+			'key' => $bundle_subelement ?? $bundle_element
+		];
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Get data for user id in value history log
+	 * 
+	 * @param int $user_id User ID
+	 *
+	 * @return array Array with user information
+	 */
+	protected function _processUserDataForValueHistory(?int $user_id) : ?array {
+		if(!$user_id) { return []; }
+		if(isset(BaseModel::$s_value_history_user_data[$user_id])) {	
+			return BaseModel::$s_value_history_user_data[$user_id];
+		}
+		
+		if($u = ca_users::find(['user_id' => $user_id], ['returnAs' => 'arrays'])) {
+			$u = array_shift($u);
+			$u = [
+				'user_id' => $u['user_id'],
+				'user_name' => $u['user_name'],
+				'user_email' => $u['email'],
+				'user_fname' => $u['fname'],
+				'user_lname' => $u['lname'],
+			];
+			return BaseModel::$s_value_history_user_data[$user_id] = $u;
+		}
+		return null;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**

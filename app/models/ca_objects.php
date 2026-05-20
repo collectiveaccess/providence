@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -297,10 +297,10 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 			'DEFAULT' => 0,
 			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 			'BOUNDS_CHOICE_LIST' => array(
-				_t('Do not inherit access settings from related collections') => 0,
-				_t('Inherit access settings from related collections') => 1
+				_t('Do not inherit') => 0,
+				_t('Inherit') => 1
 			),
-			'LABEL' => _t('Inherit item-level access control settings from collections?'), 'DESCRIPTION' => _t('Determines whether item-level access control settings set for related collections are applied to this object.')
+			'LABEL' => _t('Inherit item access control settings from collections?'), 'DESCRIPTION' => _t('Determines whether item access control settings set for related collections are applied to this object.')
 		),
 		'acl_inherit_from_parent' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -309,10 +309,10 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 			'DEFAULT' => 0,
 			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
 			'BOUNDS_CHOICE_LIST' => array(
-				_t('Do not inherit item-level access control settings from parents') => 0,
-				_t('Inherit item-level access control settings from parents') => 1
+				_t('Do not inherit') => 0,
+				_t('Inherit') => 1
 			),
-			'LABEL' => _t('Inherit item-level access control settings from parents?'), 'DESCRIPTION' => _t('Determines whether item-level access control settings set from parent objects are applied to this object.')
+			'LABEL' => _t('Inherit item access control settings from parents?'), 'DESCRIPTION' => _t('Determines whether item access control settings set from parent objects are applied to this object.')
 		),
 		'access_inherit_from_parent' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -322,8 +322,8 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
 			'DONT_ALLOW_IN_UI' => true,
 			'BOUNDS_CHOICE_LIST' => array(
-				_t('Do not inherit public access settings from parent') => 0,
-				_t('Inherit public access settings from parent') => 1
+				_t('Do not inherit') => 0,
+				_t('Inherit') => 1
 			),
 			'LABEL' => _t('Inherit public access settings from parent?'), 'DESCRIPTION' => _t('Determines whether public access settings (used by Pawtucket-based sites) set for parent object is applied to this object.')
 		),
@@ -710,11 +710,11 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$config = $this->getAppConfig();
 		if (
 			$config->get('ca_objects_x_collections_hierarchy_enabled') && 
-			($coll_rel_type = $config->get('ca_objects_x_collections_hierarchy_relationship_type')) && 
+			($coll_rel_types = caGetObjectCollectionHierarchyRelationshipTypes()) && 
 			(
 				$collection_id
 				||
-				($collection_id = (is_array($coll_ids = $this->get('ca_collections.collection_id', ['returnAsArray' => true, 'restrictToRelationshipTypes' => [$coll_rel_type]])) ? array_shift($coll_ids) : null))
+				($collection_id = (is_array($coll_ids = $this->get('ca_collections.collection_id', ['returnAsArray' => true, 'restrictToRelationshipTypes' => $coll_rel_types])) ? array_shift($coll_ids) : null))
 			)
 		) {
 			if($o_idno = $this->getIDNoPlugInInstance()) {
@@ -918,9 +918,9 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$va_component_types = $this->getAppConfig()->getList('ca_objects_component_types');
 		
 		if (is_array($va_component_types) && (sizeof($va_component_types) && !in_array('*', $va_component_types))) {
-			$vm_res = ca_objects::find(array('parent_id' => $pn_object_id, 'type_id' => $va_component_types), array('sort' => 'ca_objects.idno_sort', 'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as));
+			$vm_res = ca_objects::find(['parent_id' => $pn_object_id, 'type_id' => ['IN', $va_component_types]], ['sort' => 'ca_objects.idno_sort', 'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as]);
 		} else {
-			$vm_res = ca_objects::find(array('parent_id' => $pn_object_id), array('sort' => 'ca_objects.idno_sort', 'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as));
+			$vm_res = ca_objects::find(['parent_id' => $pn_object_id], ['sort' => 'ca_objects.idno_sort', 'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as]);
 		}
 	
 		if ($vs_return_as == 'info') {
@@ -972,6 +972,17 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		if (!in_array($t_parent->getTypeCode(), $va_container_types) && !in_array('*', $va_container_types)) { return false; }	// check container type
 		
 		return true;
+	}
+	# ------------------------------------------------------
+	/** 
+	 * 
+	 */
+	public function getComponentTypes(?array $options=null) {
+		$component_types = $this->getAppConfig()->getList('ca_objects_component_types') ?? [];
+		if(is_array($child_types = $this->getTypeList(['idsOnly' => true, 'childrenOfCurrentTypeOnly' => true]))) {
+			$component_types = array_intersect($component_types, caMakeTypeList($this->tableName(), $child_types) ?? []);
+		}	
+		return array_values($component_types);
 	}
  	# ------------------------------------------------------
  	# Object checkout 

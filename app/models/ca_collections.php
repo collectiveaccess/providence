@@ -251,12 +251,25 @@ BaseModel::$s_ca_models_definitions['ca_collections'] =  array(
 			'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false, 
 			'DEFAULT' => 0,
-			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
 			'BOUNDS_CHOICE_LIST' => array(
-				_t('Do not inherit item-level access settings from parents') => 0,
-				_t('Inherit item-level access settings from parents') => 1
+				_t('Do not inherit') => 0,
+				_t('Inherit') => 1
 			),
-			'LABEL' => _t('Inherit item-level access settings from parents?'), 'DESCRIPTION' => _t('Determines whether access settings set for parent collections are applied to this collection.')
+			'LABEL' => _t('Inherit item access control settings from parents?'), 'DESCRIPTION' => _t('Determines whether item access control settings set from parent objects are applied to this object.')
+		),
+		'access_inherit_from_parent' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
+			'DONT_ALLOW_IN_UI' => true,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Do not inherit') => 0,
+				_t('Inherit') => 1
+			),
+			'LABEL' => _t('Inherit public access settings from parent?'), 'DESCRIPTION' => _t('Determines whether public access settings (used by Pawtucket-based sites) set for parent object is applied to this object.')
 		),
 		'view_count' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -537,12 +550,12 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
 		if (
 			$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && 
 			caGetOption('includeObjects', $pa_options, true) && 
-			($rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')) &&
+			($coll_rel_types = caGetObjectCollectionHierarchyRelationshipTypes()) &&
 			($ps_object_template = caGetOption('objectTemplate', $pa_options, $this->getAppConfig()->get('ca_objects_hierarchy_browser_display_settings')))
 		) {
 			$va_collection_ids = array_map(function($v) { return $v['id']; }, $va_vals);
 			
-			$qr = ca_objects_x_collections::find(['collection_id' => ['IN', $va_collection_ids], 'type_id' => $rel_type], ['returnAs' => 'searchResult']);
+			$qr = ca_objects_x_collections::find(['collection_id' => ['IN', $va_collection_ids], 'type_id' => ['IN', $coll_rel_types]], ['returnAs' => 'searchResult']);
 			$va_objects_by_collection = [];
 			while($qr->nextHit()) {
 				$va_objects_by_collection[$qr->get('ca_objects_x_collections.collection_id')][] = $qr->get('ca_objects_x_collections.object_id');

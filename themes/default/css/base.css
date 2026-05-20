@@ -2618,7 +2618,7 @@ select.searchToolsSelect {
     color:#138290;
 }
 
-.objectThumbnailsImageContainer {
+.objectThumbnailsImageContainer, .entityThumbnailsImageContainer, .occurrenceThumbnailsImageContainer {
 	position: relative;
 	width: 172px;
 	border-top: 2px solid #eee;
@@ -6128,7 +6128,11 @@ a.caDeleteLabelButton {
 /* Item-level access screen                         */
 /* -------------------------------------------------*/
 
-.globalAccess {
+div.globalAccess hr {
+	border: 1px dashed #ccc;
+}
+
+div.globalAccess {
     background-color:#eee;
     border-radius: 4px;
     -moz-border-radius: 4px;
@@ -6136,31 +6140,49 @@ a.caDeleteLabelButton {
     padding:10px;
     margin-bottom: 15px;
 }
-.globalAccess .title {
-    font-size: 18px;
+div.globalAccess .title {
+    font-size: 20px;
     font-family: arial;
     font-weight: normal;
 }
-.globalAccess .bundleContainer {
+
+div.globalAccess div.subtitle {
+    font-size: 16px;
+    font-family: arial;
+    font-weight: normal;
+    margin: 10px 0 5px 0; 
+}
+
+div.globalAccess div.inheritanceControl {
+    margin: 5px 0 5px 0; 
+}
+
+div.globalAccess div.control {
+    font: 12px "Helvetica Neue", Arial, Helvetica, Sans-serif;
+    margin: 10px 0 5px 0;
+}
+
+div.globalAccess .bundleContainer {
     border: 0px;
     padding-left:0px;
+    background-color:#eee;
+    
 }
-.globalAccess .labelInfo {
+div.globalAccess .labelInfo {
     background-color:#eee;
     border-top: none;
 }
-.globalAccess h2 {
+div.globalAccess h2 {
     padding-top:10px;
     border-top: dotted 1px #ccc;
     font-family: arial;
     font-weight: normal;
 }
-#editGlobalAccess {
-    display:none;
+
+div.publicAccessHeader {
+
 }
-#editUserAccess {
-    display:none;
-}
+
 .editLink a{
     text-decoration:none;
     font-size: 12px;
@@ -6194,6 +6216,7 @@ span.accessName {
 div.inheritName {
     font-size: 9px; 
     font-style: italic;
+    font-weight: normal;
 }
 
 .titleTd td{
@@ -8290,45 +8313,49 @@ button.passwordView {
 }
 
 .componentGrid {
-        display: table;
-        width: 100%;
-        font-size: 11px;
-        font-weight: normal;
-        padding: 10px 5px 10px 5px;
-        border-collapse: collapse;
+	display: table;
+	width: 100%;
+	font-size: 11px;
+	font-weight: normal;
+	padding: 10px 5px 10px 5px;
+	border-collapse: collapse;
 }
 
 .componentRow {
-        display: table-row;
+	display: table-row;
 }
 
 .componentRowDisabled {
-        display: table-row;
-        color: #555;
+	display: table-row;
+	color: #555;
 }
 .componentRowDisabled a {
-        color: #555;
-        text-decoration: none;
+	color: #555;
+	text-decoration: none;
 }
 
 .componentItem {
-        display: table-cell;
-        padding: 10px;
-        border: 1px dotted #999;
+	display: table-cell;
+	padding: 10px;
+	border: 1px dotted #999;
 }
 
 .componentItemSelected {
-        font-style: italic;
-        font-weight: bold;
+	font-style: italic;
+	font-weight: bold;
 }
 
 .componentHeader {
-        display: table-row;
+	display: table-row;
 }
 
 .componentHeaderItem {
-        display: table-cell;
-        padding: 10px;
-        border: 1px dotted #999;
-        font-weight: bold;
+	display: table-cell;
+	padding: 10px;
+	border: 1px dotted #999;
+	font-weight: bold;
+}
+
+.aclLabel {
+	font-weight: normal;
 }
