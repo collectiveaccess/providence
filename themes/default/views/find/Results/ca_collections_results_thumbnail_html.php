@@ -44,11 +44,11 @@ $result_desc			= $this->getVar('result_desc');
 		if (!($caption_template = $this->request->config->get('ca_collections_results_thumbnail_caption_template'))) { $caption_template = "^ca_collections.preferred_labels.name%truncate=27&ellipsis=1<br/>^ca_collections.idno"; }
 		
 		while(($item_count < $items_per_page) && ($result->nextHit())) {
-			$representation_id = $result->get('representation_id');
+			$collection_id = $result->get('collection_id');
 			if (!$col) { 
 				print "<tr>";
 			}
-			$caption = $caption_template ? $result->getWithTemplate($caption_template) : caEditorLink($this->request, $result->get('idno'), '', 'ca_collections', $representation_id);
+			$caption = $caption_template ? $result->getWithTemplate($caption_template) : caEditorLink($this->request, $result->get('idno'), '', 'ca_collections', $collection_id);
 			
 			
 			# --- get the height of the image so can calculate padding needed to center vertically
@@ -67,15 +67,15 @@ $result_desc			= $this->getVar('result_desc');
 ?>
 			<td align="center" valign="top" style="padding:2px 2px 2px 2px;">
 				<div class="collectionThumbnailsImageContainer" style="padding: <?= $padding_top_bottom; ?>px 0px <?= $padding_top_bottom; ?>px 0px;"> 
-					<input type="checkbox" name="add_to_set_ids" value="<?= (int)$representation_id; ?>" class="addItemToSetControl addItemToSetControlInThumbnails"/>		
-					<?= caEditorLink($this->request, array_shift($va_tmp), 'qlButtonEditorLink', 'ca_collections', $representation_id, array(), array('data-id' => $representation_id)); ?>
-					<?php if ($has_image) { ?><div class="qlButtonContainerThumbnail" id="ql_<?= $representation_id; ?>"><a class='qlButton' data-id="<?= $representation_id; ?>"><?= _t("Quick Look"); ?></a></div><?php } ?>
+					<input type="checkbox" name="add_to_set_ids" value="<?= (int)$collection_id; ?>" class="addItemToSetControl addItemToSetControlInThumbnails"/>		
+					<?= caEditorLink($this->request, array_shift($va_tmp), 'qlButtonEditorLink', 'ca_collections', $collection_id, array(), array('data-id' => $collection_id)); ?>
+					<?php if ($has_image) { ?><div class="qlButtonContainerThumbnail" id="ql_<?= $collection_id; ?>"><a class='qlButton' data-id="<?= $collection_id; ?>"><?= _t("Quick Look"); ?></a></div><?php } ?>
 				</div>
 				<div class="thumbCaption">
 <?php
 	if($result_desc) {
 ?>
-					<div class='searchResultDesc'><span class='searchResultDescHeading'><?= _t('Matched on'); ?>:</span><?= caFormatSearchResultDesc($representation_id, $result_desc, ['maxTitleLength' => 20, 'request' => $this->request]) ?></div>
+					<div class='searchResultDesc'><span class='searchResultDescHeading'><?= _t('Matched on'); ?>:</span><?= caFormatSearchResultDesc($collection_id, $result_desc, ['maxTitleLength' => 20, 'request' => $this->request]) ?></div>
 <?php
 	}
 ?>			
@@ -113,7 +113,7 @@ $result_desc			= $this->getVar('result_desc');
 		jQuery(".qlButton").on("click", function(e) {
 			var id = jQuery(this).data('id');
 			jQuery("#ql_" + id).css("display", "block");
-			caMediaPanel.showPanel("<?= caNavUrl($this->request, 'find', 'SearchCollections', 'QuickLook'); ?>/representation_id/" + id);
+			caMediaPanel.showPanel("<?= caNavUrl($this->request, 'find', 'SearchCollections', 'QuickLook'); ?>/collection_id/" + id);
 		});
 	});
 </script>

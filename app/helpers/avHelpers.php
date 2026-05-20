@@ -250,11 +250,8 @@ function caGetID3IsMpeg4($pa_getid3_info) {
  */
 function caWhisperTranscriptionToVTT(string $filepath, string $vttpath, ?array $options=null) {
 	if(!($json_str = file_get_contents($filepath))) { return null; }
-	print "JSON=$json_str\n";
 	if (!($json = json_decode($json_str, true))) { return null; }
-	print_R($json);
 	if(!is_array($segments = $json['segments'] ?? null)) { return null; }
-	print_r($segments);
 	
 	if(!($r = fopen($vttpath, "w"))) { return null; }
 	$tc = new TimecodeParser();
