@@ -227,7 +227,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 
                 // check template
                 $vs_template = caGetOption('template', $va_rule, null);
-                if((strlen($vs_template) < 1) && (strlen($vs_source = caGetOption('source', $va_rule, null)) < 1)) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because template is not set"); continue; }
+                if((strlen($vs_template) < 1) && (strlen($vs_source) < 1)) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because template is not set"); continue; }
             }
             $vs_context = caGetOption('context', $va_rule, null);
 
@@ -343,6 +343,17 @@ class prepopulatePlugin extends BaseApplicationPlugin {
                             }
                         }
 			            break;
+			        case 'static':
+			         	if($force_values) { break; }
+			         	if(!($t_target = $vs_target::findAsInstance(['idno' => $va_rule['template']]))) { break; }
+			         	$va_rels = [
+			         		[
+			         			'relationship_type_code' => $va_rule['relationship_type'] ?? null,
+			         			'effective_date' => _t('now'),
+			         			$t_target->primaryKey() => $t_target->getPrimaryKey()
+			         		]
+			         	];
+			        	break;
 			    }
 
 			    if (is_array($va_rels)) {
