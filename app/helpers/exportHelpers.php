@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2025 Whirl-i-Gig
+ * Copyright 2016-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -658,9 +658,6 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 	
 			$t_display				= $view->getVar('display');
 			$display_list 		= $view->getVar('display_list');
-			
-			$ratio_pixels_to_excel_height = 0.85;
-			$ratio_pixels_to_excel_width = 0.135;
 
 			$supercol_a_to_z = range('A', 'Z');
 			$supercol = '';
@@ -691,7 +688,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 							'bold' => false),
 					'alignment'=>array(
 							'horizontal'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
-							'vertical'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+							'vertical'=>\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP,
 							'wrap' => true,
 							'shrinkToFit'=> false),
 					'borders' => array(
@@ -765,8 +762,6 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 
 			// Other lines
 			while($result->nextHit()) {
-				if(!is_array($media_versions = $result->getMediaVersions('ca_object_representations.media'))) { $media_versions = []; }
-		
 				$column = reset($a_to_z);
 		
 				$supercol_a_to_z = range('A', 'Z');
@@ -777,15 +772,31 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 
 				foreach($display_list as $info) {
 					$placement_id = $info['placement_id'];
-			
-					if (is_array($info['settings']) && isset($info['settings']['format']) && ($tags = array_filter(caGetTemplateTags($info['settings']['format']), function($v) { return preg_match("!^ca_object_representations.media.!", $v); }))) {
-						// Transform bundle with template including media into a media bundle as that's the only way to show media within an XLSX
-						$info['bundle_name'] = $tags[0];
-					}
 					
+					if(!($info['template'] ?? null) && ($info['settings']['format'] ?? null)) {
+						$info['template'] = $info['settings']['format'];
+					}
+			
 					$display_text = null;
 					if($info['template'] ?? null) {
-						$display_text = $result->getWithTemplate($info['template']);
+						$template = $info['template'];
+						$tags = array_values(array_filter(caGetTemplateTags($info['template']), function($v) { return preg_match("!^ca_object_representations.media.!", $v); }));
+						if($has_media = (is_array($tags) && sizeof($tags))) {
+							foreach($tags as $t) {
+								$mtemplate = str_replace("^{$t}", "~~~# ^ca_object_representations.representation_id #~~~", $template);
+								$moutput = $result->getWithTemplate($mtemplate);
+								if(preg_match_all("!~~~# ([^#]+) #~~~!", $moutput, $m)) {
+									$offset = 30; // all room for text
+									foreach($m[1] as $i => $rep_id) {
+										if(is_array($minfo = caExportRenderXLSXImage($o_sheet, $t, $result, $supercol, $column, $line, ['representation_id' => $rep_id, 'yOffset' => $offset]))) {
+											$offset += $minfo['HEIGHT'];
+										}
+									}
+								}
+								$template = str_replace("^{$t}", '', $template);
+							}
+						}
+						$display_text = $result->getWithTemplate($template);
 					} elseif (
 						(preg_match('!^ca_object_representations.media!', $info['bundle_name']))
 						&&
@@ -793,44 +804,12 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 						&&
 						(!isset($info['settings']['display_mode']) || (($info['settings']['display_mode'] ?? null) !== 'url'))
 					) {
-						$bits = explode(".", $info['bundle_name'] ?? null);
-						$version = array_pop($bits);
-				
-						if (!in_array($version, $media_versions)) { $version = $media_versions[0]; }
-	
-						$info = $result->getMediaInfo('ca_object_representations.media', $version);
-				
-						if($info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
-							if (is_file($path = $result->getMediaPath('ca_object_representations.media', $version))) {
-								$image = "image".$supercol.$column.$line;
-								$drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
-								$drawing->setName($image);
-								$drawing->setDescription($image);
-								$drawing->setPath($path);
-								$drawing->setCoordinates($supercol.$column.$line);
-								$drawing->setWorksheet($o_sheet);
-								$drawing->setOffsetX(10);
-								$drawing->setOffsetY(10);
-							}
-
-							$width = floor(intval($info['PROPERTIES']['width']) * $ratio_pixels_to_excel_width);
-							$height = floor(intval($info['PROPERTIES']['height']) * $ratio_pixels_to_excel_height);
-
-							// set the calculated withs for the current row and column,
-							// but make sure we don't make either smaller than they already are
-							if($width > $o_sheet->getColumnDimension($supercol.$column)->getWidth()) {
-								$o_sheet->getColumnDimension($supercol.$column)->setWidth($width);	
-							}
-							if($height > $o_sheet->getRowDimension($line)->getRowHeight()){
-								$o_sheet->getRowDimension($line)->setRowHeight($height);
-							}
-
-						}
+						caExportRenderXLSXImage($o_sheet, $info['bundle_name'], $result, $supercol, $column, $line, []);
 					} else { 
-						$display_text = $t_display ? 
+						$display_text = ($t_display ? 
 							$t_display->getDisplayValue($result, $placement_id, array_merge(['request' => $request, 'purify' => true], is_array($info['settings']) ? $info['settings'] : []))
 							:
-							$result->get($info['bundle_name']);
+							$result->get($info['bundle_name']));
 						;	
 					}
 					
@@ -855,7 +834,6 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 
 				$line++;
 			}
-			
 			
 			$result->seek(0);
 			if(is_array($bottom_line = caProcessBottomLineTemplateForDisplayPlacements($request, $t_display, $result, []))) {
@@ -1002,16 +980,11 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 			$styleTable = array('borderSize'=>0, 'borderColor'=>'ffffff', 'cellMargin'=>80);
 			$styleFirstRow = array('borderBottomSize'=>18, 'borderBottomColor'=>'CCCCCC');
 
-			// Define cell style arrays
-			$styleCell = array('valign'=>'center');
-			$styleCellBTLR = array('valign'=>'center');
-
 			// Define font style for first row
 			$fontStyle = array('bold'=>true, 'align'=>'center');
 
 			// Add table style
 			$phpWord->addTableStyle('myOwnTableStyle', $styleTable, $styleFirstRow);
-
 
 			while($result->nextHit()) {
 				$table = $section->addTable('myOwnTableStyle');
@@ -1145,6 +1118,67 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 	}
 	
 	return null;
+}
+# ----------------------------------------
+/**
+ *
+ */
+function caExportRenderXLSXImage($o_sheet, string $bundle, BaseModel|SearchResult $result, string $supercol, string $column, string $line, ?array $options=null) : ?array {	
+	$ratio_pixels_to_excel_height = 0.85;
+	$ratio_pixels_to_excel_width = 0.135;
+	
+	$x_offset = caGetOption('xOffset', $options, 10, ['castTo' => 'int']);
+	$y_offset = caGetOption('yOffset', $options, 10, ['castTo' => 'int']);
+	
+	$rep_id = caGetOption('representation_id', $options, null);	
+	$bits = explode(".", $bundle ?? null);
+	
+	if($rep_id) {
+		$result = new ca_object_representations($rep_id);
+		if(!$result->isLoaded()) { return null; }
+		$media_versions = $result->getMediaVersions('media');
+	} else {
+		$media_versions = $result->getMediaVersions('ca_object_representations.media');
+	}
+	if(!is_array($media_versions)) { $media_versions = []; }
+	$version = null;
+	do {
+		$b = array_pop($bits);
+		if(in_array($b, $media_versions)) { 
+			$version = $b;
+			break;
+		}
+	} while(sizeof($bits));
+	if(!$version) { $version = 'icon'; }
+	$info = $result->getMediaInfo('ca_object_representations.media', $version);
+		
+	if($info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
+		if (is_file($path = $result->getMediaPath('ca_object_representations.media', $version))) {
+			$image = "image".$supercol.$column.$line;
+			$drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+			$drawing->setName($image);
+			$drawing->setDescription($image);
+			$drawing->setPath($path);
+			$drawing->setCoordinates($supercol.$column.$line);
+			$drawing->setWorksheet($o_sheet);
+			$drawing->setOffsetX($x_offset);
+			$drawing->setOffsetY($y_offset);
+		}
+
+		$width = floor(intval($info['PROPERTIES']['width']) * $ratio_pixels_to_excel_width);
+		$height = floor((intval($info['PROPERTIES']['height']) + $y_offset) * $ratio_pixels_to_excel_height);
+
+		// set the calculated withs for the current row and column,
+		// but make sure we don't make either smaller than they already are
+		if($width > $o_sheet->getColumnDimension($supercol.$column)->getWidth()) {
+			$o_sheet->getColumnDimension($supercol.$column)->setWidth($width);	
+		}
+		if($height > $o_sheet->getRowDimension($line)->getRowHeight()){
+			$o_sheet->getRowDimension($line)->setRowHeight($height);
+		}
+	}
+	
+	return is_array($info) ? $info : null;
 }
 # ----------------------------------------
 /**
