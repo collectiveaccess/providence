@@ -7084,9 +7084,9 @@ create table ca_sql_search_word_index (
   word_id int(10) unsigned not null,
   boost tinyint unsigned not null default 1,
   access tinyint unsigned not null default 1,
-  word_index tinyint unsigned not null default 0,
-  word_count tinyint unsigned not null default 0,
-  field_index tinyint unsigned not null default 0,
+  word_index mediumint unsigned not null default 0,
+  word_count mediumint unsigned not null default 0,
+  field_index mediumint unsigned not null default 0,
   timecode_start decimal(10,3) not null default 0,
   timecode_end decimal(10,3) not null default 0,
   primary key (index_id)
