@@ -506,39 +506,69 @@ class SimpleService {
 			$vs_return_as = caGetOption('returnAs', $pm_template, 'text', ['forceLowercase' => true]);
 			$vs_delimiter = caGetOption('delimiter', $pm_template, ";");
 			$vs_template = caGetOption('valueTemplate', $pm_template, 'No template');
+			$relative_to = caGetOption('relativeTo', $pm_template, null);
 			
-			// Get values and break on delimiter
-			if (SimpleService::isSimpleTemplate($vs_template)) {
-		        $vs_v = $pt_instance->get(str_replace("^", "", $vs_template), $pa_options);
-			} else {
-			    $vs_v = $pt_instance->getWithTemplate($vs_template, array_merge($pa_options, ['includeBlankValuesInArray' => true]));
-			}
-			$va_v = explode($vs_delimiter, $vs_v);
-			
-			$va_key = null;
-			if ($vs_key_template = caGetOption('keyTemplate', $pm_template, null)) {
-				// Get keys and break on delimiter
-				$va_keys = explode($vs_delimiter, $vs_keys = $pt_instance->getWithTemplate($vs_key_template, $pa_options));
-			}
-		
-			$va_v_decode = [];
-			foreach($va_v as $vn_i => $vs_part) {
-				switch($vs_return_as) {
-					case 'json':
-						if ($va_json = json_decode($vs_part)) { 
-							if ($va_keys) {
-								$va_v_decode[$va_keys[$vn_i]] = $va_json; 
-							} else {
-								$va_v_decode[] = $va_json; 
-							}
+			if($relative_to) {
+				$table = caGetOption('relativeTo', $pm_template, null);
+				$t_rel = Datamodel::getInstance($table, true);
+				$map = caGetOption('map', $pm_template, []);
+				
+				$ids = $pt_instance->get($t_rel->primaryKey(true), ['restrictToTypes' => caGetOption('restrictToTypes', $pm_template, null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $pm_template, null), 'returnAsArray' => true]);
+				
+				$vals = [];
+				foreach($map as $k => $t) {
+					if(is_array($t)) {
+						$qr_rels = caMakeSearchResult($t['relativeTo'], $ids);
+						while($qr_rels->nextHit()) {
+							$vals[$k][]= self::processContentKey($qr_rels, $k, $t, []);
 						}
-						break;
-					default:
-						$va_v_decode[] = $vs_part;
-						break;
+					} else {
+						$vals[$k] = caProcessTemplateForIds($t, $table, $ids, ['returnAsArray' => true]);
+					}
 				}
+				
+				$d = [];
+				$keys = array_keys($vals);
+				for($i=0; $i < sizeof($vals[$keys[0]]); $i++) {
+					foreach($keys as $k) {
+						$d[(int)$i][$k] = $vals[$k][$i];
+					}
+				}
+				return $d;
+			} else {
+				// Get values and break on delimiter
+				if (SimpleService::isSimpleTemplate($vs_template)) {
+					$vs_v = $pt_instance->get(str_replace("^", "", $vs_template), $pa_options);
+				} else {
+					$vs_v = $pt_instance->getWithTemplate($vs_template, array_merge($pa_options, ['includeBlankValuesInArray' => true]));
+				}
+				$va_v = explode($vs_delimiter, $vs_v);
+				
+				$va_key = null;
+				if ($vs_key_template = caGetOption('keyTemplate', $pm_template, null)) {
+					// Get keys and break on delimiter
+					$va_keys = explode($vs_delimiter, $vs_keys = $pt_instance->getWithTemplate($vs_key_template, $pa_options));
+				}
+			
+				$va_v_decode = [];
+				foreach($va_v as $vn_i => $vs_part) {
+					switch($vs_return_as) {
+						case 'json':
+							if ($va_json = json_decode($vs_part)) { 
+								if ($va_keys) {
+									$va_v_decode[$va_keys[$vn_i]] = $va_json; 
+								} else {
+									$va_v_decode[] = $va_json; 
+								}
+							}
+							break;
+						default:
+							$va_v_decode[] = $vs_part;
+							break;
+					}
+				}
+				return $va_v_decode;
 			}
-			return $va_v_decode;
 		} else {
 		    if (SimpleService::isSimpleTemplate($pm_template)) {
 		        return $pt_instance->get(str_replace("^", "", $pm_template), $pa_options);
