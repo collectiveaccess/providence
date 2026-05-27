@@ -3406,11 +3406,13 @@ class ca_users extends BaseModel {
                         try{
 							$va_values = AuthenticationManager::getUserInfo($vs_username, $ps_password);
 						} catch (Exception $e) {
-							caLogEvent('SYS', _t('There was an error while trying to fetch information for a new user from the current authentication backend. The message was %1 : %2', get_class($e), $e->getMessage()), 'ca_users->authenticate()');
-							return false;
+							if(get_class($e) !== 'AuthClassFeatureException') {
+								caLogEvent('SYS', _t('There was an error while trying to fetch information for a new user from the current authentication backend. The message was %1 : %2', get_class($e), $e->getMessage()), 'ca_users->authenticate()');
+								return false;
+							}
 						}
 						
-						$this->_syncUserInfo($va_values);
+						if(is_array($va_values)) { $this->_syncUserInfo($va_values); }
 						$this->update();
                         return true;
                     } else {
