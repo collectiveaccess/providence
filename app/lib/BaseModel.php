@@ -9720,7 +9720,9 @@ $pa_options["display_form_field_tips"] = true;
 
 
 						if (!isset($pa_options['no_tooltips']) || !$pa_options['no_tooltips']) {
-							TooltipManager::add('#'.$vs_field_id, "<div class='tooltipHead'>{$vs_field_label}</div>".((isset($pa_options["description"]) && $pa_options["description"]) ? $pa_options["description"] : $va_attr["DESCRIPTION"]), $pa_options['tooltip_namespace']);
+							if(strlen($tt_content = ((isset($pa_options["description"]) && $pa_options["description"]) ? $pa_options["description"] : $va_attr["DESCRIPTION"]))) {
+								TooltipManager::add('#'.$vs_field_id, "<div class='tooltipHead'>{$vs_field_label}</div>".$tt_content, $pa_options['tooltip_namespace']);
+							}
 						}
 					}
 
