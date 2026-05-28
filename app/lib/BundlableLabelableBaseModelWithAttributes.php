@@ -3015,6 +3015,17 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 			}
 			
+			$force_readonly = [];
+			if(($vs_table_name === 'ca_object_representations') && is_array($readonly_when_fetched_from = $this->getAppConfig()->get('ca_object_representations_make_bundles_readonly_when_fetched_from'))) {
+				$fetched_by = $this->getMediaInfo('media', 'INPUT', 'FETCHED_BY');
+				if(is_array($readonly_when_fetched_from[$fetched_by] ?? null)) {
+					foreach($readonly_when_fetched_from[$fetched_by] as $r) {
+						$tmp = explode('.', $r);
+						$r = array_pop($tmp);
+						$force_readonly[$r] = true;
+					}
+				}
+			}
 			$vn_c = 0;
 			foreach($va_bundles as $va_bundle) {
 				if ($va_bundle['bundle_name'] === $vs_type_id_fld) { continue; }	// skip type_id
@@ -3068,6 +3079,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							$va_bundle['settings']['readonly'] = true;	
 						}
 					}	
+				}
+				if(is_array($force_readonly) && ($force_readonly[$va_bundle['bundle_name']] ?? false)) {
+					$va_bundle['settings']['readonly'] = true;	
 				}
 				
 				// Apply policy relationship type restriction for related, if set
