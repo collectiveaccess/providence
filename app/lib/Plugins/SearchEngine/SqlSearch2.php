@@ -2597,9 +2597,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if(!$lists) { return null; }
 		if(!is_array($lists)) { $lists = [$lists]; }
 		$key = join('-', $lists);
-		print "key is $key";
 		if(CompositeCache::contains($key, 'SqlSearch2SearchExpansionDict')) {
-			return CompositeCache::fetch('expansionDict', 'SqlSearch2SearchExpansionDict');
+			return CompositeCache::fetch($key, 'SqlSearch2SearchExpansionDict');
 		} else {
 			$t_list = new ca_lists();
 			$dict = [];
