@@ -485,14 +485,14 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$words = array_merge($words, $syns);
 		}
 	 	$results = [];
-	 	$wc = sizeof($words);
 	 	foreach($words as $i => $wl) {
 	 		if(!is_array($wl)) { $wl = [$wl]; }
-	 		if(sizeof($wl) > 1) {
+	 		if((sizeof($wl) > 1) && ($i > 0)){	// treat expansion terms as quoted phrases
 	 			$q = new Zend_Search_Lucene_Search_Query_Phrase($wl, null, $field);
 	 			$results[] = $this->_processQueryPhrase($subject_tablenum, $q);
 	 		} else {
-				foreach($wl as $text) {
+	 			$wc = sizeof($wl);
+				foreach($wl as $w => $text) {
 					// Don't stem if:
 					//	1. Stemming is disabled
 					//	2. Search for is blank values
