@@ -3643,9 +3643,9 @@ class ca_users extends BaseModel {
 	 * @param array $options Options include:
 	 *		throwException = Throw application exception if user does not have specified action. [Default is false]
 	 *		exceptionMessage = Message returned in exception on error. [Default is 'Access Denied']
-	 * @return bool
+	 * @return bool Return true, false or null if the specified action is not defined
 	 */
-	public function canDoAction(string $action, array $options=null) : bool {
+	public function canDoAction(string $action, array $options=null) : ?bool {
 		$throw = caGetOption('throwException', $options, false); 
 		$cache_key = $action."/".$this->getPrimaryKey();
 		if (isset(ca_users::$s_user_action_access_cache[$cache_key])) { 
@@ -3668,11 +3668,11 @@ class ca_users extends BaseModel {
 		        }
 		    }
 		    
-			// return false if action is not valid	
+			// return null if action is not valid	
 			if ($throw) {
 				throw new UserActionException(caGetOption('exceptionMessage', $options, _t('Access denied')));
 			}
-		    return ca_users::$s_user_action_access_cache[$cache_key] = false; 
+		    return ca_users::$s_user_action_access_cache[$cache_key] = null; 
 		}
 		
 		// is user administrator?
@@ -3700,7 +3700,7 @@ class ca_users extends BaseModel {
 			}
 		}
 		
-		return ca_users::$s_user_action_access_cache[$cache_key] = false;
+		return ca_users::$s_user_action_access_cache[$cache_key] = null;
 	}
 	# ----------------------------------------
 	/**
