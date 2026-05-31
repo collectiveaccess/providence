@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * themes/default/views/mediaViewers/QTVR.php :
+ * themes/default/views/mediaViewers/Panorama.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,6 +29,33 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	
-	print $this->getVar('viewerHTML');
+AssetLoadManager::register("panorama");
+
+$files =  $this->getVar('files');
+$urls = array_values(array_map(function($v) {
+	return $v['original_url'];
+}, $files));
+?>
+<div id="panoramaViewer"></div>
+<script type="text/javascript">
+	jQuery(document).ready(function() {
+		const viewer = window.CI360;
+		const container = document.getElementById('panoramaViewer');
+		
+		const config = {
+		  imageListX: <?= json_encode($urls); ?>,
+		  amountX: <?= sizeof($urls); ?>,
+		  autoplay: false,
+		  speed: 100,
+		  dragSpeed: 150,
+		  fullscreen: false,
+		  zoomMax: 6,
+		  inertia: true,
+		  draggable: true,
+		  keys: true
+		};
+		
+		viewer.init(container, config);
+	});
+</script>
+<?php

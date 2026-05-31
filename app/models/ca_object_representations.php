@@ -2873,7 +2873,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 					$mimetype = $qr->getMediaInfo('media', 'INPUT', 'MIMETYPE');
 					$class = caGetMediaClass($mimetype);
 					
-					if (($bundle_name === 'page_count') && in_array($class, ['document', 'image'])) {
+					if (($bundle_name === 'page_count') && in_array($class, ['document', 'image', 'panorama'])) {
 						return $this->numFiles($row_id);
 					}
 					if (($bundle_name === 'preview_count') && in_array($class, ['audio', 'video'])) {
