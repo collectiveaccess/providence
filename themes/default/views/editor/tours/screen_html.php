@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2023 Whirl-i-Gig
+ * Copyright 2011-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,59 +25,47 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_tour = $this->getVar('t_subject');
-	$vn_tour_id = $this->getVar('subject_id');
-	
-	$vb_can_edit	 	= $t_tour->isSaveable($this->request);
-	$vb_can_delete		= $t_tour->isDeletable($this->request);
+$t_tour 		= $this->getVar('t_subject');
+$tour_id 		= $this->getVar('subject_id');
 
-	$vs_rel_table		= $this->getVar('rel_table');
-	$vn_rel_type_id		= $this->getVar('rel_type_id');
-	$vn_rel_id			= $this->getVar('rel_id');
-	
-	$forced_values 		= $this->getVar('forced_values') ?? [];
-	
-	$t_ui = $this->getVar('t_ui');
-	
-	if ($vb_can_edit) {
-		$va_cancel_parameters = ($vn_tour_id ? array('tour_id' => $vn_tour_id) : array('type_id' => $t_tour->getTypeID()));
-		print $vs_control_box = caFormControlBox(
-			caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'TourEditorForm').' '.
-			($this->getVar('show_save_and_return') ? caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save and return"), 'TourEditorForm', array('isSaveAndReturn' => true)) : '').' '.
-			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'editor/tours', 'TourEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters), 
-			($this->getVar('show_show_notifications') ? caFormJSButton($this->request, __CA_NAV_ICON_ALERT__, _t("Show editor alerts"), '', ['class' => 'caEditorFormNotifications']) : ''), 
-			((intval($vn_tour_id) > 0) && $vb_can_delete) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'editor/tours', 'TourEditor', 'Delete/'.$this->request->getActionExtra(), array('tour_id' => $vn_tour_id)) : ''
-		);
-	}
-?>
-	<div class="sectionBox">
-<?php
-			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/tour_id/'.$vn_tour_id, 'TourEditorForm', null, 'POST', 'multipart/form-data');
-			
-			$va_form_elements = $t_tour->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-									'request' => $this->request, 
-									'formName' => 'TourEditorForm',
-									'forcedValues' => $forced_values), $va_bundle_list);
-			
-			print join("\n", $va_form_elements);
-			
-			if ($vb_can_edit) { print $vs_control_box; }
-?>
-			<input type='hidden' name='tour_id' value='<?= $vn_tour_id; ?>'/>
-			<input id='isSaveAndReturn' type='hidden' name='is_save_and_return' value='0'/>
-			<input type='hidden' name='rel_table' value='<?= $vs_rel_table; ?>'/>
-			<input type='hidden' name='rel_type_id' value='<?= $vn_rel_type_id; ?>'/>
-			<input type='hidden' name='rel_id' value='<?= $vn_rel_id; ?>'/>
-<?php
-			if($this->request->getParameter('rel', pInteger)) {
-?>
-				<input type='hidden' name='rel' value='1'/>
-<?php
-			}
-?>
-		</form>
-	</div>
+$rel_table		= $this->getVar('rel_table');
+$rel_type_id		= $this->getVar('rel_type_id');
+$rel_id			= $this->getVar('rel_id');
 
-	<div class="editorBottomPadding"><!-- empty --></div>
-	
-	<?= caSetupEditorScreenOverlays($this->request, $t_tour, $va_bundle_list); ?>
+$forced_values 	= $this->getVar('forced_values') ?? [];
+$control_box 	= caEditorFormControls($this, 'TourEditorForm');
+$t_ui 			= $this->getVar('t_ui');
+
+print $control_box;
+?>
+<div class="sectionBox">
+<?php
+		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/tour_id/'.$tour_id, 'TourEditorForm', null, 'POST', 'multipart/form-data');
+		
+		$form_elements = $t_tour->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
+								'request' => $this->request, 
+								'formName' => 'TourEditorForm',
+								'forcedValues' => $forced_values), $bundle_list);
+		
+		print join("\n", $form_elements);
+		
+		print $control_box;
+?>
+		<input type='hidden' name='tour_id' value='<?= $tour_id; ?>'/>
+		<input id='isSaveAndReturn' type='hidden' name='is_save_and_return' value='0'/>
+		<input type='hidden' name='rel_table' value='<?= $rel_table; ?>'/>
+		<input type='hidden' name='rel_type_id' value='<?= $rel_type_id; ?>'/>
+		<input type='hidden' name='rel_id' value='<?= $rel_id; ?>'/>
+<?php
+		if($this->request->getParameter('rel', pInteger)) {
+?>
+			<input type='hidden' name='rel' value='1'/>
+<?php
+		}
+?>
+	</form>
+</div>
+
+<div class="editorBottomPadding"><!-- empty --></div>
+
+<?= caSetupEditorScreenOverlays($this->request, $t_tour, $bundle_list); ?>
