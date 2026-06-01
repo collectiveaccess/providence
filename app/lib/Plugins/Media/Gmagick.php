@@ -1259,6 +1259,25 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	/**
 	 *
 	 */
+	public function compose(array $images, string $filepath, int $width, int $height) : ?bool {
+		$im = new Gmagick();
+		$ext = pathinfo($filepath, PATHINFO_EXTENSION);
+		$im->newimage($width, $height, 'transparent', $ext);
+		foreach($images as $image) {
+			$layer = new Gmagick($image['path']);
+			$im->compositeimage($layer, 1, (int)$image['x'], (int)$image['y']);
+			
+			$layer->clear();
+			$layer->destroy();
+		}
+		$ret = $im->writeimage($filepath);
+		$im->clear();
+		return $ret ? true : false;	
+	}	
+	# ------------------------------------------------
+	/**
+	 *
+	 */
 	private function _dcrawConvertToTiff($filepath) {
 		global $file_cleanup_list;
 		

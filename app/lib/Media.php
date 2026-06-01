@@ -415,6 +415,14 @@ class Media extends BaseObject {
 	/**
 	 *
 	 */
+	public function compose(array $images, string $filepath, int $width, int $height) : ?bool {
+		if (!$this->instance) { return null; }
+		return $this->instance->compose($images, $filepath, $width, $height);
+	}
+	# ----------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getOutputFormats() {
 		if (!$this->instance) { return false; }
 		return $this->instance->getOutputFormats();
