@@ -127,6 +127,11 @@ class WLPlugMediaPanorama Extends BaseMediaPlugin implements IWLPlugMedia {
 	 */
 	static $s_info_cache = [];
 	
+	/**
+	 * Path to temporary directory
+	 */
+	private $tmp_path;
+	
 	# ------------------------------------------------
 	public function __construct() {
 		$this->description = _t('Converts proprietary 360 panorama file formats into a generic panorama viewable in CollectiveAccess.');
@@ -145,6 +150,10 @@ class WLPlugMediaPanorama Extends BaseMediaPlugin implements IWLPlugMedia {
 		$this->ops_graphicsmagick_path = caMediaPluginGraphicsMagickInstalled();
 		
 		$this->info["INSTANCE"] = $this;
+		
+		$this->tmp_path = caGetTempFileName('panorama');
+		mkdir($this->tmp_path);
+		
 		return $this->info;
 	}
 	# ------------------------------------------------
@@ -325,31 +334,84 @@ class WLPlugMediaPanorama Extends BaseMediaPlugin implements IWLPlugMedia {
 					// @TODO get highest resolution images and stitch together as needed.
 					$cscale = null;
 					foreach($metadata['scales'] as $scale) {
-						if(!$cscale && ($scale['height'] <= 1024)) { $cscale = $scale; continue; }
+						if(!$cscale) { $cscale = $scale; continue; }
 						
-						if(($scale['height'] > $cscale['height']) && ($scale['height'] <= 1024)) {
+						if($scale['height'] > $cscale['height']) {
 							$cscale = $scale;
 						}
 					}
-					
 					$value = str_replace('.', '', $cscale['value']);
 					
 					// filter files using content settings
 					$ext = preg_replace("![^\dA-Za-z]+!", "", $metadata['images'][0]['ext'] ?? 'jpg');
 					$name = preg_replace("![^\dA-Za-z_\-\.]+!", "", $metadata['images'][0]['name'] ?? '');
-					$files = array_values(array_filter($files, function($v) use ($ext, $value, $name) {
-						return preg_match("!^{$name}[\d]+_[\d]+_{$value}_[\d]+_[\d]+\.{$ext}$!i", pathinfo($v, PATHINFO_BASENAME));
-					}));
+					$rows = (int)$cscale['rows'];
+					$cols = (int)$cscale['cols'];
 					
-					$sorted_files = [];
-					foreach($files as $f) {
-						if(preg_match("!^{$name}[\d]+_([\d]+)_{$value}_[\d]+_[\d]+\.{$ext}$!i", pathinfo($f, PATHINFO_BASENAME), $m)) {
-							$sorted_files[(int)$m[1]] = $f;
+					if(($rows > 1) || ($cols > 1)) { 
+						$file_stubs = array_values(array_unique(array_filter(array_map(function($v) use ($ext, $value, $name, $rows, $cols) {
+							if(preg_match("!^({$name}[\d]+_[\d]+_{$value}_)([\d]+)_([\d])+\.{$ext}$!i", pathinfo($v, PATHINFO_BASENAME), $m)) {
+								if(preg_match("!^(.*{$name}[\d]+_[\d]+_{$value}_)!i", $v, $m)) {
+									return $m[1];
+								} 
+							}
+							return null;
+						}, $files), 'strlen')));
+						
+						$target_path = $this->tmp_path;
+						$m = new Media();
+						$files = [];
+						$index = 0;
+						foreach($file_stubs as $fs) {
+							$tiles = [];
+							$x = $y = 0;
+							for($c=0; $c < $cols; $c++) {
+								$y = 0;
+								for($r=0; $r < $rows; $r++) {
+									$f = "{$fs}{$c}_{$r}.{$ext}";
+									$zip->extractTo($target_path, $f);
+									$tiles[] = [
+										'path' => "{$target_path}/{$f}",
+										'x' => $x,
+										'y' => $y
+									];
+									$y += $cscale['tile_width'];
+								}
+								$x += $cscale['tile_width'];
+							}
+							
+							if($m->read($tiles[0]['path'])) {
+								$fp = "{$fs}".sprintf("%04d", $index).".{$ext}";
+								$m->compose($tiles, $output_file = "{$target_path}/{$fp}", $cscale['width'], $cscale['height']);
+								$files[] = $output_file;
+							}
+							$index++;
 						}
+						$sorted_files = [];
+						foreach($files as $f) {
+							if(preg_match("!^{$name}[\d]+_([\d]+)_{$value}_[\d]+\.{$ext}$!i", pathinfo($f, PATHINFO_BASENAME), $m)) {
+								$sorted_files[(int)$m[1]] = $f;
+							}
+						}
+						ksort($sorted_files);
+					} else {
+						$files = array_values(array_filter($files, function($v) use ($ext, $value, $name, $rows, $cols) {
+							if(preg_match("!^{$name}[\d]+_[\d]+_{$value}_([\d]+)_([\d])+\.{$ext}$!i", pathinfo($v, PATHINFO_BASENAME), $m)) {
+								if(($m[1] > $cols) || ($m[2] > $rows)){ return false; }
+								return true; 
+							}
+							return false;
+						}));
+						$sorted_files = [];
+						foreach($files as $f) {
+							if(preg_match("!^{$name}[\d]+_([\d]+)_{$value}_[\d]+_[\d]+\.{$ext}$!i", pathinfo($f, PATHINFO_BASENAME), $m)) {
+								$sorted_files[(int)$m[1]] = $f;
+							}
+						}
+						ksort($sorted_files);
 					}
-					ksort($sorted_files);
 					
-					$this->properties['pano_files'] = $sorted_files;
+					$this->properties['pano_files'] = array_values($sorted_files);
 					$this->properties['width'] = $cscale['width'];
 					$this->properties['height'] = $cscale['height'];
 					
@@ -360,7 +422,6 @@ class WLPlugMediaPanorama Extends BaseMediaPlugin implements IWLPlugMedia {
 						'properties' => $this->properties,
 						'transformations' => []
 					];
-					//$zip->close();
 					return true;
 				} 
 				break;
@@ -483,11 +544,15 @@ class WLPlugMediaPanorama Extends BaseMediaPlugin implements IWLPlugMedia {
 				} elseif(caGetMediaClass($mimetype) === 'image') {
 					// @TODO: error checking
 					$files = $this->get('pano_files');
-					
-					$target_path = caGetTempFileName('panorama');
-					$zip->extractTo($target_path, $files[0]);
+					$target_path = $this->tmp_path;
 					$m = new Media();
-					$m->read($target_path.'/'.$files[0]);
+					if(substr($files[0], 0, 1) === '/') {
+						copy($files[0], $p = $target_path.'/'.pathinfo($files[0], PATHINFO_BASENAME));
+						$m->read($p);
+					} else {
+						$zip->extractTo($target_path, $files[0]);
+						$m->read($target_path.'/'.$files[0]);
+					}
 					
 					foreach($this->handle['transformations'] as $t) {
 						$m->transform($t['operation'], $t['parameters']);
@@ -523,10 +588,15 @@ class WLPlugMediaPanorama Extends BaseMediaPlugin implements IWLPlugMedia {
 		$output = [];
 		
 		$zip = $this->handle['zip'];
-		$target_path = caGetTempFileName('panorama');
-		foreach($files as $f) {
-			$zip->extractTo($target_path, $f);
-			$output[] = "{$target_path}/{$f}";
+		$target_path = $this->tmp_path;
+		foreach($files as $f) {		
+			if(substr($f, 0, 1) === '/') {
+				copy($f, $p = $target_path.'/'.pathinfo($f, PATHINFO_BASENAME));
+				$output[] = $p;
+			} else {
+				$zip->extractTo($target_path, $f);
+				$output[] = "{$target_path}/{$f}";
+			}
 		}
 		return $output;
 	}
@@ -600,7 +670,6 @@ class WLPlugMediaPanorama Extends BaseMediaPlugin implements IWLPlugMedia {
 	 */
 	public function htmlTag($url, $properties, $options=null, $volume_info=null) {
 		if (!is_array($options)) { $options = array(); }
-		//print "url=$url\n";die;
 		foreach(array(
 			'name', 'url', 'viewer_width', 'viewer_height', 'idname',
 			'viewer_base_url', 'width', 'height',
@@ -626,6 +695,17 @@ class WLPlugMediaPanorama Extends BaseMediaPlugin implements IWLPlugMedia {
 	 *
 	 */
 	public function cleanup() {
+		if(is_dir($this->tmp_path)) {
+			caRemoveDirectory($this->tmp_path);
+		}
+		return;
+	}
+	# ------------------------------------------------
+	/**
+	 *
+	 */
+	public function __destruct() {
+		$this->cleanup();
 		return;
 	}
 	# ------------------------------------------------
