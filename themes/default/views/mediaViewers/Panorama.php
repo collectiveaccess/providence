@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2026 Whirl-i-Gig
+ * Copyright 2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,28 +31,30 @@
  */
 AssetLoadManager::register("panorama");
 
-$files =  $this->getVar('files');
-$urls = array_values(array_map(function($v) {
-	return $v['original_url'];
-}, $files));
+$width = caParseElementDimension($this->getVar('width') ? $this->getVar('width') : $this->getVar('viewer_width'), ['returnAsString' => true, 'default' => '100%']);
+$height = caParseElementDimension($this->getVar('height') ? $this->getVar('height') : $this->getVar('viewer_height'), ['returnAsString' => true, 'default' => '100%']);
+$id = 'panorama_'.preg_replace("/[^A-Za-z0-9]+/", "_", $this->getVar('identifier'));
+
+$options = $this->getVar('options');
+$file_urls = $this->getVar('fileUrls');
 ?>
-<div id="panoramaViewer"></div>
+<div id="<?= $id; ?>" class="panoramaViewer" style="width: <?= $$width; ?>; height: <?= $height; ?>;"></div>
 <script type="text/javascript">
 	jQuery(document).ready(function() {
 		const viewer = window.CI360;
-		const container = document.getElementById('panoramaViewer');
+		const container = document.getElementById('<?= $id; ?>');
 		
 		const config = {
-		  imageListX: <?= json_encode($urls); ?>,
-		  amountX: <?= sizeof($urls); ?>,
-		  autoplay: false,
-		  speed: 100,
-		  dragSpeed: 150,
-		  fullscreen: false,
-		  zoomMax: 6,
-		  inertia: true,
-		  draggable: true,
-		  keys: true
+		  imageListX: <?= json_encode($file_urls); ?>,
+		  amountX: <?= sizeof($file_urls); ?>,
+		  autoplay: <?= json_encode(caGetOption('autoplay', $options, false, ['castTo' => 'bool'])); ?>,
+		  speed: <?= json_encode(caGetOption('speed', $options, 100)); ?>,
+		  dragSpeed: <?= json_encode(caGetOption('dragSpeed', $options, 150)); ?>,
+		  fullscreen: <?= json_encode(caGetOption('fullscreen', $options, false, ['castTo' => 'bool'])); ?>,
+		  zoomMax: <?= json_encode(caGetOption('zoomMax', $options, 8)); ?>,
+		  inertia: <?= json_encode(caGetOption('inertia', $options, true, ['castTo' => 'bool'])); ?>,
+		  draggable: <?= json_encode(caGetOption('draggable', $options, false, ['castTo' => 'bool'])); ?>,
+		  keys: <?= json_encode(caGetOption('keys', $options, false, ['castTo' => 'bool'])); ?>
 		};
 		
 		viewer.init(container, config);

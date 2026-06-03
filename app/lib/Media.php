@@ -413,9 +413,16 @@ class Media extends BaseObject {
 	}
 	# ----------------------------------------------------------
 	/**
+	 * Merge multiple images into a single image.
 	 *
+	 * @param array $images Array of images to compose. Each image in list is represented by an array with three keys: "path" (file path of image, "x" (offset from left, in pixels), "y" (offset from top, in pixels)
+	 * @param string $filepath File path to write merged image to
+	 * @param int $width Width, in pixeels, of merged image
+	 * @param int $height Height, in pixeels, of merged image
+	 *
+	 * @return bool True on success, false on failure
 	 */
-	public function compose(array $images, string $filepath, int $width, int $height) : ?bool {
+	public function compose(array $images, string $filepath, int $width, int $height) : bool {
 		if (!$this->instance) { return null; }
 		return $this->instance->compose($images, $filepath, $width, $height);
 	}

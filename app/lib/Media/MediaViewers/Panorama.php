@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2026 Whirl-i-Gig
+ * Copyright 2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -55,16 +55,34 @@ class Panorama extends BaseMediaViewer implements IMediaViewer {
 			
 			if (is_a($t_instance, "ca_object_representations") || is_a($t_instance, "ca_site_page_media")) {
 				$viewer_opts = [
-					'id' => $id, 'viewer_width' => caGetOption('viewer_width', $data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $data['display'], '100%')
+					'id' => $id, 'viewer_width' => caGetOption('viewer_width', $data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $data['display'], '100%'),
+					
+					'autoplay' => caGetOption('autoplay', $data['display'], false, ['castTo' => 'bool']),
+					'fullscreen' => caGetOption('fullscreen', $data['display'], false, ['castTo' => 'bool']),
+					'inertia' => caGetOption('inertia', $data['display'], false), ['castTo' => 'bool'],
+					'draggable' => caGetOption('draggable', $data['display'], false, ['castTo' => 'bool']),
+					'keys' => caGetOption('keys', $data['display'], false, ['castTo' => 'bool']),
+					'autoplay' => caGetOption('autoplay', $data['display'], false, ['castTo' => 'bool']),
+					
+					'speed' => caGetOption('speed', $data['display'], 100, ['castTo' => 'int']),
+					'dragSpeed' => caGetOption('dragSpeed', $data['display'], 150, ['castTo' => 'int']),
+					'zoomMax' => caGetOption('zoomMax', $data['display'], 8, ['castTo' => 'int'])
 				];
-				
+			
+			
 				if (!$t_instance->hasMediaVersion('media', $version = caGetOption('display_version', $data['display'], 'original'))) {
 					if (!$t_instance->hasMediaVersion('media', $version = caGetOption('alt_display_version', $data['display'], 'original'))) {
 						$version = 'original';
 					}
 				}
 				
-				$o_view->setVar('files', $t_instance->getFileList(null, null, null, ['versions' => ['original', 'large_preview']]));
+				$o_view->setVar('fileList', $files = $t_instance->getFileList(null, null, null, ['versions' => ['original', 'large_preview']]));
+				
+				$urls = array_values(array_map(function($v) {
+					return $v['original_url'];
+				}, $files));
+				$o_view->setVar('fileUrls', $urls);
+				$o_view->setVar('options', $viewer_opts);
 				
 				// HTML for Panorama
 				$o_view->setVar('viewerHTML', $t_instance->getMediaTag('media', $version, $viewer_opts));

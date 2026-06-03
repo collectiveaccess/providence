@@ -34,7 +34,7 @@ include_once(__CA_LIB_DIR__."/Plugins/IWLPlugMedia.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
 class WLPlugMediaPanorama Extends BaseMediaPlugin implements IWLPlugMedia {
-	var $errors = array();
+	var $errors = [];
 	
 	var $filepath;
 	var $handle;
@@ -43,11 +43,6 @@ class WLPlugMediaPanorama Extends BaseMediaPlugin implements IWLPlugMedia {
 	
 	var $opo_config;
 	var $opo_search_config;
-	var $ops_ghostscript_path;
-	var $ops_pdftotext_path;
-	
-	var $ops_imagemagick_path;
-	var $ops_graphicsmagick_path;
 	
 	var $metadata = [];
 	
@@ -146,9 +141,6 @@ class WLPlugMediaPanorama Extends BaseMediaPlugin implements IWLPlugMedia {
 		}
 		$this->opo_config = Configuration::load();
 		
-		$this->ops_imagemagick_path = caMediaPluginImageMagickInstalled();
-		$this->ops_graphicsmagick_path = caMediaPluginGraphicsMagickInstalled();
-		
 		$this->info["INSTANCE"] = $this;
 		
 		$this->tmp_path = caGetTempFileName('panorama');
@@ -198,8 +190,7 @@ class WLPlugMediaPanorama Extends BaseMediaPlugin implements IWLPlugMedia {
 			}
 			$zip->close();
 			if($has_content && $has_config) {
-				self::$s_info_cache[$filepath] = 'application/orbitvu';
-				return 'application/orbitvu';
+				return self::$s_info_cache[$filepath] = 'application/orbitvu';
 			}
 		} 
 		return self::$s_info_cache[$filepath] = null;
@@ -330,8 +321,8 @@ class WLPlugMediaPanorama Extends BaseMediaPlugin implements IWLPlugMedia {
 						}
 					}
 					
-					// Get res
-					// @TODO get highest resolution images and stitch together as needed.
+					// Get highest resolution image; stitch together tiled images into single image, as that's
+					// what the 360-View viewer we are using expected
 					$cscale = null;
 					foreach($metadata['scales'] as $scale) {
 						if(!$cscale) { $cscale = $scale; continue; }
@@ -394,7 +385,7 @@ class WLPlugMediaPanorama Extends BaseMediaPlugin implements IWLPlugMedia {
 							}
 						}
 						ksort($sorted_files);
-					} else {
+					} elseif(($rows == 1) && ($cols == 1)) { 
 						$files = array_values(array_filter($files, function($v) use ($ext, $value, $name, $rows, $cols) {
 							if(preg_match("!^{$name}[\d]+_[\d]+_{$value}_([\d]+)_([\d])+\.{$ext}$!i", pathinfo($v, PATHINFO_BASENAME), $m)) {
 								if(($m[1] > $cols) || ($m[2] > $rows)){ return false; }
@@ -409,6 +400,8 @@ class WLPlugMediaPanorama Extends BaseMediaPlugin implements IWLPlugMedia {
 							}
 						}
 						ksort($sorted_files);
+					} else {
+						throw new ApplicationException(_t('Cannot read: Orbitvu format image has no rows or columns'));
 					}
 					
 					$this->properties['pano_files'] = array_values($sorted_files);
@@ -542,23 +535,30 @@ class WLPlugMediaPanorama Extends BaseMediaPlugin implements IWLPlugMedia {
 				if($mimetype === 'application/panorama') {
 					copy($this->properties['pano_filepath'], "{$filepath}.zip");
 				} elseif(caGetMediaClass($mimetype) === 'image') {
-					// @TODO: error checking
 					$files = $this->get('pano_files');
 					$target_path = $this->tmp_path;
 					$m = new Media();
 					if(substr($files[0], 0, 1) === '/') {
+						// For absolute paths images generated from tiles, just copy the file
 						copy($files[0], $p = $target_path.'/'.pathinfo($files[0], PATHINFO_BASENAME));
-						$m->read($p);
+						$ret = $m->read($p);
 					} else {
-						$zip->extractTo($target_path, $files[0]);
-						$m->read($target_path.'/'.$files[0]);
+						// Is non-tiled image, so we need to extract it from the Zip archive
+						$zip->extractTo($p = $target_path, $files[0]);
+						$ret = $m->read($target_path.'/'.$files[0]);
 					}
-					
+					if(!$ret) {
+						throw new ApplicationException(_t('Cannot read Orbitvu image at %1', $p));
+					}
 					foreach($this->handle['transformations'] as $t) {
-						$m->transform($t['operation'], $t['parameters']);
+						if(!$m->transform($t['operation'], $t['parameters'])) {
+							throw new ApplicationException(_t('Cannot apply transform %1 to Orbitvu image at %2', $t['operation'], $p));
+						}
 					}
 					
-					$f = $m->write($filepath, $mimetype);
+					if (!($f = $m->write($filepath, $mimetype))) {
+						throw new ApplicationException(_t('Cannot write converted Orbitvu image as %1 to %2', $mimetype, $filepath));
+					}
 					return $filepath;
 				} else {
 					throw new ApplicationException(_t('Cannot convert Orbitvu to specified type (%1)', $mimetype));

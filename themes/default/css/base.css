@@ -8361,17 +8361,17 @@ button.passwordView {
 }
 
 
-#panoramaViewer {
+.panoramaViewer {
     width: 100% !important;
     height: 100% !important;
 }
 
-#panoramaViewer .cloudimage-360-inner-box {
+.panoramaViewer .cloudimage-360-inner-box {
     width: 100% !important;
     height: 100% !important;
 }
 
-#panoramaViewer .cloudimage-360-inner-box canvas {
+.panoramaViewer .cloudimage-360-inner-box canvas {
     width: 100% !important;
     height: 100% !important;
     object-fit: contain !important; /* Prevents image distortion */
