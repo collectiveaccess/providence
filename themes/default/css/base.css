@@ -8359,3 +8359,20 @@ button.passwordView {
 .aclLabel {
 	font-weight: normal;
 }
+
+
+.panoramaViewer {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.panoramaViewer .cloudimage-360-inner-box {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.panoramaViewer .cloudimage-360-inner-box canvas {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important; /* Prevents image distortion */
+}
