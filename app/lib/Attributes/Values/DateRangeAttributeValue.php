@@ -336,7 +336,10 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 				$vs_date_format = $o_date_config->get('dateFormat');
 			}
 		}
-
+		if ((bool)$va_settings['useDatePicker']) {
+			$vs_date_format = 'delimited';
+		}
+		
 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $vs_date_format.$this->opn_start_date.$this->opn_end_date);
 
 		// pull from cache
