@@ -1,13 +1,12 @@
 /*
-	Date: 11 March 2026
+	Date: 4 March 2026
 	Migration: 210
-	Description: Support for settings on UI editors and screens
+	Description: Add ACL representation extension field
 */
 
 /*==========================================================================*/
 
-alter table ca_editor_uis add column settings longtext not null;
-alter table ca_editor_ui_screens add column settings longtext not null;
+ALTER TABLE ca_acl ADD COLUMN include_representations tinyint unsigned not null default 0;
       
 /*==========================================================================*/
 

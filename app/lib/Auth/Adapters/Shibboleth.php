@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2024 Whirl-i-Gig
+ * Copyright 2018-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -118,7 +118,7 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 			return false;
 		}
 		if (!($attrs = $this->opo_shibAuth->getAttributes())) { 
-			if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] Received not attrbitures while attempting to authenticate with {$username}::{$password}")); }
+			if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] Received no attributes while attempting to authenticate with {$username}::{$password}")); }
 			return false; 	
 		}
 		$uid = $this->mapAttribute('uid', $attrs);
@@ -147,8 +147,13 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
         }
         if($this->opo_shibAuth->isAuthenticated()){
             $default_roles =  $this->auth_config->get('shibboleth_users_default_roles');
+            if(!is_array($default_roles)) { $default_roles = []; }
             $default_groups = $this->auth_config->get('shibboleth_users_default_groups');
-                
+            if(!is_array($default_groups)) { $default_groups = []; }
+            
+            $group_attrs = $this->auth_config->get('shibboleth_group_attributes') ?? null;
+            $group_map = $this->auth_config->get('shibboleth_group_map') ?? [];
+            
             $attrs = $this->opo_shibAuth->getAttributes();
             
         	if($this->debug) { 
@@ -172,6 +177,23 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
         		if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] User info authentication with {$username}::{$password} failed because no email was set")); }
             	throw new ShibbolethException(_t("User email address not set."));
             }
+            
+            // Process groups
+            $user_groups = [];
+            if(is_array($group_attrs)) {
+           		foreach($group_attrs as $gattr) {
+           			if(isset($attrs[$gattr]) && is_array($attrs[$gattr])) {
+           				if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] Found groups in {$gattr} attribute")); }
+           				foreach($attrs[$gattr] as $g) {
+           					if(isset($group_map[$g])) {
+           						$user_groups[] = $group_map[$g];
+           						if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] Added group {$g} found in group attribute {$gattr}")); }
+           					}
+           				}
+           			}	
+           		}            	
+           	}
+            
             $ret = [
                 'user_name' => $username ? $username : $uid,
 				'email' => $email,
@@ -179,7 +201,7 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 				'lname' => $lname ? $lname : $email,
 				'active' => 1,
 				'roles' => $default_roles,
-				'groups' => $default_groups
+				'groups' => array_unique(array_merge($default_groups, $user_groups))
             ];
             if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] User info succeeded with {$username}::{$password}; values are: %1", print_R($ret, true))); }
             return $ret;

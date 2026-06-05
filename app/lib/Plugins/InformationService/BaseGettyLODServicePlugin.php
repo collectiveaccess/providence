@@ -97,7 +97,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 
 		// Set default values for options
 		$pa_options[ CURLOPT_URL ]            = caGetOption( CURLOPT_URL, $pa_options,
-			"http://vocab.getty.edu/sparql.json?query={$ps_query}" );
+			"https://vocab.getty.edu/sparql.json?query={$ps_query}" );
 		$pa_options[ CURLOPT_CONNECTTIMEOUT ] = caGetOption( CURLOPT_CONNECTTIMEOUT, $pa_options, 2 );
 		$pa_options[ CURLOPT_RETURNTRANSFER ] = caGetOption( CURLOPT_RETURNTRANSFER, $pa_options, 1 );
 		$pa_options[ CURLOPT_USERAGENT ]      = caGetOption( CURLOPT_USERAGENT, $pa_options,
@@ -431,7 +431,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	}
 
 	protected function _getServiceUrl() {
-		return 'http://vocab.getty.edu/' . $this->getConfigName();
+		return 'https://vocab.getty.edu/' . $this->getConfigName();
 	}
 
 	/**
