@@ -978,7 +978,7 @@ class ca_users extends BaseModel {
 				
 				try {
 					$o_db->query("
-						INSERT INTO ca_users_x_roles 
+						INSERT IGNORE INTO ca_users_x_roles 
 						(user_id, role_id)
 						VALUES
 						(?, ?)
@@ -1301,7 +1301,7 @@ class ca_users extends BaseModel {
 				
 				try {
 				$o_db->query("
-						INSERT INTO ca_users_x_groups 
+						INSERT IGNORE INTO ca_users_x_groups 
 						(user_id, group_id)
 						VALUES
 						(?, ?)
