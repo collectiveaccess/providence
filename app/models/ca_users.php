@@ -978,7 +978,7 @@ class ca_users extends BaseModel {
 				
 				try {
 					$o_db->query("
-						INSERT INTO ca_users_x_roles 
+						INSERT IGNORE INTO ca_users_x_roles 
 						(user_id, role_id)
 						VALUES
 						(?, ?)
@@ -1301,7 +1301,7 @@ class ca_users extends BaseModel {
 				
 				try {
 				$o_db->query("
-						INSERT INTO ca_users_x_groups 
+						INSERT IGNORE INTO ca_users_x_groups 
 						(user_id, group_id)
 						VALUES
 						(?, ?)
@@ -3382,20 +3382,8 @@ class ca_users extends BaseModel {
 					caLogEvent('SYS', $msg, 'ca_users->authenticate()');
 					throw new ApplicationException($msg);
 				}
-
-				if(is_array($va_values['groups']) && sizeof($va_values['groups'])>0) {
-					$this->addToGroups($va_values['groups']);
-				}
-
-				if(is_array($va_values['roles']) && sizeof($va_values['roles'])>0) {
-					$this->addRoles($va_values['roles']);
-				}
-
-				if(is_array($va_values['preferences']) && sizeof($va_values['preferences'])>0) {
-					foreach($va_values['preferences'] as $vs_pref => $vs_pref_val) {
-						$this->setPreference($vs_pref, $vs_pref_val);
-					}
-				}
+				
+				$this->_syncUserInfo($va_values);
 
 				$this->update();
 			}
@@ -3415,6 +3403,17 @@ class ca_users extends BaseModel {
                             caLogEvent('SYS', $msg, 'ca_users->authenticate()');
                             return false;
                         }
+                        try{
+							$va_values = AuthenticationManager::getUserInfo($vs_username, $ps_password);
+						} catch (Exception $e) {
+							if(get_class($e) !== 'AuthClassFeatureException') {
+								caLogEvent('SYS', _t('There was an error while trying to fetch information for a new user from the current authentication backend. The message was %1 : %2', get_class($e), $e->getMessage()), 'ca_users->authenticate()');
+								return false;
+							}
+						}
+						
+						if(is_array($va_values)) { $this->_syncUserInfo($va_values); }
+						$this->update();
                         return true;
                     } else {
                     	$msg = _t('There was an error while trying to authenticate user %1: Load by user name failed', $vs_username);
@@ -3438,6 +3437,41 @@ class ca_users extends BaseModel {
 			}
 		}
 		return false;
+	}
+	# ----------------------------------------
+	/**
+	 * 
+	 * 
+	 */	
+	private function _syncUserInfo(array $values) : ?array {
+		if(array_key_exists('groups', $values)) { 
+			if(!is_array($values['groups'])) { $values['groups'] = []; }
+			$groups = $this->getUserGroups();
+			foreach($groups as $group_id => $group_info) {
+				if(!in_array($group_info['code'], $values['groups'])) {
+					$this->removeFromGroups($group_id);
+				}
+			}
+			$this->addToGroups($values['groups']);
+		}
+
+		if(array_key_exists('roles', $values)) { 
+			if(!is_array($values['roles'])) { $values['roles'] = []; }
+			$roles = $this->getUserRoles();
+			foreach($roles as $role_id => $role_info) {
+				if(!in_array($role_info['code'], $values['roles'])) {
+					$this->removeRoles($role_id);
+				}
+			}
+			$this->addRoles($values['roles']);
+		}
+
+		if(is_array($values['preferences']) && sizeof($values['preferences'])>0) {
+			foreach($values['preferences'] as $pref => $pref_val) {
+				$this->setPreference($pref, $pref_val);
+			}
+		}
+		return $values;
 	}
 	# ----------------------------------------
 	/**
@@ -3609,9 +3643,9 @@ class ca_users extends BaseModel {
 	 * @param array $options Options include:
 	 *		throwException = Throw application exception if user does not have specified action. [Default is false]
 	 *		exceptionMessage = Message returned in exception on error. [Default is 'Access Denied']
-	 * @return bool
+	 * @return bool Return true, false or null if the specified action is not defined
 	 */
-	public function canDoAction(string $action, array $options=null) : bool {
+	public function canDoAction(string $action, array $options=null) : ?bool {
 		$throw = caGetOption('throwException', $options, false); 
 		$cache_key = $action."/".$this->getPrimaryKey();
 		if (isset(ca_users::$s_user_action_access_cache[$cache_key])) { 
@@ -3634,11 +3668,11 @@ class ca_users extends BaseModel {
 		        }
 		    }
 		    
-			// return false if action is not valid	
+			// return null if action is not valid	
 			if ($throw) {
 				throw new UserActionException(caGetOption('exceptionMessage', $options, _t('Access denied')));
 			}
-		    return ca_users::$s_user_action_access_cache[$cache_key] = false; 
+		    return ca_users::$s_user_action_access_cache[$cache_key] = null; 
 		}
 		
 		// is user administrator?
@@ -3666,7 +3700,7 @@ class ca_users extends BaseModel {
 			}
 		}
 		
-		return ca_users::$s_user_action_access_cache[$cache_key] = false;
+		return ca_users::$s_user_action_access_cache[$cache_key] = null;
 	}
 	# ----------------------------------------
 	/**

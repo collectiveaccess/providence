@@ -837,8 +837,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 */
 	public function get($ps_field, $pa_options=null) {
 		$vn_s = sizeof($va_tmp = explode('.', $ps_field));
-		if ((($vn_s == 1) && ($vs_field = $ps_field)) || (($vn_s == 2) && ($va_tmp[0] == $this->tableName()) && ($vs_field = $va_tmp[1]))) {
-			if ($this->hasField($vs_field) || (in_array(strtolower($vs_field), ['created', 'lastmodified']))) { return BaseModel::get($vs_field, $pa_options); }
+		if (!isset($pa_options['modifier']) && ((($vn_s == 1) && ($vs_field = $ps_field)) || (($vn_s == 2) && ($va_tmp[0] == $this->tableName()) && ($vs_field = $va_tmp[1])))) {
+			if ($this->hasField($vs_field) || (in_array(strtolower($vs_field), ['created', 'lastmodified']))) { 
+				return BaseModel::get($vs_field, $pa_options); 
+			}
 		}
 		if($this->_rowAsSearchResult) {
 			if (method_exists($this->_rowAsSearchResult, "filterPrimaryRepresentations")) {
@@ -1405,7 +1407,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
  		// Check actions
- 		if (!$this->getPrimaryKey() || !$t_user->canDoAction("can_delete_{$table}")) {
+ 		if (!$this->getPrimaryKey() || ($t_user->canDoAction("can_delete_{$table}") === false)) {
  			return false;
  		}
  		
@@ -1722,6 +1724,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				break;
 			# -------------------------------------------------
 			case 'intrinsic':
+				// Skip abandoned fields
+				if(in_array($ps_bundle_name, ['sub_type_left_id', 'include_subtypes_left', 'sub_type_right_id', 'include_subtypes_right'], true)) { break; }
+				
 				if (!($pa_options['label'] = caExtractSettingValueByLocale($pa_bundle_settings, 'label', $g_ui_locale))) {
 					$pa_options['label'] = $this->getFieldInfo($ps_bundle_name, 'LABEL');
 				}
@@ -2088,6 +2093,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'ca_search_form_type_restrictions':
 					case 'ca_editor_ui_screen_type_restrictions':
 					case 'ca_editor_ui_type_restrictions':
+					case 'ca_relationship_type_restrictions':
 						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
 						break;
 					# -------------------------------
@@ -2998,6 +3004,28 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 			}
 			
+			$readonly_when = $this->getAppConfig()->get("{$vs_table_name}_readonly_when");
+			if(is_array($readonly_when)) {
+				foreach($readonly_when as $k => $skipinfo) {
+					if($this->evaluateExpression($skipinfo['rule'])) {
+						$readonly_when[$k]['readonly'] = true;
+					} else {
+						unset($readonly_when[$k]);
+					}
+				}
+			}
+			
+			$force_readonly = [];
+			if(($vs_table_name === 'ca_object_representations') && is_array($readonly_when_fetched_from = $this->getAppConfig()->get('ca_object_representations_make_bundles_readonly_when_fetched_from'))) {
+				$fetched_by = $this->getMediaInfo('media', 'INPUT', 'FETCHED_BY');
+				if(is_array($readonly_when_fetched_from[$fetched_by] ?? null)) {
+					foreach($readonly_when_fetched_from[$fetched_by] as $r) {
+						$tmp = explode('.', $r);
+						$r = array_pop($tmp);
+						$force_readonly[$r] = true;
+					}
+				}
+			}
 			$vn_c = 0;
 			foreach($va_bundles as $va_bundle) {
 				if ($va_bundle['bundle_name'] === $vs_type_id_fld) { continue; }	// skip type_id
@@ -3039,6 +3067,21 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// no edit access so bail
 					//$this->postError(2320, _t('Access denied to screen %1', $pm_screen), "BundlableLabelableBaseModelWithAttributes->getBundleFormHTMLForScreen()");				
 					continue;
+				}
+				
+				if(is_array($readonly_when)) {
+					foreach($readonly_when as $k => $skipinfo) {
+						if(
+							!in_array("{$vs_table_name}.{$va_bundle['bundle_name']}", $skipinfo['skip'] ?? [])
+							&&
+							!in_array($va_bundle['bundle_name'], $skipinfo['skip'] ?? [])
+						) {
+							$va_bundle['settings']['readonly'] = true;	
+						}
+					}	
+				}
+				if(is_array($force_readonly) && ($force_readonly[$va_bundle['bundle_name']] ?? false)) {
+					$va_bundle['settings']['readonly'] = true;	
 				}
 				
 				// Apply policy relationship type restriction for related, if set
@@ -3327,10 +3370,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$o_view->setVar('object_collection_collection_ancestors', []); // collections to display as object parents when ca_objects_x_collections_hierarchy_enabled is enabled
 		if (($this->tableName() == 'ca_objects') && $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) {
-				
 			// Is object part of a collection?
-			
-			$va_object_ids = array_keys($va_ancestor_list);
+			$va_object_ids = array_keys($va_ancestor_list ?? []);
 			$vn_top_object_id = array_shift($va_object_ids);
 			if ($vn_top_object_id != $this->getPrimaryKey()) { 
 				$t_object = Datamodel::getInstanceByTableName("ca_objects", true);
@@ -4416,7 +4457,7 @@ if (!$batch) {
 
 		//
 		// Call processBundlesBeforeBaseModelSave() method in sub-class, if it is defined. The method is passed
-		// a list of bundles, the form prefix, the current request and the options passed to saveBundlesForScreen() â€“
+		// a list of bundles, the form prefix, the current request and the options passed to saveBundlesForScreen() Ð
 		// everything needed to perform custom processing using the incoming form content that is being saved.
 		// 
 		// A processBundlesBeforeBaseModelSave() method is rarely needed, but can be handy when you need to do something model-specific
@@ -5420,6 +5461,7 @@ if (!$batch) {
 					case 'ca_bundle_display_type_restrictions':
 					case 'ca_editor_ui_screen_type_restrictions':
 					case 'ca_search_form_type_restrictions':
+					case 'ca_relationship_type_restrictions':
 						if ($batch) { break; } // not supported in batch mode
 						$this->saveTypeRestrictionsFromHTMLForm($po_request, $vs_form_prefix, $vs_placement_code);
 						break;
@@ -6547,7 +6589,7 @@ if (!$batch) {
  	 *			showDeleted = Return related items that have been deleted. [Default is false]
  	 *			primaryIDs = array of primary keys in related table to exclude from returned list of items. Array is keyed on table name for compatibility with the parameter as used in the caProcessTemplateForIDs() helper [Default is null - nothing is excluded].
  	 *			restrictToBundleValues = Restrict returned items to those with specified bundle values. Specify an associative array with keys set to bundle names and key values set to arrays of values to filter on (eg. [bundle_name1 => [value1, value2, ...]]). [Default is null]
- 	 *			where = Restrict returned items to specified field values. The fields must be intrinsic and in the related table. This option can be useful when you want to efficiently fetch specific rows from a related table. Note that multiple fields/values are logically AND'ed together â€“ all must match for a row to be returned - and that only equivalence is supported. [Default is null]			
+ 	 *			where = Restrict returned items to specified field values. The fields must be intrinsic and in the related table. This option can be useful when you want to efficiently fetch specific rows from a related table. Note that multiple fields/values are logically AND'ed together Ð all must match for a row to be returned - and that only equivalence is supported. [Default is null]			
  	 *			criteria = Restrict returned items using SQL criteria appended directly onto the query. Criteria is used as-is and must be compatible with the generated SQL query. [Default is null]
  	 *			showCurrentOnly = Returns the relationship with the latest effective date for the row_id that is not greater than the current date. This option is only supported for standard many-many self and non-self relations and is ignored for all other kinds of relationships. [Default is false]
  	 *			currentOnly = Synonym for showCurrentOnly
@@ -9030,9 +9072,9 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return bool True if change succeeded, false if error
 	 */
 	public function changeType($pm_type) {
-		if (!$this->getPrimaryKey()) { return false; }					// row must be loaded
-		if (!method_exists($this, 'getTypeID')) { return false; }		// model must be type-able
-		
+		if(!$this->getPrimaryKey()) { return false; }					// row must be loaded
+		if(!method_exists($this, 'getTypeID')) { return false; }		// model must be type-able
+		if(!$pm_type && !$this->typeIDIsOptional()) { return false; }
 		unset($_REQUEST['form_timestamp']);
 		
 		if (!($vb_already_in_transaction = $this->inTransaction())) {
@@ -9114,8 +9156,8 @@ $pa_options["display_form_field_tips"] = true;
      * @param null $pn_rank
 side. For many self-relations the direction determines the nature and display text for the relationship.
 	 * @param array $pa_options Array of additional options:
-	 *		allowDuplicates = if set to true, attempts to add a relationship that already exists will succeed. Default is false â€“ duplicate relationships will not be created
-	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to add a duplicate relationship. Default is false â€“ don't set error. addRelationship() will always return false when creation of a duplicate relationship fails, no matter how the setErrorOnDuplicate option is set.
+	 *		allowDuplicates = if set to true, attempts to add a relationship that already exists will succeed. Default is false Ð duplicate relationships will not be created
+	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to add a duplicate relationship. Default is false Ð don't set error. addRelationship() will always return false when creation of a duplicate relationship fails, no matter how the setErrorOnDuplicate option is set.
 	 * @return bool|BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
 	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
@@ -9170,8 +9212,8 @@ side. For many self-relations the direction determines the nature and display te
 	 * @param string $ps_direction Optional direction specification for self-relationships (relationships linking two rows in the same table). Valid values are 'ltor' (left-to-right) and  'rtol' (right-to-left); the direction determines which "side" of the relationship the currently loaded row is on: 'ltor' puts the current row on the left side. For many self-relations the direction determines the nature and display text for the relationship.
 	 * @param null|int $pn_rank
 	 * @param array $pa_options Array of additional options:
-	 *		allowDuplicates = if set to true, attempts to edit a relationship to match one that already exists will succeed. Default is false â€“ duplicate relationships will not be created.
-	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to create a duplicate relationship. Default is false â€“ don't set error. editRelationship() will always return false when editing of a relationship fails, no matter how the setErrorOnDuplicate option is set.
+	 *		allowDuplicates = if set to true, attempts to edit a relationship to match one that already exists will succeed. Default is false Ð duplicate relationships will not be created.
+	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to create a duplicate relationship. Default is false Ð don't set error. editRelationship() will always return false when editing of a relationship fails, no matter how the setErrorOnDuplicate option is set.
 	 * @return BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
 	public function editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $pa_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
@@ -10216,6 +10258,17 @@ side. For many self-relations the direction determines the nature and display te
 			$rel_tables = array_filter($rel_tables, function($v) use ($skip_relationships) { return !in_array($v, $skip_relationships); } );
 		}
 		return $rel_tables;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param string $bundle
+	 * @return bool
+	 */
+	public function valueDidChange(string $bundle) : ?bool {
+		// TODO: handle changes on relationship?
+		return parent::valueDidChange($bundle);
 	}
 	# -------------------------------------------------------
 }

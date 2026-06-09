@@ -1257,6 +1257,32 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}	
 	# ------------------------------------------------
 	/**
+	 * Merge multiple images into a single image.
+	 *
+	 * @param array $images Array of images to compose. Each image in list is represented by an array with three keys: "path" (file path of image, "x" (offset from left, in pixels), "y" (offset from top, in pixels)
+	 * @param string $filepath File path to write merged image to
+	 * @param int $width Width, in pixeels, of merged image
+	 * @param int $height Height, in pixeels, of merged image
+	 *
+	 * @return bool True on success, false on failure
+	 */
+	public function compose(array $images, string $filepath, int $width, int $height) :  bool {
+		$im = new Gmagick();
+		$ext = pathinfo($filepath, PATHINFO_EXTENSION);
+		$im->newimage($width, $height, 'transparent', $ext);
+		foreach($images as $image) {
+			$layer = new Gmagick($image['path']);
+			$im->compositeimage($layer, 1, (int)$image['x'], (int)$image['y']);
+			
+			$layer->clear();
+			$layer->destroy();
+		}
+		$ret = $im->writeimage($filepath);
+		$im->clear();
+		return $ret ? true : false;	
+	}	
+	# ------------------------------------------------
+	/**
 	 *
 	 */
 	private function _dcrawConvertToTiff($filepath) {

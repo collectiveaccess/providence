@@ -14465,14 +14465,13 @@
             </label>
           </labels>
         </type>
-        <type code="seller" default="0">
+        <type code="seller" default="0" typeRestrictionLeft="purchase">
           <labels>
             <label locale="en_US">
               <typename>sold by</typename>
               <typename_reverse>is seller of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>purchase</subTypeLeft>
         </type>
         <type code="contact" default="0">
           <labels>

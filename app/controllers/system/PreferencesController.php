@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -101,7 +101,7 @@ class PreferencesController extends ActionController {
 		
 		$va_available_display_items = [];
 		foreach(QuickSearch::availableSearches(['expandByType' => true]) as $vs_bundle => $va_bundle_info) {
-			$va_available_display_items[$vs_bundle] = ['placement_id' => null, 'display' => $va_bundle_info['displayname'], 'bundle' => $vs_bundle];
+			$va_available_display_items[$vs_bundle] = ['placement_id' => null, 'display' => $va_bundle_info['displayname'], 'bundle' => preg_replace("![/]+!i", "-", $vs_bundle)];
 		}
 		
 		if (!is_array($va_search_list = $this->request->user->getPreference("quicksearch_search_list"))) { $va_search_list = []; }
@@ -397,7 +397,7 @@ class PreferencesController extends ActionController {
 			case 'EditQuickSearchPrefs':
 				$vs_group = 'quicksearch';
 				
-				$va_bundle_list = array_unique(array_map(function($v) { return preg_replace("!_[\d]+$!", "", $v); }, explode(';', $this->request->getParameter('displayBundleList', pString))));
+				$va_bundle_list = array_unique(array_map(function($v) { return preg_replace("!\-!", "/", preg_replace("!_[\d]+$!", "", $v)); }, explode(';', $this->request->getParameter('displayBundleList', pString))));
 			
 				$this->request->user->setPreference("quicksearch_search_list", $va_bundle_list);
 				$this->request->user->setPreference("quicksearch_redirect_on_idno_match", $this->request->getParameter('pref_quicksearch_redirect_on_idno_match', pString));

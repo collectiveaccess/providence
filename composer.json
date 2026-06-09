@@ -15,7 +15,7 @@
     "elasticsearch/elasticsearch": "~7.0",
     "ezyang/htmlpurifier": "~4.9",
     "guzzlehttp/guzzle": "^7.9",
-    "guzzlehttp/psr7": "2.7.*",
+    "guzzlehttp/psr7": "2.8.*",
     "james-heinrich/getid3": "^1.9.20",
     "joshralph/password-policy": "~0.2",
     "knplabs/github-api": "^3.14",
@@ -64,7 +64,7 @@
   },
   "suggest": {
     "binaryoung/jieba-php": "^0.1.0",
-    "simplesamlphp/simplesamlphp": "^2.2: required for SAML SSO logins",
+    "simplesamlphp/simplesamlphp": "^2.4: required for SAML SSO logins",
     "league/oauth2-client": "Required to autheticate oauth2 for phpmailer. Already installed through softonic/graphql-client",
     "greew/oauth2-azure-provider" :  "Needed for Microsoft Azure XOAUTH2 authentication",
     "hayageek/oauth2-yahoo": "Needed for Yahoo XOAUTH2 authentication",
