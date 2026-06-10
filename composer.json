@@ -36,7 +36,7 @@
     "phpoffice/phpword": "~1.4",
     "phpunit/phpunit": "^11.0",
     "srmklive/flysystem-dropbox-v2": ">=1.0.0",
-    "webonyx/graphql-php": "^14.1",
+    "webonyx/graphql-php": "^15",
     "ext-iconv": "*",
     "ext-simplexml": "*",
     "phpseclib/phpseclib": ">=2.0.47",
