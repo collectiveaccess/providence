@@ -1533,7 +1533,6 @@ class BaseModel extends BaseObject {
 									$t_list = Datamodel::getInstance('ca_lists', true);
 									$item = $t_list->getItemFromListByItemID($vs_list_code, $vn_id);
 									$vm_value = is_numeric($item['item_value'] ?? null) ? $item['item_value'] : 0;
-									print "vvv $vs_field = $vm_value\n";
 								} else {
 									$vm_orig_value = $vm_value;
 									$vm_value = preg_replace("/[^\d\-\.]+/", "", $vm_value); # strip non-numeric characters
