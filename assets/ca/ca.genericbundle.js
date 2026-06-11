@@ -83,6 +83,7 @@ var caUI = caUI || {};
 			placementID: null,
 			interstitialPrimaryTable: null,	/* table and id for record from which interstitial was launched */
 			interstitialPrimaryID: null,
+			interstitialKey: "relation_id",
 
 			sortInitialValuesBy: null,
 			firstItemColor: null,
@@ -273,7 +274,7 @@ var caUI = caUI || {};
 			// replace values in template
 			var jElement = jQuery(that.container + ' textarea.' + (isNew ? that.templateClassName : that.initialValueTemplateClassName)).template(templateValues);
 
-			if(options.useAnimation) {
+			if(that.useAnimation) {
 				jQuery(jElement).hide();
 				if ((that.addMode == 'prepend') && isNew) {	// addMode only applies to newly created bundles
 					jQuery(that.container + " ." + that.newItemListClassName).prepend(jElement);
@@ -395,12 +396,12 @@ var caUI = caUI || {};
 				if (!isReadonly && ('hasInterstitialUI' in initialValues) && (initialValues['hasInterstitialUI'] == true)) {
 					jQuery("#" +that.itemID + templateValues.n).find("." + that.interstitialButtonClassName).on('click', null,  {}, function(e) {
 						// Trigger interstitial edit panel
-						var u = options.interstitialUrl + "/relation_id/" + initialValues['relation_id'] + "/placement_id/" + that.placementID + "/n/" + templateValues.n + "/field_name_prefix/" + that.fieldNamePrefix;
+						var u = that.interstitialUrl + "/" + that.interstitialKey + "/" + (initialValues[that.interstitialKey] ?? null) + "/placement_id/" + that.placementID + "/n/" + templateValues.n + "/field_name_prefix/" + that.fieldNamePrefix;
 						if (that.interstitialPrimaryTable && that.interstitialPrimaryID) {	// table and id for record from which interstitial was launched
-							u +=  "/primary/" + that.interstitialPrimaryTable + "/primary_id/" + that.interstitialPrimaryID;
+							u +=  "/primary/" + that.interstitialPrimaryTable + "/primary_id/" + that.interstitialPrimaryID + "/key/" + that.interstitialKey;
 						}
-						options.interstitialPanel.showPanel(u);
-						jQuery('#' + options.interstitialPanel.getPanelContentID()).data('panel', options.interstitialPanel);
+						that.interstitialPanel.showPanel(u);
+						jQuery('#' + that.interstitialPanel.getPanelContentID()).data('panel', that.interstitialPanel);
 						e.preventDefault();
 						return false;
 					});
@@ -504,20 +505,20 @@ var caUI = caUI || {};
 			}
 
 			// colorize
-			if ((options.firstItemColor) || (options.lastItemColor) || (options.itemColor)) {
-				jQuery(this.container + " ." + options.listItemClassName).css('background-color', options.itemColor ? options.itemColor : '');
-				if (options.firstItemColor) {
-					jQuery(this.container + " ." + options.listItemClassName + ":first").css('background-color', '#' + options.firstItemColor);
+			if ((that.firstItemColor) || (that.lastItemColor) || (that.itemColor)) {
+				jQuery(this.container + " ." + that.listItemClassName).css('background-color', that.itemColor ? that.itemColor : '');
+				if (that.firstItemColor) {
+					jQuery(this.container + " ." + that.listItemClassName + ":first").css('background-color', '#' + that.firstItemColor);
 				}
-				if (options.lastItemColor) {
-					jQuery(this.container + " ." + options.listItemClassName + ":last").css('background-color', '#' + options.lastItemColor);
+				if (that.lastItemColor) {
+					jQuery(this.container + " ." + that.listItemClassName + ":last").css('background-color', '#' + that.lastItemColor);
 				}
-			} else if((options.oddColor) || (options.evenColor)) {
-				if (options.oddColor) {		// use :even because jQuery is zero-based (eg. 1, 3, 5... are "even" but we consider them "odd")
-					jQuery(this.container + " ." + options.listItemClassName + ":even").css('background-color', '#' + options.oddColor);
+			} else if((that.oddColor) || (that.evenColor)) {
+				if (that.oddColor) {		// use :even because jQuery is zero-based (eg. 1, 3, 5... are "even" but we consider them "odd")
+					jQuery(this.container + " ." + that.listItemClassName + ":even").css('background-color', '#' + that.oddColor);
 				}	
-				if (options.evenColor) {	// use :odd because jQuery is zero-based (eg. 0, 2, 4... are "odd" but we consider them "even")
-					jQuery(this.container + " ." + options.listItemClassName + ":odd").css('background-color', '#' + options.evenColor);
+				if (that.evenColor) {	// use :odd because jQuery is zero-based (eg. 0, 2, 4... are "odd" but we consider them "even")
+					jQuery(this.container + " ." + that.listItemClassName + ":odd").css('background-color', '#' + that.evenColor);
 				}	
 			}
 			
@@ -529,7 +530,7 @@ var caUI = caUI || {};
 		};
 
 		that.deleteFromBundle = function(id) {
-			if(options.useAnimation) {
+			if(that.useAnimation) {
 				jQuery('#' + this.itemID + id).slideUp(that.animationDuration, function() { this.remove(); });
 			} else {
 				jQuery('#' + this.itemID + id).remove();
