@@ -121,6 +121,11 @@ define('__CA_NAV_ICON_NO_AUTO_DELETE__', 83);
 define('__CA_NAV_ICON_UNSAVED_CHANGES__', 84);
 define('__CA_NAV_ICON_RANDOM__', 85);
 define('__CA_NAV_ICON_SET_ACCESS__', 86);
+define('__CA_NAV_ICON_NO_AUTO_DELETE__', 87);
+define('__CA_NAV_ICON_SET_ACCESS__', 88);
+define('__CA_NAV_ICON_PACK__', 89);
+define('__CA_NAV_ICON_UNPACK__', 90);
+
 /**
  * Icon position constants
  */ 
@@ -967,6 +972,12 @@ function _caNavIconTypeToName($pn_type) {
 			break;
 		case __CA_NAV_ICON_SET_ACCESS__:
 			$vs_fa_class = 'fas fa-broadcast-tower';
+			break;				
+		case __CA_NAV_ICON_PACK__:
+			$vs_fa_class = 'fas fa-box-open';
+			break;				
+		case __CA_NAV_ICON_UNPACK__:
+			$vs_fa_class = 'fas fa-box';
 			break;		
 		default:
 			print "INVALID CONSTANT {$pn_type}<br>\n";
@@ -1179,6 +1190,31 @@ function caEditorUrl($po_request, $ps_table, $pn_id=null, $pb_return_url_as_piec
 		case 155:
 			$vs_module = 'editor/tour_stops';
 			$vs_controller = 'TourStopEditor';
+			break;
+		case 'ca_editor_uis':
+		case 101:
+			$vs_module = 'administrate/setup/interface_editor';
+			$vs_controller = 'InterfaceEditor';
+			break;
+		case 'ca_editor_ui_screens':
+		case 100:
+			$vs_module = 'administrate/setup/interface_screen_editor';
+			$vs_controller = 'InterfaceScreenEditor';
+			break;
+		case 'ca_metadata_dictionary_entries':
+		case 214:
+			$vs_module = 'administrate/setup/data_dictionary_entries';
+			$vs_controller = 'DataDictionaryEntryEditor';
+			break;
+		case 'ca_metadata_alert_rules':
+		case 238:
+			$vs_module = 'manage/metadata_alert_rules';
+			$vs_controller = 'MetadataAlertRuleEditor';
+			break;
+		case 'ca_site_pages':
+		case 235:
+			$vs_module = 'manage/site_pages';
+			$vs_controller = 'SitePageEditor';
 			break;
 		default:
 			return null;

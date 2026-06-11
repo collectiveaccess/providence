@@ -115,12 +115,12 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		$max = $t_restriction->getSetting('maxAttributesPerRow');
 		
 		$count = $this->getAttributeCountByElement($element_id, ['includeBlanks' => true]);
-		if (($max > 0) && $count >= $max) { 
-			if($post_errors) { $this->postError(1990, ($max == 1) ? _t('Too many values exist; only %1 value is allowed', $max) : _t('Too many values exist; only %1 values are allowed', $max), 'BaseModelWithAttributes->checkAttributeRepeatCounts()', $error_source); }
+		if (($max > 0) && $count > $max) { 
+			if($post_errors) { $this->postError(1990, ($max == 1) ? _t('Too many values exist; only %1 value is allowed but %2 are set', $max, $count) : _t('Too many values exist; only %1 values are allowed but %2 are set', $max, $count), 'BaseModelWithAttributes->checkAttributeRepeatCounts()', $error_source); }
 			return false;
 		}
-		if (($min > 0) && ($count <= $min)) { 
-			if($post_errors) { $this->postError(1992, ($min == 1) ? _t('A value is required') : _t('At least %1 values are required', $min), 'BaseModelWithAttributes->checkAttributeRepeatCounts()', $error_source); }
+		if (($min > 0) && ($count < $min)) { 
+			if($post_errors) { $this->postError(1992, ($min == 1) ? _t('A value is required') : _t('At least %1 values are required but only %2 are set', $min, $count), 'BaseModelWithAttributes->checkAttributeRepeatCounts()', $error_source); }
 			return false;
 		}
 		return true;

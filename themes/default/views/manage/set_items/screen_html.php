@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,36 +25,31 @@
  *
  * ----------------------------------------------------------------------
  */
-$t_set_item = $this->getVar('t_subject');
-$item_id = $this->getVar('subject_id');
-$t_ui = $this->getVar('t_ui');
-$forced_values = $this->getVar('forced_values') ?? [];
-$bundle_list = [];
+$t_set_item 	= $this->getVar('t_subject');
+$item_id 		= $this->getVar('subject_id');
+
+$control_box 	= caEditorFormControls($this, 'SetItemEditorForm');
+$t_ui 			= $this->getVar('t_ui');
+
+$forced_values 	= $this->getVar('forced_values') ?? [];
+
+print $control_box;
 ?>
 <div class="sectionBox">
 <?php
-	print $control_box = caFormControlBox(
-		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'SetItemEditorForm').' '.
-		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'manage/set_items', 'SetItemEditor', 'Edit/'.$this->request->getActionExtra(), array('item_id' => $item_id)).
-		($this->getVar('show_show_notifications') ? caFormJSButton($this->request, __CA_NAV_ICON_ALERT__, _t("Show editor alerts"), '', ['class' => 'caEditorFormNotifications']) : ''), 
-		'', 
-		(intval($item_id) > 0) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/set_items', 'SetItemEditor', 'Delete/'.$this->request->getActionExtra(), array('item_id' => $item_id)) : ''
-	);
+	print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/item_id/'.$item_id, 'SetItemEditorForm', null, 'POST', 'multipart/form-data');
+	
+	$form_elements = $t_set_item->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
+							'request' => $this->request, 
+							'formName' => 'SetItemEditorForm',
+							'forcedValues' => $forced_values));
+									
+	print join("\n", $form_elements);
+	
+	print $control_box;
 ?>
-<?php
-		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/item_id/'.$item_id, 'SetItemEditorForm', null, 'POST', 'multipart/form-data');
-		
-		$form_elements = $t_set_item->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-								'request' => $this->request, 
-								'formName' => 'SetItemEditorForm',
-								'forcedValues' => $forced_values), $bundle_list);
-										
-		print join("\n", $form_elements);
-		
-		print $control_box;
-?>
-		<input type='hidden' name='item_id' value='<?= $item_id; ?>'/>
-	</form>
+	<input type='hidden' name='item_id' value='<?= $item_id; ?>'/>
+</form>
 </div>
 <div class="editorBottomPadding"><!-- empty --></div>
 

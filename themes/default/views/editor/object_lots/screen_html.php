@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2023 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,57 +25,46 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_lot 				= $this->getVar('t_subject');
-	$vn_lot_id 			= $this->getVar('subject_id');
+$t_lot 			= $this->getVar('t_subject');
+$lot_id 		= $this->getVar('subject_id');
 
-	$vb_can_edit	 	= $t_lot->isSaveable($this->request);
-	$vb_can_delete		= $t_lot->isDeletable($this->request);
+$rel_table		= $this->getVar('rel_table');
+$rel_type_id	= $this->getVar('rel_type_id');
+$rel_id			= $this->getVar('rel_id');
 
-	$vs_rel_table		= $this->getVar('rel_table');
-	$vn_rel_type_id		= $this->getVar('rel_type_id');
-	$vn_rel_id			= $this->getVar('rel_id');
-	
-	$forced_values 		= $this->getVar('forced_values') ?? [];
-	
-	if ($vb_can_edit) {
-		$va_cancel_parameters = ($vn_lot_id ? array('lot_id' => $vn_lot_id) : array('type_id' => $t_lot->getTypeID()));
-		print $vs_control_box = caFormControlBox(
-			caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'ObjectLotEditorForm').' '.
-			($this->getVar('show_save_and_return') ? caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save and return"), 'ObjectLotEditorForm', array('isSaveAndReturn' => true)) : '').' '.
-			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'editor/object_lots', 'ObjectLotEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
-			($this->getVar('show_show_notifications') ? caFormJSButton($this->request, __CA_NAV_ICON_ALERT__, _t("Show editor alerts"), '', ['class' => 'caEditorFormNotifications']) : ''), 
-			((intval($vn_lot_id) > 0) && $vb_can_delete) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'editor/object_lots', 'ObjectLotEditor', 'Delete/'.$this->request->getActionExtra(), array('lot_id' => $vn_lot_id)) : ''
-		);
-	}
-?>
-	<div class="sectionBox">
-<?php
-			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/lot_id/'.$vn_lot_id, 'ObjectLotEditorForm', null, 'POST', 'multipart/form-data');
-			
-			$va_form_elements = $t_lot->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-									'request' => $this->request, 
-									'formName' => 'ObjectLotEditorForm',
-									'forcedValues' => $forced_values), $va_bundle_list);
-									
-			print join("\n", $va_form_elements);
-			
-			if ($vb_can_edit) { print $vs_control_box; }
-?>
-			<input type='hidden' name='lot_id' value='<?= $vn_lot_id; ?>'/>
-			<input id='isSaveAndReturn' type='hidden' name='is_save_and_return' value='0'/>
-			<input type='hidden' name='rel_table' value='<?= $vs_rel_table; ?>'/>
-			<input type='hidden' name='rel_type_id' value='<?= $vn_rel_type_id; ?>'/>
-			<input type='hidden' name='rel_id' value='<?= $vn_rel_id; ?>'/>
-<?php
-			if($this->request->getParameter('rel', pInteger)) {
-?>
-				<input type='hidden' name='rel' value='1'/>
-<?php
-			}
-?>
-		</form>
-	</div>
+$forced_values 	= $this->getVar('forced_values') ?? [];
+$control_box 	= caEditorFormControls($this, 'ObjectLotEditorForm');
 
-	<div class="editorBottomPadding"><!-- empty --></div>
-	
-	<?= caSetupEditorScreenOverlays($this->request, $t_lot, $va_bundle_list); ?>
+print $control_box;
+?>
+<div class="sectionBox">
+<?php
+		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/lot_id/'.$lot_id, 'ObjectLotEditorForm', null, 'POST', 'multipart/form-data');
+		
+		$form_elements = $t_lot->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
+								'request' => $this->request, 
+								'formName' => 'ObjectLotEditorForm',
+								'forcedValues' => $forced_values), $bundle_list);
+								
+		print join("\n", $form_elements);
+		
+		print $control_box;
+?>
+		<input type='hidden' name='lot_id' value='<?= $lot_id; ?>'/>
+		<input id='isSaveAndReturn' type='hidden' name='is_save_and_return' value='0'/>
+		<input type='hidden' name='rel_table' value='<?= $rel_table; ?>'/>
+		<input type='hidden' name='rel_type_id' value='<?= $rel_type_id; ?>'/>
+		<input type='hidden' name='rel_id' value='<?= $rel_id; ?>'/>
+<?php
+		if($this->request->getParameter('rel', pInteger)) {
+?>
+			<input type='hidden' name='rel' value='1'/>
+<?php
+		}
+?>
+	</form>
+</div>
+
+<div class="editorBottomPadding"><!-- empty --></div>
+
+<?= caSetupEditorScreenOverlays($this->request, $t_lot, $bundle_list); ?>

@@ -5324,8 +5324,7 @@
                             <typename_reverse>is trailer of</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="GroupTrailer" default="0">
                     <labels>
@@ -5334,8 +5333,7 @@
                             <typename_reverse>is group trailer of</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="Sibling" default="0">
                     <labels>
@@ -5344,8 +5342,7 @@
                             <typename_reverse>sibling</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="Alternative" default="0">
                     <labels>
@@ -5354,8 +5351,7 @@
                             <typename_reverse>alternative</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="Simulcast" default="0">
                     <labels>
@@ -5364,8 +5360,7 @@
                             <typename_reverse>simulcast</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="Ondemand" default="0">
                     <labels>
@@ -5374,8 +5369,7 @@
                             <typename_reverse>on-demand</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="Catchup" default="0">
                     <labels>
@@ -5384,8 +5378,7 @@
                             <typename_reverse>catch-up</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="Parent" default="0">
                     <labels>
@@ -5394,8 +5387,7 @@
                             <typename_reverse>parent</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="Recommendation" default="0">
                     <labels>
@@ -5404,8 +5396,7 @@
                             <typename_reverse>recommendation</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="Commercialadvert" default="0">
                     <labels>
@@ -5414,8 +5405,7 @@
                             <typename_reverse>commercial advert</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="NormalAdvert" default="0">
                     <labels>
@@ -5424,8 +5414,7 @@
                             <typename_reverse>is normal advert of</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="TelescopedAdvert" default="0">
                     <labels>
@@ -5434,8 +5423,7 @@
                             <typename_reverse>is telescoped advert of</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="Speedbump" default="0">
                     <labels>
@@ -5444,8 +5432,7 @@
                             <typename_reverse>is speedbump of</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="DirectProductPurchase" default="0">
                     <labels>
@@ -5454,8 +5441,7 @@
                             <typename_reverse>direct product purchase</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="part_of" default="0">
                     <labels>
@@ -5464,8 +5450,7 @@
                             <typename_reverse>contains</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="ForMoreInformation" default="0">
                     <labels>
@@ -5474,8 +5459,7 @@
                             <typename_reverse>For more information</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="MakingOf" default="0">
                     <labels>
@@ -5484,8 +5468,7 @@
                             <typename_reverse>is making of for</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="Derived" default="0">
                     <labels>
@@ -5494,8 +5477,7 @@
                             <typename_reverse>derived from</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="Format" default="0">
                     <labels>
@@ -5504,8 +5486,7 @@
                             <typename_reverse>is format of</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="reference" default="0">
                     <labels>
@@ -5514,8 +5495,7 @@
                             <typename_reverse>is referenced by</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="required" default="0">
                     <labels>
@@ -5524,8 +5504,7 @@
                             <typename_reverse>is required by</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="version" default="0">
                     <labels>
@@ -5534,8 +5513,7 @@
                             <typename_reverse>has version</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="Preview" default="0">
                     <labels>
@@ -5544,8 +5522,7 @@
                             <typename_reverse>is preview of</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="episode" default="0">
                     <labels>
@@ -5554,8 +5531,7 @@
                             <typename_reverse>is episode of</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="clip" default="0">
                     <labels>
@@ -5564,8 +5540,7 @@
                             <typename_reverse>is clip of</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="season" default="0">
                     <labels>
@@ -5574,8 +5549,7 @@
                             <typename_reverse>is season of</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="composite" default="0">
                     <labels>
@@ -5584,8 +5558,7 @@
                             <typename_reverse>is composite of</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="supplement" default="0">
                     <labels>
@@ -5594,8 +5567,7 @@
                             <typename_reverse>is supplement of</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="promotion" default="0">
                     <labels>
@@ -5604,8 +5576,7 @@
                             <typename_reverse>is promotion for</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="ChannelIdentification" default="0">
                     <labels>
@@ -5614,8 +5585,7 @@
                             <typename_reverse>ss channel identification of</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="BestOf" default="0">
                     <labels>
@@ -5624,8 +5594,7 @@
                             <typename_reverse>is best of</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="AdditionalMaterial" default="0">
                     <labels>
@@ -5634,8 +5603,7 @@
                             <typename_reverse>is additional material for</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="Extract" default="0">
                     <labels>
@@ -5644,8 +5612,7 @@
                             <typename_reverse>is extract of</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
             </types>
         </relationshipTable>
@@ -5659,8 +5626,7 @@
                             <typename_reverse>creator</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="metadataProvider" default="1">
                     <labels>
@@ -5669,8 +5635,7 @@
                             <typename_reverse>metadata provider</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="publisher" default="0">
                     <labels>
@@ -5679,8 +5644,7 @@
                             <typename_reverse>publisher</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="contributor" default="0">
                     <labels>
@@ -5689,8 +5653,7 @@
                             <typename_reverse>contributor</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
             </types>
         </relationshipTable>
@@ -5703,8 +5666,7 @@
               <typename_reverse>is depicted by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
                 <type code="used" default="0">
           <labels>
@@ -5713,8 +5675,7 @@
               <typename_reverse>used</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
                 <type code="describes" default="0">
           <labels>
@@ -5723,8 +5684,7 @@
               <typename_reverse>is described by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
                 <type code="publicationEvent" default="0">
                     <labels>
@@ -5733,8 +5693,7 @@
                             <typename_reverse>Publication Event</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
             </types>
         </relationshipTable>
@@ -5747,22 +5706,19 @@
               <typename_reverse>contains</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
         <relationshipTable name="ca_occurrences_x_occurrences">
             <types>
-                <type code="related" default="1">
+                <type code="related" default="1" typeRestrictionLeft="event" typeRestrictionRight="event">
           <labels>
             <label locale="en_US">
               <typename>is related to</typename>
               <typename_reverse>is related to</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>event</subTypeLeft>
-          <subTypeRight>event</subTypeRight>
         </type>
             </types>
         </relationshipTable>
@@ -5775,8 +5731,6 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft/>
-          <subTypeRight/>
         </type>
             </types>
         </relationshipTable>
@@ -5789,18 +5743,15 @@
               <typename_reverse>was creation location of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
-                <type code="located" default="0">
+                <type code="located" default="0" typeRestrictionLeft="image">
           <labels>
             <label locale="en_US">
               <typename>was located at</typename>
               <typename_reverse>was location of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>image</subTypeLeft>
-          <subTypeRight/>
         </type>
                 <type code="depicts" default="1">
           <labels>
@@ -5809,8 +5760,7 @@
               <typename_reverse>is depicted by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
                 <type code="describes" default="0">
           <labels>
@@ -5819,8 +5769,7 @@
               <typename_reverse>is described by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
@@ -5833,8 +5782,7 @@
               <typename_reverse>describes</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
                 <type code="depicts" default="0">
           <labels>
@@ -5843,8 +5791,7 @@
               <typename_reverse>is depicted by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
@@ -5857,8 +5804,7 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
@@ -5871,8 +5817,7 @@
               <typename_reverse>was birthplace of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
                 <type code="residence" default="0">
           <labels>
@@ -5881,8 +5826,7 @@
               <typename_reverse>was residence of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
                 <type code="workplace" default="0">
           <labels>
@@ -5891,8 +5835,7 @@
               <typename_reverse>was workplace of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
                 <type code="ownership" default="0">
           <labels>
@@ -5901,8 +5844,7 @@
               <typename_reverse>was owned by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
                 <type code="built_by" default="0">
           <labels>
@@ -5911,22 +5853,19 @@
               <typename_reverse>was built by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
         <relationshipTable name="ca_entities_x_occurrences">
             <types>
-                <type code="attended" default="1">
+                <type code="attended" default="1" typeRestrictionRight="event">
           <labels>
             <label locale="en_US">
               <typename>attended</typename>
               <typename_reverse>was attended by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
         </type>
                 <type code="created" default="1">
                     <labels>
@@ -5935,8 +5874,7 @@
                             <typename_reverse>was created by</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
                 <type code="contributor" default="1">
                     <labels>
@@ -5945,8 +5883,7 @@
                             <typename_reverse>was contributor of</typename_reverse>
                         </label>
                     </labels>
-                    <subTypeLeft> </subTypeLeft>
-                    <subTypeRight/>
+
                 </type>
             </types>
         </relationshipTable>
@@ -5959,8 +5896,7 @@
               <typename_reverse>is donor of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
                 <type code="provider" default="0">
           <labels>
@@ -5969,8 +5905,7 @@
               <typename_reverse>is provider of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
@@ -5983,8 +5918,7 @@
               <typename_reverse>is origination location of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
@@ -5997,8 +5931,7 @@
               <typename_reverse>contains</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
@@ -6011,8 +5944,7 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
@@ -6025,8 +5957,7 @@
               <typename_reverse>describes</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
@@ -6039,8 +5970,7 @@
               <typename_reverse>describes</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
@@ -6053,8 +5983,7 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
@@ -6067,8 +5996,7 @@
               <typename_reverse>describes</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
@@ -6081,22 +6009,19 @@
               <typename_reverse>describes</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
         <relationshipTable name="ca_places_x_occurrences">
             <types>
-                <type code="site" default="1">
+                <type code="site" default="1" typeRestrictionLeft="event">
           <labels>
             <label locale="en_US">
               <typename>was site of</typename>
               <typename_reverse>occurred at</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
         </type>
             </types>
         </relationshipTable>
@@ -6109,8 +6034,7 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
@@ -6123,8 +6047,7 @@
               <typename_reverse>describes</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
@@ -6137,8 +6060,7 @@
               <typename_reverse>is located in</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
@@ -6151,8 +6073,7 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
@@ -6165,8 +6086,7 @@
               <typename_reverse>is depicted by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
                 <type code="illustrated" default="1">
           <labels>
@@ -6175,8 +6095,7 @@
               <typename_reverse>illustrates</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
@@ -6189,8 +6108,7 @@
               <typename_reverse>is depicted by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
                 <type code="describes" default="1">
           <labels>
@@ -6199,8 +6117,7 @@
               <typename_reverse>is described by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
@@ -6213,8 +6130,7 @@
               <typename_reverse>is depicted by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
                 <type code="describes" default="1">
           <labels>
@@ -6223,32 +6139,27 @@
               <typename_reverse>is described by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>
         <relationshipTable name="ca_representation_annotations_x_occurrences">
             <types>
-                <type code="depicts" default="1">
+                <type code="depicts" default="1" typeRestrictionLeft="event">
           <labels>
             <label locale="en_US">
               <typename>depicts</typename>
               <typename_reverse>is depicted by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
         </type>
-                <type code="describes" default="1">
+                <type code="describes" default="1" typeRestrictionLeft="event">
           <labels>
             <label locale="en_US">
               <typename>describes</typename>
               <typename_reverse>is described by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
         </type>
             </types>
         </relationshipTable>
@@ -6261,8 +6172,7 @@
               <typename_reverse>describes</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
+
         </type>
             </types>
         </relationshipTable>

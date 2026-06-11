@@ -1468,7 +1468,17 @@ function caEditorInspector($view, $options=null) {
 	</script>\n";
 			TooltipManager::add('#inspectorSetAutoDeleteButton', _t("Auto-delete set when older than %1 days?", 10));
 		}
-
+		
+		// Packing
+		if(method_exists($t_item, 'isCrate') && $t_item->isCrate()) {
+			if($t_item->crateIsPacked()) {
+				$tools [] = "<div id='inspectorPack' class='inspectorActionButton'>".caNavLink($view->request, caNavIcon(__CA_NAV_ICON_UNPACK__, '20px'), "button", '*', '*', 'unpack', [$t_item->primaryKey() => $t_item->getPrimaryKey()],[])."</div>\n";
+				TooltipManager::add("#inspectorPack", _t('Unpack'));
+			} else {
+				$tools [] = "<div id='inspectorPack' class='inspectorActionButton'>".caNavLink($view->request, caNavIcon(__CA_NAV_ICON_PACK__, '20px'), "button", '*', '*', 'pack', [$t_item->primaryKey() => $t_item->getPrimaryKey(),],[])."</div>\n";
+				TooltipManager::add("#inspectorPack", _t('Pack'));
+			}
+		}
 
 		$more_info = '';
 
@@ -6638,5 +6648,39 @@ function caNormalizeBundleLabel(?string $label, ?array $options=null) : ?string 
 	}
 	
 	return $label;
+}
+# ------------------------------------------------------------------
+/**
+ *
+ */
+function caEditorFormControls(View $view, string $form_id, ?array $options=null) : ?string {
+	$subject = $view->getVar('t_subject');
+	
+	$table = $subject->tableName();
+	$pk = caGetOption('id', $options, $subject ? $subject->primaryKey() : null);
+	if(!$pk) {
+		throw new ApplicationException(_t('No subject specified for form controls'));
+	}
+	$id = caGetOption('id', $options, $view->getVar('subject_id'));
+	
+	$can_edit = caGetOption('canEdit', $options, $subject->isSaveable($view->request));
+	$can_delete = caGetOption('canDelete', $options, $subject->isDeletable($view->request));
+	
+	$cancel_parameters = ($id ? [$pk => $id] : ['type_id' => $subject->getTypeID()]);
+	
+	$type = $subject->getTypeCode();
+	
+	$url = caEditorUrl($view->request, $table, $id, true, null, []);
+	$labels = $view->request->config->getAssoc("{$table}_{$type}_editor_control_labels") ?? $view->request->config->getAssoc("{$table}_editor_control_labels") ?? $view->request->config->getAssoc("editor_control_labels") ?? [];
+
+	$buf = caFormControlBox(
+		caFormSubmitButton($view->request, __CA_NAV_ICON_SAVE__, $labels['save'] ?? _t("Save"), $form_id).' '.
+		($view->getVar('show_save_and_return') ? caFormSubmitButton($view->request, __CA_NAV_ICON_SAVE__, $labels['save_and_return'] ?? _t("Save and return"), $form_id, ['isSaveAndReturn' => true]) : '').' '.
+		caFormNavButton($view->request, __CA_NAV_ICON_CANCEL__, $labels['cancel'] ?? _t("Cancel"), '', $url['module'], $url['controller'], 'Edit/'.$view->request->getActionExtra(), $cancel_parameters),
+		($view->getVar('show_show_notifications') ? caFormJSButton($view->request, __CA_NAV_ICON_ALERT__, $labels['alerts'] ?? _t("Show editor alerts"), '', ['class' => 'caEditorFormNotifications']) : ''), 
+		((intval($id) > 0) && $can_delete) ? caFormNavButton($view->request, __CA_NAV_ICON_DELETE__, $labels['delete'] ?? _t("Delete"), '', $url['module'], $url['controller'], 'Delete/'.$view->request->getActionExtra(), [$pk => $id]) : ''
+	);
+	
+	return $buf;
 }
 # ------------------------------------------------------------------
