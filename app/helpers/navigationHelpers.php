@@ -121,8 +121,6 @@ define('__CA_NAV_ICON_NO_AUTO_DELETE__', 83);
 define('__CA_NAV_ICON_UNSAVED_CHANGES__', 84);
 define('__CA_NAV_ICON_RANDOM__', 85);
 define('__CA_NAV_ICON_SET_ACCESS__', 86);
-define('__CA_NAV_ICON_NO_AUTO_DELETE__', 87);
-define('__CA_NAV_ICON_SET_ACCESS__', 88);
 define('__CA_NAV_ICON_PACK__', 89);
 define('__CA_NAV_ICON_UNPACK__', 90);
 
