@@ -2305,7 +2305,6 @@ class ca_users extends BaseModel {
 							$table = $t_instance->tableName();
 							
 							$values = $this->getPreference($ps_pref);
-						//	print_R($vs_current_value);
 							if (!is_array($values)) { $values = []; }
 							if ($t_instance && method_exists($t_instance, 'getTypeFieldName') && ($t_instance->getTypeFieldName())) {
 								$output = '';
@@ -3403,17 +3402,20 @@ class ca_users extends BaseModel {
                             caLogEvent('SYS', $msg, 'ca_users->authenticate()');
                             return false;
                         }
-                        try{
-							$va_values = AuthenticationManager::getUserInfo($vs_username, $ps_password);
-						} catch (Exception $e) {
-							if(get_class($e) !== 'AuthClassFeatureException') {
-								caLogEvent('SYS', _t('There was an error while trying to fetch information for a new user from the current authentication backend. The message was %1 : %2', get_class($e), $e->getMessage()), 'ca_users->authenticate()');
-								return false;
+                        
+                        if($this->opo_auth_config->get('synchronize_groups_on_each_login')) {
+							try{
+								$va_values = AuthenticationManager::getUserInfo($vs_username, $ps_password);
+							} catch (Exception $e) {
+								if(get_class($e) !== 'AuthClassFeatureException') {
+									caLogEvent('SYS', _t('There was an error while trying to fetch information for user from the current authentication backend. The message was %1 : %2', get_class($e), $e->getMessage()), 'ca_users->authenticate()');
+									return false;
+								}
 							}
+							
+							if(is_array($va_values)) { $this->_syncUserInfo($va_values); }
+							$this->update();
 						}
-						
-						if(is_array($va_values)) { $this->_syncUserInfo($va_values); }
-						$this->update();
                         return true;
                     } else {
                     	$msg = _t('There was an error while trying to authenticate user %1: Load by user name failed', $vs_username);
