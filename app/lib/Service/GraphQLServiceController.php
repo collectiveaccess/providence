@@ -255,7 +255,7 @@ class GraphQLServiceController extends \BaseServiceController {
 	 * Get access token from header
 	 * 
 	 */
-	protected static function getBearerToken() {
+	public static function getBearerToken() {
 		$headers = self::getAuthorizationHeaders();
 		if (!empty($headers)) {
 			if (preg_match('/Bearer\s(\S+)/', $headers, $m)) {
