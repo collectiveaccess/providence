@@ -95,7 +95,7 @@ class XLSXProfileParser extends BaseProfileParser {
 		$this->settings = $this->_getProfileInfo($this->xlsx);
 		if($base_profile = caGetOption('base', $this->settings, 'base.xml')) {
 			$base_parser = new \Installer\Parsers\XMLProfileParser();
-			$this->data = $base_parser->parse(__CA_BASE_DIR__.'/install/profiles/xml', $base_profile);
+			$this->data = $base_parser->parse(__CA_BASE_DIR__.'/install/profiles/xml', $base_profile, ['dontValidate' => true]);
 		}
 				
 		// Build list of worksheets to process
@@ -141,8 +141,8 @@ class XLSXProfileParser extends BaseProfileParser {
 
 			$settings = [];
 			for($line=1; $line <= $hrow; $line++) {
-				$n = strtolower($sheet->getCellByColumnAndRow(1, $line)->getValue());
-				$v = $sheet->getCellByColumnAndRow(2, $line)->getValue();
+				$n = strtolower(caGetExcelCellFromSheet($sheet, [1, $line])->getValue());
+				$v = caGetExcelCellFromSheet($sheet, [2, $line])->getValue();
 			
 				switch($n) {
 					case 'name':
@@ -253,10 +253,10 @@ class XLSXProfileParser extends BaseProfileParser {
 
 			$settings = [];
 			for($line=3; $line <= $hrow; $line++) {
-				$name = strtolower($sheet->getCellByColumnAndRow(1, $line)->getValue());
-				$language = strtolower($sheet->getCellByColumnAndRow(2, $line)->getValue());
-				$country = strtoupper($sheet->getCellByColumnAndRow(3, $line)->getValue());
-				$dont_use_for_cataloguing = strtolower($sheet->getCellByColumnAndRow(4, $line)->getValue());
+				$name = strtolower(caGetExcelCellFromSheet($sheet, [1, $line])->getValue());
+				$language = strtolower(caGetExcelCellFromSheet($sheet, [2, $line])->getValue());
+				$country = strtoupper(caGetExcelCellFromSheet($sheet, [3, $line])->getValue());
+				$dont_use_for_cataloguing = strtolower(caGetExcelCellFromSheet($sheet, [4, $line])->getValue());
 				
 				if(!$language || !$country) { continue; }
 				$locale_code = "{$language}_{$country}";
@@ -339,8 +339,8 @@ class XLSXProfileParser extends BaseProfileParser {
 		$hrow = $sheet->getHighestRow(); 
 		$i = 0;
 		for($r=$row; $r <= $hrow; $r++) {
-			$val = trim($sheet->getCellByColumnAndRow($col, $r)->getValue());
-			$next_val = trim($sheet->getCellByColumnAndRow($col, $r+1)->getValue());
+			$val = trim(caGetExcelCellFromSheet($sheet, [$col, $r])->getValue());
+			$next_val = trim(caGetExcelCellFromSheet($sheet, [$col, $r+1])->getValue());
 			if(!strlen($val)) { continue; }
 			
 			$idno = caTextToSnake($val);
@@ -353,7 +353,7 @@ class XLSXProfileParser extends BaseProfileParser {
 			]];
 			
 			$sub_items = [];
-			if (!$next_val && ($col < $info['end']) && ($subval = trim($sheet->getCellByColumnAndRow($col+1, $r+1)->getValue()))) {
+			if (!$next_val && ($col < $info['end']) && ($subval = trim(caGetExcelCellFromSheet($sheet, [$col+1, $r+1])->getValue()))) {
  				$sub_items = $this->processListItems($sheet, $info, $row+1, $col+1, $list_code);
  			}
  			
@@ -396,26 +396,26 @@ class XLSXProfileParser extends BaseProfileParser {
 			$elements = [];
 			$parent_element_code = null;
 			for($r=$row; $r <= $hrow; $r++) {
-				$element_name = trim($sheet->getCellByColumnAndRow(1, $r)->getValue());
-				$subelement_name = trim($sheet->getCellByColumnAndRow(2, $r)->getValue());
-				$element_code = trim($sheet->getCellByColumnAndRow(4, $r)->getValue());
+				$element_name = trim(caGetExcelCellFromSheet($sheet, [1, $r])->getValue());
+				$subelement_name = trim(caGetExcelCellFromSheet($sheet, [2, $r])->getValue());
+				$element_code = trim(caGetExcelCellFromSheet($sheet, [4, $r])->getValue());
 				
 				if(!$element_name || !$element_code) { continue; }
 				
 				$e = [
 					'name' => $subelement_name ? $subelement_name : $element_name,
 					'code' =>  $element_code,
-					'schema' =>  trim($sheet->getCellByColumnAndRow(3, $r)->getValue()),
-					'datatype' =>  trim($sheet->getCellByColumnAndRow(5, $r)->getValue()),	// TODO: validate codes
-					'render' => trim($sheet->getCellByColumnAndRow(6, $r)->getValue()),
-					'list' =>  trim($sheet->getCellByColumnAndRow(7, $r)->getValue()),
-					'restrict_to' =>  trim($sheet->getCellByColumnAndRow(8, $r)->getValue()),
-					'display_order' =>  trim($sheet->getCellByColumnAndRow(9, $r)->getValue()),
-					'mandatory' =>  trim($sheet->getCellByColumnAndRow(10, $r)->getValue()),
-					'repeatable' =>  trim($sheet->getCellByColumnAndRow(11, $r)->getValue()),
-					'public' =>  trim($sheet->getCellByColumnAndRow(12, $r)->getValue()),
-					'description' =>  trim($sheet->getCellByColumnAndRow(13, $r)->getValue()),
-					'notes' =>  trim($sheet->getCellByColumnAndRow(14, $r)->getValue())
+					'schema' =>  trim(caGetExcelCellFromSheet($sheet, [3, $r])->getValue()),
+					'datatype' =>  trim(caGetExcelCellFromSheet($sheet, [5, $r])->getValue()),	// TODO: validate codes
+					'render' => trim(caGetExcelCellFromSheet($sheet, [6, $r])->getValue()),
+					'list' =>  trim(caGetExcelCellFromSheet($sheet, [7, $r])->getValue()),
+					'restrict_to' =>  trim(caGetExcelCellFromSheet($sheet, [8, $r])->getValue()),
+					'display_order' =>  trim(caGetExcelCellFromSheet($sheet, [9, $r])->getValue()),
+					'mandatory' =>  trim(caGetExcelCellFromSheet($sheet, [10, $r])->getValue()),
+					'repeatable' =>  trim(caGetExcelCellFromSheet($sheet, [11, $r])->getValue()),
+					'public' =>  trim(caGetExcelCellFromSheet($sheet, [12, $r])->getValue()),
+					'description' =>  trim(caGetExcelCellFromSheet($sheet, [13, $r])->getValue()),
+					'notes' =>  trim(caGetExcelCellFromSheet($sheet, [14, $r])->getValue())
 				];
 				
 				if(!$subelement_name) { 
@@ -570,8 +570,8 @@ class XLSXProfileParser extends BaseProfileParser {
 		
 		$hrow = $sheet->getHighestRow(); 
 		for($r=$row; $r <= $hrow; $r++) {
-			$val = trim($sheet->getCellByColumnAndRow($col, $r)->getValue());
-			$next_val = trim($sheet->getCellByColumnAndRow($col, $r+1)->getValue());
+			$val = trim(caGetExcelCellFromSheet($sheet, [$col, $r])->getValue());
+			$next_val = trim(caGetExcelCellFromSheet($sheet, [$col, $r+1])->getValue());
 			if(!strlen($val)) { continue; }
 			
 			$idno = caTextToSnake($val);
@@ -586,7 +586,7 @@ class XLSXProfileParser extends BaseProfileParser {
 			]];
 			
 			$sub_types = [];
-			if (!$next_val && ($col < $info['end']) && ($subval = trim($sheet->getCellByColumnAndRow($col+1, $r+1)->getValue()))) {
+			if (!$next_val && ($col < $info['end']) && ($subval = trim(caGetExcelCellFromSheet($sheet, [$col+1, $r+1])->getValue()))) {
  				$sub_types = $this->processRelationshipTypesForTable($sheet, $info, $row+1, $col+1);
  			}
 			$values[$idno] = [
@@ -650,21 +650,21 @@ class XLSXProfileParser extends BaseProfileParser {
 			
 				$by_screen = [];
 				for($r=3; $r <= $hrow; $r++) {
-					$screen = trim($sheet->getCellByColumnAndRow(1, $r)->getValue());
+					$screen = trim(caGetExcelCellFromSheet($sheet, [1, $r])->getValue());
 					if(!$screen) { continue; }
 					
 					// Skip if label if blank (allows inclusion of sub-elements for documentation purposes)
-					if(!($label = trim($sheet->getCellByColumnAndRow(2, $r)->getValue()))) { continue; }
+					if(!($label = trim(caGetExcelCellFromSheet($sheet, [2, $r])->getValue()))) { continue; }
 					
 					$by_screen[$screen][] = [
 						'label' => $label,
-						'code' => trim($sheet->getCellByColumnAndRow(3, $r)->getValue()),
-						'relationship' => trim($sheet->getCellByColumnAndRow(4, $r)->getValue()),
-						'relationship_type' => trim($sheet->getCellByColumnAndRow(5, $r)->getValue()),
-						'type_res' => trim($sheet->getCellByColumnAndRow(6, $r)->getValue()),
-						'description' => trim($sheet->getCellByColumnAndRow(7, $r)->getValue()),
-						'settings' => trim($sheet->getCellByColumnAndRow(8, $r)->getValue()),
-						'notes' => trim($sheet->getCellByColumnAndRow(9, $r)->getValue()),
+						'code' => trim(caGetExcelCellFromSheet($sheet, [3, $r])->getValue()),
+						'relationship' => trim(caGetExcelCellFromSheet($sheet, [4, $r])->getValue()),
+						'relationship_type' => trim(caGetExcelCellFromSheet($sheet, [5, $r])->getValue()),
+						'type_res' => trim(caGetExcelCellFromSheet($sheet, [6, $r])->getValue()),
+						'description' => trim(caGetExcelCellFromSheet($sheet, [7, $r])->getValue()),
+						'settings' => trim(caGetExcelCellFromSheet($sheet, [8, $r])->getValue()),
+						'notes' => trim(caGetExcelCellFromSheet($sheet, [9, $r])->getValue()),
 					];
 				}
 				
@@ -819,13 +819,13 @@ class XLSXProfileParser extends BaseProfileParser {
 		if($sheet) {
 			$hrow = $sheet->getHighestRow(); 
 			for($r=3; $r <= $hrow; $r++) {
-				$user_name = trim($sheet->getCellByColumnAndRow(1, $r)->getValue());
-				$password = trim($sheet->getCellByColumnAndRow(2, $r)->getValue());
-				$fname = trim($sheet->getCellByColumnAndRow(3, $r)->getValue());
-				$lname = trim($sheet->getCellByColumnAndRow(4, $r)->getValue());
-				$email = trim($sheet->getCellByColumnAndRow(5, $r)->getValue());
-				$roles = trim($sheet->getCellByColumnAndRow(6, $r)->getValue());
-				$groups = trim($sheet->getCellByColumnAndRow(7, $r)->getValue());
+				$user_name = trim(caGetExcelCellFromSheet($sheet, [1, $r])->getValue());
+				$password = trim(caGetExcelCellFromSheet($sheet, [2, $r])->getValue());
+				$fname = trim(caGetExcelCellFromSheet($sheet, [3, $r])->getValue());
+				$lname = trim(caGetExcelCellFromSheet($sheet, [4, $r])->getValue());
+				$email = trim(caGetExcelCellFromSheet($sheet, [5, $r])->getValue());
+				$roles = trim(caGetExcelCellFromSheet($sheet, [6, $r])->getValue());
+				$groups = trim(caGetExcelCellFromSheet($sheet, [7, $r])->getValue());
 				if(!strlen($user_name)) { continue; }
 				
 				$this->data['logins'][$user_name] = [

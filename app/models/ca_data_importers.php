@@ -842,13 +842,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_excel->setActiveSheetIndex(0);	// we assume the mapping is in the first sheet
 		$o_sheet = $o_excel->getActiveSheet();
 
-		$fn_get_cell = function($po_sheet, $pm_coordinate) {
-			if (is_array($pm_coordinate)) {
-				$pm_coordinate = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($pm_coordinate[0]) . $pm_coordinate[1];
-			}
-			return $po_sheet->getCell($pm_coordinate);
-		};
-
 		$vn_row = 0;
 
 		$va_settings = array();
@@ -870,7 +863,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			}
 
 			$vn_row_num = $o_row->getRowIndex();
-			$o_cell = $fn_get_cell($o_sheet, [1, $vn_row_num]);
+			$o_cell = caGetExcelCellFromSheet($o_sheet, [1, $vn_row_num]);
 			$vs_mode = strtolower(trim((string)$o_cell->getValue()));
 
 			switch($vs_mode) {
@@ -880,17 +873,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					break;
 				case 'mapping':
 				case 'constant':
-					$o_source = $fn_get_cell($o_sheet, [2, $o_row->getRowIndex()]);
-					$o_dest = $fn_get_cell($o_sheet, [3, $o_row->getRowIndex()]);
+					$o_source = caGetExcelCellFromSheet($o_sheet, [2, $o_row->getRowIndex()]);
+					$o_dest = caGetExcelCellFromSheet($o_sheet, [3, $o_row->getRowIndex()]);
 
-					$o_group = $fn_get_cell($o_sheet, [4, $o_row->getRowIndex()]);
-					$o_options = $fn_get_cell($o_sheet, [5, $o_row->getRowIndex()]);
-					$o_refinery = $fn_get_cell($o_sheet, [6, $o_row->getRowIndex()]);
-					$o_refinery_options = $fn_get_cell($o_sheet, [7, $o_row->getRowIndex()]);
-					$o_orig_values = $fn_get_cell($o_sheet, [8, $o_row->getRowIndex()]);
-					$o_replacement_values = $fn_get_cell($o_sheet, [9, $o_row->getRowIndex()]);
-					$o_source_desc = $fn_get_cell($o_sheet, [10, $o_row->getRowIndex()]);
-					$o_notes = $fn_get_cell($o_sheet, [11, $o_row->getRowIndex()]);
+					$o_group = caGetExcelCellFromSheet($o_sheet, [4, $o_row->getRowIndex()]);
+					$o_options = caGetExcelCellFromSheet($o_sheet, [5, $o_row->getRowIndex()]);
+					$o_refinery = caGetExcelCellFromSheet($o_sheet, [6, $o_row->getRowIndex()]);
+					$o_refinery_options = caGetExcelCellFromSheet($o_sheet, [7, $o_row->getRowIndex()]);
+					$o_orig_values = caGetExcelCellFromSheet($o_sheet, [8, $o_row->getRowIndex()]);
+					$o_replacement_values = caGetExcelCellFromSheet($o_sheet, [9, $o_row->getRowIndex()]);
+					$o_source_desc = caGetExcelCellFromSheet($o_sheet, [10, $o_row->getRowIndex()]);
+					$o_notes = caGetExcelCellFromSheet($o_sheet, [11, $o_row->getRowIndex()]);
 
 					if (!($vs_group = trim((string)$o_group->getValue()))) {
 						$vs_group = '_group_'.md5((string)$o_source->getValue()."_{$vn_row}");
@@ -945,8 +938,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					if ($va_options && is_array($va_options) && isset($va_options['transformValuesUsingWorksheet']) && $va_options['transformValuesUsingWorksheet']) {
 						if ($o_opt_sheet = $o_excel->getSheetByName($va_options['transformValuesUsingWorksheet'])) {
 							foreach ($o_opt_sheet->getRowIterator() as $o_sheet_row) {
-								if (!$vs_original_value = trim(mb_strtolower((string)$fn_get_cell($o_opt_sheet, [1, $o_sheet_row->getRowIndex()])->getValue()))) { continue; }
-								$vs_replacement_value = trim((string)$fn_get_cell($o_opt_sheet, [2, $o_sheet_row->getRowIndex()])->getValue());
+								if (!$vs_original_value = trim(mb_strtolower((string)caGetExcelCellFromSheet($o_opt_sheet, [1, $o_sheet_row->getRowIndex()])->getValue()))) { continue; }
+								$vs_replacement_value = trim((string)caGetExcelCellFromSheet($o_opt_sheet, [2, $o_sheet_row->getRowIndex()])->getValue());
 								$va_original_values[] = $vs_original_value;
 								$va_replacement_values[] = $vs_replacement_value;
 							}
@@ -988,8 +981,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					);
 					break;
 				case 'setting':
-					$o_setting_name = $fn_get_cell($o_sheet, [2, $o_row->getRowIndex()]);
-					$o_setting_value = $fn_get_cell($o_sheet, [3, $o_row->getRowIndex()]);
+					$o_setting_name = caGetExcelCellFromSheet($o_sheet, [2, $o_row->getRowIndex()]);
+					$o_setting_value = caGetExcelCellFromSheet($o_sheet, [3, $o_row->getRowIndex()]);
 
 					switch($vs_setting_name = (string)$o_setting_name->getValue()) {
 						case 'inputTypes':		// older mapping worksheets use "inputTypes" instead of the preferred "inputFormats"
@@ -1007,8 +1000,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 					break;
 				case 'rule':
-					$o_rule_trigger = $fn_get_cell($o_sheet, [2, $o_row->getRowIndex()]);
-					$o_rule_action = $fn_get_cell($o_sheet, [3, $o_row->getRowIndex()]);
+					$o_rule_trigger = caGetExcelCellFromSheet($o_sheet, [2, $o_row->getRowIndex()]);
+					$o_rule_action = caGetExcelCellFromSheet($o_sheet, [3, $o_row->getRowIndex()]);
 
 					$vs_action_string = (string)$o_rule_action->getValue();
 					if (!($va_actions = json_decode($vs_action_string, true))) {
@@ -1026,9 +1019,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 
 					break;
 				case 'environment':
-					$o_source = $fn_get_cell($o_sheet, [2, $o_row->getRowIndex()]);
-					$o_env_var = $fn_get_cell($o_sheet, [3, $o_row->getRowIndex()]);
-					$o_options = $fn_get_cell($o_sheet, [5, $o_row->getRowIndex()]);
+					$o_source = caGetExcelCellFromSheet($o_sheet, [2, $o_row->getRowIndex()]);
+					$o_env_var = caGetExcelCellFromSheet($o_sheet, [3, $o_row->getRowIndex()]);
+					$o_options = caGetExcelCellFromSheet($o_sheet, [5, $o_row->getRowIndex()]);
 
 					$va_options = array();
 					if ($vs_options_json = (string)$o_options->getValue()) {

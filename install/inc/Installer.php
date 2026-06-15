@@ -1673,7 +1673,7 @@ class Installer {
 	public function processDisplays() {
 		$displays = $this->parsed_data['displays'];
 
-		if(sizeof($displays) == 0) { return true; }
+		if(!is_array($displays) || sizeof($displays) == 0) { return true; }
 
 		foreach($displays as $display) {
 			$display_code = $display["code"];
