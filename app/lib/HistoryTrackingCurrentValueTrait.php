@@ -286,6 +286,7 @@ trait HistoryTrackingCurrentValueTrait {
 						
 						'update_location_control_label', 'movement_control_label', 'loan_control_label', 'object_control_label',
 						'return_to_home_location_control_label', 'occurrence_control_label', 'collection_control_label', 'entity_control_label',
+						'inventory_control_label',
 						
 						'always_create_new_loan', 'always_create_new_movement', 'always_create_new_occurrence',
 						
