@@ -35,6 +35,8 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	 */
 	private $used_for = [];
 	
+	private $log;
+	
 	# --------------------------------------------------------------------------------------------
 	/**
 	 * Plugin config
@@ -45,6 +47,8 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	public function __construct($ps_plugin_path) {
 		$this->description = _t('This plugin allows prepopulating field values based on display templates. See http://docs.collectiveaccess.org/wiki/Prepopulate for more info.');
 		parent::__construct();
+		
+		$this->log = caGetLogger(['logLevel' => 'INFO']);
 
 		$this->opo_plugin_config = Configuration::load($ps_plugin_path . DIRECTORY_SEPARATOR . 'conf' . DIRECTORY_SEPARATOR . 'prepopulate.conf');
 	}
@@ -137,11 +141,15 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	 */
 	public function prepopulateFields(&$params, $options=null) {
 		global $g_ui_locale_id;
-		if(!($t_instance = caGetOption('instance', $params, null))) { return false; }
+		if(!($t_instance = caGetOption('instance', $params, null))) { 
+			$this->log->logDebug("[prepopulateFields()] aborting because no instance was passed");
+			return false; 
+		}
 		
 		//
 		$t_parent = null;
-		if($force_values = !$t_instance->getPrimaryKey()) {
+		$id = $t_instance->getPrimaryKey();
+		if($force_values = !$id) {
 			if(isset($params['request']) && ($parent_id = $params['request']->getParameter('parent_id', pInteger))) {
 				$table = $t_instance->tableName();
 				$t_parent = $table::findAsInstance($parent_id);
@@ -155,15 +163,18 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 
 		$hook = caGetOption('hook', $options, null, ['forceLowercase' => true]);
 		$use = caGetOption('use', $options, null, ['forceLowercase' => true]);
-		if($this->used_for[$use] ?? false) { return null; }	// already ran
-		$this->used_for[$use] = true;
+		if($this->used_for["{$id}::{$use}"] ?? false) { return null; }	// already ran
+		$this->used_for["{$id}::{$use}"] = true;
 		
 		$default_prepop_on_save  = (bool)$this->opo_plugin_config->get('prepopulate_fields_on_save');
 		$default_prepop_on_edit  = (bool)$this->opo_plugin_config->get('prepopulate_fields_on_edit');
 		$default_prepop_before_insert = (bool)$this->opo_plugin_config->get('prepopulate_fields_before_insert');
 
 		$va_rules = $this->opo_plugin_config->get('prepopulate_rules');
-		if (!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { return false; }
+		if (!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { 
+			$this->log->logDebug("[prepopulateFields()] aborting because no rules are set");
+			return false; 
+		}
 
         if (isset($options['restrictToRules']) && strlen($options['restrictToRules'])) {
             $restrictToRules = explode(",", $options['restrictToRules']);
@@ -219,7 +230,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			// check target
 			$vs_target = caGetOption('target', $va_rule, null);
 
-			if(strlen($vs_target)<1) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because target is not set"); continue; }
+			if(strlen($vs_target)<1) { $this->log->logDebug("[prepopulateFields()] skipping rule $vs_rule_key because target is not set"); continue; }
 
 			$vb_is_relationship_rule = Datamodel::tableExists($vs_target);
             if (!$vb_is_relationship_rule) {
@@ -227,14 +238,14 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 
                 // check template
                 $vs_template = caGetOption('template', $va_rule, null);
-                if((strlen($vs_template) < 1) && (strlen($vs_source) < 1)) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because template is not set"); continue; }
+                if((strlen($vs_template) < 1) && (strlen($vs_source) < 1)) { $this->log->logDebug("[prepopulateFields()] skipping rule $vs_rule_key because template is not set"); continue; }
             }
             $vs_context = caGetOption('context', $va_rule, null);
 
 			// respect restrictToTypes option
 			if(($va_rule['restrictToTypes'] ?? null) && is_array($va_rule['restrictToTypes']) && (sizeof($va_rule['restrictToTypes']) > 0)) {
 				if(!in_array($t_instance->getTypeCode(), $va_rule['restrictToTypes'])) {
-					Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because current record type ".$t_instance->getTypeCode()." is not in restrictToTypes");
+					$this->log->logDebug("[prepopulateFields()] skipping rule $vs_rule_key because current record type ".$t_instance->getTypeCode()." is not in restrictToTypes");
 					continue;
 				}
 			}
@@ -250,7 +261,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 				}
 
 				if(ExpressionParser::evaluate($va_rule['skipIfExpression'] ?? null, $va_expression_vars)) {
-					Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because skipIfExpression evaluated true");
+					$this->log->logDebug("[prepopulateFields()] skipping rule $vs_rule_key because skipIfExpression evaluated true");
 					continue;
 				}
 			}
@@ -263,13 +274,13 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 						if($old_value != $cur_value) {
 							if(is_array($cinfo['originalValues']) && sizeof($cinfo['originalValues'])) {
 								if(!in_array($old_value, $cinfo['originalValues'], true)) {
-									Debug::msg("[prepopulateFields()] skipping rule {$vs_rule_key} because onChange originalValues list for bundle {$bundle} did not contain value '{$old_value}'");
+									$this->log->logDebug("[prepopulateFields()] skipping rule {$vs_rule_key} because onChange originalValues list for bundle {$bundle} did not contain value '{$old_value}'");
 									continue(2);
 								}
 							}
 							if(is_array($cinfo['newValues']) && sizeof($cinfo['newValues'])) {
 								if(!in_array($cur_value, $cinfo['newValues'], true)) {
-									Debug::msg("[prepopulateFields()] skipping rule {$vs_rule_key} because onChange newValues list for bundle {$bundle} did not contain value '{$cur_value}'");
+									$this->log->logDebug("[prepopulateFields()] skipping rule {$vs_rule_key} because onChange newValues list for bundle {$bundle} did not contain value '{$cur_value}'");
 									continue(2);
 								}
 							}
@@ -292,7 +303,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
                		}
                		$vs_value = caProcessTemplate($vs_template, $values);
                	}
-                Debug::msg("[prepopulateFields()] processed template for rule $vs_rule_key value is: ".$vs_value);
+                $this->log->logDebug("[prepopulateFields()] processed template for rule $vs_rule_key value is: ".$vs_value);
             }
 
 			// inject into target
@@ -300,7 +311,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 
 			if ((sizeof($va_parts) == 1) && $vb_is_relationship_rule) {    // clone relationships
 			    if (($vs_mode === 'addifempty') && $t_instance->hasRelationshipsWith($vs_target)) {
-			        Debug::msg("[prepopulateFields()] skipped rule {$vs_rule_key} because mode is addIfEmpty and it already has {$vs_target} relationships.");
+			        $this->log->logDebug("[prepopulateFields()] skipped rule {$vs_rule_key} because mode is addIfEmpty and it already has {$vs_target} relationships.");
 			        continue;
 			    }
 
@@ -373,7 +384,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 								if ($t = $t_instance->addRelationship($vs_target, $vn_target_id, $va_rel['relationship_type_code'], $va_rel['effective_date'])) {
 									$va_instance_rel_ids[] = $t->getPrimaryKey();
 								} else {
-									Debug::msg("[prepopulateFields()] could not add {$vs_target} relationship");
+									$this->log->logDebug("[prepopulateFields()] could not add {$vs_target} relationship");
 								}
 							} else {
 								$va_instance_rel_ids = array_merge($va_instance_rel_ids, $va_existing_rel_ids);
@@ -387,7 +398,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
                             foreach($va_instance_rels as $va_instance_rel) {
                                 if (!in_array($va_instance_rel['relation_id'], $va_instance_rel_ids)) {
                                     if (!$t_instance->removeRelationship($vs_target, $va_instance_rel['relation_id'])) {
-                                        Debug::msg("[prepopulateFields()] could not delete {$vs_target} relationship in overwrite mode");
+                                        $this->log->logDebug("[prepopulateFields()] could not delete {$vs_target} relationship in overwrite mode");
                                     }
                                 }
                             }
@@ -422,7 +433,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 							} elseif(!$t_instance->get($va_parts[1])) {
 								$t_instance->set($va_parts[1], $vs_value);
 							} else {
-								Debug::msg("[prepopulateFields()] rule {$vs_rule_key}: intrinsic skipped because it already has value and mode is addIfEmpty or merge");
+								$this->log->logDebug("[prepopulateFields()] rule {$vs_rule_key}: intrinsic skipped because it already has value and mode is addIfEmpty or merge");
 							}
 							break;
 					}
@@ -462,7 +473,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 								$t_instance->update(['force' => true, 'hooks' => false]);
 
 								if($t_instance->numErrors()) {
-									Debug::msg(_t("[prepopulateFields()] error while removing old values during copy of containers: %1", join("; ", $t_instance->getErrors())));
+									$this->log->logDebug(_t("[prepopulateFields()] error while removing old values during copy of containers: %1", join("; ", $t_instance->getErrors())));
 								}
 							}
 							
@@ -508,7 +519,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 											$t_instance->addAttribute($attr, $va_parts[1]);
 										}
 										if($t_instance->numErrors()) {
-											Debug::msg(_t("[prepopulateFields()] error during copy of containers: %1", join("; ", $t_instance->getErrors())));
+											$this->log->logDebug(_t("[prepopulateFields()] error during copy of containers: %1", join("; ", $t_instance->getErrors())));
 										}
 									}
     								$i++;
@@ -623,7 +634,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 									}
 									break;
 								default:
-									Debug::msg("[prepopulateFields()] unsupported mode {$vs_mode} for target bundle");
+									$this->log->logDebug("[prepopulateFields()] unsupported mode {$vs_mode} for target bundle");
 									break;
 							}
 							break;
@@ -634,7 +645,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 							), $va_parts[1]);
 							break;
 						default:
-							Debug::msg("[prepopulateFields()] containers with multiple values are not supported");
+							$this->log->logDebug("[prepopulateFields()] containers with multiple values are not supported");
 							break;
 					}
 // labels
@@ -698,12 +709,12 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 									}
 									break;
 								default:
-									Debug::msg("[prepopulateFields()] unsupported mode {$vs_mode} for target bundle");
+									$this->log->logDebug("[prepopulateFields()] unsupported mode {$vs_mode} for target bundle");
 									break;
 							}
 							break;
 						default:
-							Debug::msg("[prepopulateFields()] records with multiple labels are not supported");
+							$this->log->logDebug("[prepopulateFields()] records with multiple labels are not supported");
 							break;
 					}
 				}
@@ -723,7 +734,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			$t_instance->update(['force' => true, 'hooks' => false]);
 			if($t_instance->numErrors() > 0) {
 				foreach($t_instance->getErrors() as $vs_error) {
-					Debug::msg("[prepopulateFields()] there was an error while updating the record: ".$vs_error);
+					$this->log->logDebug("[prepopulateFields()] there was an error while updating the record: ".$vs_error);
 				}
 				if ($vb_we_set_transaction) { $t_instance->removeTransaction(false); }
 				return false;
