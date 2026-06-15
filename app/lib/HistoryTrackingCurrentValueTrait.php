@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2025 Whirl-i-Gig
+ * Copyright 2018-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -281,7 +281,7 @@ trait HistoryTrackingCurrentValueTrait {
 			foreach(array(
 						'policy', 'displayMode', 'dateMode', 'row_id', 'width', 'height', 'readonly', 'documentation_url', 'expand_collapse',
 						'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_add_to_movement_controls', 
-						'hide_update_location_controls', 'hide_return_to_home_location_controls',
+						'hide_update_location_controls', 'hide_return_to_home_location_controls', 'hide_inventory_controls',
 						'definition',
 						
 						'update_location_control_label', 'movement_control_label', 'loan_control_label', 'object_control_label',
