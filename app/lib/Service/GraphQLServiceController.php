@@ -65,7 +65,7 @@ class GraphQLServiceController extends \BaseServiceController {
 			'query' => $queryType, 'mutation' => $mutationType
 		]);
 
-		$rawInput = file_get_contents('php://input');
+		$rawInput = $this->request->getRawPostData();
 		$input = json_decode($rawInput, true);
 		$query = $input['query'];
 		$variableValues = isset($input['variables']) ? $input['variables'] : null;
