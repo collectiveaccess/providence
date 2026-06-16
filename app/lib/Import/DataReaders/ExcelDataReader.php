@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2025 Whirl-i-Gig
+ * Copyright 2013-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -68,6 +68,16 @@ class ExcelDataReader extends BaseDataReader {
 	 * Column headers
 	 */
 	private $headers = null;
+	
+	/**
+	 * Logging
+	 */
+	private $log = null;
+	
+	/**
+	 * Data source
+	 */
+	private $source = null;
 	# -------------------------------------------------------
 	/**
 	 * @param string $source Path to file
@@ -88,6 +98,8 @@ class ExcelDataReader extends BaseDataReader {
 		$config                = Configuration::load();
 		$this->opn_max_columns = $config->get('ca_max_columns_delimited_files')?: 512;
 		$this->opa_properties['read_headers'] = isset($options['headers']) ? (bool)$options['headers'] : false;
+		
+		$this->log = caGetLogger();
 	}
 	# -------------------------------------------------------
 	/**
@@ -135,6 +147,7 @@ class ExcelDataReader extends BaseDataReader {
 			return false;
 		}
 		
+		$this->source = $source;
 		return true;
 	}
 	# -------------------------------------------------------
@@ -246,8 +259,11 @@ class ExcelDataReader extends BaseDataReader {
 		    try {
 			    $pn_col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($pn_col);
 			} catch(Exception $e) {
-			    //throw new ApplicationException(_t('Invalid Excel (XLSX) column specified \'%1\'', $pn_col));
+			    $this->log->logWarn(_t("[ExcelDataReader] Invalid Excel (XLSX) column specified '%1' in file '%2'", $pn_col, $this->source));
 			    return null;
+			} catch(TypeError $e) {
+			 	$this->log->logWarn(_t("[ExcelDataReader] Invalid Excel (XLSX) column specified '%1' in file '%2'", $pn_col, $this->source));
+				return null;
 			}
 		}
 
