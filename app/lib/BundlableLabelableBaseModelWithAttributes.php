@@ -4191,7 +4191,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							if(!(bool)$this->getAppConfig()->get($this->tableName().'_dont_allow_editing_of_codes_when_in_use') || !$this->getPrimaryKey()) {
 								if ($this->opo_idno_plugin_instance) {
 									$this->opo_idno_plugin_instance->setDb($this->getDb());
-									if (isset($va_fields_by_type['intrinsic']['mandatory_type_id'])) {
+									if (isset($va_fields_by_type['intrinsic']['mandatory_type_id']) && !$this->get('type_id')) {
 										$this->set('type_id', $_REQUEST['type_id']);
 									}
 									$this->set($vs_f, $vs_tmp = $this->opo_idno_plugin_instance->htmlFormValue($vs_idno_field));
@@ -4208,7 +4208,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 								// fall back to simple field name intrinsic spec - still used for "mandatory" fields such as type_id and parent_id
 								$vs_v = $po_request->parameterExists("{$vs_f}") ? $po_request->getParameter("{$vs_f}", pString) : null;
 							}
-							if(!is_null($vs_v)) { 
+							if(($vs_f === 'type_id') && $this->get('type_id')) {
+								// already set via code — don't overwrite
+							} elseif(!is_null($vs_v)) {
 								$this->set($vs_f, $vs_v);
 							}
 							break;
