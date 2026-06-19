@@ -15,7 +15,7 @@
     "elasticsearch/elasticsearch": "~7.0",
     "ezyang/htmlpurifier": "~4.9",
     "guzzlehttp/guzzle": "^7.9",
-    "guzzlehttp/psr7": "2.8.*",
+    "guzzlehttp/psr7": "^2.0",
     "james-heinrich/getid3": "^1.9.20",
     "joshralph/password-policy": "~0.2",
     "knplabs/github-api": "^3.14",
