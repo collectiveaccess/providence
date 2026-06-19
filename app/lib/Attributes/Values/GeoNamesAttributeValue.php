@@ -441,7 +441,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
                                     'value_longtext1' => $vs_text,
                                     'value_longtext2' => $vs_id,
                                     'value_decimal1' => (float)$vo_child->lat,
-                                    'value_decimal2' => (float)$vo_child->long
+                                    'value_decimal2' => (float)$vo_child->lng
                                 ];
                             }
                         }
