@@ -525,24 +525,50 @@ class SimpleService {
 			$relative_to = caGetOption('relativeTo', $pm_template, null);
 			
 			if($relative_to) {
-				$table = caGetOption('relativeTo', $pm_template, null);
-				$t_rel = Datamodel::getInstance($table, true);
-				$map = caGetOption('map', $pm_template, []);
+				$tmp = explode(".", $relative_to);
+				$rt = array_pop($tmp);
 				
-				$ids = $pt_instance->get($t_rel->primaryKey(true), ['restrictToTypes' => caGetOption('restrictToTypes', $pm_template, null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $pm_template, null), 'returnAsArray' => true]);
-				
-				$vals = [];
-				foreach($map as $k => $t) {
-					if(is_array($t)) {
-						$qr_rels = caMakeSearchResult($t['relativeTo'], $ids);
-						while($qr_rels->nextHit()) {
-							$vals[$k][]= self::processContentKey($qr_rels, $k, $t, []);
+				if(($e = ca_metadata_elements::getInstance($rt)) && ($e->get('datatype') == 0)) {
+					// container
+					$map = caGetOption('map', $pm_template, []);
+					$values = $pt_instance->get($relative_to, ['returnWithStructure' => true]);
+					
+					$vals = [];
+					if(is_array($values)) {
+						$values = array_shift($values);
+						
+						foreach($values as $v) {
+							$val = [];
+							foreach($map as $k => $t) {
+								$t = preg_replace("!^\^".preg_quote($relative_to, '!')."\.!", "", $t);
+								if(isset($v[$t])) {
+									$val[$k] = $v[$t];
+								}
+							}
+							if(sizeof($val)) { $vals[] = $val; }
 						}
-					} else {
-						$vals[$k] = caProcessTemplateForIds($t, $table, $ids, ['returnAsArray' => true]);
+						if(!sizeof($vals)) { return []; }
+						return $vals;
 					}
+				} elseif($t_rel = Datamodel::getInstance($relative_to, true)) {
+					// related
+					$map = caGetOption('map', $pm_template, []);
+					
+					$ids = $pt_instance->get($t_rel->primaryKey(true), ['restrictToTypes' => caGetOption('restrictToTypes', $pm_template, null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $pm_template, null), 'returnAsArray' => true]);
+					if(!sizeof($ids)) { return []; }
+					$vals = [];
+					foreach($map as $k => $t) {
+						if(is_array($t)) {
+							$qr_rels = caMakeSearchResult($t['relativeTo'], $ids);
+							while($qr_rels->nextHit()) {
+								$vals[$k][]= self::processContentKey($qr_rels, $k, $t, []);
+							}
+						} else {
+							$vals[$k] = caProcessTemplateForIds($t, $relative_to, $ids, ['returnAsArray' => true]);
+						}
+					}
+					if(!sizeof($vals)) { return []; }
 				}
-				
 				$d = [];
 				$keys = array_keys($vals);
 				for($i=0; $i < sizeof($vals[$keys[0]]); $i++) {
