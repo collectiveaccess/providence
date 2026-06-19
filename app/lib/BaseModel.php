@@ -1529,9 +1529,17 @@ class BaseModel extends BaseObject {
 										$this->postError(1103, _t('Value %1 is not in list %2', $vm_value, $vs_list_code), 'BaseModel->set()', $this->tableName().'.'.$vs_field);
 										return false;
 									}
-								} elseif (($vs_list_code = $this->getFieldInfo($vs_field, "LIST")) && in_array($vs_field, ['access', 'status'], true) && (!is_numeric($vm_value))) {
+								} elseif (($vs_list_code = $this->getFieldInfo($vs_field, "LIST")) && in_array($vs_field, ['access', 'status'], true)) {
 									$t_list = Datamodel::getInstance('ca_lists', true);
-									$item = $t_list->getItemFromListByItemID($vs_list_code, $vn_id);
+									$item = null;
+									if(is_numeric($vm_value)) {
+										if(!($item = $t_list->getItemFromListByItemValue($vs_list_code, $vm_value))) {
+											$item = $t_list->getItemFromListByItemID($vs_list_code, (int)$vm_value);
+										}
+									}
+									if(!$item) {
+										$item = $t_list->getItemFromList($vs_list_code, $vm_value);
+									}
 									$vm_value = is_numeric($item['item_value'] ?? null) ? $item['item_value'] : 0;
 								} else {
 									$vm_orig_value = $vm_value;
