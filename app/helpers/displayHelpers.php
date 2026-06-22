@@ -4237,7 +4237,7 @@ function caProcessBottomLineTemplateForPlacement($request, $placement, $res, $op
 	foreach($placements as $placement) {
 		$res->seek(0);
 
-		if (!($template = caGetOption('template', $options, $placement['settings']['bottom_line']))) { 
+		if (!($template = caGetOption('template', $options, $placement['settings']['bottom_line'] ?? null))) { 
 			$res->seek($current_index);	// Restore current position of search result
 			return null; 
 		}
