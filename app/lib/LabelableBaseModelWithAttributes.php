@@ -1552,15 +1552,14 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 					}
 					
 					// TODO: this should really be in a model subclass
-					if (($this->tableName() == 'ca_objects') && $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) {
-						require_once(__CA_MODELS_DIR__.'/ca_objects.php');
+					if (($this->tableName() == 'ca_objects') && $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($coll_rel_types = caGetObjectCollectionHierarchyRelationshipTypes())) {
 						if ($this->getPrimaryKey() == $vn_top_id) {
 							$t_object = $this;
 						} else {
 							$t_object = new ca_objects($vn_top_id);
 						}
 						
-						if (is_array($va_collections = $t_object->getRelatedItems('ca_collections', array('restrictToRelationshipTypes' => $vs_coll_rel_type)))) {
+						if (is_array($va_collections = $t_object->getRelatedItems('ca_collections', ['restrictToRelationshipTypes' => $coll_rel_types]))) {
 							require_once(__CA_MODELS_DIR__.'/ca_collections.php');
 							$t_collection = new ca_collections();
 							foreach($va_collections as $vn_i => $va_collection) {
@@ -3676,7 +3675,119 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		
 		return $o_view->render('ca_user_roles.php');
 	}
-	# -------------------------------------------------------
+	# ------------------------------------------------------------------	
+	/**
+	 * Return simplified change history for label bundle of a row
+	 *
+	 * @param string $bundle Bundle (Eg. ca_objects.preferred_labels.name)
+	 * @param array $options Options include:
+	 * 		row_id = ID of row to fetch log for. If omitted currently loaded row is used. [Default is null]
+	 *
+	 * @return array
+	 */
+	public function getLogForBundleValueHistory(string $bundle, ?array $options=null) : ?array {
+		$bi = $this->_processBundleNameForValueHistory($bundle);
+		if(!in_array($bi['element'], ['preferred_labels', 'nonpreferred_labels'], true)) { 
+			return parent::getLogForBundleValueHistory($bundle, $options);
+		}
+		$row_id = caGetOption('row_id', $options, $this->getPrimaryKey());
+		if(!$row_id) { return null; }
+		
+		$return_with_structure = caGetOption('returnWithStructure', $options, false);
+		
+		$table_num = $this->tableNum();
+		$pk = $this->primaryKey();
+		
+		$t_label = $this->getLabelTableInstance();
+		$label_table_num = $t_label->tableNum();
+		
+		if(!$bi['subelement']) { $bi['subelement'] = $bi['key'] = $this->getLabelDisplayField(); }
+		
+		$guid = ca_guids::getForRow($this->tableNum(), $row_id);
+		$log = ca_change_log::getLog(0, null, ['forGUID' => $guid, 'forceValuesForAllAttributeSlots' => true]);
+		$acc = [];
+		
+		$base_log_entries = [];
+		foreach($log as $l) {
+			if((int)$l['logged_table_num'] == (int)$label_table_num) {
+				$s = $l['snapshot'];
+				
+				if($l['changetype'] === 'I') {
+					$base_log_entries[$s['label_id']] = $s;
+					
+				} elseif($base_log_entries[$l['logged_row_id']] ?? null) {
+					$s = array_merge(($base_log_entries[$l['logged_row_id']] ?? []), $s);
+				}
+				
+				if(isset($s[$bi['subelement']])) {
+					if(($bi['element'] === 'preferred_labels') && array_key_exists('is_preferred', $s) && !$s['is_preferred']) { continue; }
+					if(($bi['element'] === 'nonpreferred_labels') && ($s['is_preferred'] ?? false)) { continue; }
+					
+					$v = [
+						$bi['key'] => $s[$bi['key']],
+						'log_id' => $l['log_id'],
+						'log_datetime' => $l['log_datetime'],
+						'log_datetime_display' => caGetLocalizedDate($l['log_datetime'], ['timeOmit' => false]),						
+						'user_id' => $l['user_id'],
+						'user_name' => $l['user_name'],
+						'user_email' => $l['user_email'],
+						'user_fname' => $l['user_fname'],
+						'user_lname' => $l['user_lname']
+					];
+					if($u = $this->_processUserDataForValueHistory($l['user_id'])) {
+						$v = array_merge($v, $u); 
+					}
+					$acc[$l['logged_row_id']]['intrinsicValues'][] = $v;
+				}
+			}
+		}
+		return $acc;
+	}
+	# ------------------------------------------------------------------	
+	/**
+	 * Return history of changes to a bundle on a row.
+	 *
+	 * @string $bundle Bundle
+	 * @array $options Options include:
+	 *		row_id = ID of row to fetch history on. If omitted currently loaded row is used. [Default is null]
+	 *		returnWithStructure = Return values as array with additional date/time data. [Default is false]
+	 *
+	 * @return array
+	 */
+	public function getValueHistoryForBundle(string $bundle, ?array $options=null) : ?array {
+		$bi = $this->_processBundleNameForValueHistory($bundle);
+		if(!in_array($bi['element'], ['preferred_labels', 'nonpreferred_labels'], true)) { 
+			return parent::getValueHistoryForBundle($bundle, $options);
+		}
+		$row_id = caGetOption('row_id', $options, $this->getPrimaryKey());
+		$return_with_structure = caGetOption('returnWithStructure', $options, false);
+		$log = $this->getLogForBundleValueHistory($bundle, $options);
+		
+		if(!$bi['subelement']) { $bi['subelement'] = $bi['key'] = $this->getLabelDisplayField(); }
+		
+		$acc = [];
+		foreach($log as $id => $d) {
+			if(!isset($d['intrinsicValues'])) { continue; }
+			foreach($d['intrinsicValues'] as $f => $values) {
+				$acc[$row_id][$values['log_id']] = $values;
+				unset($acc[$row_id][$values['log_id']]['log_id']);
+			}
+		}
+		ksort($acc);
+		
+		if(!$return_with_structure) {
+			$facc = [];
+			foreach($acc as $row_id => $l) {
+				foreach($l as $log_id => $v) {
+					$facc[$log_id] = $v[$bi['modifier'] ?? $bi['key']];
+				}
+			}
+			$acc = $facc;
+		}
+		if(!$return_with_structure) { $acc = array_values($acc); }
+		return $acc;
+	}
+	# ------------------------------------------------------------------	
 	/**
 	 * 
 	 *
@@ -3687,5 +3798,5 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 		// TODO: handle changes on labels?
 		return parent::valueDidChange($bundle);
 	}
-	# -------------------------------------------------------
+	# ------------------------------------------------------------------	
 }

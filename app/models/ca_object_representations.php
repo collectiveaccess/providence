@@ -233,6 +233,31 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 			'DEFAULT' => '',
 			'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
 		),
+		'acl_inherit_from_parent' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Do not inherit') => 0,
+				_t('Inherit') => 1
+			),
+			'LABEL' => _t('Inherit item access control settings from parents?'), 'DESCRIPTION' => _t('Determines whether item access control settings set from parent objects are applied to this object.')
+		),
+		'access_inherit_from_parent' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
+			'DONT_ALLOW_IN_UI' => true,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Do not inherit') => 0,
+				_t('Inherit') => 1
+			),
+			'LABEL' => _t('Inherit public access settings from parent?'), 'DESCRIPTION' => _t('Determines whether public access settings (used by Pawtucket-based sites) set for parent object is applied to this object.')
+		),
 		'source_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
@@ -470,6 +495,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		$this->BUNDLES['transcription_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of transcriptions'));
 		$this->BUNDLES['page_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of pages'));
+		$this->BUNDLES['angle_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of view angles'));
 		$this->BUNDLES['preview_count'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of previews'));
 		$this->BUNDLES['caption_file_locales'] = array('type' => 'special', 'repeating' => true, 'label' => _t('List of caption file locales'));
 		$this->BUNDLES['caption_files'] = array('type' => 'special', 'repeating' => true, 'label' => _t('List of caption files'));
@@ -2844,11 +2870,15 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				break;
 			case 'page_count':
 			case 'preview_count':
+			case 'angle_count':
 				if (($qr = caMakeSearchResult('ca_object_representations', [$row_id])) && $qr->nextHit()) {
 					$mimetype = $qr->getMediaInfo('media', 'INPUT', 'MIMETYPE');
 					$class = caGetMediaClass($mimetype);
 					
 					if (($bundle_name === 'page_count') && in_array($class, ['document', 'image'])) {
+						return $this->numFiles($row_id);
+					}
+					if (($bundle_name === 'angle_count') && in_array($class, ['panorama'])) {
 						return $this->numFiles($row_id);
 					}
 					if (($bundle_name === 'preview_count') && in_array($class, ['audio', 'video'])) {

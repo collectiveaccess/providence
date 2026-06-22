@@ -702,9 +702,11 @@ class ApplicationChangeLog {
 		}
 		
 		// Add user info
-		$log_ids = array_map(function($v) { 
-			return $v['log_id'] ?? null;
-		}, $timestamps);
+	    $log_ids = array_filter(array_map(function($v) {
+		    return $v['log_id'] ?? null;
+	    }, $timestamps));
+
+	    if(empty($log_ids)) { return $timestamps; }
 		
 		$qr_res = $o_db->query("
 				SELECT wcl.log_id, wu.user_id, wu.fname, wu.lname, wu.email

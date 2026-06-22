@@ -1602,6 +1602,27 @@ create index i_hier_right on ca_relationship_types(hier_right);
 
 
 /*==========================================================================*/
+create table ca_relationship_type_restrictions (
+   restriction_id                 smallint unsigned              not null AUTO_INCREMENT,
+   type_id                        smallint unsigned,
+   sub_type_left_id               int unsigned                   null,
+   include_subtypes_left          tinyint unsigned               not null default 0,
+   sub_type_right_id              int unsigned                   null,
+   include_subtypes_right         tinyint unsigned               not null default 0,
+   settings                       longtext                       not null,
+   `rank`                         smallint unsigned              not null default 0,
+   primary key (restriction_id),
+   
+   index i_type_id				(type_id),
+   index i_sub_type_left_id		(sub_type_left_id),
+   index i_sub_type_right_id	(sub_type_right_id),
+   unique index u_all           (type_id, sub_type_left_id, sub_type_right_id),
+   constraint fk_ca_relationship_type_restrictions_type_id foreign key (type_id)
+      references ca_relationship_types (type_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+
+/*==========================================================================*/
 create table ca_relationship_type_labels
 (
    label_id                       int unsigned                   not null AUTO_INCREMENT,
@@ -2859,6 +2880,7 @@ create table ca_acl
    notes                          char(10)                       not null,
    inherited_from_table_num       tinyint unsigned               null,
    inherited_from_row_id          int unsigned                   null,
+   include_representations		  tinyint unsigned               not null default 0,
    primary key (acl_id),
    constraint fk_ca_acl_group_id foreign key (group_id)
       references ca_user_groups (group_id) on delete restrict on update restrict,
@@ -8000,4 +8022,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (209, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (211, unix_timestamp());

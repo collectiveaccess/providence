@@ -1663,7 +1663,7 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Returns the media class to which a MIME type belongs, or null if the MIME type does not belong to a class. Possible classes are 'image', 'video', 'audio', 'document', '3d', 'vr' and 'binary'.
+	 * Returns the media class to which a MIME type belongs, or null if the MIME type does not belong to a class. Possible classes are 'image', 'video', 'audio', 'document', '3d', 'panorama' and 'binary'.
 	 *
 	 * @param string $mimetype A media MIME type
 	 * @param array $options Options include:
@@ -1706,7 +1706,7 @@ function caFileIsIncludable($ps_file) {
 						return $for_iiif ? 'Video' : 'video';
 						break;
 					case 'application/dicom':
-						return $for_iiif ? 'Image' : 'image';;
+						return $for_iiif ? 'Image' : 'image';
 						break;
 					case 'application/ply':
 					case 'application/stl':
@@ -1716,7 +1716,9 @@ function caFileIsIncludable($ps_file) {
 						return $for_iiif ? '3D' : '3d';
 						break;
 					case 'x-world/x-qtvr':
-						return $for_iiif ? 'VR' : 'vr';
+					case 'application/panorama':
+					case 'application/orbitvu':
+						return $for_iiif ? 'PANORAMA' : 'panorama';
 						break;
 					case 'application/octet-stream':
 						return $for_iiif ? 'Binary' : 'binary';
@@ -5360,7 +5362,7 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 *
 	 */
-	 function caGetObjectCollectionHierarchyRelationshipTypes() {
+	function caGetObjectCollectionHierarchyRelationshipTypes() {
 	 	$config = Configuration::load();
 	 	
 	 	if($type = $config->get('ca_objects_x_collections_hierarchy_relationship_type')) {
@@ -5372,4 +5374,14 @@ function caFileIsIncludable($ps_file) {
 	 	}
 	 	return null;
 	 }
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetExcelCellFromSheet($sheet, mixed $coordinate) {
+			if (is_array($coordinate)) {
+				$coordinate = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($coordinate[0]) . $coordinate[1];
+			}
+			return $sheet->getCell($coordinate);
+		};
 	# ----------------------------------------

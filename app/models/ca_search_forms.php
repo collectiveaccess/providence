@@ -947,6 +947,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 							// is it an attribute?
 							$t_element = ca_metadata_elements::getInstance($vs_field);
 							if(!$t_element) { continue; }
+							if($t_element->get('deleted')) { continue; }
 							if (in_array($t_element->get('datatype'), array(15, 16))) { continue; } 		// skip file and media attributes - never searchable
 							if (!$t_element->getSetting('canBeUsedInSearchForm')) { continue; }
 

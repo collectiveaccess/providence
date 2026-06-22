@@ -2414,4 +2414,105 @@ class TimeExpressionParserTest extends TestCase {
 		$this->assertEquals($va_parse[1], "1978.113023595900");	
 		$this->assertEquals($o_tep->getText(), "November 1978");
 	}
+	
+	public function testJapaneseNumericYearDateInNonJapaneseLocale() {
+	 	$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('2003年2月16日');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "2003.021600000000");
+ 		$this->assertEquals($va_parse['end'], "2003.021623595900");
+ 		$this->assertEquals($va_parse[0], "2003.021600000000");
+ 		$this->assertEquals($va_parse[1], "2003.021623595900");	
+ 		$this->assertEquals($o_tep->getText(), "February 16 2003");
+		
+		$vb_res = $o_tep->parse('2003年2月');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "2003.020100000000");
+ 		$this->assertEquals($va_parse['end'], "2003.022823595900");
+ 		$this->assertEquals($va_parse[0], "2003.020100000000");
+ 		$this->assertEquals($va_parse[1], "2003.022823595900");	
+ 		$this->assertEquals($o_tep->getText(), "February 2003");
+		
+		$vb_res = $o_tep->parse('2003年');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "2003.010100000000");
+ 		$this->assertEquals($va_parse['end'], "2003.123123595900");
+ 		$this->assertEquals($va_parse[0], "2003.010100000000");
+ 		$this->assertEquals($va_parse[1], "2003.123123595900");	
+ 		$this->assertEquals($o_tep->getText(), "2003");
+	}
+	
+	public function testJapaneseGengoYearDateInNonJapaneseLocale() {
+	 	$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('平成15年2月16日');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "2003.021600000000");
+ 		$this->assertEquals($va_parse['end'], "2003.021623595900");
+ 		$this->assertEquals($va_parse[0], "2003.021600000000");
+ 		$this->assertEquals($va_parse[1], "2003.021623595900");	
+ 		$this->assertEquals($o_tep->getText(), "February 16 2003");
+ 		
+		$vb_res = $o_tep->parse('平成15年2月');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "2003.020100000000");
+ 		$this->assertEquals($va_parse['end'], "2003.022823595900");
+ 		$this->assertEquals($va_parse[0], "2003.020100000000");
+ 		$this->assertEquals($va_parse[1], "2003.022823595900");	
+ 		$this->assertEquals($o_tep->getText(), "February 2003");
+		
+		$vb_res = $o_tep->parse('平成15年');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "2003.010100000000");
+ 		$this->assertEquals($va_parse['end'], "2003.123123595900");
+ 		$this->assertEquals($va_parse[0], "2003.010100000000");
+ 		$this->assertEquals($va_parse[1], "2003.123123595900");	
+ 		$this->assertEquals($o_tep->getText(), "2003");
+ 		
+		
+		$vb_res = $o_tep->parse('平成15');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "2003.010100000000");
+ 		$this->assertEquals($va_parse['end'], "2003.123123595900");
+ 		$this->assertEquals($va_parse[0], "2003.010100000000");
+ 		$this->assertEquals($va_parse[1], "2003.123123595900");	
+ 		$this->assertEquals($o_tep->getText(), "2003");
+ 		
+	}
+	
+	public function testJapaneseGengoYearDateRange() {
+	 	$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('平成15年2月16日 - 平成16年2月15日');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_parse['start'], "2003.021600000000");
+ 		$this->assertEquals($va_parse['end'], "2004.021523595900");
+ 		$this->assertEquals($va_parse[0], "2003.021600000000");
+ 		$this->assertEquals($va_parse[1], "2004.021523595900");	
+ 		$this->assertEquals($o_tep->getText(), "February 16 2003 – February 15 2004");
+ 		
+		$vb_res = $o_tep->parse('平成15年2月16日 - 平成16年3月');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_parse['start'], "2003.021600000000");
+ 		$this->assertEquals($va_parse['end'], "2004.033123595900");
+ 		$this->assertEquals($va_parse[0], "2003.021600000000");
+ 		$this->assertEquals($va_parse[1], "2004.033123595900");	
+ 		$this->assertEquals($o_tep->getText(), "February 16 2003 – March 31 2004");
+ 		
+	}
 }

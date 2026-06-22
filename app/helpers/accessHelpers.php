@@ -438,6 +438,11 @@ function caMakeTypeList($pm_table_name_or_num, $pa_type_ids, $pa_options=null) {
 	if (is_array($pa_type_ids) && !sizeof($pa_type_ids)) { return array(); }
 	if (!is_array($pa_type_ids)) { $pa_type_ids = strlen($pa_type_ids) ? [$pa_type_ids] : []; }
 	
+	$pa_type_ids = array_filter($pa_type_ids, function($v) {
+		if(is_null($v) || is_array($v) || !strlen($v)) { return false; }
+		return true;
+	});
+	
 	if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
 	
 	if (isset($pa_options['dont_include_subtypes_in_type_restriction'])) {
@@ -499,6 +504,10 @@ function caMakeSourceIDList($pm_table_name_or_num, $pa_sources, $pa_options=null
 	if(isset($pa_options['dontIncludeSubsourcesInSourceRestriction']) && (!isset($pa_options['dont_include_subsources_in_source_restriction']) || !$pa_options['dont_include_subsources_in_source_restriction'])) { $pa_options['dont_include_subsources_in_source_restriction'] = $pa_options['dontIncludeSubsourcesInSourceRestriction']; }
 	
 	if (!is_array($pa_sources)) { $pa_sources = strlen($pa_sources) ? [$pa_sources] : []; }
+	$pa_sources = array_filter($pa_sources, function($v) {
+		if(is_null($v) || is_array($v) || !strlen($v)) { return false; }
+		return true;
+	});
 	
 	if (isset($pa_options['dont_include_subsources_in_source_restriction']) && $pa_options['dont_include_subsources_in_source_restriction']) {
 		$pa_options['noChildren'] = true;
@@ -557,6 +566,12 @@ function caMakeSourceIDList($pm_table_name_or_num, $pa_sources, $pa_options=null
 function caMakeRelationshipTypeIDList($pm_table_name_or_num, $pa_types, $pa_options=null) {
 	if(!$pa_types) { return []; }
 	if(!is_array($pa_types)) { $pa_types = [$pa_types]; }
+	
+	$pa_types = array_filter($pa_types, function($v) {
+		if(is_null($v) || is_array($v)|| !strlen($v)) { return false; }
+		return true;
+	});
+	
 	if(!sizeof($pa_types)) { return []; }
 	
 	if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
@@ -880,7 +895,9 @@ function caTranslateBundlesForAccessChecking($ps_table_name, $ps_bundle_name) {
  * @param BaseModel|string $t_item A model instance or model name to test. If null system-wide ACL status is returned. [Default is null]
  * @param array $options Array of options. Options include:
  *		dontFilterByACL = If set to true then ACL will be returned as disabled even if configured to be active. [Default is false]
- *		forPawtucket = Check if ACL is enabled for front-end only use. Will return true if set, even if back-end ACL is disabled. [Default is false]
+ *		forPawtucket = Check if ACL is enabled for front-end use. Will return true if set, even if back-end ACL is disabled. [Default is false]
+ *		forPawtucketOnly = Check if ACL is enabled for front-end use only. [Default is false]
+ *		forProvidenceOnly = Check if ACL is enabled for back-end use only. [Default is false]
  * 		anywhere = Check if ACL is enabled for front-end or back-end use. [Default is false]
  *		useSettingsOnly = Return ACL enabled status based upon configuration settings only, ignoring __CA_DISABLE_ACL__ constant. [Default is false]
  * @return bool
@@ -891,7 +908,12 @@ function caACLIsEnabled($t_item=null, ?array $options=null) : bool {
 	if($options['dontFilterByACL'] ?? false) { return false; }
 	$config = Configuration::load();
 	
-	if(($options['forPawtucket'] ?? false) || ($options['anywhere'] ?? false)) { 
+	$for_pawtucket = ($options['forPawtucket'] ?? false);
+	$for_pawtucket_only = ($options['forPawtucketOnly'] ?? false);
+	$for_providence_only = ($options['forProvidenceOnly'] ?? false);
+	$anywhere = ($options['anywhere'] ?? false);
+	
+	if($for_pawtucket || $for_pawtucket_only || $for_providence_only || $anywhere) { 
 		if(!is_a($t_item, 'BaseModel')) { 
 			if(is_a($t_item, 'SearchResult')) {
 				$t_item = Datamodel::getInstance($t_item->tableName(), true); 
@@ -901,10 +923,12 @@ function caACLIsEnabled($t_item=null, ?array $options=null) : bool {
 				return false;
 			}
 		}
-		$paw_only = ($config->get('pawtucket_only_acl') || ($t_item && $config->get($t_item->tableName().'_pawtucket_only_acl')) || $config->get('perform_item_level_access_checking'));
-		if(($options['anywhere'] ?? false) && $paw_only) { 	
+		$paw_only = ($config->get('pawtucket_only_acl') || ($t_item && $config->get($t_item->tableName().'_pawtucket_only_acl'))); // || (!$for_pawtucket_only && $config->get('perform_item_level_access_checking')));
+		if($anywhere && $paw_only) { 	
 			return true; 
-		} elseif($options['forPawtucket'] ?? false) {
+		} elseif($for_providence_only && !$paw_only) {
+			return true;
+		} elseif($for_pawtucket || $for_pawtucket_only) {
 			return $paw_only;
 		}
 	}
@@ -915,6 +939,16 @@ function caACLIsEnabled($t_item=null, ?array $options=null) : bool {
 		return (bool)$t_item->supportsACL();
 	}
 	return true;
+}
+# ---------------------------------------------------------------------------------------------
+/**
+ * 
+ *
+ */
+function caGetACLItemLevelMap() : ?array {
+	$config = Configuration::load();
+	$map = $config->get('access_to_acl_item_access_level_map') ?? null;
+	return $map;
 }
 # ---------------------------------------------------------------------------------------------
 /**
@@ -951,6 +985,26 @@ function caSuspendCheckAccessChecks($t_item) : bool {
 	return (caAppIsPawtucket() && $acl_is_enabled);
 }
 # ---------------------------------------------------------------------------------------------
+/**
+ * 
+ *
+ * 
+ * @return bool
+ */
+function caDontEnforceACLForAdministrators(?ca_users $t_user) : bool {
+	$is_admin = (is_a($t_user, 'ca_users') && $t_user->canDoAction('is_administrator'));
+	
+	if (caAppIsProvidence() && $is_admin) { return true; }
+	
+	$config = Configuration::load();
+	$bypass_enabled = $config->get('acl_dont_enforce_for_administrator');
+	if(!$bypass_enabled) { return false; }
+	
+	if($is_admin) { return true; }
+	
+	return false;
+}
+# ---------------------------------------------------------------------------------------------
 /*
  * Determine if source access control is enabled system wide, or for a specific row
  *
@@ -965,5 +1019,26 @@ function caSourceAccessControlIsEnabled($t_item=null, ?array $options=null) : bo
 	if(!is_a($t_item, 'BaseModel')) { $t_item = Datamodel::getInstance($t_item, true); }
 	if($config->get($t_item->tableName().'_dont_do_source_access_control')) { return false; } 
 	return true;
+}
+# ---------------------------------------------------------------------------------------------
+/**
+ *
+ */
+function caGetAccessConfigOption(BaseModelWithAttributes $t_item, string $config_opt, ?array $options=null) : mixed {
+	$config = Configuration::load();
+	
+	$keys = [$config_opt];
+	if(is_a($t_item, 'BaseModelWithAttributes')) {
+		array_unshift($keys, $t_item->tableName().'_'.$config_opt);
+		array_unshift($keys, $t_item->tableName().'_'.$t_item->getTypeCode().'_'.$config_opt);
+	}
+	$ret = null;
+	foreach($keys as $a) {
+		if($config->exists($a)) { 
+			$ret = (bool)$config->get($a); 
+			break;
+		}
+	}
+	return $ret;
 }
 # ---------------------------------------------------------------------------------------------
