@@ -1064,6 +1064,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$qinfo = $this->_queryForCurrencyAttribute(new CurrencyAttributeValue(), $ap, $text, $text_upper, ['t_subject' => $t_instance]);
 				break;
 			case __CA_ATTRIBUTE_VALUE_GEOCODE__:
+			case __CA_ATTRIBUTE_VALUE_GEONAMES__:
 				$qinfo = $this->_queryForGeocodeAttribute(new GeocodeAttributeValue(), $ap, $text, $text_upper, ['t_subject' => $t_instance]);
 				break;
 		}
@@ -1314,6 +1315,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				switch(WLPlugSearchEngineSqlSearch2::$metadata_elements[$field_num_proc]['datatype']) {
 					case __CA_ATTRIBUTE_VALUE_CONTAINER__:	
 					case __CA_ATTRIBUTE_VALUE_GEOCODE__:	
+					case __CA_ATTRIBUTE_VALUE_GEONAMES__:	
 					case __CA_ATTRIBUTE_VALUE_CURRENCY__:
 					case __CA_ATTRIBUTE_VALUE_LENGTH__:
 					case __CA_ATTRIBUTE_VALUE_WEIGHT__:
