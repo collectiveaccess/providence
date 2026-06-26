@@ -99,8 +99,15 @@ var caUI = caUI || {};
 			loadedSort: null,			// Dynamically loaded sort order
 			loadedSortDirection: null,
 			
+			alwaysQuickAdd: false,
+			alwaysQuickAddDefaultQuery: "",
+			
 			buttons: []
 		}, options);
+		
+		if(that.alwaysQuickAdd) { 
+			that.showEmptyFormsOnLoad = 0
+		}
 		
 		if (that.singleValuePerLocale) {
 		    that.incrementLocalesForNewBundles = true;  // single value per locale implies incrementing locales on each bundle add
@@ -230,9 +237,15 @@ var caUI = caUI || {};
 						that.errors[id] = initialValues['_errors'];
 					}
 				}
+				
 				templateValues.n = 'new_' + that.getNIndex();
 				templateValues.error = '';
 				isNew = true;
+				
+				if(options.alwaysQuickAdd && that.triggerQuickAdd && (!id || id.match(/^new_[\d]+/))) {
+					if(!id) { id = 'new_' + that.getNIndex(); }
+					that.triggerQuickAdd(that.alwaysQuickAddDefaultQuery, id);
+				}
 			}
 
 			var defaultLocaleSelectedIndex = false;
@@ -632,7 +645,7 @@ var caUI = caUI || {};
 			// empty forms to meet minimum count
 			var i;
 			for(i = initalizedCount; i < that.minRepeats; i++) {
-				that.addToBundle(null, null, true);
+				that.addToBundle('new_' + i, null, true);
 				initalizedCount++;
 			}
 		}
