@@ -3081,6 +3081,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return bool
 	 */
 	function caDateEndsInFuture($ps_date_expression) {
+		if(!trim($ps_date_expression)) { return false; }
 		if ($va_date = caDateToHistoricTimestamps($ps_date_expression)) {
 			$va_now = caDateToHistoricTimestamps(_t('now'));
 			if (
