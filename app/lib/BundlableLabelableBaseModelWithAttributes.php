@@ -254,6 +254,19 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
+		if(caGetOption('hooks', $pa_options, true)) {
+			$this->opo_app_plugin_manager->hookBeforeInsertItem(
+				[
+					'id' => $this->getPrimaryKey(), 
+					'table_num' => $this->tableNum(), 
+					'table_name' => $table, 
+					'instance' => $this, 
+					'is_insert' => true, 
+					'for_duplication' => caGetOption('forDuplication', $pa_options, false)
+				]
+			);
+		}
+		
 		// stash attributes to add
 		$va_attributes_added = $this->opa_attributes_to_add;
 		if (!($vn_rc = parent::insert($pa_options))) {	
