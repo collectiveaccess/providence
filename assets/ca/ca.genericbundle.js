@@ -634,9 +634,11 @@ var caUI = caUI || {};
 		// add 'forced' new values (typically used to pre-add new items to the bundle when, for example,
 		// in a previous action the add failed)
 		if (!that.forceNewValues) { that.forceNewValues = []; }
+		
+		const offset = that.getNIndex();
 		jQuery.each(that.forceNewValues, function(k, v) {
 			v['_handleAsNew'] = true;
-			that.addToBundle('new_' + k, v, true);
+			that.addToBundle('new_' + (offset + k), v, true);
 			initalizedCount++;
 		});
 
