@@ -3762,7 +3762,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$o_view->setVar('quickadd_enabled', $vb_quickadd_enabled);
 		
 		// quickadd - add relationship immediately on save of overlay?
-		$o_view->setVar('create_relationship_on_save', $pa_bundle_settings['createRelationshipOnQuickaddSave'] ?? false);
+		$o_view->setVar('quickadd_create_relationship_on_save', $pa_bundle_settings['createRelationshipOnQuickaddSave'] ?? false);
 		
 		$o_view->setVar('add_label', caExtractSettingValueByLocale($pa_bundle_settings, 'add_label', $g_ui_locale));
 		
