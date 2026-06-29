@@ -254,7 +254,6 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 			
 			$vn_c++;
 		}
-		
 		return $vn_c;
 	}
 	# ------------------------------------------------------
@@ -468,7 +467,6 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 		) {
 			return ca_metadata_dictionary_entries::$s_definition_cache_index[$ps_bundle_name];
 		}
-		
 		return false;
 	}
 	# ------------------------------------------------------
@@ -509,7 +507,6 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 		if (sizeof($va_relationship_types = array_filter($va_relationship_types, 'strlen'))) {
 			$va_relationship_types = array_merge($va_relationship_types, ca_relationship_types::relationshipTypeIDsToTypeCodes($va_relationship_types) ?? []);
 		}
-		
 		if ($va_entry_list = ca_metadata_dictionary_entries::entryExists($ps_bundle_name)) {
 			$vn_entry_id = null;
 			
