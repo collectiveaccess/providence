@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2025 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,7 +26,6 @@
  * ----------------------------------------------------------------------
  */ 
 $vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-$t_instance 		= $this->getVar('t_instance');
 $t_item 			= $this->getVar('t_item');			// set
 /** @var ca_sets $t_item_rel */
 $t_item_rel 		= $this->getVar('t_item_rel');
@@ -38,7 +37,7 @@ $vn_placement_id	= (int)$settings['placement_id'];
 $vb_batch			= $this->getVar('batch');
 
 $vs_sort			=	((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
-$vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_sets') == __CA_BUNDLE_ACCESS_READONLY__));
+$vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_subject->tableName(), 'ca_sets') == __CA_BUNDLE_ACCESS_READONLY__));
 $vb_dont_show_del	=	((isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton'])) ? true : false;
 
 $vs_color 			= 	((isset($settings['colorItem']) && $settings['colorItem'])) ? $settings['colorItem'] : '';
@@ -72,7 +71,7 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 
 print "<div class='bundleSubLabel'>";	
 if(sizeof($this->getVar('initialValues'))) {
-	print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $vn_placement_id);
+	print caGetPrintFormatsListAsHTMLForRelatedBundles($vs_id_prefix, $this->request, $t_subject, $t_item, $t_item_rel, $vn_placement_id);
 }
 if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($settings['list_format'] != 'list')) {
 	print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName(), $t_item_rel->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
@@ -189,7 +188,7 @@ foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) 
 
 <?php if($vb_quick_add_enabled) { ?>
 <div id="caRelationQuickAddPanel<?= $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
-	<div id="caRelationQuickAddPanel<?= $vs_id_prefix; ?>ContentArea">
+	<div id="caRelationQuickAddPanel<?= $vs_id_prefix; ?>ContentArea" data-relatedTable="<?= $t_subject->tableName(); ?>" data-relatedID="<?= $t_subject->getPrimaryKey(); ?>" data-relationshipType="" data-createRelationshipOnSave="<?= $this->getVar('quickadd_create_relationship_on_save'); ?>">
 	<div class='dialogHeader'><?= _t('Quick Add', $t_item->getProperty('NAME_SINGULAR')); ?></div>
 		
 	</div>

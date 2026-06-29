@@ -18,7 +18,7 @@
  * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free <a href="ca_object_lots.php">ca_object_lots.php</a>and modifiable under the terms of 
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
@@ -26,7 +26,6 @@
  * ----------------------------------------------------------------------
  */
 $id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-$t_instance 		= $this->getVar('t_instance');
 $t_item 			= $this->getVar('t_item');			// object_lot
 $t_subject 			= $this->getVar('t_subject');		// object
 $t_item_rel 		= $this->getVar('t_item_rel');
@@ -44,7 +43,7 @@ $first_color 	= 	caGetOption('colorFirstItem', $settings, '');
 $last_color 		= 	caGetOption('colorLastItem', $settings, '');
 
 
-$read_only		=	(caGetOption('readonly', $settings, false)  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_object_lots') == __CA_BUNDLE_ACCESS_READONLY__));
+$read_only		=	(caGetOption('readonly', $settings, false)  || ($this->request->user->getBundleAccessLevel($t_subject->tableName(), 'ca_object_lots') == __CA_BUNDLE_ACCESS_READONLY__));
 
 $quick_add_enabled = $this->getVar('quickadd_enabled');
 
@@ -84,7 +83,7 @@ $lookup_params = array(
 	'types' => caGetOption(['restrict_to_types', 'restrict_to_type'], $settings, ''),
 	'noSubtypes' => caGetOption('dont_include_subtypes_in_type_restriction', $settings, false, ['castTo' => 'bool']),
 	'noInline' => (!$quick_add_enabled || (bool)  preg_match("/QuickAdd$/", $this->request->getController())) ? 1 : 0,
-	'self' => $t_instance->tableName().':'.$t_instance->getPrimaryKey()
+	'self' => $t_subject->tableName().':'.$t_subject->getPrimaryKey()
 );
 
 $count = $this->getVar('relationship_count');
@@ -106,15 +105,15 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 <?php
 	print "<div class='bundleSubLabel'>";	
 	if(is_array($this->getVar('initialValues')) && sizeof($this->getVar('initialValues'))) {
-		print caEditorBundleBatchEditorControls($this->request, $placement_id, $t_subject, $t_instance->tableName(), $settings);
-		print caGetPrintFormatsListAsHTMLForRelatedBundles($id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $placement_id);
+		print caEditorBundleBatchEditorControls($this->request, $placement_id, $t_subject, $t_subject->tableName(), $settings);
+		print caGetPrintFormatsListAsHTMLForRelatedBundles($id_prefix, $this->request, $t_subject, $t_item, $t_item_rel, $placement_id);
 		
 		if(caGetOption('showReturnToHomeLocations', $settings, false) && caHomeLocationsEnabled('ca_object_lots', null, ['enableIfAnyTypeSet' => true])) {
-			print caReturnToHomeLocationControlForRelatedBundle($this->request, $id_prefix, $t_instance, $this->getVar('history_tracking_policy'), $this->getVar('initialValues'));
+			print caReturnToHomeLocationControlForRelatedBundle($this->request, $id_prefix, $t_subject, $this->getVar('history_tracking_policy'), $this->getVar('initialValues'));
 		}
 	
 		if(!$read_only && ($t_subject->tableName() !== 'ca_objects')) {
-			print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
+			print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), $t_subject->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
 		}
 	}
 	print "<div style='clear:both;'></div></div><!-- end bundleSubLabel -->";
@@ -300,7 +299,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 
 <?php if($quick_add_enabled) { ?>
 <div id="caRelationQuickAddPanel<?= $id_prefix; ?>" class="caRelationQuickAddPanel"> 
-	<div id="caRelationQuickAddPanel<?= $id_prefix; ?>ContentArea">
+	<div id="caRelationQuickAddPanel<?= $id_prefix; ?>ContentArea" data-relatedTable="<?= $t_subject->tableName(); ?>" data-relatedID="<?= $t_subject->getPrimaryKey(); ?>" data-relationshipType="" data-createRelationshipOnSave="<?= $this->getVar('quickadd_create_relationship_on_save'); ?>">
 	<div class='dialogHeader'><?= _t('Quick Add', $t_item->getProperty('NAME_SINGULAR')); ?></div>
 		
 	</div>
@@ -405,8 +404,8 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 			interstitialButtonClassName: 'caInterstitialEditButton',
 			interstitialPanel: caRelationEditorPanel<?= $id_prefix; ?>,
 			interstitialUrl: '<?= caNavUrl($this->request, 'editor', 'Interstitial', 'Form', array('t' => $t_item_rel->tableName())); ?>',
-			interstitialPrimaryTable: '<?= $t_instance->tableName(); ?>',
-			interstitialPrimaryID: <?= (int)$t_instance->getPrimaryKey(); ?>,
+			interstitialPrimaryTable: '<?= $t_subject->tableName(); ?>',
+			interstitialPrimaryID: <?= (int)$t_subject->getPrimaryKey(); ?>,
 			minRepeats: <?= caGetOption('minRelationshipsPerRow', $settings, 0); ?>,
 			maxRepeats: <?= caGetOption('maxRelationshipsPerRow', $settings, 65535); ?>,
 			
@@ -422,7 +421,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 			listSortItems: 'div.roundedRel,div.listRel',
 <?php if($quick_add_enabled) { ?>
 			quickaddPanel: caRelationQuickAddPanel<?= $id_prefix; ?>,
-			quickaddUrl: '<?= caNavUrl($this->request, 'editor/object_lots', 'ObjectLotQuickAdd', 'Form', array('lot_id' => 0, 'placement_id' => $placement_id, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0), 'prepopulate_fields' => join(";", $settings['prepopulateQuickaddFields'] ?? []))); ?>',
+			quickaddUrl: '<?= caNavUrl($this->request, 'editor/object_lots', 'ObjectLotQuickAdd', 'Form', array('lot_id' => 0, 'placement_id' => $placement_id, 'source' => $t_subject->tableName(), 'source_id' => $t_subject->getPrimaryKey(), 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0), 'prepopulate_fields' => join(";", $settings['prepopulateQuickaddFields'] ?? []))); ?>',
 			
 			totalValueCount: <?= (int)$count; ?>,
 			partialLoadUrl: '<?= caNavUrl($this->request, '*', '*', 'loadBundleValues', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $placement_id, 'bundle' => 'ca_object_lots')); ?>',
