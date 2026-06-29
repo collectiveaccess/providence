@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2024 Whirl-i-Gig
+ * Copyright 2012-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,7 +36,7 @@ $field_name_prefix = $this->getVar('field_name_prefix');
 $n 				= $this->getVar('n');
 $q				= caUcFirstUTF8Safe($this->getVar('q'));
 
-$vb_can_edit	 	= $t_subject->isSaveable($this->request);
+$can_edit	 	= $t_subject->isSaveable($this->request);
 
 $form_name = "OccurrenceQuickAddForm";
 ?>	
@@ -57,8 +57,11 @@ $form_name = "OccurrenceQuickAddForm";
 </script>	
 <form action="#" class="quickAddSectionForm" name="<?= $form_name; ?>" method="POST" enctype="multipart/form-data" id="<?= $form_name.$field_name_prefix.$n; ?>">
 	<div class='quickAddDialogHeader'><?php 
-		print "<div class='quickAddTypeList'>"._t('Quick Add %1', $t_subject->getTypeListAsHTMLFormElement('change_type_id', array('id' => "{$form_name}TypeID{$field_name_prefix}{$n}", 'onchange' => "caQuickAddFormHandler.switchForm();"), array('value' => $t_subject->get('type_id'), 'restrictToTypes' => $restrict_to_types)))."</div>"; 
-		if ($vb_can_edit) {
+		print "<div class='quickAddTypeList'>"._t('Quick add %1', $t_subject->getTypeListAsHTMLFormElement('change_type_id', array('id' => "{$form_name}TypeID{$field_name_prefix}{$n}", 'onchange' => "caQuickAddFormHandler.switchForm();"), array('value' => $t_subject->get('type_id'), 'restrictToTypes' => $restrict_to_types)))."</div>"; 
+		if($rtl = $this->getVar('relationship_type_list')) {
+			print "<div class='quickAddTypeList'> "._t('related as %1', $rtl)."</div>";
+		}
+		if ($can_edit) {
 			print "<div class='quickAddControls'>".caJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Add %1", $t_subject->getTypeName()), "{$form_name}{$field_name_prefix}{$n}", array("onclick" => "caQuickAddFormHandler.save(event);"))
 			.' '.caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), "{$form_name}{$field_name_prefix}{$n}", ["onclick" => "caQuickAddFormHandler.cancel(event);"])."</div>\n";
 		}
