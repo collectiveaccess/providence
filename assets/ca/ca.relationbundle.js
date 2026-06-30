@@ -393,6 +393,11 @@ var caUI = caUI || {};
 				that.addToBundle(id);
 			}
 		};
+		
+		that.reloadItemList = function(opts=null) {
+		
+		}
+		
 		if(that._updateSortOrderListIDFormElement) { that._updateSortOrderListIDFormElement(); }
 		return that;
 	};	

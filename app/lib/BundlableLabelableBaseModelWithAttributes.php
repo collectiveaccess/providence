@@ -3118,11 +3118,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					$va_bundle_html[$va_bundle['placement_code']] = "<a name=\"{$pm_screen}_{$va_bundle['placement_id']}\"></a><span id=\"{$pm_screen}_{$va_bundle['placement_id']}_bundle\">{$vs_bundle_form_html}</span>";
 					$va_bundles_present[$va_bundle['bundle_name']] = true;
 					
+					$bi = $this->getBundleInfo($va_bundle['bundle_name']);
 					$pa_placements["{$pm_screen}_{$va_bundle['placement_id']}"] = array(
 						'name' => $vs_bundle_display_name ? $vs_bundle_display_name : $this->getDisplayLabel($vs_table_name.".".$va_bundle['bundle_name']),
 						'placement_id' => $va_bundle['placement_id'],
 						'bundle' => $va_bundle['bundle_name'],
-						'id' => 'P'.$va_bundle['placement_id'].caGetOption('formName', $pa_options, '')
+						'id' => 'P'.$va_bundle['placement_id'].caGetOption('formName', $pa_options, ''),
+						'type' => $bi['type'],
+						'repeating' => $bi['repeating']
 					);
 				}
 			}
@@ -3713,7 +3716,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$o_view->setVar('bundle_name', $ps_related_table);
 		
 		list('defaultSorts' => $default_sorts, 'typeSpecificSorts' => $type_specific_sorts, 'sortOptions' => $sort_options) = caGetDefaultEditorBundleSortConfiguration($this->tableName(), $ps_related_table, $pa_bundle_settings);
-
 		
 		// Look for sort settings in parameter options, bundle settings and then app.conf defaults
 		foreach([$pa_options, $pa_bundle_settings, $type_specific_sorts, $default_sorts] as $i => $opts) {

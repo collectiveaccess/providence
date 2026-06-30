@@ -34,6 +34,9 @@ $restrict_to_types = $this->getVar('restrict_to_types');
 $restrict_to_lists = $this->getVar('restrict_to_lists');
 
 $field_name_prefix = $this->getVar('field_name_prefix');
+
+$placement_id		= (int)$this->getVar('placement_id');
+
 $n 				= $this->getVar('n');
 $q				= caUcFirstUTF8Safe($this->getVar('q'), true);
 
@@ -46,6 +49,10 @@ $form_name = "ListItemQuickAddForm";
 		formID: '<?= $form_name.$field_name_prefix.$n; ?>',
 		formErrorsPanelID: '<?= $form_name; ?>Errors<?= $field_name_prefix.$n; ?>',
 		formTypeSelectID: '<?= $form_name; ?>TypeID<?= $field_name_prefix.$n; ?>', 
+		
+		placement_id: <?= $placement_id; ?>,
+		source: <?= json_encode($this->getVar('source')); ?>,
+		source_id: <?= (int)$this->getVar('source_id'); ?>,
 		
 		formUrl: '<?= caNavUrl($this->request, 'administrate/setup/list_item_editor', 'ListItemQuickAdd', 'Form'); ?>',
 		fileUploadUrl: '<?= caNavUrl($this->request, "administrate/setup/list_item_editor", "ListItemEditor", "UploadFiles"); ?>',

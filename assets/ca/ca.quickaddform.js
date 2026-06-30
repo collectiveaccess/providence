@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2024 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,6 +39,10 @@ var caUI = caUI || {};
 			fileUploadUrl: null,
 			saveUrl: null,
 			csrfToken: null,
+			
+			placement_id: null,
+			source: null,
+			source_id: null,
 			
 			headerText: "QuickAdd",
 			saveText: "Saved record: %1",
@@ -83,9 +87,11 @@ var caUI = caUI || {};
 			formData['csrfToken'] = that.csrfToken;
 			
 			// Added "forced relationship" settings if available
-			var relatedID = jQuery("#" + that.formID).parent().data('relatedID');
-			var relatedTable = jQuery("#" + that.formID).parent().data('relatedTable');
-			var relationshipType = jQuery("#" + that.formID).parent().data('relationshipType');
+			var relatedID = jQuery("#" + that.formID).parent().data('relatedid');
+			var relatedTable = jQuery("#" + that.formID).parent().data('relatedtable');
+			var relationshipType = jQuery("#" + that.formID).parent().data('relationshiptype');
+			if(!relationshipType) { relationshipType = formData.relationship_type_id; }
+			
 			jQuery.extend(formData, {relatedID: relatedID, relatedTable: relatedTable, relationshipType: relationshipType });
 			
 			if(Object.keys(that._files).length > 0) {
@@ -163,12 +169,18 @@ var caUI = caUI || {};
 				jQuery.jGrowl(that.saveText.replace('%1', resp.display), { header: that.headerText }); 
 				jQuery("#" + that.formID).parent().data('panel').hidePanel();
 				
-				if(formData['relatedID'] && caBundleUpdateManager) { 
-					caBundleUpdateManager.reloadBundle('ca_objects_location'); 
-					caBundleUpdateManager.reloadBundle('ca_objects_history'); 
-					caBundleUpdateManager.reloadBundle('history_tracking_chronology'); 
-					caBundleUpdateManager.reloadInspector(); 
-				}
+				console.log(that);
+				if(caBundleUpdateManager && (that.source_id > 0)) {
+				    if(that.placement_id) {
+				        caBundleUpdateManager.reloadBundleByPlacementID(that.placement_id);
+				    }
+                    if(formData['relatedID']) { 
+                        caBundleUpdateManager.reloadBundle('ca_objects_location'); 
+                        caBundleUpdateManager.reloadBundle('ca_objects_history'); 
+                        caBundleUpdateManager.reloadBundle('history_tracking_chronology'); 
+                        caBundleUpdateManager.reloadInspector(); 
+                    }
+                }
 			} else {
 				// error
 				that.setErrors(resp.errors);

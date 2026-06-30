@@ -79,7 +79,7 @@ if (!RequestHTTP::isAjax()) {
 	if ($batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $id_prefix);
 	} else {
-		print caEditorBundleShowHideControl($this->request, $id_prefix, $settings, caInitialValuesArrayHasValue($id_prefix, $this->getVar('initialValues')));
+		print caEditorBundleShowHideControl($this->request, $id_prefix, $settings, caInitialValuesArrayHasValue($id_prefix, $this->getVar('initialValues')), "&nbsp;", ['itemListClassName' => 'caItemList']);
 	}
 	print caEditorBundleMetadataDictionary($this->request, $id_prefix, $settings);
 }

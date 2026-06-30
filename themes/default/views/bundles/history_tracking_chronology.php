@@ -708,7 +708,7 @@ if($show_entity_controls) {
 </div>
 
 <div id="caRelationQuickAddPanel<?= $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
-	<div id="caRelationQuickAddPanel<?= $vs_id_prefix; ?>ContentArea">
+	<div id="caRelationQuickAddPanel<?= $vs_id_prefix; ?>ContentArea" data-relatedTable="<?= $t_subject->tableName(); ?>" data-relatedID="<?= $t_subject->getPrimaryKey(); ?>" data-relationshipType="" data-createRelationshipOnSave="<?= $this->getVar('quickadd_create_relationship_on_save'); ?>">
 	<div class='dialogHeader'><?= _t('Quick Add'); ?></div>
 		
 	</div>

@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2024 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,10 +46,11 @@ var caBundleUpdateManager = caBundleUpdateManager || null;
 		// --------------------------------------------------------------------------------
 		// Methods
 		// --------------------------------------------------------------------------------
-		that.registerBundle = function(id, bundle, placement_id) {
+		that.registerBundle = function(id, bundle, placement_id, type) {
 			that.byID[id] = that.byPlacementID[placement_id] = {
-				id: id, bundle: bundle, placement_id: placement_id
+				id: id, bundle: bundle, placement_id: placement_id, type: type
 			};
+			console.log(that.byID);
 			if(!that.byBundle[bundle]) { that.byBundle[bundle] = []; }
 			that.byBundle[bundle].push(that.byID[id]);
 		}
@@ -58,7 +59,7 @@ var caBundleUpdateManager = caBundleUpdateManager || null;
 		that.registerBundles = function(list) {
 			var l;
 			for(l in list) {
-				that.registerBundle(list[l].id, list[l].bundle, list[l].placement_id);
+				that.registerBundle(list[l].id, list[l].bundle, list[l].placement_id, list[l].type);
 			}
 		}
 		// --------------------------------------------------------------------------------
@@ -81,11 +82,12 @@ var caBundleUpdateManager = caBundleUpdateManager || null;
 					var data = { "bundle": v.bundle, "placement_id": v.placement_id };
 					if (options) { 
 						for(var k in options) {
-							//loadURL += "/" + k + "/" + options[k];
 							data[k] = options[k];
 						}
 					}
-					jQuery("#" + v['id']).load(loadURL, data);
+					jQuery("#" + v['id']).load(loadURL, data, function(e) {
+					    console.log("load complete", v);
+					});
 				});
 			}
 		}

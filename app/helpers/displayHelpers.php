@@ -981,14 +981,14 @@ function caSetupEditorScreenOverlays($po_request, $pt_subject, $pa_bundle_list, 
 /**
  * 
  *
- * @param array $pa_bundle_list 
- * @param array $pa_options Optional array of options. Supported options are:
+ * @param array $bundle_list 
+ * @param array $options Optional array of options. Supported options are:
  *		NONE
  *
  * @return string
  */
-function caEditorFieldList($po_request, $pt_subject, $pa_bundle_list, $pa_options=null) {
-	$vs_buf = "<script type=\"text/javascript\">
+function caEditorFieldList($request, $subject, $bundle_list, $options=null) {
+	$buf = "<script type=\"text/javascript\">
 	jQuery(document).ready(function() {
 		jQuery(document).on('keydown.ctrl_f', function() {
 			caHierarchyOverviewPanel.hidePanel({dontCloseMask:1});
@@ -1004,19 +1004,19 @@ function caEditorFieldList($po_request, $pt_subject, $pa_bundle_list, $pa_option
 		});
 
 		if (typeof caBundleVisibilityManager !== 'undefined') { caBundleVisibilityManager.setAll(); }
-		if (typeof caBundleUpdateManager !== 'undefined') { caBundleUpdateManager = caUI.initBundleUpdateManager({url:'".caNavUrl($po_request, '*', '*', 'reload')."', screen:'".$po_request->getActionExtra()."', key:'".$pt_subject->primaryKey()."', id: ".(int)$pt_subject->getPrimaryKey()."}); }
-		caBundleUpdateManager.registerBundles(".json_encode($pa_bundle_list).");
+		if (typeof caBundleUpdateManager !== 'undefined') { caBundleUpdateManager = caUI.initBundleUpdateManager({url:'".caNavUrl($request, '*', '*', 'reload')."', screen:'".$request->getActionExtra()."', key:'".$subject->primaryKey()."', id: ".(int)$subject->getPrimaryKey()."}); }
+		caBundleUpdateManager.registerBundles(".json_encode($bundle_list).");
 	});
 </script>
 <div id=\"editorFieldListHTML\">";
-	if (is_array($pa_bundle_list)) { 
-		foreach($pa_bundle_list as $vs_anchor => $va_info) {
-			$vs_buf .= "<a href=\"#\" onclick=\"jQuery.scrollTo('a[name={$vs_anchor}]', {duration: 350, offset: -80 , onAfter : function(selector, data){jQuery(selector).parent('.bundleLabel').find('a:link').first().focus();}}); return false;\" class=\"editorFieldListLink\">".$va_info['name']."</a><br/>";
+	if (is_array($bundle_list)) { 
+		foreach($bundle_list as $anchor => $info) {
+			$buf .= "<a href=\"#\" onclick=\"jQuery.scrollTo('a[name={$anchor}]', {duration: 350, offset: -80 , onAfter : function(selector, data){jQuery(selector).parent('.bundleLabel').find('a:link').first().focus();}}); return false;\" class=\"editorFieldListLink\">".$info['name']."</a><br/>";
 		}
 	}
-	$vs_buf .= "</div>\n";
+	$buf .= "</div>\n";
 
-	return $vs_buf;
+	return $buf;
 }
 # ------------------------------------------------------------------------------------------------
 /**
@@ -3795,48 +3795,46 @@ function caGetBundleDisplayTemplate($pt_subject, $ps_related_table, $pa_bundle_s
 /**
  * Generates show/hide control HTML for bundles
  *
- * @param RequestHTTP $po_request
- * @param string $ps_id_prefix
- * @param array $pa_settings bundle placement option array
+ * @param RequestHTTP $request
+ * @param string $id_prefix
+ * @param array $settings bundle placement option array
  * @param bool $pb_has_value
- * @param string $ps_preview_init string to initialize bundle preview content section with
+ * @param string $preview_init string to initialize bundle preview content section with
  *
  * @return string HTML implementing the control
  */
-function caEditorBundleShowHideControl($po_request, $ps_id_prefix, $pa_settings=null, $pb_has_value=false, $ps_preview_init="&nbsp;") {
-	if (caGetOption('dont_allow_bundle_show_hide', $pa_settings, false)) { return ''; }
-	$vs_expand_collapse_value = caGetOption('expand_collapse_value', $pa_settings, 'dont_force');
-	$vs_expand_collapse_no_value = caGetOption('expand_collapse_no_value', $pa_settings, 'dont_force');
-	$vs_expand_collapse = caGetOption('expand_collapse', $pa_settings, false);
+function caEditorBundleShowHideControl($request, $id_prefix, $settings=null, $pb_has_value=false, $preview_init="&nbsp;") {
+	if (caGetOption('dont_allow_bundle_show_hide', $settings, false)) { return ''; }
+	$expand_collapse_value = caGetOption('expand_collapse_value', $settings, 'dont_force');
+	$expand_collapse_no_value = caGetOption('expand_collapse_no_value', $settings, 'dont_force');
+	$expand_collapse = caGetOption('expand_collapse', $settings, false);
 
-
-
-	if(!$vs_expand_collapse) {
-		$vs_expand_collapse = ($pb_has_value ? $vs_expand_collapse_value : $vs_expand_collapse_no_value);
+	if(!$expand_collapse) {
+		$expand_collapse = ($pb_has_value ? $expand_collapse_value : $expand_collapse_no_value);
 	}
 
-	switch(strtolower($vs_expand_collapse)) {
+	switch(strtolower($expand_collapse)) {
 		case 'collapse':
-			$vs_force = 'closed';
+			$force = 'closed';
 			break;
 		case 'expand':
-			$vs_force = 'open';
+			$force = 'open';
 			break;
 		case 'dont_force':
 		default:
-			$vs_force = '';
+			$force = '';
 			break;
 	}
 
-	$ps_preview_id_prefix = preg_replace("/[0-9]+\_rel/", "", $ps_id_prefix);
+	$preview_id_prefix = preg_replace("/[0-9]+\_rel/", "", $id_prefix);
 
-	$vs_buf  = "<span class='bundleContentPreview' id='{$ps_preview_id_prefix}_BundleContentPreview'>{$ps_preview_init}</span>";
-	$vs_buf .= "<span class='iconButton'>";
-	$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggle(\"{$ps_id_prefix}\");  return false;' aria-label='" . _t('Toggle visibility') . "'>".caNavIcon(__CA_NAV_ICON_VISIBILITY_TOGGLE__, '18px', array('id' =>"{$ps_id_prefix}VisToggleButton"))."</a>";
-	$vs_buf .= "</span>\n";
-	$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}', '{$vs_force}'); }); </script>";
+	$buf  = "<span class='bundleContentPreview' id='{$preview_id_prefix}_BundleContentPreview'>{$preview_init}</span>";
+	$buf .= "<span class='iconButton'>";
+	$buf .= "<a href='#' onclick='caBundleVisibilityManager.toggle(\"{$id_prefix}\");  return false;' aria-label='" . _t('Toggle visibility') . "'>".caNavIcon(__CA_NAV_ICON_VISIBILITY_TOGGLE__, '18px', array('id' =>"{$id_prefix}VisToggleButton"))."</a>";
+	$buf .= "</span>\n";
+	$buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$id_prefix}', '{$force}'); }); </script>";
 
-	return $vs_buf;
+	return $buf;
 }
 # ---------------------------------------
 /**

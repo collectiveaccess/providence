@@ -33,6 +33,9 @@ $subject_id 		= $this->getVar('subject_id');
 $restrict_to_types = $this->getVar('restrict_to_types');
 
 $field_name_prefix = $this->getVar('field_name_prefix');
+
+$placement_id		= (int)$this->getVar('placement_id');
+
 $n 				= $this->getVar('n');
 $q				= caUcFirstUTF8Safe($this->getVar('q'), true);
 
@@ -45,6 +48,10 @@ $form_name = "SetQuickAddForm";
 		formID: '<?= $form_name.$field_name_prefix.$n; ?>',
 		formErrorsPanelID: '<?= $form_name; ?>Errors<?= $field_name_prefix.$n; ?>',
 		formTypeSelectID: '<?= $form_name; ?>TypeID<?= $field_name_prefix.$n; ?>', 
+		
+		placement_id: <?= $placement_id; ?>,
+		source: <?= json_encode($this->getVar('source')); ?>,
+		source_id: <?= (int)$this->getVar('source_id'); ?>,
 		
 		formUrl: '<?= caNavUrl($this->request, 'manage/sets', 'SetQuickAdd', 'Form'); ?>',
 		fileUploadUrl: '<?= caNavUrl($this->request, "manage/sets", "SetEditor", "UploadFiles"); ?>',
