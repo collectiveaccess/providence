@@ -260,9 +260,20 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	public function load($pm_id=null, $pb_use_cache = true) {
+		$key = md5(serialize($pm_id));
+		if(CompositeCache::contains($key, 'metadataElements')) { 
+			$this->_FIELD_VALUES = CompositeCache::fetch($key, 'metadataElements');
+			
+			if(!is_array($this->_FIELD_VALUES) || !sizeof($this->_FIELD_VALUES)) { return false; }
+			return true;
+		}
 		if ($vn_rc = parent::load($pm_id, $pb_use_cache)) {
 			$this->loadSettings();
+			CompositeCache::save($key, $this->_FIELD_VALUES, 'metadataElements');
+		} else {
+			CompositeCache::save($key, null, 'metadataElements');
 		}
+
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
