@@ -1154,7 +1154,8 @@ class MultipartIDNumber extends IDNumber {
 	public function htmlFormValue($name, $value=null, $dont_mark_serial_value_as_used=false, $generate_for_search_form=false, $always_generate_serial_values=false) {
 		$tmp = $this->htmlFormValuesAsArray($name, $value, $dont_mark_serial_value_as_used, $generate_for_search_form, $always_generate_serial_values);
 		if (!($separator = $this->getSeparator())) { $separator = ''; }
-
+		$last = end($tmp);
+		if(!strlen($last)) { array_pop($tmp); }
 		return (is_array($tmp)) ? join($separator, $tmp) : null;
 	}
 	# -------------------------------------------------------

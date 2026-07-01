@@ -410,6 +410,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 		$root = null;
 		foreach($hier as $element) {
+			if($element['NODE']['deleted'] ?? false) { continue; }
 			$element['NODE']['settings'] = unserialize(base64_decode($element['NODE']['settings']));			// decode settings vars into associative array
 			
 			// try to use non-preferred label (for disambiguration)
