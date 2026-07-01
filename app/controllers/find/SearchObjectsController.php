@@ -126,6 +126,7 @@ class SearchObjectsController extends BaseSearchController {
 	 *
 	 */
 	public function _getSubTypeActionNav($pa_item) {
+		if(!($pa_item['is_enabled'] ?? false)) { return []; }
 		return [
 			[
 				'displayName' => _t('Search'),
