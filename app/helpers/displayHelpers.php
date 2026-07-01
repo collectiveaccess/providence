@@ -1758,7 +1758,7 @@ jQuery(document).ready(function() {
 </script>\n";
 			}
 		}
-
+//$po_request, $ps_content, $ps_classname, $ps_table, $pn_id, $pa_additional_parameters=null, $pa_attributes=null, $pa_options=null)
 		//
 		// Output related counts
 		//
@@ -1770,16 +1770,31 @@ jQuery(document).ready(function() {
 					if(sizeof($show_counts_config['types']) > 0) {
 						foreach($show_counts_config['types'] as $type_id => $type_info) {
 							if(($count = (int)$t_item->getRelatedItems($show_counts_config['table'], ['returnAs' => 'count', 'limit' => 100000, 'restrictToTypes' => [$type_id]])) > 0) {
-								$links[$show_counts_config['table'].'/'.$type_info['idno']] = caSearchLink($view->request, _t('%1 related %2', $count, ($count === 1) ? $type_info['name_singular'] : $type_info['name_plural']), '', $show_counts_config['table'], $t_item->primaryKey(true).":".$t_item->getPrimaryKey(), ['type_id' => $type_id]);
+								$label = _t('%1 related %2', $count, ($count === 1) ? $type_info['name_singular'] : $type_info['name_plural']);
+								if($count === 1) {
+									if(is_array($ids = $t_item->get($show_counts_config['table'].'.related.'.Datamodel::primaryKey($show_counts_config['table']), ['returnAsArray' => true, 'restrictToTypes' => [$type_id]])) && sizeof($ids)) {
+										$links[$show_counts_config['table'].'/'.$type_info['idno']] = caEditorLink($view->request, $label, '', $show_counts_config['table'], $ids[0]);
+									}
+								} else {
+									$links[$show_counts_config['table'].'/'.$type_info['idno']] = caSearchLink($view->request, $label, '', $show_counts_config['table'], $t_item->primaryKey(true).":".$t_item->getPrimaryKey(), ['type_id' => $type_id]);
+								}
 							}
 						}
 					} elseif (($count = (int)$t_item->getRelatedItems($show_counts_config['table'], ['returnAs' => 'count', 'limit' => 100000])) > 0) {
-						$links[$show_counts_config['table']] = caSearchLink($view->request, _t('%1 related %2', $count, Datamodel::getTableProperty($show_counts_config['table'], ($count === 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), '', $show_counts_config['table'], $t_item->primaryKey(true).":".$t_item->getPrimaryKey());
+						if($count === 1) {
+							if(is_array($ids = $t_item->get($show_counts_config['table'].'.related.'.Datamodel::primaryKey($show_counts_config['table']), ['returnAsArray' => true])) && sizeof($ids)) {
+								$links[$show_counts_config['table'].'/'.$type_info['idno']] = caEditorLink($view->request, $label, '', $show_counts_config['table'], $ids[0]);
+							}
+						} else {
+							$links[$show_counts_config['table']] = caSearchLink($view->request, _t('%1 related %2', $count, Datamodel::getTableProperty($show_counts_config['table'], ($count === 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), '', $show_counts_config['table'], $t_item->primaryKey(true).":".$t_item->getPrimaryKey());
+						}
 					}
 				} 
 			}
-			ksort($links, SORT_NATURAL|SORT_FLAG_CASE);
-			$buf .= join("<br/>\n", $links);
+			if(sizeof($links) > 0) {
+				ksort($links, SORT_NATURAL|SORT_FLAG_CASE);
+				$buf .= '<br>'.join("<br>\n", $links);
+			}
 		}
 
 		//
