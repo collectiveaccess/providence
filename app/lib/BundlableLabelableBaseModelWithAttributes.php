@@ -3365,17 +3365,21 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	
 		$t_object = new ca_objects();
 		
+		$t_rel_type = null;
 		$rel_restrict_to_types = [];
 		if(is_array($object_collection_rel_types)) {
 			foreach($object_collection_rel_types as $object_collection_rel_type) {
-				if($t_rel = ca_relationship_types::findAsInstance(['table_num' => Datamodel::getTableNum('ca_objects_x_collections'), 'type_code' => $object_collection_rel_types])) {
-					$t = $t_rel->get('ca_relationship_types.include_subtypes_left') ? 
-						caMakeTypeIDList('ca_objects', [$t_rel->get('ca_relationship_types.sub_type_left_id')], array_merge($options, ['dont_include_subtypes_in_type_restriction' => true]))
-						: 
-						[$t_rel->get('ca_relationship_types.sub_type_left_id')];
-					$object_collection_rel_types = array_merge($object_collection_rel_types, $t);
+				if($t_rel_type = ca_relationship_types::findAsInstance(['table_num' => Datamodel::getTableNum('ca_objects_x_collections'), 'type_code' => $object_collection_rel_types])) {
+					$rel_type_res = $t_rel_type->getTypeRestrictions() ?? [];
+					
+					foreach($rel_type_res as $res) {
+						$t = $res['include_subtypes_left'] ? 
+							caMakeTypeIDList('ca_objects', [$res['sub_type_left_id']], array_merge($options, ['dont_include_subtypes_in_type_restriction' => true]))
+							: 
+							[$res['sub_type_left_id']];
+						$object_collection_rel_types = array_merge($object_collection_rel_types, $t);
+					}
 				}
-	
 			}
 		}
 		
@@ -3451,13 +3455,19 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			));
 			
 			if($this->tableName() == 'ca_collections') {
+				$rel_type_res = $t_rel_type->getTypeRestrictions() ?? [];
+				$restrict_to_types = [];
+				foreach($rel_type_res as $res) {
+					$restrict_to_types[] = $res['sub_type_left_id'];
+				}
+				
 				$o_view->setVar('objectTypeList', trim($t_object->getTypeListAsHTMLFormElement("{$placement_code}{$form_name}object_type_id", 
 					['id' => "{$placement_code}{$form_name}objectTypeList"], 
 					[	'childrenOfCurrentTypeOnly' => (bool)$strict_type_hierarchy, 
 						'includeSelf' => !(bool)$strict_type_hierarchy, 
 						'directChildrenOnly' => $strict_type_hierarchy && ($strict_type_hierarchy !== '~'),
-						'restrictToTypes' => $t_rel ? [$t_rel->get('ca_relationship_types.sub_type_left_id')] : null,
-						'dontIncludeSubtypesInTypeRestriction' => $t_rel ? !$t_rel->get('ca_relationship_types.include_subtypes_left') : null
+						'restrictToTypes' => sizeof($restrict_to_types) ? $restrict_to_types : null,
+						'dontIncludeSubtypesInTypeRestriction' => $t_rel_type ? !$t_rel_type->get('ca_relationship_types.include_subtypes_left') : null
 					])));
 			}
 			if($this->tableName() == 'ca_objects') {
@@ -4586,7 +4596,8 @@ if (!$batch) {
 							$target_id = $t_id;
 						}
 						if ($parent_table == $tt) {	
-							if($t = $table::findAsInstance([$this->primaryKey() => $target_id])) {
+							$t = ($this->getPrimaryKey() == $target_id) ? $this : $table::findAsInstance([$this->primaryKey() => $target_id]);
+							if($t) {
 								if(!$t->isSaveable($po_request)) { continue; }
 								
 								$t->setTransaction($this->getTransaction());
