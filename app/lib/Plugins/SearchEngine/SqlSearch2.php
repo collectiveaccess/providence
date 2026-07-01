@@ -1149,10 +1149,10 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			}
 			$table_name = $t_instance->tableName();
 			
+			$joins = [];
 			foreach($filters as $filter) {
 				$tmp = explode('.', $filter['field']);
 				$path = [];
-				$joins = [];
 				
 				if(!($fi = Datamodel::getInstance($tmp[0], true))) { continue; }
 				if(!$fi->hasField($tmp[1])) { continue; }
@@ -1161,15 +1161,15 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					$path = Datamodel::getPath($table_name, $tmp[0]);
 				} 
 				if (is_array($path) && sizeof($path)) {
-					$last_table = null;
+					$last_table = $table_name;
 					// generate related joins
 					foreach($path as $table => $va_info) {
+						if($table == $table_name) { continue; }
 						if (!($t_table = Datamodel::getInstance($table, true))) {
 							throw new ApplicationException(_t('Invalid path table: %1', $table));
 						}
-						
 						$rels = Datamodel::getOneToManyRelations($last_table, $table);
-						if (!sizeof($rels)) {
+						if (!is_array($rels) || !sizeof($rels)) {
 							$rels = Datamodel::getOneToManyRelations($table, $last_table);
 						}
 						if ($table == $rels['one_table']) {
@@ -1206,7 +1206,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$pk = $t_instance->primaryKey(true);
 			$table = $t_instance->tableName();
 			$sql_joins = join("\n", $joins);
-			
 			$qr_res = $this->db->query("
 				SELECT {$pk} 
 				FROM {$table} 
