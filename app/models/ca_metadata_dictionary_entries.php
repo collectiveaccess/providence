@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2024 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,7 +44,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_entries'] = array(
 		),
 		'table_num' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
-				'DISPLAY_WIDTH' => "160px", 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Entry type'), 'DESCRIPTION' => _t('Type of item this entry displays for.'),
@@ -488,8 +488,11 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	 */
 	public static function getEntry($ps_bundle_name, $pt_subject, $pa_settings=null, $pa_options=null) {
 		if (caGetOption('noCache', $pa_options, false)) {
-			ca_metadata_dictionary_entries::preloadDefinitions(array($ps_bundle_name));
+			ca_metadata_dictionary_entries::preloadDefinitions([$ps_bundle_name]);
 		}
+		
+		$subject_table_name = $pt_subject->tableName();
+		$subject_table_num = $pt_subject->tableNum();
 		
 		if(!is_array($va_types = caGetOption(['restrict_to_types', 'restrictToTypes'], $pa_settings, null)) && $va_types) {
 			$va_types = [$va_types];
@@ -512,8 +515,11 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 			
 			foreach(array_keys($va_entry_list) as $vn_id) {
 				$va_entry = ca_metadata_dictionary_entries::$s_definition_cache[$vn_id];
+				
+				if($va_entry['table_num'] != $subject_table_num) { continue; }
+				
 				if (is_array($va_tables = ($va_entry['settings']['restrict_to'] ?? null)) && sizeof($va_tables)) {
-					if(in_array($pt_subject->tableName(), $va_tables)) { 
+					if(in_array($subject_table_name, $va_tables)) { 
 						$vn_entry_id = $vn_id;
 					} else {
 						$vn_entry_id = null;
