@@ -241,7 +241,7 @@ class CurrencyAttributeValue extends AttributeValue implements IAttributeValue {
 		if(substr($vs_decimal_with_placeholder,0,2)=="¤") { // '¤' has length 2
 			$vs_decimal_with_placeholder = preg_replace("!¤[^\d]*!u", ($cur_spec_add_space ? '% ' : '%'), $vs_decimal_with_placeholder);
 		} elseif(substr($vs_decimal_with_placeholder, -2)=="¤") { // placeholder at the end
-			$vs_decimal_with_placeholder = preg_replace("![^\d\,\.]!", "", $vs_decimal_with_placeholder).($cur_spec_add_space ? ' %' : '%')."%";
+			$vs_decimal_with_placeholder = preg_replace("![^\d\,\.]!", "", $vs_decimal_with_placeholder).($cur_spec_add_space ? ' %' : '%');
 		}
 
 		// insert currency which is not locale-dependent in our case
