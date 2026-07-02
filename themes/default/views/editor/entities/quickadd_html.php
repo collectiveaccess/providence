@@ -80,15 +80,15 @@ $form_name = "EntityQuickAddForm";
 	<div class="quickAddErrorContainer" id="<?= $form_name; ?>Errors<?= $field_name_prefix.$n; ?>"> </div>
 	<div class="quickAddSectionBox" id="<?= $form_name.'Container'.$field_name_prefix.$n; ?>">
 <?php
-			$form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
-				'request' => $this->request, 
-				'restrictToTypes' => array($t_subject->get('type_id')),
-				'formName' => $form_name.$field_name_prefix.$n,
-				'forceLabelForNew' => $this->getVar('forceLabel'),							// force query text to be default in label fields
-				'quickadd' => true
-			));
-			
-			print join("\n", $form_elements);
+		$form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
+			'request' => $this->request, 
+			'restrictToTypes' => array($t_subject->get('type_id')),
+			'formName' => $form_name.$field_name_prefix.$n,
+			'forceLabelForNew' => $this->getVar('forceLabel'),							// force query text to be default in label fields
+			'quickadd' => true
+		));
+		
+		print join("\n", $form_elements);
 ?>
 		<input type='hidden' name='source' value='<?= $this->getVar('source'); ?>'/>
 		<input type='hidden' name='source_id' value='<?= (int)$this->getVar('source_id'); ?>'/>
