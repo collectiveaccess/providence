@@ -220,7 +220,7 @@ class CurrencyAttributeValue extends AttributeValue implements IAttributeValue {
 			if(!in_array($cur_spec, ['$', "£", "¥", "€"])) { 
 				$cur_spec .= ' ';
 			}
-			return $cur_spac.$this->opn_value;
+			return $cur_spec.$this->opn_value;
 		}
 		
 		$o_locale = $_locale ? $_locale : new Zend_Locale(__CA_DEFAULT_LOCALE__);
