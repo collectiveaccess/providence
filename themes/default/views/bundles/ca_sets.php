@@ -258,6 +258,7 @@ foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) 
 <?php if($vb_quick_add_enabled) { ?>		
 			quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
 			quickaddUrl: '<?= caNavUrl($this->request, 'manage/sets', 'SetQuickAdd', 'Form', array('set_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0), 'prepopulate_fields' => join(";", $settings['prepopulateQuickaddFields'] ?? []), 'table_num' => $t_subject->tableNum())); ?>',
+			alwaysQuickAdd: <?= json_encode((bool)($settings['alwaysQuickAdd'] ?? false)); ?>,
 <?php } ?>	
 
 			minRepeats: <?= caGetOption('minRelationshipsPerRow', $settings, 0); ?>,

@@ -50,6 +50,8 @@ $last_color 		= 	((isset($settings['colorLastItem']) && $settings['colorLastItem
 $loaded_sort 			= $this->getVar('sort');
 $loaded_sort_direction 	= $this->getVar('sortDirection');
 
+$quick_add_enabled = $this->getVar('quickadd_enabled');
+
 $dont_show_relationship_type = caGetOption('dontShowRelationshipTypes', $settings, false) ? 'none' : null; 
 	
 // params to pass during tour stop lookup
@@ -253,8 +255,12 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 			listSortOrderID: '<?= $id_prefix; ?>BundleList',
 			listSortItems: 'div.roundedRel',
 			autocompleteInputID: '<?= $id_prefix; ?>_autocomplete',
+<?php if($quick_add_enabled) { ?>
 			quickaddPanel: caRelationQuickAddPanel<?= $id_prefix; ?>,
 			quickaddUrl: '<?= caNavUrl($this->request, 'editor/tour_stops', 'TourStopQuickAdd', 'Form', array('stop_id' => 0, 'source' => $t_subject->tableName(), 'source_id' => $t_subject->getPrimaryKey(), 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0))); ?>',
+			alwaysQuickAdd: <?= json_encode((bool)($settings['alwaysQuickAdd'] ?? false)); ?>,
+<?php } ?>
+
 			sortUrl: '<?= caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Sort', array('table' => $t_item_rel->tableName())); ?>',
 			
 			loadedSort: <?= json_encode($loaded_sort); ?>,
