@@ -87,9 +87,11 @@ var caUI = caUI || {};
 			formData['csrfToken'] = that.csrfToken;
 			
 			// Added "forced relationship" settings if available
-			var relatedID = jQuery("#" + that.formID).parent().data('relatedid');
-			var relatedTable = jQuery("#" + that.formID).parent().data('relatedtable');
-			var relationshipType = jQuery("#" + that.formID).parent().data('relationshiptype');
+			const relatedID = jQuery("#" + that.formID).parent().data('relatedid');
+			const relatedTable = jQuery("#" + that.formID).parent().data('relatedtable');
+			let relationshipType = jQuery("#" + that.formID).parent().data('relationshiptype');
+			const createdRelationshipOnSave = jQuery("#" + that.formID).parent().data('createrelationshiponsave') ? true : false;
+			
 			if(!relationshipType) { relationshipType = formData.relationship_type_id; }
 			
 			jQuery.extend(formData, {relatedID: relatedID, relatedTable: relatedTable, relationshipType: relationshipType });
@@ -155,11 +157,12 @@ var caUI = caUI || {};
 		// Default handler to call on save for quickadd
 		that.defaultOnSaveHandler = function(resp, textStatus) {
 			if (resp.status == 0) {
-				var rawID = jQuery("#" + that.formID).parent().data('autocompleteRawID');
-				var inputID = jQuery("#" + that.formID).parent().data('autocompleteInputID');
-				var itemIDID = jQuery("#" + that.formID).parent().data('autocompleteItemIDID');
-				var typeIDID = jQuery("#" + that.formID).parent().data('autocompleteTypeIDID');
-				var relationbundle = jQuery("#" + that.formID).parent().data('relationbundle');
+				const rawID = jQuery("#" + that.formID).parent().data('autocompleteRawID');
+				const inputID = jQuery("#" + that.formID).parent().data('autocompleteInputID');
+				const itemIDID = jQuery("#" + that.formID).parent().data('autocompleteItemIDID');
+				const typeIDID = jQuery("#" + that.formID).parent().data('autocompleteTypeIDID');
+				const relationbundle = jQuery("#" + that.formID).parent().data('relationbundle');
+			    const createdRelationshipOnSave = jQuery("#" + that.formID).parent().data('createrelationshiponsave') ? true : false;
 			
 				jQuery('#' + inputID).val(resp.display);
 				jQuery('#' + itemIDID).val(resp.id);
@@ -169,9 +172,8 @@ var caUI = caUI || {};
 				jQuery.jGrowl(that.saveText.replace('%1', resp.display), { header: that.headerText }); 
 				jQuery("#" + that.formID).parent().data('panel').hidePanel();
 				
-				console.log(that);
 				if(caBundleUpdateManager && (that.source_id > 0)) {
-				    if(that.placement_id) {
+				    if(that.placement_id && createdRelationshipOnSave) {
 				        caBundleUpdateManager.reloadBundleByPlacementID(that.placement_id);
 				    }
                     if(formData['relatedID']) { 
