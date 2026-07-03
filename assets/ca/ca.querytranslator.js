@@ -129,7 +129,8 @@ var caUI = caUI || {};
 				case 'begins_with':
 					return prefix + escapeValue('^' + ruleSet.value, true);
 				case 'contains':
-					return prefix + escapeValue(ruleSet.value, true);
+                    // Generate wildcard queries for "contains" to match the parser behavior.
+                    return prefix + escapeValue(ruleSet.value, false, '*', '*');
 				case 'ends_with':
 					return prefix + escapeValue('$' + ruleSet.value, true);
 				case 'less':
