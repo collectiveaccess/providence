@@ -349,7 +349,7 @@ class TimeExpressionParser {
 							} elseif (((int)$va_token['value'] > 0) && ((int)$va_token['value'] <= 21)) {
 								// is this a quarter century expression?
 								$va_peek = $this->peekToken(2);
-								if ($va_peek['type'] == TEP_TOKEN_ALPHA) {
+								if (is_array($va_peek) && ($va_peek['type'] == TEP_TOKEN_ALPHA)){
 									if (preg_match('!^Q([\d]{1})$!i', $va_peek['value'], $va_matches)) {
 										$vn_q = (int)$va_matches[1];
 										if (($vn_q >= 1) && ($vn_q <= 4)) {
@@ -927,7 +927,8 @@ class TimeExpressionParser {
 		
 		// Convert ISO ranges
 		if (preg_match("!^([\d\-:TZ]{3,20})/([\d\-:TZ]{3,20})$!", trim($ps_expression), $matches)) {
-			$conjunction = array_shift($this->opo_language_settings->getList("rangeConjunctions"));
+			$tmp = $this->opo_language_settings->getList("rangeConjunctions") ?? [];
+			$conjunction = array_shift($tmp);
 			$ps_expression = $matches[1]." {$conjunction} ".$matches[2];
 		}
 	
@@ -1116,7 +1117,7 @@ class TimeExpressionParser {
 	# -------------------------------------------------------------------
 	# Productions (kinda sorta)
 	# -------------------------------------------------------------------
-	private function &_parseDateElement($pa_options=null) {
+	private function _parseDateElement($pa_options=null) {
 		$vn_state = TEP_STATE_BEGIN_DATE_ELEMENT;
 		
 		$vn_day = $vn_month = $vn_year = null;
@@ -1168,6 +1169,7 @@ class TimeExpressionParser {
 								$va_peek = $this->peekToken(2);
 								if (
 									(
+										is_array($va_peek) &&
 										(($vn_int >= 1) && ($vn_int <=31)) && 
 										($va_peek['type'] != TEP_TOKEN_ERA)
 									)
@@ -1290,7 +1292,7 @@ class TimeExpressionParser {
 		return false;
 	}
 	# -------------------------------------------------------------------
-	private function &_parseDateExpression($pa_options=null) {
+	private function _parseDateExpression($pa_options=null) {
 		$vn_state = TEP_STATE_BEGIN_DATE_EXPRESSION;
 		
 		$va_time = array();
@@ -1422,8 +1424,10 @@ class TimeExpressionParser {
 				case TEP_STATE_DATE_SET_UNCERTAINTY:
 					$va_date['is_circa'] = 1;
 					$this->skipToken();
-					$va_peek = $this->peekToken();
-						
+					if(!is_array($va_peek = $this->peekToken())) { 
+						return $va_date; 
+					}
+					
 					switch($va_peek['type']) {
 						# ----------------------
 						case TEP_TOKEN_ERA:
@@ -1458,7 +1462,7 @@ class TimeExpressionParser {
 					$va_date['era'] = $va_token['era'];
 					$this->skipToken();
 					$va_peek = $this->peekToken();
-						
+					if(!$va_peek) { return $va_date; }	
 					switch($va_peek['type']) {
 						# ----------------------
 						case TEP_TOKEN_QUESTION_MARK_UNCERTAINTY:
@@ -1552,7 +1556,7 @@ class TimeExpressionParser {
 		return false;
 	}
 	# -------------------------------------------------------------------
-	private function &_parseTimeExpression() {
+	private function _parseTimeExpression() {
 		$vn_state = TEP_STATE_BEGIN_TIME_EXPRESSION;
 		
 		$va_time = array();
@@ -1597,7 +1601,7 @@ class TimeExpressionParser {
 							) {
 								$this->skipToken();
 								$va_peek = $this->peekToken();
-								if ($va_peek['type'] == TEP_TOKEN_MERIDIAN) {
+								if (is_array($va_peek) && ($va_peek['type'] == TEP_TOKEN_MERIDIAN)){
 									$this->skipToken();
 									$vn_hours = intval($va_token['value']);
 									if (($va_peek['meridian'] == TEP_MERIDIAN_PM) && ($vn_hours < 12)) {
@@ -1636,7 +1640,9 @@ class TimeExpressionParser {
 					}
 					$this->skipToken();
 					
-					$va_peek = $this->peekToken();
+					if(!($va_peek = $this->peekToken())) {
+						return $va_time;
+					}
 						
 					switch($va_peek['type']) {
 						# ----------------------
@@ -1770,7 +1776,7 @@ class TimeExpressionParser {
 	private function _parseCentury($va_token, $part_of_range_qualifier=null) {
 		$va_next_token = $this->peekToken(2);
 		
-		$vs_next_token_lc = mb_strtolower($va_next_token['value'] ?? null);
+		$vs_next_token_lc = mb_strtolower($va_next_token['value'] ?? '');
 		$vn_use_romans = $this->opo_datetime_settings->get("useRomanNumeralsForCenturies");
 		$vb_is_range = false;
 								
@@ -1891,7 +1897,7 @@ class TimeExpressionParser {
 		return array_shift($this->opa_tokens);
 	}
 	# -------------------------------------------------------------------
-	private function &getToken() {
+	private function getToken() {
 		if ($this->tokens() == 0) {
 			// no more tokens
 			return false;
@@ -2226,8 +2232,9 @@ class TimeExpressionParser {
 					$vn_month = intval($va_tmp[0]);
 					$vn_year = $vn_day = null;
 					
-					$va_next_tok = $this->peekToken();
-					if ($va_next_tok['type'] == TEP_TOKEN_MERIDIAN) { break; }		// is time
+					if($va_next_tok = $this->peekToken()) {
+						if ($va_next_tok['type'] == TEP_TOKEN_MERIDIAN) { break; }		// is time
+					}
 					
 					if (is_numeric($va_tmp[1]) && ($va_tmp[1] > 0) && ($va_tmp[1] == intval($va_tmp[1]))) {
 						if (!$this->opo_datetime_settings->get('assumeMonthYearDelimitedDates') && ($va_tmp[1] >= 1) && ($va_tmp[1] <= $this->daysInMonth($vn_month, 2004))) {		// since year is unspecified we use a leap year
@@ -2361,7 +2368,7 @@ class TimeExpressionParser {
 		return array('value' => $vs_token, 'type' => TEP_TOKEN_ALPHA);
 	}
 	# -------------------------------------------------------------------
-	function &peekToken($vn_n=1) {
+	function peekToken($vn_n=1) {
 		$vn_c = 0;
 		
 		$va_tokens = array();
@@ -3134,7 +3141,7 @@ class TimeExpressionParser {
 			// catch 'before' dates
 			if ($va_dates['start'] <= TEP_START_OF_UNIVERSE) {
 				$va_died_qualifiers = $this->opo_language_settings->getList('diedQualifier');
-				if ($pa_options['isLifespan'] && (sizeof($va_died_qualifiers) > 0)) {
+				if (($pa_options['isLifespan'] ?? null) && (sizeof($va_died_qualifiers) > 0)) {
 					$vs_before_qualifier = $va_died_qualifiers[0];
 				} else {
 					$va_before_qualifiers = $this->opo_language_settings->getList('beforeQualifier');
@@ -3259,7 +3266,7 @@ class TimeExpressionParser {
 
 									$vs_year = $this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
 
-									return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': '').$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_date.((((bool)$pa_options['showCommaAfterDayForTextDates'] || $pa_options['forceCommaAfterDay']) && ($pa_options['dateFormat'] == 'text')) ? ', ' : ' ').$vs_year;
+									return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': '').$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_date.((((bool)($pa_options['showCommaAfterDayForTextDates'] ?? false) || ($pa_options['forceCommaAfterDay'] ?? false)) && (($pa_options['dateFormat'] ?? null) == 'text')) ? ', ' : ' ').$vs_year;
 								} else {
 									// days with times
 									$vs_start_date = $this->_datetimeToText(array('month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day'], 'hours' => $va_start_pieces['hours'], 'minutes' => $va_start_pieces['minutes'], 'seconds' => $va_start_pieces['seconds']), $pa_options);
@@ -3771,7 +3778,7 @@ class TimeExpressionParser {
 		return $va_months[$pn_month-1];
 	}
 	# -------------------------------------------------------------------
-	public function &getHistoricDateParts($pn_historic_date) {
+	public function getHistoricDateParts($pn_historic_date) {
 		$va_tmp = explode('.', $pn_historic_date);
 		
 		$vn_year = (int)$va_tmp[0];
@@ -4245,7 +4252,7 @@ class TimeExpressionParser {
 	 * @return int The year modified according to the qualifier.				
 	 */
 	public static function applyPartOfRangeQualifier($qualifier, $start_or_end, $range_type, $year) {
-		$qualifier = strtolower($qualifier);	
+		$qualifier = strtolower($qualifier ?? '');	
 		if (!in_array($qualifier, [TEP_TOKEN_EARLY, TEP_TOKEN_MID, TEP_TOKEN_LATE])) { return $year; }	
 		$start_or_end = strtolower($start_or_end);
 		$range_type = strtolower($range_type);
@@ -4360,10 +4367,11 @@ class TimeExpressionParser {
 		}
 		
 		// Mid decade
-		if (!$options['isSpan'] && ((($start_pieces['year'] - floor(self::$early_mid_late_range_intervals['decade']/2) + floor(self::$early_mid_late_range_lengths['decade']/2)) % 10) == 0) && ($end_pieces['year'] == ($start_pieces['year'] + self::$early_mid_late_range_lengths['decade']))) {
+		if (!($options['isSpan'] ?? false) && ((($start_pieces['year'] - floor(self::$early_mid_late_range_intervals['decade']/2) + floor(self::$early_mid_late_range_lengths['decade']/2)) % 10) == 0) && ($end_pieces['year'] == ($start_pieces['year'] + self::$early_mid_late_range_lengths['decade']))) {
  			return ['qualifier' => TEP_TOKEN_MID, 'range_type' => 'decade', 'value' => $mid_qualifiers[0].' '.$o_tep->makeDecadeString($dates, $options)];
  		}
 		
+		$first_century_info = $first_decade_info = null;
 		
 		// Does it span centuries?
 		$mod_start = $start_pieces;
