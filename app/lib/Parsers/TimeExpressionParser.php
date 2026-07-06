@@ -847,9 +847,7 @@ class TimeExpressionParser {
 								
 				if ($va_date = $this->_parseDateExpression(array('start' => $va_dates['start']))) {
 					$va_dates['end'] = $va_date;
-					if (isset($va_dates['start']['is_circa']) && $va_dates['start']['is_circa']) {
-						$va_dates['end']['is_circa'] = true;
-					} elseif (isset($va_dates['start']['is_probably']) && $va_dates['start']['is_probably']) {
+					if (isset($va_dates['start']['is_probably']) && $va_dates['start']['is_probably']) {
 						$va_dates['end']['is_probably'] = true;
 					}
 					$vn_state = TEP_STATE_ACCEPT;
@@ -2700,11 +2698,9 @@ class TimeExpressionParser {
 			}
 			
 			if((int)$vn_end_historic < (int)$vn_start_historic) {
-				print "$vn_end_historic  // $vn_start_historic\n";
 				$this->setParseError(null, TEP_ERROR_RANGE_ERROR);
 				return false;
 			}
-			
 			$this->setHistoricTimestamps($vn_start_historic, $vn_end_historic);
 		}
 		return true;
@@ -2784,15 +2780,15 @@ class TimeExpressionParser {
 	 *	@return string
 	 */
 	public function getText($pa_options=null) {
-		if (!$pa_options) { $pa_options = array(); }
-		foreach(array(
+		if (!$pa_options) { $pa_options = []; }
+		foreach([
 			'dateFormat', 'dateDelimiter', 'uncertaintyIndicator', 
 			'showADEra', 'timeFormat', 'timeDelimiter', 
 			'circaIndicator', 'beforeQualifier', 'afterQualifier', 
 			'presentDate', 'useQuarterCenturySyntaxForDisplay', 'timeOmit', 'useRomanNumeralsForCenturies', 
 			'rangePreConjunction', 'rangeConjunction', 'timeRangeConjunction', 'dateTimeConjunction', 'showUndated',
 			'useConjunctionForAfterDates', 'showCommaAfterDayForTextDates'
-		) as $vs_opt) {
+		] as $vs_opt) {
 			if (!isset($pa_options[$vs_opt]) && ($vs_opt_val = $this->opo_datetime_settings->get($vs_opt))) {
 				$pa_options[$vs_opt] = $vs_opt_val;
 			}
@@ -2904,8 +2900,6 @@ class TimeExpressionParser {
 			return $this->_timerangeToText($vn_start, $vn_end, $pa_options);
 		}
 		if (isset($va_dates['start']) && ($va_dates['start'] != null)) {
-			
-		
 			//
 			// Date-time expression using historic timestamps
 			//
@@ -3215,7 +3209,7 @@ class TimeExpressionParser {
 
 			$vs_start_circa = $vs_end_circa = '';
 			if ($va_start_pieces['is_circa']) { $vs_start_circa = $vs_circa_indicator.' '; }
-			if ($va_end_pieces['is_circa'] && !$va_start_pieces['is_circa']) { $vs_end_circa = $vs_circa_indicator.' '; }
+			if ($va_end_pieces['is_circa']) { $vs_end_circa = $vs_circa_indicator.' '; }
 			if ($va_start_pieces['is_probably']) { $vs_start_circa = $vs_probably_indicator.' '; }
 			if ($va_end_pieces['is_probably'] && !$va_start_pieces['is_probably']) { $vs_end_circa = $vs_probably_indicator.' '; }
 
@@ -4608,7 +4602,6 @@ class TimeExpressionParser {
  	 */
  	public function specificity() : ?array {
  		if(is_array($this->opa_parsed_values)) {
- 			//print_r($this->opa_parsed_values);
  			$is_circa = $is_probably = $is_range  = $is_decade = $is_century = false;
  			$spec = null;
  			if(!isset($this->opa_parsed_values['end'])) {
