@@ -240,7 +240,15 @@ class ExitManager {
 		foreach($intrinsic_info as $f => $info) {
 			switch($info['FIELD_TYPE']) {
 				case FT_MEDIA:
-					$path = $qr->get("{$table}.{$f}.original.path");
+					$versions = $qr->getMediaVersions("{$table}.{$f}");
+					if(!is_array($versions)) { break; }
+					$versions = array_filter($versions, function($v) { return $v !== 'tilepic';});
+					$versions[] = 'medium'; $versions[] = 'large'; $versions[] = 'original';
+					do {
+						$version = array_pop($versions);
+						if(!$version) { break(2); }
+						$path = $qr->get("{$table}.{$f}.{$version}.path");
+					} while(!$path);
 					$path = str_replace(__CA_BASE_DIR__, '', $path);
 					$acc[$f] = $path;
 					break;
