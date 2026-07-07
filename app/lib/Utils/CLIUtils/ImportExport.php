@@ -1476,11 +1476,11 @@ trait CLIUtilsImportExport {
 		
 		if($compress = (bool)$opts->getOption('compress')) {
 			$z = new ZipFile();
-			if(is_array($paths = caGetDirectoryContentsAsList($directory))) {
+			if(is_array($paths = caGetDirectoryContentsAsList($directory, true, false, false, false, ['includeRoot' => true]))) {
 				$dir = explode('/', pathinfo($paths[0], PATHINFO_DIRNAME));
 				$pdir = array_pop($dir);
 				foreach($paths as $p) {
-					$z->addFile($p, "{$pdir}/".pathinfo($p, PATHINFO_BASENAME));
+					$z->addFile(file_get_contents($p), "{$pdir}/".pathinfo($p, PATHINFO_BASENAME));
 				}
 				$tmp = $z->output(ZIPFILE_FILEPATH);
 				copy($tmp, "./".pathinfo($directory, PATHINFO_FILENAME).".zip");
