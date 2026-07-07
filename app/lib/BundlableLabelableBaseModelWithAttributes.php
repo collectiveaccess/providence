@@ -935,25 +935,29 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 * Returns true if bundle is valid for this model
 	 * 
 	 * @access public
-	 * @param string $ps_bundle bundle name
-     * @param int $pn_type_id Optional record type
+	 * @param string $bundle bundle name
+     * @param int $type_id Optional record type
+     *
 	 * @return bool
 	 */ 
-	public function hasBundle ($ps_bundle, $pn_type_id=null) {
-		$va_bundle_bits = explode(".", $ps_bundle);
-		$vn_num_bits = sizeof($va_bundle_bits);
+	public function hasBundle($bundle, $type_id=null) {
+		$bundle_bits = explode(".", $bundle);
+		$num_bits = sizeof($bundle_bits);
+		
+		$bl = $this->getBundleList();
+		if(in_array($bundle, $bl, true)) { return true; }
 	
-		if (in_array($va_bundle_bits[1], array('hierarchy', 'parent', 'children', 'related'))) {
-			unset($va_bundle_bits[1]);
-			$va_bundle_bits = array_merge($va_bundle_bits);
-			$vn_num_bits = sizeof($va_bundle_bits);
-			$ps_bundle = join('.', $va_bundle_bits);
+		if (in_array($bundle_bits[1], array('hierarchy', 'parent', 'children', 'related'))) {
+			unset($bundle_bits[1]);
+			$bundle_bits = array_merge($bundle_bits);
+			$num_bits = sizeof($bundle_bits);
+			$bundle = join('.', $bundle_bits);
 		}
 		
-		if (($va_bundle_bits[0] != $this->tableName()) && ($t_rel = Datamodel::getInstanceByTableName($va_bundle_bits[0], true))) {
-			return ($vn_num_bits == 1) ? true : $t_rel->hasBundle($ps_bundle, $pn_type_id);
+		if (($bundle_bits[0] != $this->tableName()) && ($t_rel = Datamodel::getInstanceByTableName($bundle_bits[0], true))) {
+			return ($num_bits == 1) ? true : $t_rel->hasBundle($bundle, $type_id);
 		} 
-		return parent::hasBundle($ps_bundle, $pn_type_id);
+		return parent::hasBundle($bundle, $type_id);
 	}
 	# ------------------------------------------------------
 	/** 
@@ -1685,8 +1689,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$def = caExtractSettingsValueByUserLocale('definition', $pa_bundle_settings);
 				$pa_bundle_settings['definition'][$g_ui_locale] = $this->getAppConfig()->get('required_field_marker').(is_array($def) ? $def[$g_ui_locale] : $def);
 			}
-			
 			$va_violations = $this->getMetadataDictionaryRuleViolations($dict_bundle_spec, ['placement_id' => (int)str_replace("P", "", $ps_placement_code)]);
+		
 			if (is_array($va_violations) && sizeof($va_violations)) {
 				$va_violation_text = [];
 				foreach($va_violations as $va_violation) {
@@ -2988,7 +2992,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 		$va_bundles_present = [];
 		if (is_array($va_bundles)) {
-			
+			$bl = $this->getBundleList();
 			$va_definition_bundle_names = [];
 			foreach($va_bundles as $va_bundle) {
 				if ($va_bundle['bundle_name'] === $vs_type_id_fld) { continue; }	// skip type_id
@@ -2996,7 +3000,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if (in_array($va_bundle['bundle_name'], $va_omit_bundles)) { continue; }
 				
 				$k = caConvertBundleNameToCode($va_bundle['bundle_name'], ['includeTablePrefix' => true]);
-				$va_definition_bundle_names[((!Datamodel::tableExists($va_bundle['bundle_name']) && !preg_match("!^{$vs_table_name}\.!", $va_bundle['bundle_name'])) ? "{$vs_table_name}." : "").$k] = 1;
+				
+				$va_definition_bundle_names[(!in_array($va_bundle['bundle_name'], $bl) && (!Datamodel::tableExists($va_bundle['bundle_name']) && !preg_match("!^{$vs_table_name}\.!", $va_bundle['bundle_name'])) ? "{$vs_table_name}." : "").$k] = 1;
 			}
 			ca_metadata_dictionary_entries::preloadDefinitions(array_keys($va_definition_bundle_names));
 		
@@ -3357,17 +3362,21 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	
 		$t_object = new ca_objects();
 		
+		$t_rel_type = null;
 		$rel_restrict_to_types = [];
 		if(is_array($object_collection_rel_types)) {
 			foreach($object_collection_rel_types as $object_collection_rel_type) {
-				if($t_rel = ca_relationship_types::findAsInstance(['table_num' => Datamodel::getTableNum('ca_objects_x_collections'), 'type_code' => $object_collection_rel_types])) {
-					$t = $t_rel->get('ca_relationship_types.include_subtypes_left') ? 
-						caMakeTypeIDList('ca_objects', [$t_rel->get('ca_relationship_types.sub_type_left_id')], array_merge($options, ['dont_include_subtypes_in_type_restriction' => true]))
-						: 
-						[$t_rel->get('ca_relationship_types.sub_type_left_id')];
-					$object_collection_rel_types = array_merge($object_collection_rel_types, $t);
+				if($t_rel_type = ca_relationship_types::findAsInstance(['table_num' => Datamodel::getTableNum('ca_objects_x_collections'), 'type_code' => $object_collection_rel_types])) {
+					$rel_type_res = $t_rel_type->getTypeRestrictions() ?? [];
+					
+					foreach($rel_type_res as $res) {
+						$t = $res['include_subtypes_left'] ? 
+							caMakeTypeIDList('ca_objects', [$res['sub_type_left_id']], array_merge($options, ['dont_include_subtypes_in_type_restriction' => true]))
+							: 
+							[$res['sub_type_left_id']];
+						$object_collection_rel_types = array_merge($object_collection_rel_types, $t);
+					}
 				}
-	
 			}
 		}
 		
@@ -3443,13 +3452,19 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			));
 			
 			if($this->tableName() == 'ca_collections') {
+				$rel_type_res = $t_rel_type->getTypeRestrictions() ?? [];
+				$restrict_to_types = [];
+				foreach($rel_type_res as $res) {
+					$restrict_to_types[] = $res['sub_type_left_id'];
+				}
+				
 				$o_view->setVar('objectTypeList', trim($t_object->getTypeListAsHTMLFormElement("{$placement_code}{$form_name}object_type_id", 
 					['id' => "{$placement_code}{$form_name}objectTypeList"], 
 					[	'childrenOfCurrentTypeOnly' => (bool)$strict_type_hierarchy, 
 						'includeSelf' => !(bool)$strict_type_hierarchy, 
 						'directChildrenOnly' => $strict_type_hierarchy && ($strict_type_hierarchy !== '~'),
-						'restrictToTypes' => $t_rel ? [$t_rel->get('ca_relationship_types.sub_type_left_id')] : null,
-						'dontIncludeSubtypesInTypeRestriction' => $t_rel ? !$t_rel->get('ca_relationship_types.include_subtypes_left') : null
+						'restrictToTypes' => sizeof($restrict_to_types) ? $restrict_to_types : null,
+						'dontIncludeSubtypesInTypeRestriction' => $t_rel_type ? !$t_rel_type->get('ca_relationship_types.include_subtypes_left') : null
 					])));
 			}
 			if($this->tableName() == 'ca_objects') {
@@ -4577,7 +4592,8 @@ if (!$batch) {
 							$target_id = $t_id;
 						}
 						if ($parent_table == $tt) {	
-							if($t = $table::findAsInstance([$this->primaryKey() => $target_id])) {
+							$t = ($this->getPrimaryKey() == $target_id) ? $this : $table::findAsInstance([$this->primaryKey() => $target_id]);
+							if($t) {
 								if(!$t->isSaveable($po_request)) { continue; }
 								
 								$t->setTransaction($this->getTransaction());
@@ -6365,9 +6381,10 @@ if (!$batch) {
 	
 		BaseModel::unsetChangeLogUnitID();
 		$va_bundle_names = [];
+		$bl = $this->getBundleList();
 		foreach($va_bundles as $va_bundle) {
 			$vs_bundle_name = caConvertBundleNameToCode($va_bundle['bundle_name'], ['includeTablePrefix' => true]);
-			if (!Datamodel::getInstanceByTableName($vs_bundle_name, true) && !preg_match("!^".$this->tableName()."\.!", $vs_bundle_name)) {
+			if (!in_array($vs_bundle_name, $bl, true) && !Datamodel::getInstanceByTableName($vs_bundle_name, true) && !preg_match("!^".$this->tableName()."\.!", $vs_bundle_name)) {
 				$vs_bundle_name = $this->tableName().'.'.$vs_bundle_name;
 			}
 			
@@ -9524,8 +9541,13 @@ side. For many self-relations the direction determines the nature and display te
 	 			
 	 			$p = join(".", $bundle_elements);
 	 				 			
-	 			$rule_settings_restrict_to_types = array_filter(caGetOption(['restrict_to_types', 'restrictToTypes'], $rule_settings, []), function($v) { return strlen($v); });
-	 			$rule_settings_restrict_to_relationship_types = array_filter(caGetOption(['restrict_to_relationship_types', 'restrictToRelationshipTypes'], $rule_settings, []), function($v) { return strlen($v); });
+	 			$type_restrictions = caGetOption(['restrict_to_types', 'restrictToTypes'], $rule_settings, []);
+	 			if(!is_array($type_restrictions)) { $type_restrictions = []; }
+	 			$relationship_type_restrictions = caGetOption(['restrict_to_relationship_types', 'restrictToRelationshipTypes'], $rule_settings, []);
+	 			if(!is_array($relationship_type_restrictions)) { $relationship_type_restrictions = []; }
+	 			
+	 			$rule_settings_restrict_to_types = array_filter($type_restrictions, function($v) { return strlen($v); });
+	 			$rule_settings_restrict_to_relationship_types = array_filter($relationship_type_restrictions, function($v) { return strlen($v); });
 	 			
 	 			foreach($bundles_on_screen as $placement_id => $placement_bundle_name) {
 	 				if ($placement_bundle_name == $p) {
@@ -9595,7 +9617,6 @@ side. For many self-relations the direction determines the nature and display te
 			
 			$vb_skip = !$this->hasBundle($va_rule['bundle_name'], $this->getTypeID());
 				
-			
 			if (!$vb_skip) {
 				// create array of values present in rule
 				$va_row = array($va_rule['bundle_name'] => $vs_val = $this->get($va_rule['bundle_name']));
@@ -9608,7 +9629,6 @@ side. For many self-relations the direction determines the nature and display te
 					$va_row[$vs_tag] = $this->get($t['tag'], $opts);
 				}
 			}
-			
 			// is there a violation recorded for this rule and row?
 			if ($t_found = ca_metadata_dictionary_rule_violations::find(array('rule_id' => $va_rule['rule_id'], 'row_id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum()), array('returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()))) {
 				$t_violation = $t_found;

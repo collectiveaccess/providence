@@ -2500,7 +2500,7 @@ class BaseModel extends BaseObject {
 			$vs_field_type = $va_attr["FIELD_TYPE"];				# field type
 			$vs_field_value = self::get($vs_field, array("TIMECODE_FORMAT" => "RAW"));
 			
-			if(in_array($vs_field, ['access', 'status'], true)) {
+			if(in_array($vs_field, ['access', 'status'], true) && ($va_attr['LIST'] ?? null)) {
 				// Force access and status to valid defaults
 				if(strlen($vs_field_value) === 0) {
 					$vs_field_value = caGetDefaultItemValue($va_attr['LIST']);
@@ -6370,7 +6370,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 				foreach($value as $v) {
 					if ((sizeof($value) > 1) && (!strlen($v))) continue;
 					
-					if(in_array($field, ['access', 'status'], true) && !is_numeric($v)) {
+					if(in_array($field, ['access', 'status'], true) && !is_numeric($v) && ($va_attr['LIST'] ?? null)) {
 						// transform entries to item values
 						$t_list = Datamodel::getInstance('ca_lists', true);
 						if (isset($va_attr['LIST']) && (($item_id = ca_lists::getItemID($va_attr['LIST'], $v)) || ($item_id = $t_list->getItemIDFromListByLabel($va_attr['LIST'], $v)))) { // 
