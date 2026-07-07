@@ -1520,7 +1520,7 @@ class BaseModel extends BaseObject {
 							}
 						}
 						if (($vm_value !== "") || (($this->getFieldInfo($vs_field, "IS_NULL") && ($vm_value == "")))) {
-							if ($vm_value) {
+							if (strlen($vm_value)) {
 								if (($vs_list_code = $this->getFieldInfo($vs_field, "LIST_CODE")) && (!is_numeric($vm_value))) {	// translate ca_list_item idno's into item_ids if necessary
 									$t_list = new ca_lists();
 									if (($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) || ($vn_id = $t_list->getItemIDFromListByLabel($vs_list_code, $vm_value))) { // 
@@ -1540,6 +1540,10 @@ class BaseModel extends BaseObject {
 									if(!$item) {
 										$item = $t_list->getItemFromList($vs_list_code, $vm_value);
 									}
+									
+									// De-nest
+									if(is_array($item)) { $item = array_shift($item); }
+									if(is_array($item)) { $item = array_shift($item); }
 									$vm_value = is_numeric($item['item_value'] ?? null) ? $item['item_value'] : 0;
 								} else {
 									$vm_orig_value = $vm_value;
@@ -2496,7 +2500,7 @@ class BaseModel extends BaseObject {
 			$vs_field_type = $va_attr["FIELD_TYPE"];				# field type
 			$vs_field_value = self::get($vs_field, array("TIMECODE_FORMAT" => "RAW"));
 			
-			if(in_array($vs_field, ['access', 'status'], true)) {
+			if(in_array($vs_field, ['access', 'status'], true) && ($va_attr['LIST'] ?? null)) {
 				// Force access and status to valid defaults
 				if(strlen($vs_field_value) === 0) {
 					$vs_field_value = caGetDefaultItemValue($va_attr['LIST']);
@@ -6366,7 +6370,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 				foreach($value as $v) {
 					if ((sizeof($value) > 1) && (!strlen($v))) continue;
 					
-					if(in_array($field, ['access', 'status'], true) && !is_numeric($v)) {
+					if(in_array($field, ['access', 'status'], true) && !is_numeric($v) && ($va_attr['LIST'] ?? null)) {
 						// transform entries to item values
 						$t_list = Datamodel::getInstance('ca_lists', true);
 						if (isset($va_attr['LIST']) && (($item_id = ca_lists::getItemID($va_attr['LIST'], $v)) || ($item_id = $t_list->getItemIDFromListByLabel($va_attr['LIST'], $v)))) { // 

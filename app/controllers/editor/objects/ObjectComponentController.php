@@ -113,7 +113,15 @@ class ObjectComponentController extends ActionController {
 				$subject_idno_element_count = sizeof($subject_idno_instance->getElements() ?? []);
 				$parent_idno_instance = $t_parent->getIDNoPlugInInstance();
 				$parent_idno_element_count = sizeof($parent_idno_instance->getElements() ?? []);
-				if((!$subject_idno_instance || !$subject_idno_instance->isSerialFormat($subject_idno_instance->getFormat()) || ($parent_idno_instance && ($subject_idno_element_count > $parent_idno_element_count))) && strlen($pidno)) {
+				if(
+					(
+						!$subject_idno_instance || 
+						!$subject_idno_instance->isSerialFormat($subject_idno_instance->getFormat()) || 
+						($parent_idno_instance && ($subject_idno_element_count > $parent_idno_element_count))
+					) 
+					&& strlen($pidno)
+					&& (bool)$this->request->config->get('ca_objects_component_inherit_idno')
+				) {
 					$t_subject->set('idno', $pidno);
 				}
 			}
