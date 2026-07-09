@@ -542,6 +542,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						case 'EXACT':
 							$anchor_sql = " AND (swi.word_index = {$w} AND swi.word_count = {$wc})";
 							break;
+						case 'CONTAINS':
+							if((bool)$this->search_config->get('use_substring_search_for_contains_searches')) {
+								$anchor_sql = '';
+								$word_op = 'LIKE';
+								$params[1] = '%'.$params[1].'%';
+							}
+							break;
 						case 'START':
 							$anchor_sql = " AND swi.word_index = {$w}";
 							if(!$has_wildcard && (bool)$this->search_config->get('add_wildcard_on_begins_searches')) { 
@@ -738,6 +745,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				});
 				if(!sizeof($words)) { return []; }
 				$wc = sizeof($words);
+				
+				$init_w = null;
 				foreach($words as $w => $word) {
 					$word_op = '=';
 					if($has_wildcard = ((strpos($word, '*') !== false) || (strpos($word, '?') !== false))) {
@@ -753,6 +762,14 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					switch($anchor_mode) {
 						case 'EXACT':
 							$anchor_sql = " AND (swi.word_index = {$w} AND swi.word_count = {$wc})";
+							break;
+						case 'CONTAINS':
+							if((bool)$this->search_config->get('use_substring_search_for_contains_searches')) {
+								$anchor_sql = '';
+								$word_op = 'LIKE';
+								$word = ($w == 0) ? "%{$word}%" : "{$word}%";
+								print "[$w] $word<br>\n";
+							}
 							break;
 						case 'START':
 							$anchor_sql = " AND swi.word_index = {$w}";
@@ -778,7 +795,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 							sw.word {$word_op} ? AND swi.table_num = ? {$fld_limit_sql}
 							{$private_sql} {$anchor_sql}
 					", (string)$word, (int)$subject_tablenum);
-				
 					$temp_tables[] = $temp_table;	
 					while(sizeof($temp_tables) > 2) {
 						$t = array_shift($temp_tables);
@@ -1064,6 +1080,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$qinfo = $this->_queryForCurrencyAttribute(new CurrencyAttributeValue(), $ap, $text, $text_upper, ['t_subject' => $t_instance]);
 				break;
 			case __CA_ATTRIBUTE_VALUE_GEOCODE__:
+			case __CA_ATTRIBUTE_VALUE_GEONAMES__:
 				$qinfo = $this->_queryForGeocodeAttribute(new GeocodeAttributeValue(), $ap, $text, $text_upper, ['t_subject' => $t_instance]);
 				break;
 		}
@@ -1148,10 +1165,10 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			}
 			$table_name = $t_instance->tableName();
 			
+			$joins = [];
 			foreach($filters as $filter) {
 				$tmp = explode('.', $filter['field']);
 				$path = [];
-				$joins = [];
 				
 				if(!($fi = Datamodel::getInstance($tmp[0], true))) { continue; }
 				if(!$fi->hasField($tmp[1])) { continue; }
@@ -1160,15 +1177,15 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					$path = Datamodel::getPath($table_name, $tmp[0]);
 				} 
 				if (is_array($path) && sizeof($path)) {
-					$last_table = null;
+					$last_table = $table_name;
 					// generate related joins
 					foreach($path as $table => $va_info) {
+						if($table == $table_name) { continue; }
 						if (!($t_table = Datamodel::getInstance($table, true))) {
 							throw new ApplicationException(_t('Invalid path table: %1', $table));
 						}
-						
 						$rels = Datamodel::getOneToManyRelations($last_table, $table);
-						if (!sizeof($rels)) {
+						if (!is_array($rels) || !sizeof($rels)) {
 							$rels = Datamodel::getOneToManyRelations($table, $last_table);
 						}
 						if ($table == $rels['one_table']) {
@@ -1205,7 +1222,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$pk = $t_instance->primaryKey(true);
 			$table = $t_instance->tableName();
 			$sql_joins = join("\n", $joins);
-			
 			$qr_res = $this->db->query("
 				SELECT {$pk} 
 				FROM {$table} 
@@ -1251,6 +1267,9 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				break;
 			case '$':
 				$anchor_mode = 'END';
+				break;
+			case '@':
+				$anchor_mode = 'CONTAINS';
 				break;
 		}
 		return $anchor_mode;
@@ -1314,6 +1333,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				switch(WLPlugSearchEngineSqlSearch2::$metadata_elements[$field_num_proc]['datatype']) {
 					case __CA_ATTRIBUTE_VALUE_CONTAINER__:	
 					case __CA_ATTRIBUTE_VALUE_GEOCODE__:	
+					case __CA_ATTRIBUTE_VALUE_GEONAMES__:	
 					case __CA_ATTRIBUTE_VALUE_CURRENCY__:
 					case __CA_ATTRIBUTE_VALUE_LENGTH__:
 					case __CA_ATTRIBUTE_VALUE_WEIGHT__:

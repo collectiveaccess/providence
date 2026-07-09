@@ -1348,6 +1348,7 @@ class BaseEditorController extends ActionController {
 						break;
 				}
 				
+				if(!$va_item['is_enabled'] && !sizeof($va_subtypes)) { continue; }
 				if($this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_use_indented_type_lists')) {
 					$no_new_submenu = $this->getRequest()->config->get($this->ops_table_name.'_no_new_submenu'); 
 					$va_types[$vs_key][] = array(
@@ -1433,6 +1434,7 @@ class BaseEditorController extends ActionController {
 					break;
 			}
 
+			if(!$va_type['is_enabled'] && !sizeof($va_subsubtypes)) { continue; }
 			if($use_indented_lists) {
 				$offset = $level * 16;
 				$va_subtypes[$vs_key][$va_type['item_id']] = array(

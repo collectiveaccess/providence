@@ -254,6 +254,19 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
+		if(caGetOption('hooks', $pa_options, true)) {
+			$this->opo_app_plugin_manager->hookBeforeInsertItem(
+				[
+					'id' => $this->getPrimaryKey(), 
+					'table_num' => $this->tableNum(), 
+					'table_name' => $table, 
+					'instance' => $this, 
+					'is_insert' => true, 
+					'for_duplication' => caGetOption('forDuplication', $pa_options, false)
+				]
+			);
+		}
+		
 		// stash attributes to add
 		$va_attributes_added = $this->opa_attributes_to_add;
 		if (!($vn_rc = parent::insert($pa_options))) {	
@@ -315,7 +328,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$this->setACLWorldAccess($this->getAppConfig()->get('default_item_access_level'));
 		}
 		
-		if(method_exists($this, 'setACLWorldAccess') && $this->hasField('access') && caACLIsEnabled($this, ['anywhere' => true])) {
+		if(method_exists($this, 'setACLWorldAccess') && $this->hasField('access') && caACLIsEnabled($this, ['forPawtucket' => true])) {
 			$access_to_acl_map = caGetACLItemLevelMap();
 			$orig_access = $this->get('access');
 			$mapped_acl = $access_to_acl_map[$orig_access] ?? $this->getAppConfig()->get('default_item_access_level');
@@ -426,7 +439,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		if(!$skip_acl_inheritance) {
-			if(method_exists($this, 'setACLWorldAccess') && $this->hasField('access') && caACLIsEnabled($this, ['anywhere' => true])) {
+			if(method_exists($this, 'setACLWorldAccess') && $this->hasField('access') && caACLIsEnabled($this, ['forPawtucket' => true])) {
 				$access_to_acl_map = caGetACLItemLevelMap();
 				$orig_access = $this->get('access');
 				$mapped_acl = $access_to_acl_map[$orig_access] ?? $this->getAppConfig()->get('default_item_access_level');
@@ -922,25 +935,29 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 * Returns true if bundle is valid for this model
 	 * 
 	 * @access public
-	 * @param string $ps_bundle bundle name
-     * @param int $pn_type_id Optional record type
+	 * @param string $bundle bundle name
+     * @param int $type_id Optional record type
+     *
 	 * @return bool
 	 */ 
-	public function hasBundle ($ps_bundle, $pn_type_id=null) {
-		$va_bundle_bits = explode(".", $ps_bundle);
-		$vn_num_bits = sizeof($va_bundle_bits);
+	public function hasBundle($bundle, $type_id=null) {
+		$bundle_bits = explode(".", $bundle);
+		$num_bits = sizeof($bundle_bits);
+		
+		$bl = $this->getBundleList();
+		if(in_array($bundle, $bl, true)) { return true; }
 	
-		if (in_array($va_bundle_bits[1], array('hierarchy', 'parent', 'children', 'related'))) {
-			unset($va_bundle_bits[1]);
-			$va_bundle_bits = array_merge($va_bundle_bits);
-			$vn_num_bits = sizeof($va_bundle_bits);
-			$ps_bundle = join('.', $va_bundle_bits);
+		if (in_array($bundle_bits[1], array('hierarchy', 'parent', 'children', 'related'))) {
+			unset($bundle_bits[1]);
+			$bundle_bits = array_merge($bundle_bits);
+			$num_bits = sizeof($bundle_bits);
+			$bundle = join('.', $bundle_bits);
 		}
 		
-		if (($va_bundle_bits[0] != $this->tableName()) && ($t_rel = Datamodel::getInstanceByTableName($va_bundle_bits[0], true))) {
-			return ($vn_num_bits == 1) ? true : $t_rel->hasBundle($ps_bundle, $pn_type_id);
+		if (($bundle_bits[0] != $this->tableName()) && ($t_rel = Datamodel::getInstanceByTableName($bundle_bits[0], true))) {
+			return ($num_bits == 1) ? true : $t_rel->hasBundle($bundle, $type_id);
 		} 
-		return parent::hasBundle($ps_bundle, $pn_type_id);
+		return parent::hasBundle($bundle, $type_id);
 	}
 	# ------------------------------------------------------
 	/** 
@@ -1672,8 +1689,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$def = caExtractSettingsValueByUserLocale('definition', $pa_bundle_settings);
 				$pa_bundle_settings['definition'][$g_ui_locale] = $this->getAppConfig()->get('required_field_marker').(is_array($def) ? $def[$g_ui_locale] : $def);
 			}
-			
 			$va_violations = $this->getMetadataDictionaryRuleViolations($dict_bundle_spec, ['placement_id' => (int)str_replace("P", "", $ps_placement_code)]);
+		
 			if (is_array($va_violations) && sizeof($va_violations)) {
 				$va_violation_text = [];
 				foreach($va_violations as $va_violation) {
@@ -2981,7 +2998,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 		$va_bundles_present = [];
 		if (is_array($va_bundles)) {
-			
+			$bl = $this->getBundleList();
 			$va_definition_bundle_names = [];
 			foreach($va_bundles as $va_bundle) {
 				if ($va_bundle['bundle_name'] === $vs_type_id_fld) { continue; }	// skip type_id
@@ -2989,7 +3006,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if (in_array($va_bundle['bundle_name'], $va_omit_bundles)) { continue; }
 				
 				$k = caConvertBundleNameToCode($va_bundle['bundle_name'], ['includeTablePrefix' => true]);
-				$va_definition_bundle_names[((!Datamodel::tableExists($va_bundle['bundle_name']) && !preg_match("!^{$vs_table_name}\.!", $va_bundle['bundle_name'])) ? "{$vs_table_name}." : "").$k] = 1;
+				
+				$va_definition_bundle_names[(!in_array($va_bundle['bundle_name'], $bl) && (!Datamodel::tableExists($va_bundle['bundle_name']) && !preg_match("!^{$vs_table_name}\.!", $va_bundle['bundle_name'])) ? "{$vs_table_name}." : "").$k] = 1;
 			}
 			ca_metadata_dictionary_entries::preloadDefinitions(array_keys($va_definition_bundle_names));
 		
@@ -3350,17 +3368,21 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	
 		$t_object = new ca_objects();
 		
+		$t_rel_type = null;
 		$rel_restrict_to_types = [];
 		if(is_array($object_collection_rel_types)) {
 			foreach($object_collection_rel_types as $object_collection_rel_type) {
-				if($t_rel = ca_relationship_types::findAsInstance(['table_num' => Datamodel::getTableNum('ca_objects_x_collections'), 'type_code' => $object_collection_rel_types])) {
-					$t = $t_rel->get('ca_relationship_types.include_subtypes_left') ? 
-						caMakeTypeIDList('ca_objects', [$t_rel->get('ca_relationship_types.sub_type_left_id')], array_merge($options, ['dont_include_subtypes_in_type_restriction' => true]))
-						: 
-						[$t_rel->get('ca_relationship_types.sub_type_left_id')];
-					$object_collection_rel_types = array_merge($object_collection_rel_types, $t);
+				if($t_rel_type = ca_relationship_types::findAsInstance(['table_num' => Datamodel::getTableNum('ca_objects_x_collections'), 'type_code' => $object_collection_rel_types])) {
+					$rel_type_res = $t_rel_type->getTypeRestrictions() ?? [];
+					
+					foreach($rel_type_res as $res) {
+						$t = $res['include_subtypes_left'] ? 
+							caMakeTypeIDList('ca_objects', [$res['sub_type_left_id']], array_merge($options, ['dont_include_subtypes_in_type_restriction' => true]))
+							: 
+							[$res['sub_type_left_id']];
+						$object_collection_rel_types = array_merge($object_collection_rel_types, $t);
+					}
 				}
-	
 			}
 		}
 		
@@ -3436,13 +3458,19 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			));
 			
 			if($this->tableName() == 'ca_collections') {
+				$rel_type_res = $t_rel_type->getTypeRestrictions() ?? [];
+				$restrict_to_types = [];
+				foreach($rel_type_res as $res) {
+					$restrict_to_types[] = $res['sub_type_left_id'];
+				}
+				
 				$o_view->setVar('objectTypeList', trim($t_object->getTypeListAsHTMLFormElement("{$placement_code}{$form_name}object_type_id", 
 					['id' => "{$placement_code}{$form_name}objectTypeList"], 
 					[	'childrenOfCurrentTypeOnly' => (bool)$strict_type_hierarchy, 
 						'includeSelf' => !(bool)$strict_type_hierarchy, 
 						'directChildrenOnly' => $strict_type_hierarchy && ($strict_type_hierarchy !== '~'),
-						'restrictToTypes' => $t_rel ? [$t_rel->get('ca_relationship_types.sub_type_left_id')] : null,
-						'dontIncludeSubtypesInTypeRestriction' => $t_rel ? !$t_rel->get('ca_relationship_types.include_subtypes_left') : null
+						'restrictToTypes' => sizeof($restrict_to_types) ? $restrict_to_types : null,
+						'dontIncludeSubtypesInTypeRestriction' => $t_rel_type ? !$t_rel_type->get('ca_relationship_types.include_subtypes_left') : null
 					])));
 			}
 			if($this->tableName() == 'ca_objects') {
@@ -4465,7 +4493,7 @@ if (!$batch) {
 
 		//
 		// Call processBundlesBeforeBaseModelSave() method in sub-class, if it is defined. The method is passed
-		// a list of bundles, the form prefix, the current request and the options passed to saveBundlesForScreen() Ð
+		// a list of bundles, the form prefix, the current request and the options passed to saveBundlesForScreen() -
 		// everything needed to perform custom processing using the incoming form content that is being saved.
 		// 
 		// A processBundlesBeforeBaseModelSave() method is rarely needed, but can be handy when you need to do something model-specific
@@ -4572,7 +4600,8 @@ if (!$batch) {
 							$target_id = $t_id;
 						}
 						if ($parent_table == $tt) {	
-							if($t = $table::findAsInstance([$this->primaryKey() => $target_id])) {
+							$t = ($this->getPrimaryKey() == $target_id) ? $this : $table::findAsInstance([$this->primaryKey() => $target_id]);
+							if($t) {
 								if(!$t->isSaveable($po_request)) { continue; }
 								
 								$t->setTransaction($this->getTransaction());
@@ -6426,9 +6455,10 @@ if (!$batch) {
 	
 		BaseModel::unsetChangeLogUnitID();
 		$va_bundle_names = [];
+		$bl = $this->getBundleList();
 		foreach($va_bundles as $va_bundle) {
 			$vs_bundle_name = caConvertBundleNameToCode($va_bundle['bundle_name'], ['includeTablePrefix' => true]);
-			if (!Datamodel::getInstanceByTableName($vs_bundle_name, true) && !preg_match("!^".$this->tableName()."\.!", $vs_bundle_name)) {
+			if (!in_array($vs_bundle_name, $bl, true) && !Datamodel::getInstanceByTableName($vs_bundle_name, true) && !preg_match("!^".$this->tableName()."\.!", $vs_bundle_name)) {
 				$vs_bundle_name = $this->tableName().'.'.$vs_bundle_name;
 			}
 			
@@ -6705,7 +6735,7 @@ if (!$batch) {
  	 *			showDeleted = Return related items that have been deleted. [Default is false]
  	 *			primaryIDs = array of primary keys in related table to exclude from returned list of items. Array is keyed on table name for compatibility with the parameter as used in the caProcessTemplateForIDs() helper [Default is null - nothing is excluded].
  	 *			restrictToBundleValues = Restrict returned items to those with specified bundle values. Specify an associative array with keys set to bundle names and key values set to arrays of values to filter on (eg. [bundle_name1 => [value1, value2, ...]]). [Default is null]
- 	 *			where = Restrict returned items to specified field values. The fields must be intrinsic and in the related table. This option can be useful when you want to efficiently fetch specific rows from a related table. Note that multiple fields/values are logically AND'ed together Ð all must match for a row to be returned - and that only equivalence is supported. [Default is null]			
+ 	 *			where = Restrict returned items to specified field values. The fields must be intrinsic and in the related table. This option can be useful when you want to efficiently fetch specific rows from a related table. Note that multiple fields/values are logically AND'ed together - all must match for a row to be returned - and that only equivalence is supported. [Default is null]			
  	 *			criteria = Restrict returned items using SQL criteria appended directly onto the query. Criteria is used as-is and must be compatible with the generated SQL query. [Default is null]
  	 *			showCurrentOnly = Returns the relationship with the latest effective date for the row_id that is not greater than the current date. This option is only supported for standard many-many self and non-self relations and is ignored for all other kinds of relationships. [Default is false]
  	 *			currentOnly = Synonym for showCurrentOnly
@@ -9289,8 +9319,8 @@ $pa_options["display_form_field_tips"] = true;
      * @param null $pn_rank
 side. For many self-relations the direction determines the nature and display text for the relationship.
 	 * @param array $pa_options Array of additional options:
-	 *		allowDuplicates = if set to true, attempts to add a relationship that already exists will succeed. Default is false Ð duplicate relationships will not be created
-	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to add a duplicate relationship. Default is false Ð don't set error. addRelationship() will always return false when creation of a duplicate relationship fails, no matter how the setErrorOnDuplicate option is set.
+	 *		allowDuplicates = if set to true, attempts to add a relationship that already exists will succeed. Default is false - duplicate relationships will not be created
+	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to add a duplicate relationship. Default is false - don't set error. addRelationship() will always return false when creation of a duplicate relationship fails, no matter how the setErrorOnDuplicate option is set.
 	 * @return bool|BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
 	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
@@ -9345,8 +9375,8 @@ side. For many self-relations the direction determines the nature and display te
 	 * @param string $ps_direction Optional direction specification for self-relationships (relationships linking two rows in the same table). Valid values are 'ltor' (left-to-right) and  'rtol' (right-to-left); the direction determines which "side" of the relationship the currently loaded row is on: 'ltor' puts the current row on the left side. For many self-relations the direction determines the nature and display text for the relationship.
 	 * @param null|int $pn_rank
 	 * @param array $pa_options Array of additional options:
-	 *		allowDuplicates = if set to true, attempts to edit a relationship to match one that already exists will succeed. Default is false Ð duplicate relationships will not be created.
-	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to create a duplicate relationship. Default is false Ð don't set error. editRelationship() will always return false when editing of a relationship fails, no matter how the setErrorOnDuplicate option is set.
+	 *		allowDuplicates = if set to true, attempts to edit a relationship to match one that already exists will succeed. Default is false - duplicate relationships will not be created.
+	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to create a duplicate relationship. Default is false - don't set error. editRelationship() will always return false when editing of a relationship fails, no matter how the setErrorOnDuplicate option is set.
 	 * @return BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
 	public function editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $pa_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
@@ -9661,8 +9691,13 @@ side. For many self-relations the direction determines the nature and display te
 	 			
 	 			$p = join(".", $bundle_elements);
 	 				 			
-	 			$rule_settings_restrict_to_types = array_filter(caGetOption(['restrict_to_types', 'restrictToTypes'], $rule_settings, []), function($v) { return strlen($v); });
-	 			$rule_settings_restrict_to_relationship_types = array_filter(caGetOption(['restrict_to_relationship_types', 'restrictToRelationshipTypes'], $rule_settings, []), function($v) { return strlen($v); });
+	 			$type_restrictions = caGetOption(['restrict_to_types', 'restrictToTypes'], $rule_settings, []);
+	 			if(!is_array($type_restrictions)) { $type_restrictions = []; }
+	 			$relationship_type_restrictions = caGetOption(['restrict_to_relationship_types', 'restrictToRelationshipTypes'], $rule_settings, []);
+	 			if(!is_array($relationship_type_restrictions)) { $relationship_type_restrictions = []; }
+	 			
+	 			$rule_settings_restrict_to_types = array_filter($type_restrictions, function($v) { return strlen($v); });
+	 			$rule_settings_restrict_to_relationship_types = array_filter($relationship_type_restrictions, function($v) { return strlen($v); });
 	 			
 	 			foreach($bundles_on_screen as $placement_id => $placement_bundle_name) {
 	 				if ($placement_bundle_name == $p) {
@@ -9731,7 +9766,6 @@ side. For many self-relations the direction determines the nature and display te
 			
 			$vb_skip = !$this->hasBundle($va_rule['bundle_name'], $this->getTypeID());
 				
-			
 			if (!$vb_skip) {
 				// create array of values present in rule
 				$va_row = array($va_rule['bundle_name'] => $vs_val = $this->get($va_rule['bundle_name']));
@@ -9744,7 +9778,6 @@ side. For many self-relations the direction determines the nature and display te
 					$va_row[$vs_tag] = $this->get($t['tag'], $opts);
 				}
 			}
-			
 			// is there a violation recorded for this rule and row?
 			if ($t_found = ca_metadata_dictionary_rule_violations::find(array('rule_id' => $va_rule['rule_id'], 'row_id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum()), array('returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()))) {
 				$t_violation = $t_found;

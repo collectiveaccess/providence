@@ -3081,6 +3081,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return bool
 	 */
 	function caDateEndsInFuture($ps_date_expression) {
+		if(!trim($ps_date_expression)) { return false; }
 		if ($va_date = caDateToHistoricTimestamps($ps_date_expression)) {
 			$va_now = caDateToHistoricTimestamps(_t('now'));
 			if (
@@ -5353,7 +5354,7 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 *
 	 */
-	 function caGetObjectCollectionHierarchyRelationshipTypes() {
+	function caGetObjectCollectionHierarchyRelationshipTypes() {
 	 	$config = Configuration::load();
 	 	
 	 	if($type = $config->get('ca_objects_x_collections_hierarchy_relationship_type')) {
@@ -5365,4 +5366,14 @@ function caFileIsIncludable($ps_file) {
 	 	}
 	 	return null;
 	 }
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetExcelCellFromSheet($sheet, mixed $coordinate) {
+			if (is_array($coordinate)) {
+				$coordinate = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($coordinate[0]) . $coordinate[1];
+			}
+			return $sheet->getCell($coordinate);
+		};
 	# ----------------------------------------

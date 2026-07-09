@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2024 Whirl-i-Gig
+ * Copyright 2013-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -100,6 +100,15 @@ BaseRefinery::$s_refinery_settings['collectionSplitter'] = array(
 		'default' => '',
 		'label' => _t('Ignore parent when trying to match row'),
 		'description' => _t('Ignore parent when trying to match row.')
+	),
+	'collectionSplitter_ignoreType' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'width' => 10, 'height' => 1,
+		'takesLocale' => false,
+		'default' => '',
+		'label' => _t('Ignore type when trying to match row'),
+		'description' => _t('Ignore type when trying to match row.')
 	),
 	'collectionSplitter_dontCreate' => array(
 		'formatType' => FT_TEXT,

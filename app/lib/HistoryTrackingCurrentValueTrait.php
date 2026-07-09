@@ -2423,7 +2423,7 @@ trait HistoryTrackingCurrentValueTrait {
 	 *
 	 * @return SearchResult 
 	 */
-	public function getContents(?string $policy, array $options=null) {
+	public function getContents(?string $policy, ?array $options=null) {
 		if(!($row_id = caGetOption('row_id', $options, $this->getPrimaryKey()))) { return null; }
 		
 		$ids = caGetOption('expandHierarchically', $options, false) ? $this->getHierarchy($row_id, ['idsOnly' => true]) : [$row_id];
