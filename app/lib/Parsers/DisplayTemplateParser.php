@@ -839,9 +839,13 @@ class DisplayTemplateParser {
 						
 						if($last_delimiter && (sizeof($va_tmpl_val) > 1)) {
 							$last_val = array_pop($va_tmpl_val);
-							$vs_acc .= $content = join($vs_unit_delimiter, $va_tmpl_val);
-							$vs_acc .= "{$last_delimiter}{$last_val}";
+							$content = join($vs_unit_delimiter, $va_tmpl_val);
+							if(sizeof($va_tmpl_val) > 1) { 
+								$content .= rtrim($vs_unit_delimiter); 
+							}
 							$content .= "{$last_delimiter}{$last_val}";
+							
+							$vs_acc .= $content;
 						} else {
 							$vs_acc .= $content = join($vs_unit_delimiter, $va_tmpl_val);
 						}
