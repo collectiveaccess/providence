@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2025 Whirl-i-Gig
+ * Copyright 2000-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -130,7 +130,7 @@ class Session {
 							'domain' => null, 
 							'secure' => $secure, 
 							'httponly' => true, 
-							'samesite' => 'Strict'
+							'samesite' => 'Lax'
 						]);
 				}
 		 	}
@@ -245,7 +245,7 @@ class Session {
 							'domain' => null, 
 							'secure' => $secure, 
 							'httponly' => true, 
-							'samesite' => 'Strict'
+							'samesite' => 'Lax'
 						]);
 			@session_destroy();
 		}
@@ -258,7 +258,7 @@ class Session {
 							'domain' => null, 
 							'secure' => $secure, 
 							'httponly' => true, 
-							'samesite' => 'Strict'
+							'samesite' => 'Lax'
 						]);
 		self::$s_cache_type::delete($session_id, 'SessionVars');
 	}
