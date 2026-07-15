@@ -234,25 +234,28 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	static public function preloadDefinitions($pa_bundles) {
 		if(!is_array($pa_bundles) || !sizeof($pa_bundles)) { return null; }
 		
-		
 		$o_db = new Db();
 		$qr_res = $o_db->query("
 			SELECT * 
 			FROM ca_metadata_dictionary_entries
 			WHERE
 				bundle_name IN (?)
-		", array($pa_bundles));
+		", [$pa_bundles]);
 		
 		$vn_c = 0;
 		
-		$va_type_ids = array();
+		$idx = array_flip($pa_bundles);
 		while($qr_res->nextRow()) {
 			$va_row = $qr_res->getRow();
 			$va_row['settings'] = caUnserializeForDatabase($va_row['settings']);
 			ca_metadata_dictionary_entries::$s_definition_cache[$va_row['entry_id']] = $va_row;
 			ca_metadata_dictionary_entries::$s_definition_cache_index[$va_row['bundle_name']][$va_row['entry_id']] = 1;
-			
+			unset($idx[$va_row['bundle_name']]);
 			$vn_c++;
+		}
+		
+		foreach($idx as $k => $d) {
+			ca_metadata_dictionary_entries::$s_definition_cache_index[$k] = null;
 		}
 		return $vn_c;
 	}
@@ -454,7 +457,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	 * @return array List of entry_ids for the specified bundle if it exists. These can be plugged into the ca_metadata_dictionary_entries::$s_definition_cache cache array to get entry data. Returns false if the bundle does not exist.
 	 */
 	public static function entryExists($ps_bundle_name, $pa_options=null) {
-		if (caGetOption('noCache', $pa_options, false)) {
+		if (caGetOption('noCache', $pa_options, false) || (array_key_exists($ps_bundle_name, ca_metadata_dictionary_entries::$s_definition_cache_index) && is_null(ca_metadata_dictionary_entries::$s_definition_cache_index[$ps_bundle_name]))) {
 			ca_metadata_dictionary_entries::preloadDefinitions(array($ps_bundle_name));
 		}
 		
@@ -485,10 +488,6 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	 * @return array An array with entry data. Keys are entry field names. The 'settings' key contains the label, definition text and any type restrictions. Returns null if no entry is defined.
 	 */
 	public static function getEntry($ps_bundle_name, $pt_subject, $pa_settings=null, $pa_options=null) {
-		if (caGetOption('noCache', $pa_options, false)) {
-			ca_metadata_dictionary_entries::preloadDefinitions([$ps_bundle_name]);
-		}
-		
 		$subject_table_name = $pt_subject->tableName();
 		$subject_table_num = $pt_subject->tableNum();
 		
