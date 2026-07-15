@@ -2999,6 +2999,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if ((!$vn_pk_id) && ($va_bundle['bundle_name'] === $vs_hier_parent_id_fld)) { continue; }
 				if (in_array($va_bundle['bundle_name'], $va_omit_bundles)) { continue; }
 				
+				if(is_array($this->getFieldInfo($va_bundle['bundle_name'])) && (strpos($va_bundle['bundle_name'], '.') === false))  { 
+					$va_bundle['bundle_name'] = $this->tableName().'.'.$va_bundle['bundle_name'];
+				}
 				$k = caConvertBundleNameToCode($va_bundle['bundle_name'], ['includeTablePrefix' => true]);
 				
 				$va_definition_bundle_names[(!in_array($va_bundle['bundle_name'], $bl) && (!Datamodel::tableExists($va_bundle['bundle_name']) && !preg_match("!^{$vs_table_name}\.!", $va_bundle['bundle_name'])) ? "{$vs_table_name}." : "").$k] = 1;
