@@ -3853,13 +3853,13 @@ function caEditorBundleMetadataDictionary($po_request, $ps_id_prefix, $pa_settin
 
 	$definition = caGetOption($g_ui_locale, $pa_settings['definition'] ?? null, null);
 	if(is_array($definition)) { $definition = join ("", $definition); }
-	if (!($vs_definition = trim($definition))) { return ''; }
+	if (!($definition = trim($definition))) { return ''; }
 
 	$vs_buf = '';
 	$vs_buf .= "<span class='iconButton'>";
 	$vs_buf .= "<a href='#' class='caMetadataDictionaryDefinitionToggle' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$ps_id_prefix}\");  return false;'>".caNavIcon(__CA_NAV_ICON_INFO__, 1, array('id' => "{$ps_id_prefix}MetadataDictionaryToggleButton"))."</a>";
 
-	$vs_buf .= "<div id='{$ps_id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>{$vs_definition}</div>";
+	$vs_buf .= "<div id='{$ps_id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>{$definition}</div>";
 	$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}'); }); </script>";	
 	$vs_buf .= "</span>\n";	
 
