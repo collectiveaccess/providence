@@ -319,6 +319,7 @@ class SearchIndexer extends SearchBase {
 				print CLIProgressBar::finish();
 			}
 			$this->opo_engine->optimizeIndex($vn_table_num);
+			$this->opo_engine->flushContentBuffer();
 
 			$vn_tc++;
 		}
