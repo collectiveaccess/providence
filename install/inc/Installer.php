@@ -923,7 +923,7 @@ class Installer {
 			
 			// insert dictionary entry
 			$t_entry = $type_restrictions = $rel_type_restrictions = null;
-			if(is_array($entries = \ca_metadata_dictionary_entries::find(['bundle_name' => $entry['bundle']], ['returnAs' => 'modelInstances']))) {
+			if(is_array($entries = \ca_metadata_dictionary_entries::find(['table_num' => \Datamodel::getTableNum($entry['table']), 'bundle_name' => $entry['bundle']], ['returnAs' => 'modelInstances']))) {
 				if(
 					($type_restriction_setting = caGetOption(['restrictToTypes', 'restrict_to_types'], $entry['settings'] ?? [], null))
 					||
