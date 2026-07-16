@@ -1619,7 +1619,8 @@ function caEditorInspector($view, $options=null) {
 			}
 		}	
 		if ($can_add_component) {
-			$components_tools[] = '<div><a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($view->request, '*', 'ObjectComponent', 'Form', ['parent_id' => $t_item->getPrimaryKey()]).'"); return false;\')>'.caNavIcon(__CA_NAV_ICON_ADD__, '12px').'</a></div>';
+			$label = $view->request->config->get('ca_objects_component_add_button_text');
+			$components_tools[] = '<div><a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($view->request, '*', 'ObjectComponent', 'Form', ['parent_id' => $t_item->getPrimaryKey()]).'"); return false;\')>'.caNavIcon(__CA_NAV_ICON_ADD__, '12px').($label ? " {$label}" : '').'</a></div>';
 
 			$change_type_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
 			$change_type_view->setVar('t_item', $t_item);

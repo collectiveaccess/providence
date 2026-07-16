@@ -979,7 +979,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	 */
 	public function getComponentTypes(?array $options=null) {
 		$component_types = $this->getAppConfig()->getList('ca_objects_component_types') ?? [];
-		if(is_array($child_types = $this->getTypeList(['idsOnly' => true, 'childrenOfCurrentTypeOnly' => true]))) {
+		if(is_array($child_types = $this->getTypeList(['idsOnly' => true, 'childrenOfCurrentTypeOnly' => in_array($this->getAppConfig()->get('ca_objects_enforce_strict_type_hierarchy'), ['~', '1'], true)]))) {
 			$component_types = array_intersect($component_types, caMakeTypeList($this->tableName(), $child_types) ?? []);
 		}	
 		return array_values($component_types);
