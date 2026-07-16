@@ -523,7 +523,7 @@ class ca_acl extends BaseModel {
 					if(!($t_coll = ca_collections::findAsInstance(['collection_id' => $qr_sub_records->get('ca_collections.collection_id')]))) { continue; }
 					
 					$object_ids = $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => $rel_types, 'returnAs' => 'ids', 'limit' => 50000]);
-					$c = sizeof($object_ids ?? []);
+					$relatedObjectsCount = sizeof($object_ids ?? []);
 					
 					
 					$access_by_id = $t_object->getFieldValuesForIDs($object_ids, ['access']);
@@ -548,7 +548,7 @@ class ca_acl extends BaseModel {
 					if($is_root || (bool)$t_coll->get('acl_inherit_from_parent')) {
 						$object_ids = $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => $rel_types, 'returnAs' => 'ids', 'limit' => 50000, 'criteria' => ['ca_objects.acl_inherit_from_ca_collections']]);
 						$statistics['inheritingRelatedObjectCount'] += sizeof($object_ids ?? []);
-						$statistics['potentialInheritingRelatedObjectCount'] += $c;
+						$statistics['potentialInheritingRelatedObjectCount'] += $relatedObjectsCount;
 						
 						$statistics['inheritingObjectRepresentationCount'] += ca_acl::_getRepresentationCount($db, $object_ids, ['aclInheritance' => true]);
 					}
