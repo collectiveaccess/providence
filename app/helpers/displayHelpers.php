@@ -3352,6 +3352,9 @@ function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=nu
 
 	$va_exclude = 								caGetOption('exclude', $pa_options, array(), array('castTo' => 'array'));
 	$po_request = 								caGetOption('request', $pa_options, null);
+	
+	$always_show_quickadd = 					(bool)$o_config->get(["{$vs_rel_table}_always_include_quickadd_option", 'always_include_quickadd_option']);
+	
 	if(!$po_request) { global $g_request; $po_request = $g_request; }
 
 	if($self_id) { $va_exclude[] = $self_id; }
@@ -3385,10 +3388,8 @@ function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=nu
 			if ($ps_inline_create_does_not_exist_message) {
 				$vb_include_inline_add_does_not_exist_message = true;
 				$vb_include_inline_add_message = false;
-			} else {
-				if ($ps_empty_result_message) {
-					$vb_include_empty_result_message = true;
-				}
+			} elseif ($ps_empty_result_message) {
+				$vb_include_empty_result_message = true;
 			}
 		} else {
 			$vs_table = 	$qr_rel_items->tableName();
@@ -3488,7 +3489,7 @@ function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=nu
 		$va_items = $va_items_sorted;
 	}
 
-	foreach ($va_items as $va_item) {
+	foreach($va_items as $va_item) {
 		$vn_id = $va_item[$vs_rel_pk];
 		if(in_array($vn_id, $va_exclude)) { continue; }
 
@@ -3515,7 +3516,13 @@ function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=nu
 		}
 
 		$vs_display_lc = mb_strtolower($vs_display);
-		if (($vs_display_lc == $ps_inline_create_query_lc) || (isset($va_item['label']) && ($va_item['label'] == $ps_inline_create_query_lc))) {
+		if (
+			(
+				($vs_display_lc == $ps_inline_create_query_lc) || 
+				(isset($va_item['label']) && ($va_item['label'] == $ps_inline_create_query_lc))
+			) &&
+			!$always_show_quickadd
+		) {
 			$vb_include_inline_add_message = false;
 		}
 

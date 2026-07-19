@@ -204,9 +204,11 @@ class BaseLookupController extends ActionController {
 			
 				$qr_res->setOption('prefetch', $limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
+				
+				$can_quickadd = ($this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName()) && !((bool) $o_config->get($this->opo_item_instance->tableName().'_disable_quickadd')));
 			
 				$va_opts = ['exclude' => $va_excludes, 'limit' => $limit, 'request' => $this->getRequest(), 'template' => caGetOption('template', $options, null)];
-				if(!$no_inline && ($quickadd || (!strlen($quickadd) && $this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName()) && !((bool) $o_config->get($this->opo_item_instance->tableName().'_disable_quickadd'))))) {
+				if(!$no_inline && ($quickadd || (!strlen($quickadd) && $can_quickadd))){
 					// if the lookup was restricted by search, try the lookup without the restriction
 					// so that we can notify the user that he might be about to create a duplicate
 					if((strlen($restrict_to_search) > 0)) {
