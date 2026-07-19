@@ -2082,7 +2082,14 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		$user_values = [];
 		if($user = $po_request->getUser()) {
 			foreach(['fname', 'lname', 'email', 'user_name'] as $uf) {
-				$user_values["currentuser.{$uf}"] = $user->get($uf);
+				$user_values["currentuser.{$uf}"] = $user_values["_user.{$uf}"] = $user->get($uf);
+			}
+			if(is_array($profile_prefs = $user->getValidPreferences('profile'))) {
+				foreach($profile_prefs as $p) {
+					$pv = $user->getPreference($p);
+					$p = str_replace("user_profile_", "", $p);
+					$user_values["_user.{$p}"] = $pv;
+				}
 			}
 		}
 		
@@ -2091,7 +2098,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		$element_id = $t_element->get('element_id');
 		$table_name = $this->tableName();
 		
-		$show_bundle_codes = $po_request->user->getPreference('show_bundle_codes_in_editor');
+		$show_bundle_codes = $user ? $user->getPreference('show_bundle_codes_in_editor') : false;
 		
 		$root_element_id = $group_key = $t_element->getPrimaryKey();
 		$group_keys = [];

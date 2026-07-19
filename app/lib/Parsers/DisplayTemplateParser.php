@@ -1329,6 +1329,19 @@ class DisplayTemplateParser {
                             $va_val_list[] = join(caGetOption('delimiter', $va_parsed_tag_opts['options'], '; '), $va_acc);
                             $vb_val_is_set = true;
                         }
+                } elseif(substr($vs_tag, 0, 5) === '_user') {
+                	global $g_request;
+                	if($g_request && $g_request->isLoggedIn() ) {
+                		$tmp = explode('.', $vs_tag);
+                		if((sizeof($tmp) > 1) && in_array($tmp[1], ['user_id', 'email', 'fname', 'lname', 'user_name', 'sms_number'], true)) {
+                			$va_val_list[] = $g_request->user->get($tmp[1]);
+                		} elseif($g_request->user->isValidPreference('user_profile_'.$tmp[1])) {
+                			$va_val_list[] = $g_request->user->getPreference('user_profile_'.$tmp[1]);
+                		} else{
+                			$va_val_list[] = $g_request->user->get('fname').' '.$g_request->user->get('lname');
+                		} 
+                	}
+                	$va_val_list[] = 'meow';
 				} else {				
 					switch(strtolower($vs_get_spec)) {
                         case 'relationship_typename':
