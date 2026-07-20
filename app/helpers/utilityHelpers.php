@@ -5072,6 +5072,15 @@ function caFileIsIncludable($ps_file) {
 	function caGetHTMLPurifier(?array $options=null) : HTMLPurifier {
 		$config = HTMLPurifier_Config::createDefault();
 		$config->set('URI.DisableExternalResources', !Configuration::load()->get('purify_allow_external_references'));
+		$serializer_path = Configuration::load()->get('purify_serializer_path');
+		# Check if path exists, if not make dir and set owner:group to same as ca tmp dir
+		if(!file_exists($serializer_path)) { 
+			$tempdir_info = stat(Configuration::load()->get('ca_temp_dir'));
+			mkdir($serializer_path, 0770, true);
+			chown($serializer_path, $tempdir_info['uid']);
+			chgrp($serializer_path, $tempdir_info['gid']);
+			clearstatcache();
+		}
 		$config->set('Cache.SerializerPath', Configuration::load()->get('purify_serializer_path'));
 		return new HTMLPurifier($config); 
 	}
