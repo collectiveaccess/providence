@@ -807,6 +807,27 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ----------------------------------------
 	/**
+	 * Return all placements on all screens in the current UI
+	 *
+	 * @param mixed $type_id
+	 * @param array $options
+	 *
+	 * return array
+	 */
+	public function getPlacements(mixed $type_id=null, ?array $options=null) : ?array {
+		$screens = $this->getScreens($type_id, $options);
+		if(is_array($screens)) { 
+			$placements = [];
+			foreach($screens as $screen_id => $sinfo) {
+				$bv = $this->getScreenBundlePlacements($sinfo['screen_id'], $type_id, $options);
+				$placements = array_merge($placements, $bv);
+			}
+			return $placements;
+		}
+		return null;
+	}
+	# ----------------------------------------
+	/**
 	 * Returns screen name for the first screen in the currently loaded UI 
 	 * that contains the bundle named by $ps_bundle_name
 	 *
