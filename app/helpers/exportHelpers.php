@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2025 Whirl-i-Gig
+ * Copyright 2016-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1070,7 +1070,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 						}
 
 					} elseif ($t_display && ($display_text = $t_display->getDisplayValue($result, $placement_id, array_merge(array('request' => $request, 'purify' => true), is_array($info['settings']) ? $info['settings'] : [])))) {
-						$textrun = $contentCell->createTextRun();
+						$textrun = $contentCell->addTextRun();
 			
 						if ($request && $config->get('report_include_labels_in_docx_output')) {
 							$textrun->addText(caEscapeForXML($info['display']).': ', $styleBundleNameFont);
@@ -1082,7 +1082,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 
 					} else {
 						$display_text = $result->get($info['bundle_name']);
-						$textrun = $contentCell->createTextRun();
+						$textrun = $contentCell->addTextRun();
 			
 						if ($request && $config->get('report_include_labels_in_docx_output')) {
 							$textrun->addText(caEscapeForXML($info['display']).': ', $styleBundleNameFont);
