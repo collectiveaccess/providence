@@ -1303,7 +1303,7 @@ class ca_acl extends BaseModel {
 			
 		// Apply rows to all
 		while($qr->nextHit()) {
-			$id = $qr->get("{$subject_table}.{$subject_pk}");
+			$id = (int)$qr->get("{$subject_table}.{$subject_pk}");
 			if($inherit_from_parent_flag_exists && !$qr->get("{$subject_table}.acl_inherit_from_parent")) { continue; }
 			
 			$row_acl = ca_acl::getACLValuesForRow($subject_table_num, $id);
@@ -1335,17 +1335,20 @@ class ca_acl extends BaseModel {
 				switch($kind) {
 					case 'world':
 						if(strlen($entries)) {
-							$deletes[] = "((user_id IS NULL) AND (group_id IS NULL) AND (access = {$entries})) AND (table_num = ?) AND (row_id = ?)";
+							$entries = (int)$entries;
+							$deletes[] = "((user_id IS NULL) AND (group_id IS NULL) AND (access = {$entries})) AND (table_num = {$subject_table_num}) AND (row_id = {$id})";
 						}
 						break;
 					case 'user':
 						foreach($entries as $user_id => $entry) {
-							$deletes[] = "((user_id = {$user_id}) AND (group_id IS NULL) AND (access = {$entry['access']})) AND (table_num = ?) AND (row_id = ?)";
+							$entry['access'] = (int)$entry['access'];
+							$deletes[] = "((user_id = {$user_id}) AND (group_id IS NULL) AND (access = {$entry['access']})) AND (table_num = {$subject_table_num}) AND (row_id = {$id})";
 						}
 						break;
 					case 'group':
 						foreach($entries as $group_id => $entry) {
-							$deletes[] = "((user_id IS NULL) AND (group_id = {$group_id}) AND (access = {$entry['access']})) AND (table_num = ?) AND (row_id = ?)";
+							$entry['access'] = (int)$entry['access'];
+							$deletes[] = "((user_id IS NULL) AND (group_id = {$group_id}) AND (access = {$entry['access']})) AND (table_num = {$subject_table_num}) AND (row_id = {$id})";
 						}
 						break;
 				}
@@ -1354,7 +1357,7 @@ class ca_acl extends BaseModel {
 					$qr_delete = $db->query("
 						DELETE FROM ca_acl
 						WHERE
-						".join(" OR ", $deletes), [$subject_table_num, $id]);
+						".join(" OR ", $deletes));
 				}
 			}
 			
