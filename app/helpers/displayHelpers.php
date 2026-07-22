@@ -1092,15 +1092,42 @@ function caEditorInspector($view, $options=null) {
 		$ancestors = array();
 		$parent_id = null;
 	}
-
-	// action extra to preserve currently open screen across next/previous links
-	$buf = "<h3 class='nextPrevious' {$style}>".caEditorFindResultNavigation($view->request, $t_item, $o_result_context, $options)."</h3>\n";
-
+	
 	$color = null;
 	if ($t_type) { $color = trim($t_type->get('color')); }
 	if (!$color && $t_ui) { $color = trim($t_ui->get('color')); }
 	if (!$color) { $color = "FFFFFF"; }
+	
+	//
+	// Display flags; expressions for these are defined in app.conf in the <table_name>_inspector_display_flags directive
+	//
+	if (is_array($display_flags = $view->request->config->getAssoc("{$table_name}_inspector_display_flags"))) {
+		$display_flag_buf = [];
+		foreach($display_flags as $exp => $display_flag) {
+			if($qr = caMakeSearchResult($t_item->tableName(), [$t_item->getPrimaryKey()])) {
+				$qr->nextHit();
+				$exp_vars = DisplayTemplateParser::getValuesForTemplate($qr, $exp);
+				if (ExpressionParser::evaluate($exp, $exp_vars)) {
+					if(is_array($display_flag)) {
+						$m = $t_item->getWithTemplate($display_flag['message'] ?? '');
+						
+						$m = "<div style=\"color: ".(($display_flag['color'] ?? null) ? $display_flag['color'] : "#000000") .";\">{$m}</div>\n";
+						if($display_flag['border_color'] ?? null) { 
+							$color = $display_flag['border_color'];
+						}
+						$display_flag_buf[] = $m;
+					} else {
+						$display_flag_buf[] = $t_item->getWithTemplate("{$display_flag}");
+					}
+				}
+			}
+		}
+	}
 
+	// action extra to preserve currently open screen across next/previous links
+	$buf = "<h3 class='nextPrevious' {$style}>".caEditorFindResultNavigation($view->request, $t_item, $o_result_context, $options)."</h3>\n";
+
+	$color = preg_replace("!^#+!", "", $color);
 	$buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$color};'>\n";
 
 	$icon = null;
@@ -1146,18 +1173,7 @@ function caEditorInspector($view, $options=null) {
 			//
 			// Display flags; expressions for these are defined in app.conf in the <table_name>_inspector_display_flags directive
 			//
-			if (is_array($display_flags = $view->request->config->getAssoc("{$table_name}_inspector_display_flags"))) {
-				$display_flag_buf = [];
-				foreach($display_flags as $exp => $display_flag) {
-					if($qr = caMakeSearchResult($t_item->tableName(), [$t_item->getPrimaryKey()])) {
-						$qr->nextHit();
-						$exp_vars = DisplayTemplateParser::getValuesForTemplate($qr, $exp);
-						if (ExpressionParser::evaluate($exp, $exp_vars)) {
-							$display_flag_buf[] = $t_item->getWithTemplate("{$display_flag}");
-						}
-					}
-				}
-
+			if (is_array($display_flags)) {
 				if(!($display_flag_delim = $view->request->config->get("{$table_name}_inspector_display_flags_delimiter"))) {
 					$display_flag_delim = '; ';
 				}
