@@ -523,7 +523,7 @@ class ca_acl extends BaseModel {
 					if(!($t_coll = ca_collections::findAsInstance(['collection_id' => $qr_sub_records->get('ca_collections.collection_id')]))) { continue; }
 					
 					$object_ids = $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => $rel_types, 'returnAs' => 'ids', 'limit' => 50000]);
-					$c = sizeof($object_ids ?? []);
+					$relatedObjectsCount = sizeof($object_ids ?? []);
 					
 					
 					$access_by_id = $t_object->getFieldValuesForIDs($object_ids, ['access']);
@@ -548,7 +548,7 @@ class ca_acl extends BaseModel {
 					if($is_root || (bool)$t_coll->get('acl_inherit_from_parent')) {
 						$object_ids = $t_coll->getRelatedItems('ca_objects', ['restrictToRelationshipTypes' => $rel_types, 'returnAs' => 'ids', 'limit' => 50000, 'criteria' => ['ca_objects.acl_inherit_from_ca_collections']]);
 						$statistics['inheritingRelatedObjectCount'] += sizeof($object_ids ?? []);
-						$statistics['potentialInheritingRelatedObjectCount'] += $c;
+						$statistics['potentialInheritingRelatedObjectCount'] += $relatedObjectsCount;
 						
 						$statistics['inheritingObjectRepresentationCount'] += ca_acl::_getRepresentationCount($db, $object_ids, ['aclInheritance' => true]);
 					}
@@ -1303,7 +1303,7 @@ class ca_acl extends BaseModel {
 			
 		// Apply rows to all
 		while($qr->nextHit()) {
-			$id = $qr->get("{$subject_table}.{$subject_pk}");
+			$id = (int)$qr->get("{$subject_table}.{$subject_pk}");
 			if($inherit_from_parent_flag_exists && !$qr->get("{$subject_table}.acl_inherit_from_parent")) { continue; }
 			
 			$row_acl = ca_acl::getACLValuesForRow($subject_table_num, $id);
@@ -1335,17 +1335,20 @@ class ca_acl extends BaseModel {
 				switch($kind) {
 					case 'world':
 						if(strlen($entries)) {
-							$deletes[] = "((user_id IS NULL) AND (group_id IS NULL) AND (access = {$entries})) AND (table_num = ?) AND (row_id = ?)";
+							$entries = (int)$entries;
+							$deletes[] = "((user_id IS NULL) AND (group_id IS NULL) AND (access = {$entries})) AND (table_num = {$subject_table_num}) AND (row_id = {$id})";
 						}
 						break;
 					case 'user':
 						foreach($entries as $user_id => $entry) {
-							$deletes[] = "((user_id = {$user_id}) AND (group_id IS NULL) AND (access = {$entry['access']})) AND (table_num = ?) AND (row_id = ?)";
+							$entry['access'] = (int)$entry['access'];
+							$deletes[] = "((user_id = {$user_id}) AND (group_id IS NULL) AND (access = {$entry['access']})) AND (table_num = {$subject_table_num}) AND (row_id = {$id})";
 						}
 						break;
 					case 'group':
 						foreach($entries as $group_id => $entry) {
-							$deletes[] = "((user_id IS NULL) AND (group_id = {$group_id}) AND (access = {$entry['access']})) AND (table_num = ?) AND (row_id = ?)";
+							$entry['access'] = (int)$entry['access'];
+							$deletes[] = "((user_id IS NULL) AND (group_id = {$group_id}) AND (access = {$entry['access']})) AND (table_num = {$subject_table_num}) AND (row_id = {$id})";
 						}
 						break;
 				}
@@ -1354,7 +1357,7 @@ class ca_acl extends BaseModel {
 					$qr_delete = $db->query("
 						DELETE FROM ca_acl
 						WHERE
-						".join(" OR ", $deletes), [$subject_table_num, $id]);
+						".join(" OR ", $deletes));
 				}
 			}
 			

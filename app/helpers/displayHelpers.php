@@ -1092,15 +1092,42 @@ function caEditorInspector($view, $options=null) {
 		$ancestors = array();
 		$parent_id = null;
 	}
-
-	// action extra to preserve currently open screen across next/previous links
-	$buf = "<h3 class='nextPrevious' {$style}>".caEditorFindResultNavigation($view->request, $t_item, $o_result_context, $options)."</h3>\n";
-
+	
 	$color = null;
 	if ($t_type) { $color = trim($t_type->get('color')); }
 	if (!$color && $t_ui) { $color = trim($t_ui->get('color')); }
 	if (!$color) { $color = "FFFFFF"; }
+	
+	//
+	// Display flags; expressions for these are defined in app.conf in the <table_name>_inspector_display_flags directive
+	//
+	if (is_array($display_flags = $view->request->config->getAssoc("{$table_name}_inspector_display_flags"))) {
+		$display_flag_buf = [];
+		foreach($display_flags as $exp => $display_flag) {
+			if($qr = caMakeSearchResult($t_item->tableName(), [$t_item->getPrimaryKey()])) {
+				$qr->nextHit();
+				$exp_vars = DisplayTemplateParser::getValuesForTemplate($qr, $exp);
+				if (ExpressionParser::evaluate($exp, $exp_vars)) {
+					if(is_array($display_flag)) {
+						$m = $t_item->getWithTemplate($display_flag['message'] ?? '');
+						
+						$m = "<div style=\"color: ".(($display_flag['color'] ?? null) ? $display_flag['color'] : "#000000") .";\">{$m}</div>\n";
+						if($display_flag['border_color'] ?? null) { 
+							$color = $display_flag['border_color'];
+						}
+						$display_flag_buf[] = $m;
+					} else {
+						$display_flag_buf[] = $t_item->getWithTemplate("{$display_flag}");
+					}
+				}
+			}
+		}
+	}
 
+	// action extra to preserve currently open screen across next/previous links
+	$buf = "<h3 class='nextPrevious' {$style}>".caEditorFindResultNavigation($view->request, $t_item, $o_result_context, $options)."</h3>\n";
+
+	$color = preg_replace("!^#+!", "", $color);
 	$buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$color};'>\n";
 
 	$icon = null;
@@ -1146,18 +1173,7 @@ function caEditorInspector($view, $options=null) {
 			//
 			// Display flags; expressions for these are defined in app.conf in the <table_name>_inspector_display_flags directive
 			//
-			if (is_array($display_flags = $view->request->config->getAssoc("{$table_name}_inspector_display_flags"))) {
-				$display_flag_buf = [];
-				foreach($display_flags as $exp => $display_flag) {
-					if($qr = caMakeSearchResult($t_item->tableName(), [$t_item->getPrimaryKey()])) {
-						$qr->nextHit();
-						$exp_vars = DisplayTemplateParser::getValuesForTemplate($qr, $exp);
-						if (ExpressionParser::evaluate($exp, $exp_vars)) {
-							$display_flag_buf[] = $t_item->getWithTemplate("{$display_flag}");
-						}
-					}
-				}
-
+			if (is_array($display_flags)) {
 				if(!($display_flag_delim = $view->request->config->get("{$table_name}_inspector_display_flags_delimiter"))) {
 					$display_flag_delim = '; ';
 				}
@@ -1619,7 +1635,8 @@ function caEditorInspector($view, $options=null) {
 			}
 		}	
 		if ($can_add_component) {
-			$components_tools[] = '<div><a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($view->request, '*', 'ObjectComponent', 'Form', ['parent_id' => $t_item->getPrimaryKey()]).'"); return false;\')>'.caNavIcon(__CA_NAV_ICON_ADD__, '12px').'</a></div>';
+			$label = $view->request->config->get('ca_objects_component_add_button_text');
+			$components_tools[] = '<div><a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($view->request, '*', 'ObjectComponent', 'Form', ['parent_id' => $t_item->getPrimaryKey()]).'"); return false;\')>'.caNavIcon(__CA_NAV_ICON_ADD__, '12px').($label ? " {$label}" : '').'</a></div>';
 
 			$change_type_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
 			$change_type_view->setVar('t_item', $t_item);
@@ -3351,6 +3368,9 @@ function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=nu
 
 	$va_exclude = 								caGetOption('exclude', $pa_options, array(), array('castTo' => 'array'));
 	$po_request = 								caGetOption('request', $pa_options, null);
+	
+	$always_show_quickadd = 					(bool)$o_config->get(["{$vs_rel_table}_always_include_quickadd_option", 'always_include_quickadd_option']);
+	
 	if(!$po_request) { global $g_request; $po_request = $g_request; }
 
 	if($self_id) { $va_exclude[] = $self_id; }
@@ -3384,10 +3404,8 @@ function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=nu
 			if ($ps_inline_create_does_not_exist_message) {
 				$vb_include_inline_add_does_not_exist_message = true;
 				$vb_include_inline_add_message = false;
-			} else {
-				if ($ps_empty_result_message) {
-					$vb_include_empty_result_message = true;
-				}
+			} elseif ($ps_empty_result_message) {
+				$vb_include_empty_result_message = true;
 			}
 		} else {
 			$vs_table = 	$qr_rel_items->tableName();
@@ -3487,7 +3505,7 @@ function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=nu
 		$va_items = $va_items_sorted;
 	}
 
-	foreach ($va_items as $va_item) {
+	foreach($va_items as $va_item) {
 		$vn_id = $va_item[$vs_rel_pk];
 		if(in_array($vn_id, $va_exclude)) { continue; }
 
@@ -3514,7 +3532,13 @@ function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=nu
 		}
 
 		$vs_display_lc = mb_strtolower($vs_display);
-		if (($vs_display_lc == $ps_inline_create_query_lc) || (isset($va_item['label']) && ($va_item['label'] == $ps_inline_create_query_lc))) {
+		if (
+			(
+				($vs_display_lc == $ps_inline_create_query_lc) || 
+				(isset($va_item['label']) && ($va_item['label'] == $ps_inline_create_query_lc))
+			) &&
+			!$always_show_quickadd
+		) {
 			$vb_include_inline_add_message = false;
 		}
 
@@ -3853,13 +3877,13 @@ function caEditorBundleMetadataDictionary($po_request, $ps_id_prefix, $pa_settin
 
 	$definition = caGetOption($g_ui_locale, $pa_settings['definition'] ?? null, null);
 	if(is_array($definition)) { $definition = join ("", $definition); }
-	if (!($vs_definition = trim($definition))) { return ''; }
+	if (!($definition = trim($definition))) { return ''; }
 
 	$vs_buf = '';
 	$vs_buf .= "<span class='iconButton'>";
 	$vs_buf .= "<a href='#' class='caMetadataDictionaryDefinitionToggle' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$ps_id_prefix}\");  return false;'>".caNavIcon(__CA_NAV_ICON_INFO__, 1, array('id' => "{$ps_id_prefix}MetadataDictionaryToggleButton"))."</a>";
 
-	$vs_buf .= "<div id='{$ps_id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>{$vs_definition}</div>";
+	$vs_buf .= "<div id='{$ps_id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>{$definition}</div>";
 	$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}'); }); </script>";	
 	$vs_buf .= "</span>\n";	
 

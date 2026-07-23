@@ -285,35 +285,106 @@ class ca_user_roles extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Set access settings for list of bundles
+	 *
+	 * @param array $access_settings List of access settings; each list entry is an array with the following keys: 
+	 *		table = table name
+	 *		bundle = bundle name
+	 *		access = Access level to grant; one of __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__ or __CA_BUNDLE_ACCESS_EDIT__
+	 * 
+	 * @return mixed true on success, array with errors on error
+	 */
+	public function setAccessSettingsForBundles(array $access_settings) {
+		if(!$this->getPrimaryKey()) { return false; }
+			
+		$vars = $this->get('vars');
+		if(!is_array($vars)) { $vars = []; }
+		
+		$errors = [];
+		if(!isset($vars['bundle_access_settings'])) { $vars['bundle_access_settings'] = []; }
+		
+		foreach($access_settings as $a) {
+			$access = $a['access'];
+			if(in_array($access, ['edit', 'read', 'none'], true)) { 
+				$access = caConvertACLStringToConstant($access);
+			}
+			$table = $a['table'];
+			$bundle = $a['bundle'];
+			
+			if(!in_array($access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { 
+				$errors[] = [
+					'bundle' => $bundle, 'access' => $a['access'], 'table' => $table, 'message' => _t('Invalid access value')
+				];
+				continue; 
+			}
+			if(!Datamodel::tableExists($table)) { 
+				$errors[] = [
+					'bundle' => $bundle, 'access' => $a['access'], 'table' => $table, 'message' => _t('Invalid table')
+				];
+				continue; 
+			}
+	
+	
+			if(!is_array(ca_user_roles::$s_bundle_list) || !is_array(ca_user_roles::$s_bundle_list[$table])) {
+				$t_ui_screens = new ca_editor_ui_screens();
+				ca_user_roles::$s_bundle_list[$table] = array_keys($t_ui_screens->getAvailableBundles($table,['dontCache' => true]));
+			}
+			if(!in_array($bundle, ca_user_roles::$s_bundle_list[$table])) {
+				$bundle = "ca_attribute_{$bundle}";	// rewrite straight element codes with prefix
+				if(!in_array($bundle, ca_user_roles::$s_bundle_list[$table])) {
+					$errors[] = [
+						'bundle' => $bundle, 'access' => $a['access'], 'table' => $table, 'message' => _t('Invalid bundle')
+					];
+					continue; 
+				}
+			}
+	
+			$vars['bundle_access_settings']["{$table}.{$bundle}"] = $access;
+		}
+		
+		$this->set('vars', $vars);
+		$this->update();
+
+		if($this->numErrors() > 0) {
+			$errors[] = [
+				'bundle' => null, 'access' => null, 'table' => null, 'message' => _t('Could not save access values for bundles: %1', join('; ', $this->getErrors()))
+			];
+			return $errors;
+		}
+
+		return sizeof($errors) ? $errors : true;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Set access setting for given bundle
 	 *
-	 * @param string $ps_table the table the bundle belongs to
-	 * @param string $ps_bundle the bundle name, e.g. preferred_labels
-	 * @param int $pn_access access level, __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__ or __CA_BUNDLE_ACCESS_EDIT__
+	 * @param string $table the table the bundle belongs to
+	 * @param string $bundle the bundle name, e.g. preferred_labels
+	 * @param int $access access level, __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__ or __CA_BUNDLE_ACCESS_EDIT__
 	 * @return boolean success or not
 	 */
-	public function setAccessSettingForBundle($ps_table, $ps_bundle, $pn_access) {
-		if(!in_array($pn_access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
+	public function setAccessSettingForBundle($table, $bundle, $access) {
+		if(!in_array($access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
 		if(!$this->getPrimaryKey()) { return false; }
-		if(!Datamodel::tableExists($ps_table)) { return false; }
+		if(!Datamodel::tableExists($table)) { return false; }
 
-		$va_vars = $this->get('vars');
-		if(!is_array($va_vars)) { $va_vars = array(); }
-		if(!isset($va_vars['bundle_access_settings'])) { $va_vars['bundle_access_settings'] = array(); }
+		$vars = $this->get('vars');
+		if(!is_array($vars)) { $vars = array(); }
+		if(!isset($vars['bundle_access_settings'])) { $vars['bundle_access_settings'] = array(); }
 
-		if(!is_array(ca_user_roles::$s_bundle_list) || !is_array(ca_user_roles::$s_bundle_list[$ps_table])) {
+		if(!is_array(ca_user_roles::$s_bundle_list) || !is_array(ca_user_roles::$s_bundle_list[$table])) {
 			$t_ui_screens = new ca_editor_ui_screens();
-			ca_user_roles::$s_bundle_list[$ps_table] = array_keys($t_ui_screens->getAvailableBundles($ps_table,array('dontCache' => true)));
+			ca_user_roles::$s_bundle_list[$table] = array_keys($t_ui_screens->getAvailableBundles($table,array('dontCache' => true)));
 		}
-		if(!in_array($ps_bundle, ca_user_roles::$s_bundle_list[$ps_table])) {
-			$ps_bundle = "ca_attribute_{$ps_bundle}";	// rewrite straight element codes with prefix
-			if(!in_array($ps_bundle, ca_user_roles::$s_bundle_list[$ps_table])) {
+		if(!in_array($bundle, ca_user_roles::$s_bundle_list[$table])) {
+			$bundle = "ca_attribute_{$bundle}";	// rewrite straight element codes with prefix
+			if(!in_array($bundle, ca_user_roles::$s_bundle_list[$table])) {
 				return false; 
 			}
 		}
 
-		$va_vars['bundle_access_settings'][$ps_table.".".$ps_bundle] = $pn_access;
-		$this->set('vars', $va_vars);
+		$vars['bundle_access_settings'][$table.".".$bundle] = $access;
+		$this->set('vars', $vars);
 
 		$this->update();
 
@@ -394,38 +465,119 @@ class ca_user_roles extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Set access settings for a list of types
+	 *
+	 * @param array $access_settings List of access settings; each list entry is an array with the following keys: 
+	 *		table = table name
+	 *		type = type code or id
+	 *		access = Access level to grant; one of __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__ or __CA_BUNDLE_ACCESS_EDIT__
+	 * 
+	 * @return mixed true on success, array with errors on error
+	 */
+	public function setAccessSettingsForTypes(array $access_settings) {		
+		if(!$this->getPrimaryKey()) { return false; }
+		$vars = $this->get('vars');
+		if(!is_array($vars)) { $vars = []; }
+		if(!isset($vars['type_access_settings'])) { $vars['type_access_settings'] = []; }
+		
+		$errors = [];
+		
+		$t_list = new ca_lists();	
+		foreach($access_settings as $a) {
+			$access = $a['access'];
+			if(in_array($access, ['edit', 'read', 'none'], true)) { 
+				$access = caConvertACLStringToConstant($access);
+			}
+			$table = $a['table'];
+			$type = $a['type'];
+			if(!in_array($access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { 
+				$errors[] = [
+					'type' => $type, 'access' => $a['access'], 'table' => $table, 'message' => _t('Invalid access value')
+				];
+				continue; 
+			}
+			
+			$t_instance = Datamodel::getInstanceByTableName($table, true);
+			if(!$t_instance) { 
+				$errors[] = [
+					'type' => $type, 'access' => $a['access'], 'table' => $table, 'message' => _t('Invalid table')
+				];
+				continue; 
+			}
+			if(!($list_code = $t_instance->getTypeListCode())) {
+				$errors[] = [
+					'type' => $type, 'access' => $a['access'], 'table' => $table, 'message' => _t('Could not find type list')
+				];
+				continue; 
+			}
+	
+			// convert idno to id
+			if(!is_numeric($type)){
+				if(!$t_list->itemIsInList($list_code, $type)) { 
+					$errors[] = [
+						'type' => $type, 'access' => $a['access'], 'table' => $table, 'message' => _t('Could not find type in type list')
+					];
+					continue; 
+				}
+				$type = ca_lists::getItemID($list_code, $type);
+			}
+	
+			if(!$t_list->itemIDIsInList($list_code, $type)){ 
+				$errors[] = [
+					'type' => $type, 'access' => $a['access'], 'table' => $table, 'message' => _t('Type is not in type list')
+				];
+				continue; 
+			}
+	
+			$vars['type_access_settings']["{$table}.{$type}"] = $access;
+		}
+
+		$this->set('vars', $vars);
+		$this->update();
+
+		if($this->numErrors() > 0) {
+			$errors[] = [
+				'type' => null, 'access' => null, 'table' => null, 'message' => _t('Could not save access values for types: %1', join('; ', $this->getErrors()))
+			];
+			return $errors;
+		}
+
+		return sizeof($errors) ? $errors : true;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Set access setting for given type
 	 *
-	 * @param string $ps_table the table the bundle belongs to
-	 * @param string $pm_type_id_or_code the primary key or code for the type list item
-	 * @param int $pn_access access level, __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__ or __CA_BUNDLE_ACCESS_EDIT__
+	 * @param string $table the table the bundle belongs to
+	 * @param string $type_id_or_code the primary key or code for the type list item
+	 * @param int $access access level, __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__ or __CA_BUNDLE_ACCESS_EDIT__
 	 * @return boolean success or not
 	 */
-	public function setAccessSettingForType($ps_table, $pm_type_id_or_code, $pn_access) {
-		if(!in_array($pn_access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
+	public function setAccessSettingForType($table, $type_id_or_code, $access) {
+		if(!in_array($access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
 		if(!$this->getPrimaryKey()) { return false; }
 		//if(!$this->getAppConfig()->get('perform_type_access_checking')) { return false; }
 		$t_list = new ca_lists();	
 
-		$va_vars = $this->get('vars');
-		if(!is_array($va_vars)) { $va_vars = array(); }
-		if(!isset($va_vars['type_access_settings'])) { $va_vars['type_access_settings'] = array(); }
+		$vars = $this->get('vars');
+		if(!is_array($vars)) { $vars = array(); }
+		if(!isset($vars['type_access_settings'])) { $vars['type_access_settings'] = array(); }
 
-		$t_instance = Datamodel::getInstanceByTableName($ps_table, true);
+		$t_instance = Datamodel::getInstanceByTableName($table, true);
 		if(!$t_instance) { return false; }
-		if(!($vs_list_code = $t_instance->getTypeListCode())) { return false; }
+		if(!($list_code = $t_instance->getTypeListCode())) { return false; }
 
 		// convert idno to id
-		if(!is_numeric($pm_type_id_or_code)){
-			if(!$t_list->itemIsInList($vs_list_code,$pm_type_id_or_code)) { return false; }
-			$pm_type_id_or_code = ca_lists::getItemID($vs_list_code,$pm_type_id_or_code);
+		if(!is_numeric($type_id_or_code)){
+			if(!$t_list->itemIsInList($list_code,$type_id_or_code)) { return false; }
+			$type_id_or_code = ca_lists::getItemID($list_code,$type_id_or_code);
 		}
 
-		if(!$t_list->itemIDIsInList($vs_list_code,$pm_type_id_or_code)){ return false; }
+		if(!$t_list->itemIDIsInList($list_code,$type_id_or_code)){ return false; }
 
-		$va_vars['type_access_settings'][$ps_table.".".$pm_type_id_or_code] = $pn_access;
+		$vars['type_access_settings'][$table.".".$type_id_or_code] = $access;
 
-		$this->set('vars', $va_vars);
+		$this->set('vars', $vars);
 
 		$this->update();
 
@@ -452,42 +604,129 @@ class ca_user_roles extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Set access settings for a list of sources
+	 *
+	 * @param array $access_settings List of access settings; each list entry is an array with the following keys: 
+	 *		table = table name
+	 *		source = source code or id
+	 *		access = Access level to grant; one of __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__ or __CA_BUNDLE_ACCESS_EDIT__
+	 *		default = Is default source?
+	 * 
+	 * @return mixed true on success, array with errors on error
+	 */
+	public function setAccessSettingsForSources(array $access_settings) {
+		if(!$this->getPrimaryKey()) { return false; }
+		$t_list = new ca_lists();	
+
+		$vars = $this->get('vars');
+		if(!is_array($vars)) { $vars = array(); }
+		if(!isset($vars['source_access_settings'])) { $vars['source_access_settings'] = []; }
+		
+		$errors = [];
+		foreach($access_settings as $a) {
+			$access = $a['access'];
+			if(in_array($access, ['edit', 'read', 'none'], true)) { 
+				$access = caConvertACLStringToConstant($access);
+			}
+			$table = $a['table'];
+			$source = $a['source'];
+			$is_default = $a['default'] ?? false;
+		
+			if(!in_array($access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { 
+				$errors[] = [
+					'source' => $source, 'access' => $a['access'], 'table' => $table, 'message' => _t('Invalid access value')
+				];
+				continue; 
+			}
+	
+			$t_instance = Datamodel::getInstanceByTableName($table, true);
+			if(!$t_instance) { 
+				$errors[] = [
+					'source' => $source, 'access' => $a['access'], 'table' => $table, 'message' => _t('Invalid table')
+				];
+				continue; 
+			}
+			if(!($list_code = $t_instance->getSourceListCode())) {
+				$errors[] = [
+					'source' => $source, 'access' => $a['access'], 'table' => $table, 'message' => _t('Could not find source list')
+				];
+				continue; 
+			}
+	
+			// convert idno to id
+			if(!is_numeric($source)){
+				if(!$t_list->itemIsInList($list_code, $source)) { 
+					$errors[] = [
+						'source' => $source, 'access' => $a['access'], 'table' => $table, 'message' => _t('Could not find source in source list')
+					];
+					continue;
+				}
+				$source = ca_lists::getItemID($list_code, $source);
+			}
+	
+			if(!$t_list->itemIDIsInList($list_code, $source)){ 
+				$errors[] = [
+					'source' => $source, 'access' => $a['access'], 'table' => $table, 'message' => _t('Source is not in source list')
+				];
+				continue;
+			}
+	
+			$vars['source_access_settings']["{$table}.{$source}"] = $access;
+			if ($is_default) {
+				$vars['source_access_settings']["{$table}_default_id"] = $source;
+			}
+		}
+
+		$this->set('vars', $vars);
+		$this->update();
+
+		if($this->numErrors() > 0) {
+			$errors[] = [
+				'source' => null, 'access' => null, 'table' => null, 'message' => _t('Could not save access values for sources: %1', join('; ', $this->getErrors()))
+			];
+			return $errors;
+		}
+
+		return sizeof($errors) ? $errors : true;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Set access setting for given source
 	 *
-	 * @param string $ps_table the table the bundle belongs to
-	 * @param string $pm_source_id_or_code the primary key or code for the type list item
-	 * @param int $pn_access access level, __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__ or __CA_BUNDLE_ACCESS_EDIT__
-	 * @param bool $pb_is_default Mark source as default for this table
+	 * @param string $table the table the bundle belongs to
+	 * @param string $source_id_or_code the primary key or code for the type list item
+	 * @param int $access access level, __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__ or __CA_BUNDLE_ACCESS_EDIT__
+	 * @param bool $is_default Mark source as default for this table
 	 * @return boolean success or not
 	 */
-	public function setAccessSettingForSource($ps_table, $pm_source_id_or_code, $pn_access, $pb_is_default=false) {
-		if(!in_array($pn_access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
+	public function setAccessSettingForSource($table, $source_id_or_code, $access, $is_default=false) {
+		if(!in_array($access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
 		if(!$this->getPrimaryKey()) { return false; }
 		//if(!caSourceAccessControlIsEnabled()) { return false; }
 		$t_list = new ca_lists();	
 
-		$va_vars = $this->get('vars');
-		if(!is_array($va_vars)) { $va_vars = array(); }
-		if(!isset($va_vars['source_access_settings'])) { $va_vars['source_access_settings'] = array(); }
+		$vars = $this->get('vars');
+		if(!is_array($vars)) { $vars = array(); }
+		if(!isset($vars['source_access_settings'])) { $vars['source_access_settings'] = array(); }
 
-		$t_instance = Datamodel::getInstanceByTableName($ps_table, true);
+		$t_instance = Datamodel::getInstanceByTableName($table, true);
 		if(!$t_instance) { return false; }
 		if(!($vs_list_code = $t_instance->getSourceListCode())) { return false; }
 
 		// convert idno to id
-		if(!is_numeric($pm_source_id_or_code)){
-			if(!$t_list->itemIsInList($vs_list_code,$pm_source_id_or_code)) { return false; }
-			$pm_source_id_or_code = ca_lists::getItemID($vs_list_code,$pm_source_id_or_code);
+		if(!is_numeric($source_id_or_code)){
+			if(!$t_list->itemIsInList($vs_list_code,$source_id_or_code)) { return false; }
+			$source_id_or_code = ca_lists::getItemID($vs_list_code,$source_id_or_code);
 		}
 
-		if(!$t_list->itemIDIsInList($vs_list_code,$pm_source_id_or_code)){ return false; }
+		if(!$t_list->itemIDIsInList($vs_list_code,$source_id_or_code)){ return false; }
 
-		$va_vars['source_access_settings'][$ps_table.".".$pm_source_id_or_code] = $pn_access;
-		if ($pb_is_default) {
-			$va_vars['source_access_settings'][$ps_table.'_default_id'] = $pm_source_id_or_code;
+		$vars['source_access_settings'][$table.".".$source_id_or_code] = $access;
+		if ($is_default) {
+			$vars['source_access_settings'][$table.'_default_id'] = $source_id_or_code;
 		}
 
-		$this->set('vars', $va_vars);
+		$this->set('vars', $vars);
 
 		$this->update();
 

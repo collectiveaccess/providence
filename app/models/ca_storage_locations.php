@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -575,7 +575,7 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 						$t_movement->set('type_id', $movement_type);
 					
 						// Save movement
-						$movement_opts = array_merge($options, ['formName' => $movement_form_name]);
+						$movement_opts = array_merge($options, ['formName' => $movement_form_name, 'dontSetTypeIDFromRequest' => true]);
 						if(!$t_movement->saveBundlesForScreen($movement_form_screen, $request, $movement_opts)) {
 							if($this->inTransaction()) { $this->removeTransaction(false); }
 							

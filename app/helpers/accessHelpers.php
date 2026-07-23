@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2025 Whirl-i-Gig
+ * Copyright 2010-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1040,5 +1040,34 @@ function caGetAccessConfigOption(BaseModelWithAttributes $t_item, string $config
 		}
 	}
 	return $ret;
+}
+# ---------------------------------------------------------------------------------------------
+/**
+ *
+ */
+function caConvertACLStringToConstant(string $name) : int {
+	switch($name) {
+		case 'edit':
+			return __CA_BUNDLE_ACCESS_EDIT__;
+		case 'read':
+			return __CA_BUNDLE_ACCESS_READONLY__;
+		case 'none':
+		default:
+			return __CA_BUNDLE_ACCESS_NONE__;
+	}
+}
+# ---------------------------------------------------------------------------------------------
+/**
+ *
+ */
+function caConvertUserGroupAccessStringToInt(string $name) : int {
+	switch($name) {
+		case 'read':
+			return 1;
+		case 'edit':
+			return 2;
+		default:
+			return 0;
+	}
 }
 # ---------------------------------------------------------------------------------------------
