@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,6 +27,7 @@
  */
 if (!constant('__CollectiveAccess_Installer__')) { die("Cannot run"); }
 
+$do_logging = false;
 $t_total = new Timer();
 $profile_info = \Installer\Installer::getProfileInfo("./profiles", $profile)
 ?>
@@ -55,7 +56,7 @@ $profile_info = \Installer\Installer::getProfileInfo("./profiles", $profile)
 	$progress = 0;
 	
 	// parameters: profile dir, profile name, admin email, overwrite y/n, profile debug mode y/n
-	$vo_installer = new \Installer\Installer("profiles/", $profile, $email, $pb_overwrite, $pb_debug);
+	$vo_installer = new \Installer\Installer("profiles/", $profile, $email, $pb_overwrite, $pb_debug, false, $do_logging, false);
 	
 	// if profile validation against XSD failed, we already have an error here
 	if($vo_installer->numErrors()){

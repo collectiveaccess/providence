@@ -1163,7 +1163,7 @@ class Installer {
                     $ui_screen_users = [];
                     foreach($screen['userAccess'] as $permission) {
                         $user = trim((string)$permission["user"]);
-                        $access = $this->_convertUserGroupAccessStringToInt($permission['access']);
+                        $access = caConvertUserGroupAccessStringToInt($permission['access']);
 
                         if(!$t_user->load(['user_name' => $user])) { continue; }
                         if($access) {
@@ -1183,7 +1183,7 @@ class Installer {
                     $ui_screen_groups = [];
                     foreach($screen['groupAccess'] as $permission) {
                         $group = trim((string)$permission["group"]);
-                        $access = $this->_convertUserGroupAccessStringToInt($permission['access']);
+                        $access = caConvertUserGroupAccessStringToInt($permission['access']);
 
                         if(!$t_group->load(['code' => $group])) { continue; }
                         if($access) {
@@ -1203,7 +1203,7 @@ class Installer {
                     $ui_screen_roles = [];
                     foreach($screen['roleAccess'] as $permission) {
                         $role = trim((string)$permission["role"]);
-                        $access = $this->_convertUserGroupAccessStringToInt($permission['access']);
+                        $access = caConvertUserGroupAccessStringToInt($permission['access']);
 
                         if(!$t_role->load(['code' => $role])) { continue; }
                         if(!is_null($access)) {
@@ -1322,7 +1322,7 @@ class Installer {
 				$ui_users = [];
 				foreach($ui['userAccess'] as $permission) {
 					$user = trim((string)$permission["user"]);
-					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
+					$access = caConvertUserGroupAccessStringToInt($permission['access']);
 
 					if(!$t_user->load(['user_name' => $user])) { continue; }
 					if($access) {
@@ -1342,7 +1342,7 @@ class Installer {
 				$ui_groups = [];
 				foreach($ui['groupAccess'] as $permission) {
 					$group = trim((string)$permission["group"]);
-					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
+					$access = caConvertUserGroupAccessStringToInt($permission['access']);
 
 					if(!$t_group->load(['code' => $group])) { continue; }
 					if($access) {
@@ -1362,7 +1362,7 @@ class Installer {
 				$ui_roles = [];
 				foreach($ui['roleAccess'] as $permission) {
 					$role = trim((string)$permission["role"]);
-					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
+					$access = caConvertUserGroupAccessStringToInt($permission['access']);
 
 					if(!$t_role->load(['code' => $role])) { continue; }
 					if(!is_null($access)) {
@@ -1557,6 +1557,7 @@ class Installer {
 	 *
 	 */
 	public function processRoles() {
+		$this->logStatus(_t('Begin processing user roles'));
 		$roles = $this->parsed_data['roles'];
 		
 		foreach($roles as $role_code => $role) {
@@ -1607,17 +1608,11 @@ class Installer {
 					$t_role->removeAllBundleAccessSettings();
 					$this->logStatus(_t('Successfully nuked all bundle level access control items for user role with code %1', $role_code));
 				}
-
-				foreach($role['bundleLevelAccessControl'] as $permission) {
-					$permission_table = $permission['table'];
-					$permission_bundle = $permission['bundle'];
-					$permission_access = $this->_convertACLStringToConstant($permission['access']);
-
-					if(!$t_role->setAccessSettingForBundle($permission_table, $permission_bundle, $permission_access)) {
-						$this->addError('processRoles', _t("Could not add bundle level access control for table '%1' and bundle '%2'. Check the table and bundle names.", $permission_table, $permission_bundle));
+				$ret = $t_role->setAccessSettingsForBundles($role['bundleLevelAccessControl']);
+				if(is_array($ret) && sizeof($ret)) {
+					foreach($ret as $e) {
+						$this->addError('processRoles', _t("Could not add bundle level access control for table '%1' and bundle '%2' to access '%3' : %4. Check the table and bundle names.", $e['table'], $e['bundle'], $e['access'], $e['message']));
 					}
-
-					$this->logStatus(_t('Added bundle level access control item for user role with code %1: table %2, bundle %3, access %4', $role_code, $permission_table, $permission_bundle, $permission_access));
 				}
 			}
 
@@ -1629,16 +1624,11 @@ class Installer {
 					$this->logStatus(_t('Successfully nuked all type level access control items for user role with code %1', $role_code));
 				}
 
-				foreach($role['typeLevelAccessControl'] as $permission) {
-					$permission_table = $permission['table'];
-					$permission_type = $permission['type'];
-					$permission_access = $this->_convertACLStringToConstant($permission['access']);
-
-					if(!$t_role->setAccessSettingForType($permission_table, $permission_type, $permission_access)) {
-						$this->addError('processRoles', _t("Could not add type level access control for table '%1' and type '%2'. Check the table name and the type code.", $permission_table, $permission_type));
+				$ret = $t_role->setAccessSettingsForTypes($role['typeLevelAccessControl']);
+				if(is_array($ret) && sizeof($ret)) {
+					foreach($ret as $e) {
+						$this->addError('processRoles', _t("Could not add type-based access control for table '%1' and type '%2' to access '%3' : %4. Check the table and type names.", $e['table'], $e['type'], $e['access'], $e['message']));
 					}
-
-					$this->logStatus(_t('Added type level access control item for user role with code %1: table %2, type %3, access %4', $role_code, $permission_table, $permission_type, $permission_access));
 				}
 			}
 
@@ -1649,21 +1639,16 @@ class Installer {
 					$t_role->removeAllSourceAccessSettings();
 					$this->logStatus(_t('Successfully nuked all source level access control items for user role with code %1', $role_code));
 				}
-
-				foreach($role['sourceLevelAccessControl'] as $permission) {
-					$permission_table = $permission['table'];
-					$permission_source = $permission['source'];
-					$permission_default = $permission['default'];
-					$permission_access = $this->_convertACLStringToConstant($permission['access']);
-
-					if(!$t_role->setAccessSettingForSource($permission_table, $permission_source, $permission_access, (bool)$permission_default)) {
-						$this->addError('processRoles', _t("Could not add source level access control for table '%1' and source '%2'. Check the table name and the source code.", $permission_table, $permission_source));
+				
+				$ret = $t_role->setAccessSettingsForSources($role['sourceLevelAccessControl']);
+				if(is_array($ret) && sizeof($ret)) {
+					foreach($ret as $e) {
+						$this->addError('processRoles', _t("Could not add source-based access control for table '%1' and source '%2' to access '%3' : %4. Check the table and source names.", $e['table'], $e['source'], $e['access'], $e['message']));
 					}
-
-					$this->logStatus(_t('Added source level access control item for user role with code %1: table %2, source %3, access %4', $role_code, $permission_table, $permission_source, $permission_access));
 				}
 			}
 		}
+		$this->logStatus(_t('Finished processing user roles'));
 		return true;
 	}
 	# --------------------------------------------------
@@ -1671,6 +1656,7 @@ class Installer {
 	 *
 	 */
 	public function processDisplays() {
+		$this->logStatus(_t('Begin processing displays'));
 		$displays = $this->parsed_data['displays'];
 
 		if(!is_array($displays) || sizeof($displays) == 0) { return true; }
@@ -1754,7 +1740,7 @@ class Installer {
 				$display_users = [];
 				foreach($display['userAccess'] as $permission) {
 					$user = trim((string)$permission["user"]);
-					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
+					$access = caConvertUserGroupAccessStringToInt($permission['access']);
 
 					if(!$t_user->load(['user_name' => $user])) { continue; }
 					if($access) {
@@ -1774,7 +1760,7 @@ class Installer {
 				$display_groups = [];
 				foreach($display['groupAccess'] as $permission) {
 					$group = trim((string)$permission["group"]);
-					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
+					$access = caConvertUserGroupAccessStringToInt($permission['access']);
 
 					if(!$t_group->load(['code' => $group])) { continue; }
 					if($access) {
@@ -1794,7 +1780,7 @@ class Installer {
 				$display_roles = [];
 				foreach($display['roleAccess'] as $permission) {
 					$role = trim((string)$permission["role"]);
-					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
+					$access = caConvertUserGroupAccessStringToInt($permission['access']);
 
 					if(!$t_role->load(['code' => $role])) { continue; }
 					if(!is_null($access)) {
@@ -1815,6 +1801,7 @@ class Installer {
 
 		}
 
+		$this->logStatus(_t('Finished processing displays'));
 		return true;
 	}
 	# --------------------------------------------------
@@ -1947,7 +1934,7 @@ class Installer {
 				$form_users = [];
 				foreach($form['userAccess'] as $permission) {
 					$user = trim($permission["user"]);
-					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
+					$access = caConvertUserGroupAccessStringToInt($permission['access']);
 
 					if(!$t_user->load(['user_name' => $user])) { continue; }
 					if($access) {
@@ -1967,7 +1954,7 @@ class Installer {
 				$form_groups = [];
 				foreach($form['groupAccess'] as $permission) {
 					$group = trim($permission["group"]);
-					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
+					$access = caConvertUserGroupAccessStringToInt($permission['access']);
 
 					if(!$t_group->load(['code' => $group])) { continue; }
 					if($access) {
@@ -1987,7 +1974,7 @@ class Installer {
 				$form_roles = [];
 				foreach($form['roleAccess'] as $permission) {
 					$role = trim($permission["role"]);
-					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
+					$access = caConvertUserGroupAccessStringToInt($permission['access']);
 
 					if(!$t_role->load(['code' => $role])) { continue; }
 					if(!is_null($access)) {
@@ -2248,7 +2235,7 @@ class Installer {
 				$form_users = [];
 				foreach($alert['userAccess'] as $permission) {
 					$user = trim($permission["user"]);
-					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
+					$access = caConvertUserGroupAccessStringToInt($permission['access']);
 
 					if($access && $t_user->load(['user_name' => $user])) {
 						$form_users[$t_user->getUserID()] = $access;
@@ -2267,7 +2254,7 @@ class Installer {
 				$form_groups = [];
 				foreach($alert['groupAccess'] as $permission) {
 					$group = trim($permission["group"]);
-					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
+					$access = caConvertUserGroupAccessStringToInt($permission['access']);
 
 					if($access && $t_group->load(['code' => $group])) {
 						$form_groups[$t_group->getPrimaryKey()] = $access;
@@ -2286,7 +2273,7 @@ class Installer {
 				$form_roles = [];
 				foreach($alert['roleAccess'] as $permission) {
 					$role = trim($permission["role"]);
-					$access = $this->_convertUserGroupAccessStringToInt($permission['access']);
+					$access = caConvertUserGroupAccessStringToInt($permission['access']);
 
 					if(!$t_role->load(['code' => $role])) { continue; }
 					if(!is_null($access)) {
@@ -2545,35 +2532,6 @@ class Installer {
 		}
 
 		return $settings_list;
-	}
-	# --------------------------------------------------
-	/**
-	 *
-	 */
-	private function _convertACLStringToConstant($name) {
-		switch($name) {
-			case 'edit':
-				return __CA_BUNDLE_ACCESS_EDIT__;
-			case 'read':
-				return __CA_BUNDLE_ACCESS_READONLY__;
-			case 'none':
-			default:
-				return __CA_BUNDLE_ACCESS_NONE__;
-		}
-	}
-	# --------------------------------------------------
-	/**
-	 *
-	 */
-	private function _convertUserGroupAccessStringToInt($name) {
-		switch($name) {
-			case 'read':
-				return 1;
-			case 'edit':
-				return 2;
-			default:
-				return 0;
-		}
 	}
 	# --------------------------------------------------
 	/**
