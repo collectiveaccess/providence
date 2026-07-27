@@ -448,6 +448,9 @@ switch($display_mode) {
 			</script>
 <?php
 		}
+?>
+		</textarea>
+<?php
 	}
 	if ($show_inventory_controls) {
 ?>	
@@ -814,8 +817,7 @@ if($show_entity_controls) {
 
 <div id="caRelationQuickAddPanel<?= $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
 	<div id="caRelationQuickAddPanel<?= $vs_id_prefix; ?>ContentArea">
-	<div class='dialogHeader'><?= _t('Quick Add'); ?></div>
-		
+		<div class='dialogHeader'><?= _t('Quick Add'); ?></div>	
 	</div>
 </div>
 <div id="caRelationInterstitialEditPanel<?= $vs_id_prefix; ?>" class="caRelationInterstitialEditPanel"> 

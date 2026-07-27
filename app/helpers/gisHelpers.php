@@ -789,7 +789,7 @@ function caGetCoordinateDataFromResult($data, string $bundle, ?array $options=nu
  *
  */
 $g_geo_cache = [];
-function caGeocodeAddress(string $address) : ?array {
+function caGeocodeAddress(string $address, ?array $options=null) : ?array {
 	global $g_geo_cache;
 	
 	$address = trim($address);

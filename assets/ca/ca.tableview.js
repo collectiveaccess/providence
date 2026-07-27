@@ -271,7 +271,7 @@ var caUI = caUI || {};
 					return cellProperties;
 				},
 				afterChange: function (change, source) {
-					if (source === 'edit') { // only save edits
+                    if (source === 'edit' || source === 'autofill') { // only save edits
 						for(var i in change) {
 							var r = change[i][0];
 							var ht = jQuery(that.container + " ." + that.gridClassName).data('handsontable');

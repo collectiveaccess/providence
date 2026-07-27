@@ -428,7 +428,8 @@ class BaseQuickAddController extends ActionController {
 			$va_error_list = array();
 			$vb_no_save_error = false;
 			foreach($va_errors as $o_e) {
-				$va_error_list[$o_e->getErrorDescription()] = $o_e->getErrorDescription()."\n";
+				$label = $t_subject->getDisplayLabel($o_e->getErrorSource());
+				$va_error_list[($label ? "{$label}: " : '').$o_e->getErrorDescription()]++;
 				
 				switch($o_e->getErrorNumber()) {
 					case 1100:	// duplicate/invalid idno

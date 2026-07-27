@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2025 Whirl-i-Gig
+ * Copyright 2000-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -880,12 +880,12 @@ class Configuration {
             if (!strlen($tmp)) {
                 $tmp = $this->getList($key);
             }
-            if (!is_array($tmp) && !strlen($tmp)) {
+            if (!is_array($tmp) && !strlen($tmp ?? '')) {
                 if (is_array($tmp = $this->getAssoc($key))) { $assoc_exists = true; }
             }
             Configuration::$s_get_cache[$this->ops_md5_path][$key] = $tmp;
             
-            if (!is_array($tmp) && !strlen($tmp)) { continue; }
+            if (!is_array($tmp) && !strlen($tmp ?? '')) { continue; }
             return $tmp;
         }
         return $assoc_exists ? [] : null;
@@ -1080,7 +1080,7 @@ class Configuration {
 		// perform constant var substitution
 		if (preg_match("/^(__[A-Za-z0-9\_]+)(?=__)/", $scalar_value, $matches)) {
 			if (defined($matches[1].'__')) {
-				return str_replace($matches[1].'__', constant($matches[1].'__'), $scalar_value);
+				return str_replace($matches[1].'__', constant($matches[1].'__') ?? '', $scalar_value ?? '');
 			}
 		}
 		return $scalar_value;
@@ -1091,7 +1091,7 @@ class Configuration {
 	}
 	/* ---------------------------------------- */
 	private function _interpolateScalar(?string $text) : ?string {
-		if (preg_match_all("/<([A-Za-z0-9_\-\.]+)>/", $text, $matches)) {
+		if (preg_match_all("/<([A-Za-z0-9_\-\.]+)>/", $text ?? '', $matches)) {
 			foreach($matches[1] as $key) {
 				if (($val = $this->getScalar($key)) !== false) {
 					$text = preg_replace("/<$key>/", $val, $text);
@@ -1101,7 +1101,7 @@ class Configuration {
 
 		// attempt translation if text is enclosed in _( and ) ... for example _t(translate me)
 		// assumes translation function _t() is present; if not loaded will not attempt translation
-		if (function_exists('_t') && preg_match("/(?<=\s|>|^)_\(([^\"\)]+)\)/", $text, $matches)) {
+		if (function_exists('_t') && preg_match("/(?<=\s|>|^)_\(([^\"\)]+)\)/", $text ?? '', $matches)) {
 			$trans_text = $text;
 			array_shift($matches);
 			foreach($matches as $match) {

@@ -108,28 +108,28 @@ $t_object = new ca_objects();
 
 $bundle_settings = $this->getVar('settings');
 
-$va_search_lookup_extra_params = array('noInline' => 1);
+$search_lookup_extra_params = array('noInline' => 1);
 if ($t_subject->getProperty('HIERARCHY_ID_FLD') && ($hier_id = (int)$t_subject->get($t_subject->getProperty('HIERARCHY_ID_FLD')))) {
-	$va_search_lookup_extra_params['currentHierarchyOnly'] = $hier_id;
+	$search_lookup_extra_params['currentHierarchyOnly'] = $hier_id;
 }
 if (isset($bundle_settings['restrict_to_types'])) {
-	$va_search_lookup_extra_params['types'] = $bundle_settings['restrict_to_types'];
+	$search_lookup_extra_params['types'] = $bundle_settings['restrict_to_types'];
 }
 if (isset($bundle_settings['restrict_to_access_point'])) {
-	$va_search_lookup_extra_params['restrictToAccessPoint'] = $bundle_settings['restrict_to_access_point'];
+	$search_lookup_extra_params['restrictToAccessPoint'] = $bundle_settings['restrict_to_access_point'];
 }
 if (isset($bundle_settings['restrict_to_search'])) {
-	$va_search_lookup_extra_params['restrictToSearch'] = $bundle_settings['restrict_to_search'];
+	$search_lookup_extra_params['restrictToSearch'] = $bundle_settings['restrict_to_search'];
 }
 
 if (in_array($subject_table, array('ca_objects', 'ca_collections')) && $objects_x_collections_hierarchy_enabled) {
 	$lookup_urls_for_move = $lookup_urls = array(
-		'search' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Get', $va_search_lookup_extra_params),
+		'search' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Get', $search_lookup_extra_params),
 		'levelList' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'GetHierarchyLevel'),
 		'ancestorList' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'GetHierarchyAncestorList'),
 		'sortSave' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'SetSortOrder')
 	);
-	$lookup_urls_for_move['search'] = caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Get', array_merge($va_search_lookup_extra_params, ['currentHierarchyOnly' => 0]));
+	$lookup_urls_for_move['search'] = caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Get', array_merge($search_lookup_extra_params, ['currentHierarchyOnly' => 0]));
 	
 	$edit_url = caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Edit').'/id/';
 	
@@ -138,8 +138,8 @@ if (in_array($subject_table, array('ca_objects', 'ca_collections')) && $objects_
 	}
 	$init_id = $collection_id ? "ca_collections-{$collection_id}" : "{$subject_table}-{$id}";
 } else {
-	$lookup_urls 			= caJSONLookupServiceUrl($this->request, $subject_table, $va_search_lookup_extra_params);
-	$lookup_urls_for_move 	= caJSONLookupServiceUrl($this->request, $subject_table, array_merge($va_search_lookup_extra_params, ['currentHierarchyOnly' => 0]));
+	$lookup_urls 			= caJSONLookupServiceUrl($this->request, $subject_table, $search_lookup_extra_params);
+	$lookup_urls_for_move 	= caJSONLookupServiceUrl($this->request, $subject_table, array_merge($search_lookup_extra_params, ['currentHierarchyOnly' => 0]));
 	$edit_url = caEditorUrl($this->request, $subject_table);
 	$init_id = $id;
 }
@@ -205,19 +205,19 @@ if ($hier_browser_width) { $hier_browser_dims[] = "width: {$hier_browser_width};
 if ($hier_browser_height) { $hier_browser_dims[] = "height: {$hier_browser_height};"; }
 $hier_browser_dim_style = (sizeof($hier_browser_dims) > 0) ? "style='".join(" ", $hier_browser_dims)."'" : '';
 	
-$va_errors = array();
-if(is_array($va_action_errors = $this->request->getActionErrors('hierarchy_location'))) {
-	foreach($va_action_errors as $o_error) {
-		$va_errors[] = $o_error->getErrorDescription();
+$errors = array();
+if(is_array($action_errors = $this->request->getActionErrors('hierarchy_location'))) {
+	foreach($action_errors as $o_error) {
+		$errors[] = $o_error->getErrorDescription();
 	}
 }
 
 $path = [];
-$va_object_collection_collection_ancestors = $this->getVar('object_collection_collection_ancestors');
+$object_collection_collection_ancestors = $this->getVar('object_collection_collection_ancestors');
 
 $do_objects_x_collections_hierarchy = false;
-if ($objects_x_collections_hierarchy_enabled && is_array($va_object_collection_collection_ancestors)) {
-	$ancestors = $va_object_collection_collection_ancestors + $ancestors;
+if ($objects_x_collections_hierarchy_enabled && is_array($object_collection_collection_ancestors)) {
+	$ancestors = $object_collection_collection_ancestors + $ancestors;
 	$do_objects_x_collections_hierarchy = true;
 	$show_move = true;
 }
@@ -230,16 +230,16 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 	if($template) {
 		$template_values = caProcessTemplateForIDs($template, $subject_table, array_keys($ancestors), ['returnAsArray' => true, 'indexWithIDs' => true]);
 	}
-	foreach($ancestors as $ancestor_id => $va_item) {
-		$va_item['table'] = $va_item['table'] ?? null;
+	foreach($ancestors as $ancestor_id => $item) {
+		$item['table'] = $item['table'] ?? null;
 		
-		$item_id = $do_objects_x_collections_hierarchy ? ($va_item['table'].'-'.($va_item['item_id'] ?? null)) : ($va_item['item_id'] ?? null);
+		$item_id = $do_objects_x_collections_hierarchy ? ($item['table'].'-'.($item['item_id'] ?? null)) : ($item['item_id'] ?? null);
 		if($ancestor_id === '') {
 			$path[] = "<a href='#'>"._t('New %1', $t_subject->getTypeName())."</a>";
 		} else {
-			$label = $template_values[$item_id] ?? $va_item['label'];
-			if (($va_item['table'] != $subject_table) || ($va_item['item_id'] && ($va_item['item_id'] != $id))) {
-				$path[] = '<a href="'.caEditorUrl($this->request, $va_item['table'], $va_item['item_id']).'">'.$label.'</a>';
+			$label = $template_values[$item_id] ?? $item['label'];
+			if (($item['table'] != $subject_table) || ($item['item_id'] && ($item['item_id'] != $id))) {
+				$path[] = '<a href="'.caEditorUrl($this->request, $item['table'], $item['item_id']).'">'.$label.'</a>';
 			} else {
 				$path[] = "<a href='#' onclick='jQuery(\"#{$id_prefix}HierarchyBrowserContainer\").slideDown(250); o{$id_prefix}ExploreHierarchyBrowser.setUpHierarchy(\"{$item_id}\"); return false;'>{$label}</a>";
 			}
@@ -333,8 +333,8 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 ?>
 		<div class="hierNav" >
 <?php
-			if(sizeof($va_errors)) {
-				print "<div class='formLabel'><span class='formLabelError'>".join('; ', $va_errors)."</span></div>\n";
+			if(sizeof($errors)) {
+				print "<div class='formLabel'><span class='formLabelError'>".join('; ', $errors)."</span></div>\n";
 			}
 	
 			if (!$batch && (!$is_new || $has_enclosure) ) {
@@ -453,21 +453,21 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 			<div id="<?= $id_prefix; ?>StorageLocationMovementForm" style="width: 98%; margin: 5px 0px 2px 6px;">
 				<h3><?= _t('Movement details'); ?></h3>
 <?php
-				$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
+				$nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 					[],
 					[]
 				);
 	
 				$t_movement = new ca_movements();
-				$va_form_elements = $t_movement->getBundleFormHTMLForScreen($va_nav['defaultScreen'], array(
+				$form_elements = $t_movement->getBundleFormHTMLForScreen($nav['defaultScreen'], array(
 						'request' => $this->request, 
 						'formName' => $id_prefix.'StorageLocationMovementForm',
 						'omit' => ['ca_storage_locations', 'ca_objects']
 				));
-				print caHTMLHiddenInput($id_prefix.'_movement_screen', array('value' => $va_nav['defaultScreen']));
+				print caHTMLHiddenInput($id_prefix.'_movement_screen', array('value' => $nav['defaultScreen']));
 				print caHTMLHiddenInput($id_prefix.'_movement_form_name', array('value' => $id_prefix.'StorageLocationMovementForm'));
 			
-				print join("\n", $va_form_elements);
+				print join("\n", $form_elements);
 ?>
 			</div>
 			<script type="text/javascript">
@@ -490,20 +490,20 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 				
 				<div id='<?= $id_prefix; ?>HierarchyBrowseTypeMenu' class="hierarchyBrowserMessageContainer">
 <?php
-					$va_add_types = array(_t('under (child)') => 'under');
+					$add_types = array(_t('under (child)') => 'under');
 					
-					if (!$strict_type_hierarchy) { $va_add_types[_t('above (parent)')] = 'above'; }
-					if (($parent_id > 0) && !$strict_type_hierarchy) { $va_add_types[_t('next to (sibling)')] = 'next_to'; }
+					if (!$strict_type_hierarchy) { $add_types[_t('above (parent)')] = 'above'; }
+					if (($parent_id > 0) && !$strict_type_hierarchy) { $add_types[_t('next to (sibling)')] = 'next_to'; }
 					
 					if ($type_selector) {
 						// for items that take types
-						print "<div id='{$id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 %2 <em>%3</em>", $type_selector, caHTMLSelect('add_type', $va_add_types, array('id' => "{$id_prefix}addType"), ['value' => Session::getVar('default_hierarchy_add_mode')]), $subject_label);
+						print "<div id='{$id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 %2 <em>%3</em>", $type_selector, caHTMLSelect('add_type', $add_types, array('id' => "{$id_prefix}addType"), ['value' => Session::getVar('default_hierarchy_add_mode')]), $subject_label);
 	
 						// Note the jQuery(\"#{$id_prefix}childTypeList\").val() which grabs the value of the type
 						print " <a href='#' onclick='_navigateToNewForm(jQuery(\"#{$id_prefix}typeList\").val(), jQuery(\"#{$id_prefix}addType\").val(), (jQuery(\"#{$id_prefix}addType\").val() == \"next_to\") ? ".intval($parent_id)." : ".intval($id).",".intval($id).")'>".caNavIcon(__CA_NAV_ICON_ADD__, '15px')."</a></div>";
 					} else {
 						// for items without types
-						print "<div id='{$id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 %2 <em>%3</em>",  $t_subject->getProperty('NAME_SINGULAR'), caHTMLSelect('add_type', $va_add_types, array('id' => "{$id_prefix}addType"), ['value' => Session::getVar('default_hierarchy_add_mode')]), $subject_label);
+						print "<div id='{$id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 %2 <em>%3</em>",  $t_subject->getProperty('NAME_SINGULAR'), caHTMLSelect('add_type', $add_types, array('id' => "{$id_prefix}addType"), ['value' => Session::getVar('default_hierarchy_add_mode')]), $subject_label);
 						print " <a href='#' onclick='_navigateToNewForm(0, jQuery(\"#{$id_prefix}addType\").val(), (jQuery(\"#{$id_prefix}addType\").val() == \"next_to\") ? ".intval($parent_id)." : ".intval($id).", ".intval($id).")'>".caNavIcon(__CA_NAV_ICON_ADD__, '15px')."</a></div>";
 					}
 ?>
@@ -694,7 +694,7 @@ if (is_array($ancestors) && sizeof($ancestors) > 0) {
 				currentSelectionIDID: '<?= $id_prefix; ?>_new_parent_id',
 				currentSelectionDisplayID: '<?= $id_prefix; ?>HierarchyBrowserSelectionMessage',
 				currentSelectionDisplayFormat: <?= json_encode($is_new ? _t('Will be placed under <em>^current</em> after save') : _t('Will be moved under <em>^current</em> after next save.')); ?>,
-				setInitItemIDAsCurrentSelection: true,
+				setInitItemIDAsCurrentSelection: false,
 				
 				allowExtractionFromHierarchy: <?= (($t_subject->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_ADHOC_MONO__) && !$batch && !$read_only && !$is_new) ? 'true' : 'false'; ?>,
 				extractFromHierarchyButtonIcon: "<?= caNavIcon(__CA_NAV_ICON_EXTRACT__, 1); ?>",

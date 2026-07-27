@@ -636,6 +636,8 @@ class DisplayTemplateParser {
 					$vn_start = (int)$o_node->start;
 					$vn_length = (int)$o_node->length;
 					$limit = (int)$o_node->limit;
+					$uc_first = (bool)$o_node->ucFirst;
+					$last_delimiter = $o_node->lastDelimiter ?? null;
 					
 					$check_access = (($t_instance->hasField('access')) && !$o_node->skipAccessControl) ? caGetOption('checkAccess', $pa_options, null) : null;
 					
@@ -829,8 +831,20 @@ class DisplayTemplateParser {
 							$vn_last_unit_omit_count = sizeof($va_tmpl_val) - ($vn_length - $vn_start);
 						}
 						
+						if($uc_first) {
+							$va_tmpl_val[0] = caUcFirstUTF8Safe($va_tmpl_val[0]);
+						}
+						
 						if (caGetOption('returnAsArray', $pa_options, false)) { return $va_tmpl_val; }
-						$vs_acc .= $content = join($vs_unit_delimiter, $va_tmpl_val);
+						
+						if($last_delimiter && (sizeof($va_tmpl_val) > 1)) {
+							$last_val = array_pop($va_tmpl_val);
+							$vs_acc .= $content = join($vs_unit_delimiter, $va_tmpl_val);
+							$vs_acc .= "{$last_delimiter}{$last_val}";
+							$content .= "{$last_delimiter}{$last_val}";
+						} else {
+							$vs_acc .= $content = join($vs_unit_delimiter, $va_tmpl_val);
+						}
 						if ($pb_is_case && $content) { break(2); }
 					} else { 
 						if ($t_instance->isRelationship()) {
@@ -1037,8 +1051,20 @@ class DisplayTemplateParser {
 							$va_tmpl_val = array_filter($va_tmpl_val, function($v) use ($vs_unit_filter_regex) { return preg_match($vs_unit_filter_regex, $v); });
 						}
 						
+						if($uc_first) {
+							$va_tmpl_val[0] = caUcFirstUTF8Safe($va_tmpl_val[0]);
+						}
+						
 						if (caGetOption('returnAsArray', $pa_options, false)) { return $va_tmpl_val; }
-						$vs_acc .= $content = join($vs_unit_delimiter, $va_tmpl_val);
+						
+						if($last_delimiter && (sizeof($va_tmpl_val) > 1)) {
+							$last_val = array_pop($va_tmpl_val);
+							$vs_acc .= $content = join($vs_unit_delimiter, $va_tmpl_val);
+							$vs_acc .= "{$last_delimiter}{$last_val}";
+							$content .= "{$last_delimiter}{$last_val}";
+						} else {
+							$vs_acc .= $content = join($vs_unit_delimiter, $va_tmpl_val);
+						}
 						if ($pb_is_case && $content) { break(2); }
 					}
 				

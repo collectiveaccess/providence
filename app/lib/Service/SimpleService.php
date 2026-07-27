@@ -289,18 +289,34 @@ class SimpleService {
 			}
 			
 		}
-		if($vn_start = $po_request->getParameter('start', pInteger)) {
+		$vn_start = $po_request->getParameter('start', pInteger);
+		if($vn_start <= 0) { $vn_start = 0; }
+		if($vn_start > 0) {
 			if(!$o_res->seek($vn_start)) {
 				return [];
 			}
 		}
 
 		$vn_limit = $po_request->getParameter('limit', pInteger);
-		if(!$vn_limit) { $vn_limit = 0; }
+		if($vn_limit <= 0) { $vn_limit = 0; }
 
 		$va_return = [];
+		$count = (is_array($id_list) && sizeof($id_list)) ? sizeof($id_list) : $o_res->numHits();
 		if (isset($pa_config['includeCount']) && $pa_config['includeCount']) {
-		    $va_return['resultCount'] = (is_array($id_list) && sizeof($id_list)) ? sizeof($id_list) : $o_res->numHits();
+		    $va_return['resultCount'] = $count;
+		}
+		if (isset($pa_config['includePaging']) && $pa_config['includePaging']) {
+			if($vn_limit == 0) {
+		    	$va_return['pageCount'] = $va_return['currentPage']  = 1;
+			} else {
+		    	$va_return['pageCount'] = $page_count = ceil($count/$vn_limit);
+		    	
+		    	if($vn_start == 0) {
+		    		$va_return['currentPage'] = 1;
+		    	} else {
+		    		$va_return['currentPage'] = ceil($vn_start/$vn_limit);
+		    	}
+		    }
 		}
 		$va_get_options = [];
 		if(isset($pa_config['checkAccess']) && is_array($pa_config['checkAccess'])) {
@@ -509,24 +525,50 @@ class SimpleService {
 			$relative_to = caGetOption('relativeTo', $pm_template, null);
 			
 			if($relative_to) {
-				$table = caGetOption('relativeTo', $pm_template, null);
-				$t_rel = Datamodel::getInstance($table, true);
-				$map = caGetOption('map', $pm_template, []);
+				$tmp = explode(".", $relative_to);
+				$rt = array_pop($tmp);
 				
-				$ids = $pt_instance->get($t_rel->primaryKey(true), ['restrictToTypes' => caGetOption('restrictToTypes', $pm_template, null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $pm_template, null), 'returnAsArray' => true]);
-				
-				$vals = [];
-				foreach($map as $k => $t) {
-					if(is_array($t)) {
-						$qr_rels = caMakeSearchResult($t['relativeTo'], $ids);
-						while($qr_rels->nextHit()) {
-							$vals[$k][]= self::processContentKey($qr_rels, $k, $t, []);
+				if(($e = ca_metadata_elements::getInstance($rt)) && ($e->get('datatype') == 0)) {
+					// container
+					$map = caGetOption('map', $pm_template, []);
+					$values = $pt_instance->get($relative_to, ['returnWithStructure' => true]);
+					
+					$vals = [];
+					if(is_array($values)) {
+						$values = array_shift($values);
+						
+						foreach($values as $v) {
+							$val = [];
+							foreach($map as $k => $t) {
+								$t = preg_replace("!^\^".preg_quote($relative_to, '!')."\.!", "", $t);
+								if(isset($v[$t])) {
+									$val[$k] = $v[$t];
+								}
+							}
+							if(sizeof($val)) { $vals[] = $val; }
 						}
-					} else {
-						$vals[$k] = caProcessTemplateForIds($t, $table, $ids, ['returnAsArray' => true]);
+						if(!sizeof($vals)) { return []; }
+						return $vals;
 					}
+				} elseif($t_rel = Datamodel::getInstance($relative_to, true)) {
+					// related
+					$map = caGetOption('map', $pm_template, []);
+					
+					$ids = $pt_instance->get($t_rel->primaryKey(true), ['restrictToTypes' => caGetOption('restrictToTypes', $pm_template, null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $pm_template, null), 'returnAsArray' => true]);
+					if(!sizeof($ids)) { return []; }
+					$vals = [];
+					foreach($map as $k => $t) {
+						if(is_array($t)) {
+							$qr_rels = caMakeSearchResult($t['relativeTo'], $ids);
+							while($qr_rels->nextHit()) {
+								$vals[$k][]= self::processContentKey($qr_rels, $k, $t, []);
+							}
+						} else {
+							$vals[$k] = caProcessTemplateForIds($t, $relative_to, $ids, ['returnAsArray' => true]);
+						}
+					}
+					if(!sizeof($vals)) { return []; }
 				}
-				
 				$d = [];
 				$keys = array_keys($vals);
 				for($i=0; $i < sizeof($vals[$keys[0]]); $i++) {
@@ -551,20 +593,24 @@ class SimpleService {
 				}
 			
 				$va_v_decode = [];
-				foreach($va_v as $vn_i => $vs_part) {
-					switch($vs_return_as) {
-						case 'json':
-							if ($va_json = json_decode($vs_part)) { 
-								if ($va_keys) {
-									$va_v_decode[$va_keys[$vn_i]] = $va_json; 
-								} else {
-									$va_v_decode[] = $va_json; 
+				if($vs_return_as === 'list') {
+					$va_v_decode = array_filter($va_v, 'strlen');
+				} else {
+					foreach($va_v as $vn_i => $vs_part) {
+						switch($vs_return_as) {
+							case 'json':
+								if ($va_json = json_decode($vs_part)) { 
+									if ($va_keys) {
+										$va_v_decode[$va_keys[$vn_i]] = $va_json; 
+									} else {
+										$va_v_decode[] = $va_json; 
+									}
 								}
-							}
-							break;
-						default:
-							$va_v_decode[] = $vs_part;
-							break;
+								break;
+							default:
+								$va_v_decode[] = $vs_part;
+								break;
+						}
 					}
 				}
 				return $va_v_decode;
