@@ -157,6 +157,12 @@ class SchemaController extends \GraphQLServices\GraphQLServiceController {
 							'defaultValue' => null
 						],
 						[
+							'name' => 'ui',
+							'type' => Type::string(),
+							'description' => _t('Return bundles for a specific user interface. If omitted all bundles for the table are returned.'),
+							'defaultValue' => null
+						],
+						[
 							'name' => 'bundles',
 							'type' => Type::listOf(Type::string()),
 							'description' => _t('Return only specified bundles'),
@@ -167,6 +173,9 @@ class SchemaController extends \GraphQLServices\GraphQLServiceController {
 						$u = self::authenticate($args['jwt']);
 						$table = $args['table'];
 						$type = $args['type'];
+						$ui = $args['ui'];
+						
+						$ui = 'condition_report_ui';
 						$limit_to_bundles = $args['bundles'];
 						if(!is_array($limit_to_bundles) || !sizeof($limit_to_bundles)) { $limit_to_bundles = null; }
 						
@@ -175,7 +184,31 @@ class SchemaController extends \GraphQLServices\GraphQLServiceController {
 						}
 						
 						$t = Datamodel::getInstance($table, true);
+						
 						$bundles = $t->getBundleList(['includeBundleInfo' => true, 'rewriteKeys' => true]);
+						if($ui) {
+							$t_ui = \ca_editor_uis::findAsInstance(['editor_code' => $ui]);
+							$placements = $t_ui->getPlacements();
+							
+							$blist = [];
+							foreach($placements as $p) {
+								$bn = $p['bundle_name'];
+								$bits = explode('.', $bn);
+								
+								if(sizeof($bits) > 1) {
+									$blist[$bits[1]] = true;
+								} else{ 
+									$blist[$bn] = true;
+								}
+							}
+							$mbundles = [];
+							foreach($blist as $bn => $dummy) {
+								if(!isset($bundles[$bn])) { continue; }
+								$mbundles[$bn] = $bundles[$bn];
+							}
+							
+							$bundles = $mbundles;
+						} 
 						
 						$bundles = array_filter($bundles, function($v, $k) use ($limit_to_bundles) {
 							if(is_array($limit_to_bundles) && !in_array($k, $limit_to_bundles, true)) { return false; }
