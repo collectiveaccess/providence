@@ -1798,12 +1798,13 @@ jQuery(document).ready(function() {
 							}
 						}
 					} elseif (($count = (int)$t_item->getRelatedItems($show_counts_config['table'], ['returnAs' => 'count', 'limit' => 100000])) > 0) {
+						$label = _t('%1 related %2', $count, Datamodel::getTableProperty($show_counts_config['table'], ($count === 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL'));
 						if($count === 1) {
 							if(is_array($ids = $t_item->get($show_counts_config['table'].'.related.'.Datamodel::primaryKey($show_counts_config['table']), ['returnAsArray' => true])) && sizeof($ids)) {
 								$links[$show_counts_config['table'].'/'.$type_info['idno']] = caEditorLink($view->request, $label, '', $show_counts_config['table'], $ids[0]);
 							}
 						} else {
-							$links[$show_counts_config['table']] = caSearchLink($view->request, _t('%1 related %2', $count, Datamodel::getTableProperty($show_counts_config['table'], ($count === 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), '', $show_counts_config['table'], $t_item->primaryKey(true).":".$t_item->getPrimaryKey());
+							$links[$show_counts_config['table']] = caSearchLink($view->request, $label, '', $show_counts_config['table'], $t_item->primaryKey(true).":".$t_item->getPrimaryKey());
 						}
 					}
 				} 
