@@ -113,6 +113,22 @@ class DisplayTemplateParser {
 	}
 	# -------------------------------------------------------------------
 	/**
+	 *
+	 */
+	private static function clearOptions(?array $options) {
+		if(is_array($options)) {
+			foreach([
+				'request', 
+				'template',	// we pass through options to get() and don't want templates 
+				'restrict_to_relationship_types', 'restrictToRelationshipTypes', 'excludeRelationshipTypes',
+				'useLocaleCodes'] as $k) {
+				unset($options[$k]);
+			}
+		}
+		return $options;
+	}
+	# -------------------------------------------------------------------
+	/**
 	 * Replace "^" prefixed tags (eg. ^forename) in a template with values from an array
 	 *
 	 * @param string $ps_template String with embedded tags. Tags are just alphanumeric strings prefixed with a caret ("^")
@@ -149,15 +165,7 @@ class DisplayTemplateParser {
 	 * TODO: sort and sortDirection are not currently supported! They are ignored for the time being
 	 */
 	static public function process($ps_template, $pm_tablename_or_num, array $pa_row_ids, array $pa_options=null) {
-		// Set up options
-		foreach(array(
-			'request', 
-			'template',	// we pass through options to get() and don't want templates 
-			'restrict_to_relationship_types', 'restrictToRelationshipTypes', 'excludeRelationshipTypes',
-			'useLocaleCodes') as $vs_k) {
-			unset($pa_options[$vs_k]);
-		}
-		
+		$is_unit = $pa_options['isUnit'] ?? false;
 		$do_highlighting = $pa_options['highlighting'] ?? false;
 		$autoconvert_linebreaks = $pa_options['autoConvertLineBreaks'] ?? false;
 		
@@ -194,8 +202,8 @@ class DisplayTemplateParser {
 		
 		
 		// Prefetch related items for <units>
-		if (!($pa_options['isUnit'] ?? false) && !caGetOption('dontPrefetchRelated', $pa_options, false)) {
-			DisplayTemplateParser::prefetchAllRelatedIDs($va_template['tree']->children, $ps_tablename, $pa_row_ids, $pa_options);
+		if (!$is_unit && !caGetOption('dontPrefetchRelated', $pa_options, false)) {
+			DisplayTemplateParser::prefetchAllRelatedIDs($va_template['tree']->children, $ps_tablename, $pa_row_ids, self::clearOptions($pa_options));
 		}
 
 		// ad hoc template processing for labels.
@@ -259,7 +267,7 @@ class DisplayTemplateParser {
 							// noop
 						}
 					
-						$v = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['index' => $vn_index, 'returnAsArray' => $pa_options['aggregateUnique'] ?? false, 'checkAccess' => $check_access_for_row])) : '';
+						$v = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge(self::clearOptions($pa_options), ['index' => $vn_index, 'returnAsArray' => $pa_options['aggregateUnique'] ?? false, 'checkAccess' => $check_access_for_row])) : '';
 						if ($pb_index_with_ids) {
 							$va_proc_templates[$qr_res->get($vs_pk)] = $v;
 						} else {
@@ -267,7 +275,7 @@ class DisplayTemplateParser {
 						}
 					}
 				} elseif(sizeof($va_template['units']) > 0) {
-					$v = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, [], array_merge($pa_options, ['returnAsArray' => $pa_options['aggregateUnique'] ?? false, 'checkAccess' => $check_access_for_row]));
+					$v = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, [], array_merge(self::clearOptions($pa_options), ['returnAsArray' => $pa_options['aggregateUnique'] ?? false, 'checkAccess' => $check_access_for_row]));
 					$va_proc_templates[$qr_res->get($vs_pk)] = $v;
 				}
 			} else {
@@ -278,7 +286,7 @@ class DisplayTemplateParser {
 			    } catch (Exception $e) {
 			        // noop
 			    }
-				$v = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, $o=array_merge($pa_options, ['returnAsArray' => $pa_options['aggregateUnique'] ?? false, 'checkAccess' => $check_access_for_row]));
+				$v = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge(self::clearOptions($pa_options), ['returnAsArray' => $pa_options['aggregateUnique'] ?? false, 'checkAccess' => $check_access_for_row]));
 			
 				if ($pb_index_with_ids) {
 					$va_proc_templates[$qr_res->get($vs_pk)] = $v;
