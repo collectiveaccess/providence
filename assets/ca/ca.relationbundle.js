@@ -394,8 +394,8 @@ var caUI = caUI || {};
 			}
 		};
 		
-		that.reloadItemList = function(opts=null) {
-		
+		that.reloadItemList = function(itemList, opts=null) {
+		    that._init(itemList);   
 		}
 		
 		if(that._updateSortOrderListIDFormElement) { that._updateSortOrderListIDFormElement(); }

@@ -168,13 +168,19 @@ var caUI = caUI || {};
 				jQuery('#' + itemIDID).val(resp.id);
 				jQuery('#' + typeIDID).val(resp.type_id);
 				
-				if(relationbundle) { relationbundle.select(rawID, resp); }
+				if(relationbundle) { 
+				    if(createdRelationshipOnSave) {
+				        relationbundle.deleteFromBundle(rawID);
+				    } else {
+				        relationbundle.select(rawID, resp); 
+				    }
+				}
 				jQuery.jGrowl(that.saveText.replace('%1', resp.display), { header: that.headerText }); 
 				jQuery("#" + that.formID).parent().data('panel').hidePanel();
 				
 				if(caBundleUpdateManager && (that.source_id > 0)) {
 				    if(that.placement_id && createdRelationshipOnSave) {
-				        caBundleUpdateManager.reloadBundleByPlacementID(that.placement_id);
+				        caBundleUpdateManager.reloadBundleByPlacementID(that.placement_id, {'reloadItemListOnly': 1});
 				    }
                     if(formData['relatedID']) { 
                         caBundleUpdateManager.reloadBundle('ca_objects_location'); 

@@ -1587,7 +1587,7 @@ class BaseEditorController extends ActionController {
 		$sort_direction = $this->request->getParameter("sortDirection", pString);
 
 		$form_name = $this->request->getParameter("formName", pString);
-		$related_list_only = $this->request->getParameter("related_list_only", pInteger);
+		$reload_item_list_only = $this->request->getParameter("reloadItemListOnly", pInteger);
 
 		switch($bundle) {
 			case '__inspector__':
@@ -1613,7 +1613,14 @@ class BaseEditorController extends ActionController {
 				$this->request->user->setVar('bundleSortDefaults', $bundle_sort_defaults);
 				
 				$bundle_label = null;
-				$this->response->addContent($t_subject->getBundleFormHTML($bundle, "P{$placement_id}", array_merge($t_placement->get('settings') ?? [], ['placement_id' => $placement_id]), ['formName' => $form_name, 'request' => $this->request, 'contentOnly' => true, 'sort' => $sort, 'sortDirection' => $sort_direction, 'userSetSort' => true, 'related_list_only' => $related_list_only], $bundle_label));
+				
+				$content = $t_subject->getBundleFormHTML($bundle, "P{$placement_id}", array_merge($t_placement->get('settings') ?? [], ['placement_id' => $placement_id]), ['formName' => $form_name, 'request' => $this->request, 'contentOnly' => true, 'sort' => $sort, 'sortDirection' => $sort_direction, 'userSetSort' => true, 'relatedListOnly' => $reload_item_list_only], $bundle_label);
+				if($reload_item_list_only) {
+					$this->response->setContentType('application/json');
+					$this->response->addContent(json_encode($content));
+				} else {
+					$this->response->addContent($content);
+				}
 				break;
 		}
 	}

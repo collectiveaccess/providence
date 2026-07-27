@@ -48,9 +48,12 @@ var caBundleUpdateManager = caBundleUpdateManager || null;
 		// --------------------------------------------------------------------------------
 		that.registerBundle = function(id, bundle, placement_id, type) {
 			that.byID[id] = that.byPlacementID[placement_id] = {
-				id: id, bundle: bundle, placement_id: placement_id, type: type
+				id: id, 
+				bundle: bundle, 
+				placement_id: placement_id, 
+				type: type, 
+				relBundleInstance: globalThis['caRelationBundle' + id]  // relationship bundle instance; only set for relationship bundles (Ex. ca_entities, ca_occurrences)
 			};
-			console.log(that.byID);
 			if(!that.byBundle[bundle]) { that.byBundle[bundle] = []; }
 			that.byBundle[bundle].push(that.byID[id]);
 		}
@@ -85,9 +88,20 @@ var caBundleUpdateManager = caBundleUpdateManager || null;
 							data[k] = options[k];
 						}
 					}
-					jQuery("#" + v['id']).load(loadURL, data, function(e) {
-					    console.log("load complete", v);
-					});
+					if(options && options['reloadItemListOnly']) {
+					   if(v['relBundleInstance']) {
+					        jQuery.getJSON(loadURL, data, function(resp) {
+					            console.log('Got new item list', resp);
+					            v['relBundleInstance'].reloadItemList(resp);
+					        });
+					   } else {
+					        console.log('No related instance for', v);
+					   }
+					} else{
+                        jQuery("#" + v['id']).load(loadURL, data, function(e) {
+                            console.log("Load complete", v);
+                        });
+                    }
 				});
 			}
 		}

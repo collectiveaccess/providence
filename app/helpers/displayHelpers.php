@@ -962,20 +962,20 @@ function caEditorFindResultNavigation($request, $instance, $result_context, $opt
 /**
  *
  *
- * @param array $pa_bundle_list
- * @param array $pa_options Optional array of options. Supported options are:
+ * @param array $bundle_list
+ * @param array $options Optional array of options. Supported options are:
  *		NONE
  *
  * @return string
  */
-function caSetupEditorScreenOverlays($po_request, $pt_subject, $pa_bundle_list, $pa_options=null) {
-	$vs_buf = '';
-	if ($pt_subject && $pt_subject->isHierarchical()) {
-		$vs_buf .= caEditorHierarchyOverview($po_request, $pt_subject->tableName(), $pt_subject->getPrimaryKey(), $pa_options);
+function caSetupEditorScreenOverlays($po_request, $t_subject, $bundle_list, $options=null) {
+	$buf = '';
+	if ($t_subject && $t_subject->isHierarchical()) {
+		$buf .= caEditorHierarchyOverview($po_request, $t_subject->tableName(), $t_subject->getPrimaryKey(), $options);
 	}
-	$vs_buf .= caEditorFieldList($po_request, $pt_subject, $pa_bundle_list, $pa_options);
+	$buf .= caEditorFieldList($po_request, $t_subject, $bundle_list, $options);
 
-	return $vs_buf;
+	return $buf;
 }
 # ------------------------------------------------------------------------------------------------
 /**
@@ -3880,28 +3880,28 @@ function caEditorBundleShowHideControl($request, $id_prefix, $settings=null, $pb
 /**
  * Generates metadata dictionary control HTML for bundles
  *
- * @param RequestHTTP $po_request
- * @param string $ps_id_prefix
- * @param array $pa_settings
+ * @param RequestHTTP $request
+ * @param string $id_prefix
+ * @param array $settings
  *
  * @return string HTML implementing the control
  */
-function caEditorBundleMetadataDictionary($po_request, $ps_id_prefix, $pa_settings) {
+function caEditorBundleMetadataDictionary($request, $id_prefix, $settings) {
 	global $g_ui_locale;
 
-	$definition = caGetOption($g_ui_locale, $pa_settings['definition'] ?? null, null);
+	$definition = caGetOption($g_ui_locale, $settings['definition'] ?? null, null);
 	if(is_array($definition)) { $definition = join ("", $definition); }
 	if (!($definition = trim($definition))) { return ''; }
 
-	$vs_buf = '';
-	$vs_buf .= "<span class='iconButton'>";
-	$vs_buf .= "<a href='#' class='caMetadataDictionaryDefinitionToggle' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$ps_id_prefix}\");  return false;'>".caNavIcon(__CA_NAV_ICON_INFO__, 1, array('id' => "{$ps_id_prefix}MetadataDictionaryToggleButton"))."</a>";
+	$buf = '';
+	$buf .= "<span class='iconButton'>";
+	$buf .= "<a href='#' class='caMetadataDictionaryDefinitionToggle' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$id_prefix}\");  return false;'>".caNavIcon(__CA_NAV_ICON_INFO__, 1, array('id' => "{$id_prefix}MetadataDictionaryToggleButton"))."</a>";
 
-	$vs_buf .= "<div id='{$ps_id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>{$definition}</div>";
-	$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}'); }); </script>";	
-	$vs_buf .= "</span>\n";	
+	$buf .= "<div id='{$id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>{$definition}</div>";
+	$buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$id_prefix}'); }); </script>";	
+	$buf .= "</span>\n";	
 
-	return $vs_buf;
+	return $buf;
 }
 # ---------------------------------------
 /**
