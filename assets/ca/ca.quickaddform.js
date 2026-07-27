@@ -30,7 +30,7 @@ var caUI = caUI || {};
 	caUI.initQuickAddFormHandler = function(options) {
 		// --------------------------------------------------------------------------------
 		// setup options
-		var that = jQuery.extend({
+		let that = jQuery.extend({
 			formID: null,
 			formErrorsPanelID: null,
 			formTypeSelectID: null,
@@ -69,7 +69,7 @@ var caUI = caUI || {};
 			};
 		}
 		
-		var formData;
+		let formData;
 		// --------------------------------------------------------------------------------
 		// Define methods
 		// --------------------------------------------------------------------------------
@@ -100,7 +100,7 @@ var caUI = caUI || {};
 				jQuery("#" + that.formID).find("." + that.progressClassName).html((that.busyIndicator ? that.busyIndicator + ' ' : '') + that.sendingFilesText.replace("%1", "0%"));
 				
 				// Copy files in form into a FormData instance
-				var fileData = new FormData();
+				let fileData = new FormData();
 				jQuery.each(that._files, function(k, v) {
 					fileData.append(k, v[0]); // only grab the first file out of each file <input>; assume no multiples
 				});
@@ -113,10 +113,10 @@ var caUI = caUI || {};
 					processData: false, // don't let jQuery try to process the files
 					contentType: false, // set content type to false as jQuery will tell the server its a query string request
 					xhr: function() {
-						var jqXHR = new window.XMLHttpRequest();
+						let jqXHR = new window.XMLHttpRequest();
 						jqXHR.upload.addEventListener("progress", function(e){
 							if (e.lengthComputable) {  
-								var percentComplete = Math.round((e.loaded / e.total) * 100);
+								let percentComplete = Math.round((e.loaded / e.total) * 100);
 								jQuery("#" + that.formID).find("." + that.progressClassName).html((that.busyIndicator ? that.busyIndicator + ' ' : '') + that.sendingFilesText.replace("%1", percentComplete + "%"));
 							}
 						}, false); 
@@ -198,15 +198,15 @@ var caUI = caUI || {};
 		if (!that.onSave) { that.onSave = that.defaultOnSaveHandler; }	// set default for quickadd
 		
 		that.setErrors = function(errors) {
-			var content = '<div class="notification-error-box rounded"><ul class="notification-error-box">';
-			for(var e in errors) {
+			let content = '<div class="notification-error-box rounded"><ul class="notification-error-box">';
+			for(let e in errors) {
 				content += '<li class="notification-error-box">' + e + '</li>';
 			}
 			content += '</ul></div>';
 			
 			jQuery("#" + that.formErrorsPanelID).html(content).slideDown(200);
 			
-			var quickAddClearErrorInterval = setInterval(function() {
+			let quickAddClearErrorInterval = setInterval(function() {
 				jQuery("#" + that.formErrorsPanelID).slideUp(500);
 				clearInterval(quickAddClearErrorInterval);
 			}, 3000);
@@ -219,7 +219,7 @@ var caUI = caUI || {};
 			    });
 			}
 			jQuery("#" + that.formID + " input[name=type_id]").val(jQuery("#" + that.formTypeSelectID).val());
-			var formData = jQuery("#" + that.formID).serializeObject();
+			const formData = jQuery("#" + that.formID).serializeObject();
 			jQuery("#" + that.formID).parent().load(that.formUrl, formData);
 			
 		};
@@ -230,8 +230,9 @@ var caUI = caUI || {};
 		};
 		
 		that.cleanupOnCancel = function(e) {
-			var relationbundle = jQuery("#" + that.formID).parent().data('relationbundle');
-			if(relationbundle) { relationbundle.deleteNewFromBundle(); }
+			const relationbundle = jQuery("#" + that.formID).parent().data('relationbundle');
+			const rawID = jQuery("#" + that.formID).parent().data('autocompleteRawID');
+			if(relationbundle) { relationbundle.deleteFromBundle(rawID); }
 		}
 		
 		// --------------------------------------------------------------------------------
