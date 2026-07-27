@@ -542,6 +542,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						case 'EXACT':
 							$anchor_sql = " AND (swi.word_index = {$w} AND swi.word_count = {$wc})";
 							break;
+						case 'CONTAINS':
+							if((bool)$this->search_config->get('use_substring_search_for_contains_searches')) {
+								$anchor_sql = '';
+								$word_op = 'LIKE';
+								$params[1] = '%'.$params[1].'%';
+							}
+							break;
 						case 'START':
 							$anchor_sql = " AND swi.word_index = {$w}";
 							if(!$has_wildcard && (bool)$this->search_config->get('add_wildcard_on_begins_searches')) { 
@@ -738,6 +745,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				});
 				if(!sizeof($words)) { return []; }
 				$wc = sizeof($words);
+				
+				$init_w = null;
 				foreach($words as $w => $word) {
 					$word_op = '=';
 					if($has_wildcard = ((strpos($word, '*') !== false) || (strpos($word, '?') !== false))) {
@@ -753,6 +762,14 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					switch($anchor_mode) {
 						case 'EXACT':
 							$anchor_sql = " AND (swi.word_index = {$w} AND swi.word_count = {$wc})";
+							break;
+						case 'CONTAINS':
+							if((bool)$this->search_config->get('use_substring_search_for_contains_searches')) {
+								$anchor_sql = '';
+								$word_op = 'LIKE';
+								$word = ($w == 0) ? "%{$word}%" : "{$word}%";
+								print "[$w] $word<br>\n";
+							}
 							break;
 						case 'START':
 							$anchor_sql = " AND swi.word_index = {$w}";
@@ -778,7 +795,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 							sw.word {$word_op} ? AND swi.table_num = ? {$fld_limit_sql}
 							{$private_sql} {$anchor_sql}
 					", (string)$word, (int)$subject_tablenum);
-				
 					$temp_tables[] = $temp_table;	
 					while(sizeof($temp_tables) > 2) {
 						$t = array_shift($temp_tables);
@@ -1251,6 +1267,9 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				break;
 			case '$':
 				$anchor_mode = 'END';
+				break;
+			case '@':
+				$anchor_mode = 'CONTAINS';
 				break;
 		}
 		return $anchor_mode;

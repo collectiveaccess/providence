@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -130,7 +130,7 @@ class ListItemController extends BaseLookupController {
 					$va_list_items = $t_list->getItemsForList($vn_list_id, array('returnHierarchyLevels' => false, 'item_id' => $vn_id, 'extractValuesByUserLocale' => true, 'sort' => $t_list->get('sort_type'), 'directChildrenOnly' => true, 'limit' => $vn_max_items_per_page, 'start' => $vn_start));
 		
 					// output
-					$va_display_values = caProcessTemplateForIDs($vs_template, 'ca_list_items', array_keys($va_list_items), array('requireLinkTags' => true, 'returnAsArray' => true));
+					$va_display_values = caProcessTemplateForIDs($vs_template, 'ca_list_items', array_keys($va_list_items), array('requireLinkTags' => true, 'returnAsArray' => true, 'indexWithIDs' => true));
 					
 					$vn_c = 0;
 					foreach($va_list_items as $vn_item_id => $va_item) {
@@ -140,7 +140,7 @@ class ListItemController extends BaseLookupController {
 						if (!trim($va_item[$vs_label_display_field_name] ?? null)) { $va_item[$vs_label_display_field_name] = $va_item['idno']; }
 						if (!trim($va_item[$vs_label_display_field_name] ?? null)) { $va_item[$vs_label_display_field_name] = '???'; }
 					
-						$va_item['name'] = $va_display_values[$vn_c] ?? null;
+						$va_item['name'] = $va_display_values[$vn_item_id] ?? null;
 						if (!trim($va_item['name'])) { $va_item['name'] = '??? '.$vn_item_id; }
 						$va_item['table'] = 'ca_list_items';
 					
