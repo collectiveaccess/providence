@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2025 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -75,6 +75,11 @@ class BaseDelimitedDataReader extends BaseDataReader {
 	 */
 	private $max_columns = 512;
 	
+	/**
+	 * Assume end-of-file when a blank row is encountered after rows with data?
+	 */
+	private $assume_eof_on_blank_row = false;
+	
 	# -------------------------------------------------------
 	/**
 	 *
@@ -94,6 +99,10 @@ class BaseDelimitedDataReader extends BaseDataReader {
 		
 		$this->opa_properties['delimiter'] = $this->ops_delimiter;
 		$this->opa_properties['read_headers'] = isset($options['headers']) ? (bool)$options['headers'] : false;
+		
+		$config = Configuration::load();
+		$this->max_columns = $config->get('max_columns_delimited_files') ?: 512;
+		$this->assume_eof_on_blank_row = caGetOption('assumeEOFOnBlankRow', $options, $config->get('assume_eof_on_blank_row'));
 	}
 	# -------------------------------------------------------
 	/**
@@ -135,6 +144,7 @@ class BaseDelimitedDataReader extends BaseDataReader {
 		$this->opa_row_buf = $this->opo_parser->getRow();
 		array_unshift($this->opa_row_buf, null);		// make one-based
 		$this->opn_current_row++;
+		$data_set = false;
 		
 		if(is_null($this->headers) && is_array($this->opa_row_buf) && ($this->opa_properties['read_headers'] ?? false)) {
 			// Extract column headings?
@@ -143,11 +153,18 @@ class BaseDelimitedDataReader extends BaseDataReader {
 			
 			$headers = [];
 			foreach ($this->opa_row_buf as $v) {
-				$headers[] = str_replace("\\0", '/0', $v);
+				$headers[] = $v = str_replace("\\0", '/0', $v);
+				
+				if(!$data_set && strlen($v) > 0) { $data_set = true; }
 					
 				$col++;
 				if ($col > $this->max_columns) { break; }
 			}
+			
+			if(!$data_set && $this->assume_eof_on_blank_row && ($this->opn_current_row >= 2)) {
+				return false;
+			}
+			
 			$this->headers  = array_map(function($v) { return mb_strtolower($v); }, $headers);
 		}
 		if(is_array($this->headers) && sizeof($this->headers)) {

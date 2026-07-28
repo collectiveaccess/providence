@@ -113,6 +113,22 @@ class DisplayTemplateParser {
 	}
 	# -------------------------------------------------------------------
 	/**
+	 *
+	 */
+	private static function clearOptions(?array $options) {
+		if(is_array($options)) {
+			foreach([
+				'request', 
+				'template',	// we pass through options to get() and don't want templates 
+				'restrict_to_relationship_types', 'restrictToRelationshipTypes', 'excludeRelationshipTypes',
+				'useLocaleCodes'] as $k) {
+				unset($options[$k]);
+			}
+		}
+		return $options;
+	}
+	# -------------------------------------------------------------------
+	/**
 	 * Replace "^" prefixed tags (eg. ^forename) in a template with values from an array
 	 *
 	 * @param string $ps_template String with embedded tags. Tags are just alphanumeric strings prefixed with a caret ("^")
@@ -149,15 +165,7 @@ class DisplayTemplateParser {
 	 * TODO: sort and sortDirection are not currently supported! They are ignored for the time being
 	 */
 	static public function process($ps_template, $pm_tablename_or_num, array $pa_row_ids, array $pa_options=null) {
-		// Set up options
-		foreach(array(
-			'request', 
-			'template',	// we pass through options to get() and don't want templates 
-			'restrict_to_relationship_types', 'restrictToRelationshipTypes', 'excludeRelationshipTypes',
-			'useLocaleCodes') as $vs_k) {
-			unset($pa_options[$vs_k]);
-		}
-		
+		$is_unit = $pa_options['isUnit'] ?? false;
 		$do_highlighting = $pa_options['highlighting'] ?? false;
 		$autoconvert_linebreaks = $pa_options['autoConvertLineBreaks'] ?? false;
 		
@@ -194,8 +202,8 @@ class DisplayTemplateParser {
 		
 		
 		// Prefetch related items for <units>
-		if (!($pa_options['isUnit'] ?? false) && !caGetOption('dontPrefetchRelated', $pa_options, false)) {
-			DisplayTemplateParser::prefetchAllRelatedIDs($va_template['tree']->children, $ps_tablename, $pa_row_ids, $pa_options);
+		if (!$is_unit && !caGetOption('dontPrefetchRelated', $pa_options, false)) {
+			DisplayTemplateParser::prefetchAllRelatedIDs($va_template['tree']->children, $ps_tablename, $pa_row_ids, self::clearOptions($pa_options));
 		}
 
 		// ad hoc template processing for labels.
@@ -259,7 +267,7 @@ class DisplayTemplateParser {
 							// noop
 						}
 					
-						$v = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['index' => $vn_index, 'returnAsArray' => $pa_options['aggregateUnique'] ?? false, 'checkAccess' => $check_access_for_row])) : '';
+						$v = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge(self::clearOptions($pa_options), ['index' => $vn_index, 'returnAsArray' => $pa_options['aggregateUnique'] ?? false, 'checkAccess' => $check_access_for_row])) : '';
 						if ($pb_index_with_ids) {
 							$va_proc_templates[$qr_res->get($vs_pk)] = $v;
 						} else {
@@ -267,7 +275,7 @@ class DisplayTemplateParser {
 						}
 					}
 				} elseif(sizeof($va_template['units']) > 0) {
-					$v = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, [], array_merge($pa_options, ['returnAsArray' => $pa_options['aggregateUnique'] ?? false, 'checkAccess' => $check_access_for_row]));
+					$v = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, [], array_merge(self::clearOptions($pa_options), ['returnAsArray' => $pa_options['aggregateUnique'] ?? false, 'checkAccess' => $check_access_for_row]));
 					$va_proc_templates[$qr_res->get($vs_pk)] = $v;
 				}
 			} else {
@@ -278,7 +286,7 @@ class DisplayTemplateParser {
 			    } catch (Exception $e) {
 			        // noop
 			    }
-				$v = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, $o=array_merge($pa_options, ['returnAsArray' => $pa_options['aggregateUnique'] ?? false, 'checkAccess' => $check_access_for_row]));
+				$v = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge(self::clearOptions($pa_options), ['returnAsArray' => $pa_options['aggregateUnique'] ?? false, 'checkAccess' => $check_access_for_row]));
 			
 				if ($pb_index_with_ids) {
 					$va_proc_templates[$qr_res->get($vs_pk)] = $v;
@@ -636,6 +644,8 @@ class DisplayTemplateParser {
 					$vn_start = (int)$o_node->start;
 					$vn_length = (int)$o_node->length;
 					$limit = (int)$o_node->limit;
+					$uc_first = (bool)$o_node->ucFirst;
+					$last_delimiter = $o_node->lastDelimiter ?? null;
 					
 					$check_access = (($t_instance->hasField('access')) && !$o_node->skipAccessControl) ? caGetOption('checkAccess', $pa_options, null) : null;
 					
@@ -829,8 +839,24 @@ class DisplayTemplateParser {
 							$vn_last_unit_omit_count = sizeof($va_tmpl_val) - ($vn_length - $vn_start);
 						}
 						
+						if($uc_first) {
+							$va_tmpl_val[0] = caUcFirstUTF8Safe($va_tmpl_val[0]);
+						}
+						
 						if (caGetOption('returnAsArray', $pa_options, false)) { return $va_tmpl_val; }
-						$vs_acc .= $content = join($vs_unit_delimiter, $va_tmpl_val);
+						
+						if($last_delimiter && (sizeof($va_tmpl_val) > 1)) {
+							$last_val = array_pop($va_tmpl_val);
+							$content = join($vs_unit_delimiter, $va_tmpl_val);
+							if(sizeof($va_tmpl_val) > 1) { 
+								$content .= rtrim($vs_unit_delimiter); 
+							}
+							$content .= "{$last_delimiter}{$last_val}";
+							
+							$vs_acc .= $content;
+						} else {
+							$vs_acc .= $content = join($vs_unit_delimiter, $va_tmpl_val);
+						}
 						if ($pb_is_case && $content) { break(2); }
 					} else { 
 						if ($t_instance->isRelationship()) {
@@ -1037,8 +1063,20 @@ class DisplayTemplateParser {
 							$va_tmpl_val = array_filter($va_tmpl_val, function($v) use ($vs_unit_filter_regex) { return preg_match($vs_unit_filter_regex, $v); });
 						}
 						
+						if($uc_first) {
+							$va_tmpl_val[0] = caUcFirstUTF8Safe($va_tmpl_val[0]);
+						}
+						
 						if (caGetOption('returnAsArray', $pa_options, false)) { return $va_tmpl_val; }
-						$vs_acc .= $content = join($vs_unit_delimiter, $va_tmpl_val);
+						
+						if($last_delimiter && (sizeof($va_tmpl_val) > 1)) {
+							$last_val = array_pop($va_tmpl_val);
+							$vs_acc .= $content = join($vs_unit_delimiter, $va_tmpl_val);
+							$vs_acc .= "{$last_delimiter}{$last_val}";
+							$content .= "{$last_delimiter}{$last_val}";
+						} else {
+							$vs_acc .= $content = join($vs_unit_delimiter, $va_tmpl_val);
+						}
 						if ($pb_is_case && $content) { break(2); }
 					}
 				
@@ -1299,6 +1337,19 @@ class DisplayTemplateParser {
                             $va_val_list[] = join(caGetOption('delimiter', $va_parsed_tag_opts['options'], '; '), $va_acc);
                             $vb_val_is_set = true;
                         }
+                } elseif(substr($vs_tag, 0, 5) === '_user') {
+                	global $g_request;
+                	if($g_request && $g_request->isLoggedIn() ) {
+                		$tmp = explode('.', $vs_tag);
+                		if((sizeof($tmp) > 1) && in_array($tmp[1], ['user_id', 'email', 'fname', 'lname', 'user_name', 'sms_number'], true)) {
+                			$va_val_list[] = $g_request->user->get($tmp[1]);
+                		} elseif($g_request->user->isValidPreference('user_profile_'.$tmp[1])) {
+                			$va_val_list[] = $g_request->user->getPreference('user_profile_'.$tmp[1]);
+                		} else{
+                			$va_val_list[] = $g_request->user->get('fname').' '.$g_request->user->get('lname');
+                		} 
+                	}
+                	$va_val_list[] = 'meow';
 				} else {				
 					switch(strtolower($vs_get_spec)) {
                         case 'relationship_typename':

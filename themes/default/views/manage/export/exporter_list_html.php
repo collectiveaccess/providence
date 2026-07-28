@@ -96,7 +96,7 @@ if (!$this->request->isAjax()) {
 					<?= $exporter['exporter_type']; ?>
 				</td>
 				<td>
-					<?= caGetLocalizedDate($exporter['last_modified_on'], array('dateFormat' => 'delimited')); ?>
+					<?= caGetLocalizedDate($exporter['last_modified_on'], ['timeOmit' => false]); ?>
 				</td>
 				<td>
 					<?= caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage', 'MetadataExport', 'Delete', array('exporter_id' => $exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>

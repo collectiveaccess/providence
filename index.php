@@ -92,8 +92,8 @@ try {
 		$vs_security_policy_domains = "";
 	}
 
-	$resp->addHeader("Content-Security-Policy", "script-src 'self' maps.googleapis.com cdn.knightlab.com nominatim.openstreetmap.org  ajax.googleapis.com tagmanager.google.com www.googletagmanager.com www.google-analytics.com www.google.com/recaptcha/ www.gstatic.com ".$vs_security_policy_domains." 'unsafe-inline' 'unsafe-eval';"); 
-	$resp->addHeader("X-Content-Security-Policy", "script-src 'self' maps.googleapis.com cdn.knightlab.com nominatim.openstreetmap.org  ajax.googleapis.com  tagmanager.google.com www.googletagmanager.com www.google-analytics.com www.google.com/recaptcha/ www.gstatic.com ".$vs_security_policy_domains." 'unsafe-inline' 'unsafe-eval';"); 
+	$resp->addHeader("Content-Security-Policy", "script-src 'self' maps.googleapis.com cdn.knightlab.com nominatim.openstreetmap.org  ajax.googleapis.com tagmanager.google.com www.googletagmanager.com www.google-analytics.com www.google.com/recaptcha/ www.gstatic.com blob: ".$vs_security_policy_domains." 'unsafe-inline' 'unsafe-eval';"); 
+	$resp->addHeader("X-Content-Security-Policy", "script-src 'self' maps.googleapis.com cdn.knightlab.com nominatim.openstreetmap.org  ajax.googleapis.com  tagmanager.google.com www.googletagmanager.com www.google-analytics.com www.google.com/recaptcha/ www.gstatic.com blob: ".$vs_security_policy_domains." 'unsafe-inline' 'unsafe-eval';"); 
 
 	//
 	// Don't try to authenticate when doing a login attempt or trying to access the 'forgot password' feature

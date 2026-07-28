@@ -157,7 +157,7 @@ function caSearchLink($po_request, $ps_content, $ps_classname, $ps_table, $ps_se
 	
 	$vs_tag = "<a href='".$vs_url."'";
 	
-	if ($ps_classname) { $vs_tag .= " class='$ps_classname'"; }
+	if ($ps_classname) { $vs_tag .= " class='{$ps_classname}'"; }
 	if (is_array($pa_attributes)) {
 		$vs_tag .= _caHTMLMakeAttributeString($pa_attributes);
 	}
