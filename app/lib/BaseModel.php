@@ -3446,7 +3446,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 			$this->_FIELD_VALUE_CHANGED = array();
 			
 			// Update instance cache
-			if (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100) { 	// Limit cache to 100 instances per table
+			if (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()] ?? []) > 100) { 	// Limit cache to 100 instances per table
 				BaseModel::$s_instance_cache[$vs_table_name] = array_slice(BaseModel::$s_instance_cache[$vs_table_name], 0, 50, true);
 			}
 			BaseModel::$s_instance_cache[$vs_table_name][(int)$this->getPrimaryKey()] = $this->_FIELD_VALUES;
