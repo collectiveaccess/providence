@@ -1399,6 +1399,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		if($config->get("{$table}_disable_delete")) { return false; }
  		if($config->get("{$table}_".$this->getTypeCode()."_disable_delete")) { return false; }
  		
+ 		// Check actions
+ 		if (!$this->getPrimaryKey() || ($t_user->canDoAction("can_delete_{$table}") === false)) {
+ 			return false;
+ 		}
+ 		
  		// Check type restrictions
  		if ((bool)$config->get('perform_type_access_checking')) {
 			$vn_type_access = $t_user->getTypeAccessLevel($table, $this->getTypeID());
@@ -1422,11 +1427,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				return false;
 			}
 		}
-		
- 		// Check actions
- 		if (!$this->getPrimaryKey() || ($t_user->canDoAction("can_delete_{$table}") === false)) {
- 			return false;
- 		}
  		
 		if (!caACLIsEnabled($this) && (defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ == "PAWTUCKET") && ($this->hasField('access')))) {
 			$va_access = caGetUserAccessValues($po_request);
