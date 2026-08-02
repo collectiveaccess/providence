@@ -734,6 +734,8 @@ trait CLIUtilsMedia {
 		$mimetypes = caGetOption('mimetypes', $opts, null, ['delimiter' => [',', ';']]);
 		$skip_mimetypes = caGetOption('skip-mimetypes', $opts, null, ['delimiter' => [',', ';']]);
 		
+		$skip_transcribed = caGetOption('skip-transcribed', $opts, null);
+		
 		if (!($start = (int)$opts->getOption('start_id'))) { $start = null; }
 		if (!($end = (int)$opts->getOption('end_id'))) { $end = null; }
 
@@ -776,6 +778,7 @@ trait CLIUtilsMedia {
 			if(!($input_mimetype = $t_rep->get('mimetype'))) { continue; }
 			if(caTranscribeAVMedia($input_mimetype)) {
 				if(($t_rep->numCaptionFiles() >= 1)) { 
+					if($skip_transcribed) { continue; }
 					$t_rep->removeAllCaptionFiles();
 				}
 				if(is_array($mimetypes) && sizeof($mimetypes)) {
@@ -816,7 +819,8 @@ trait CLIUtilsMedia {
 			"start_id|s-n" => _t('Representation id to start reloading at'),
 			"end_id|e-n" => _t('Representation id to end reloading at'),
 			"id|i-n" => _t('Representation id to reload'),
-			"ids|l-s" => _t('Comma separated list of representation ids to reload')
+			"ids|l-s" => _t('Comma separated list of representation ids to reload'),
+			"skip-transcribed|k-n" => _t('Skip already transcribed media')
 		];
 	}
 	# -------------------------------------------------------
