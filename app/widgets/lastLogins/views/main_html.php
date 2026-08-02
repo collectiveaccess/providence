@@ -44,7 +44,7 @@
 <?php
 	foreach($va_login_list as $vn_i => $va_login) {
 		print "<tr>";
-		print "<td>".date("n/d/y, g:iA T", $va_login['date_time'])."</td>";
+		print "<td>".caGetLocalizedDate($va_login['date_time'], ['timeOmit' => false])."</td>";
 		print "<td>".$va_login['fname'].' '.$va_login['lname'].' ('.$va_login['username'].")</td>";
 		if($show_ips) { print "<td>".$va_login['ip']."</td>"; }
 		print "</tr>\n";

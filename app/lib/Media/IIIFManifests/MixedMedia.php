@@ -122,7 +122,7 @@ class MixedMedia extends BaseIIIFManifest {
 									[
 										'id' => $service_url,
 										'type' => 'ImageService2',
-										'profile' => 'http://iiif.io/api/image/2/level2.json"'
+										'profile' => 'http://iiif.io/api/image/2/level2.json'
 									]
 								];
 								$media_url = $service_url.'/full/max/0/default.jpg';

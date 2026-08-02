@@ -925,6 +925,14 @@ class Replicator {
 							$this->logDebug(_t("[%1] Removed user_id_guid %2 in log_id %3 for %4 because it is not accessible.", $this->source_key, $user_guid, $missing_entry['log_id'], $missing_entry['guid']),Zend_Log::DEBUG);
 						}
 					}
+
+					if($authority_guid = ($missing_entry['snapshot']['value_longtext1_guid'] ?? null)) {
+						$authority_access = $this->_hasAccess($this->source, [$authority_guid]);
+						if(!in_array((int)$authority_access_access[$authority_guid], $this->access_list, true)) {
+							$missing_entry['snapshot']['value_longtext1_guid'] = null;
+							$this->logDebug(_t("[%1] Removed authority guid %2 in log_id %3 for %4 because it is not accessible.", $this->source_key, $authority_guid, $missing_entry['log_id'], $missing_entry['guid']),Zend_Log::DEBUG);
+						}
+					}
 					
 					$missing_log_entry_pk = Datamodel::primaryKey($missing_entry['logged_table_num']);
 					
@@ -932,7 +940,7 @@ class Replicator {
 						if($v == $missing_guid) { return false; }
 						if($v == $missing_entry['guid']) { return false; }
 						
-						if(isset($missing_entry['snapshot']['attribute_guid']) && ($missing_entry['logged_table_num'] == 3) && ($k !== 'item_id_guid')) { return false; }	// don't check deps for attribute values on attributes - values always follow attributes
+						if(isset($missing_entry['snapshot']['attribute_guid']) && ($missing_entry['logged_table_num'] == 3) && (!in_array($k, ['item_id_guid', 'value_longtext1_guid'], true))) { return false; }	// don't check deps for attribute values on attributes - values always follow attributes
 						
 						if(preg_match("!([A-Za-z0-9_]+)_guid$!", $k, $matches) && ($matches[1] !== $missing_log_entry_pk) && ($matches[1].'_id' !== $missing_log_entry_pk) && preg_match("!^[a-z0-9]+\-[a-z0-9]+\-[a-z0-9]+\-[a-z0-9]+\-[a-z0-9]+$!i", $v)) {
 							if(
@@ -958,6 +966,7 @@ class Replicator {
 						if(isset($missing_entry['snapshot']['value_guid']) && ($missing_entry['snapshot']['value_guid'] === $dep_guid)) { continue; }
 						if(isset($missing_entry['snapshot']['parent_id_guid']) && ($missing_entry['snapshot']['parent_id_guid'] === $dep_guid)) { continue; }
 						if(isset($missing_entry['snapshot']['lot_id_guid']) && ($missing_entry['snapshot']['lot_id_guid'] === $dep_guid)) { continue; }
+						if(isset($missing_entry['snapshot']['value_longtext1_guid']) && ($missing_entry['snapshot']['value_longtext1_guid'] === $dep_guid)) { continue; }
 						
 						if(!is_array($dep_guid_already_exists[$dep_guid])) { 
 							$this->logDebug(_t("[%1] Skipped log entry %2 because dependent guid %3 for %4 does not yet exist on target", $this->source_key, $missing_entry['log_id'], $dep_guid, $missing_entry['guid']),Zend_Log::DEBUG);
