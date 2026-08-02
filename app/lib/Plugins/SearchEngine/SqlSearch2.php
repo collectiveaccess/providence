@@ -1064,6 +1064,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				$qinfo = $this->_queryForCurrencyAttribute(new CurrencyAttributeValue(), $ap, $text, $text_upper, ['t_subject' => $t_instance]);
 				break;
 			case __CA_ATTRIBUTE_VALUE_GEOCODE__:
+			case __CA_ATTRIBUTE_VALUE_GEONAMES__:
 				$qinfo = $this->_queryForGeocodeAttribute(new GeocodeAttributeValue(), $ap, $text, $text_upper, ['t_subject' => $t_instance]);
 				break;
 		}
@@ -1316,6 +1317,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				switch(WLPlugSearchEngineSqlSearch2::$metadata_elements[$field_num_proc]['datatype']) {
 					case __CA_ATTRIBUTE_VALUE_CONTAINER__:	
 					case __CA_ATTRIBUTE_VALUE_GEOCODE__:	
+					case __CA_ATTRIBUTE_VALUE_GEONAMES__:	
 					case __CA_ATTRIBUTE_VALUE_CURRENCY__:
 					case __CA_ATTRIBUTE_VALUE_LENGTH__:
 					case __CA_ATTRIBUTE_VALUE_WEIGHT__:
@@ -2105,10 +2107,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	/**
 	 *
 	 */
-	private function _arrayFromDbResult(DbResult $qr_res) {
+	private function _arrayFromDbResult(DbResult $qr_res, ?array $options=null) {
 		$vals = $qr_res->getAllFieldValues(['index_id', 'row_id', 'boost']);
 	 	if(!isset($vals['row_id'])) { return []; }
 	 	$hits = [];
+	 	
+	 	$phrase_window = caGetOption('phraseWindow', $options, null);
+	 	
 	 	foreach($vals['row_id'] as $i => $row_id) {
 	 		if(!isset($hits[$row_id])) { 
 	 			$hits[$row_id]['boost'] = 0; 
@@ -2123,7 +2128,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		}
 	 		
 	 		if(($this->get_result_desc_data  && sizeof($hits[$row_id]['index_ids']) < $max_index_count)) {
-	 			$hits[$row_id]['index_ids'][] = $vals['index_id'][$i];
+	 			if($phrase_window > 0) {
+	 				for($idx=($vals['index_id'][$i] - ($phrase_window - 1)); $idx <= $vals['index_id'][$i]; $idx++) {
+	 					$hits[$row_id]['index_ids'][] = $idx;
+	 				}
+	 			} else {
+	 				$hits[$row_id]['index_ids'][] = $vals['index_id'][$i];
+	 			}
 	 		}
 	 	}
 	 	return $hits;
