@@ -35,14 +35,34 @@
  *      l'URL de sa DTD, qui était la DERNIÈRE occurrence de « http:// » du HTML servi
  *      par cette page ; nous servons exclusivement en HTTPS et ne voulons plus aucune
  *      URL en clair dans nos pages.
- *      ⚠️ CE CHANGEMENT N'EST PAS COSMÉTIQUE. Un DOCTYPE XHTML 1.0 Transitional avec
- *      identifiant système place le navigateur en mode « PRESQUE STANDARD » ;
- *      `<!doctype html>` le place en mode STANDARD. La différence observable est
- *      l'espace réservé sous une image en cellule de tableau (mesuré ici : une cellule
- *      contenant une image de 10 px passe de 10 px à 15 px de haut). Cette page ne
- *      contient aucun tableau, le basculement y est donc sans effet — vérifié par
- *      capture avant/après. Ne pas transposer le raisonnement à une page qui en
- *      contiendrait sans le remesurer.
+ *      ⚠️ CE CHANGEMENT N'EST PAS COSMÉTIQUE, ET IL A UN EFFET VISIBLE ICI — MESURÉ.
+ *      Un DOCTYPE XHTML 1.0 Transitional avec identifiant système place le navigateur en
+ *      mode « PRESQUE STANDARD » ; `<!doctype html>` le place en mode STANDARD. Sonde
+ *      injectée dans la page servie : une cellule de tableau contenant une image de
+ *      10 px passe de 10 px à 15 px de haut. C'est bien un changement de mode de rendu.
+ *
+ *      ⚠️ UNE VERSION PRÉCÉDENTE DE CE COMMENTAIRE AFFIRMAIT « cette page ne contient
+ *      aucun tableau, le basculement y est donc sans effet ». C'ÉTAIT FAUX, et le
+ *      raisonnement était incomplet : un décalage ne demande pas de tableau, une IMAGE
+ *      EN LIGNE suffit. Le logo de l'écran d'identification en est une ; en mode standard
+ *      le navigateur réserve l'espace sous sa ligne de base, et tout ce qui suit descend.
+ *
+ *      MESURE (captures Chromium sans affichage, 1440x1100, même fenêtre, avant/après) :
+ *      14 444 pixels diffèrent sur l'écran d'identification, soit 0,912 % de l'image,
+ *      entre les lignes 193 et 468 — c'est-à-dire tout le bloc sous le logo. Le décalage
+ *      vertical optimal est de 3 px EXACTEMENT : c'est un décalage pur, pas une
+ *      déformation, et la boîte de connexion s'allonge de 3 px. Regardé à l'œil : aucun
+ *      chevauchement, aucun élément tronqué, aucune rupture de mise en page.
+ *      ARBITRAGE : les 3 px sont ACCEPTÉS. Renoncer à un DOCTYPE conforme pour 3 px de
+ *      décalage sans conséquence serait disproportionné. Aucun correctif CSS n'est ajouté
+ *      ici, volontairement : ce serait de la charte graphique, et ce thème n'en porte pas.
+ *
+ *      Les pages de l'ÉDITEUR, elles, ne bougent pas d'un pixel — pour une raison
+ *      structurelle et non par chance : leur DOCTYPE d'origine est XHTML 1.0 *Strict*,
+ *      qui place DÉJÀ le navigateur en mode standard (sonde avant modification : cellule
+ *      à 15 px). Vérifié sur une liste de résultats et un formulaire d'édition : les
+ *      seules différences mesurées sont du contenu variable dans le temps (durée de
+ *      génération de la page, « créé il y a N heures »).
  *   2. `lang="fr"`. L'interface de nos pods est servie en français
  *      (`__CA_DEFAULT_LOCALE__ = fr_FR`) et l'amont ne déclarait AUCUNE langue :
  *      lecteurs d'écran, correcteur orthographique du navigateur et moteurs de recherche
