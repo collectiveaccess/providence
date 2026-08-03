@@ -43,10 +43,11 @@ class VersionUpdate212 extends BaseVersionUpdater {
 	 * @return void
 	 */
 	public function applyDatabaseUpdate($options = null) {
-		$ret = parent::applyDatabaseUpdate($options);
 		$db	 = new Db();
 		$db->query("TRUNCATE TABLE ca_sql_search_word_index");
 		$db->query("TRUNCATE TABLE ca_sql_search_words");
+		
+		$ret = parent::applyDatabaseUpdate($options);
 		
 		return $ret;
 	}
