@@ -1,0 +1,26 @@
+/* Ce thème n'a pas de charte propre : il emprunte celle de l'amont.
+ *
+ * ⚠️ CE FICHIER N'EST PAS DÉCORATIF, ET SANS LUI LES PAGES D'IDENTIFICATION SERAIENT
+ * SERVIES SANS AUCUN STYLE. Huit vues de Providence 2.0.11 écrivent l'URL de leur
+ * feuille de style ainsi :
+ *
+ *     <link href="<?= caGetThemeUrlPath() ?>/css/login.css" …>
+ *
+ * `caGetThemeUrlPath()` (app/helpers/errorHelpers.php) rend `__CA_THEME_URL__` SANS
+ * vérifier que le fichier existe : contrairement à `getUrlPathForThemeFile()`, il ne
+ * retombe pas sur le thème « default ». Dès que le thème actif n'est plus « default »,
+ * ces huit pages demandent donc un fichier absent et reçoivent un 404 — la page rend
+ * bien 200, seule sa mise en forme disparaît. C'est la panne la plus discrète qu'un
+ * changement de thème puisse produire.
+ *
+ * Vues concernées, dont certaines sont sur le chemin normal d'un utilisateur :
+ *   system/login_html.php, system/logged_out_html.php, system/auth_error_html.php,
+ *   system/forgot_password_html.php, system/password_reset_form_html.php,
+ *   system/password_reset_instructions_html.php  (+ error.css pour les pages d'erreur)
+ *
+ * POURQUOI UN @import ET PAS UNE COPIE. Une copie de la feuille de l'amont dériverait
+ * en silence à la première montée de version de Providence. Un import ne peut pas
+ * dériver : il n'y a rien à y maintenir. Le coût est un aller-retour HTTP de plus, sur
+ * l'écran d'identification uniquement.
+ */
+@import url("../../default/css/login.css");

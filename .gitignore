@@ -22,6 +22,18 @@ build
 /app/log/*.log
 /themes/*
 !/themes/default
+# lescollections.fr : notre thème est du CODE VERSIONNÉ, pas une personnalisation
+# d'installation. L'amont ignore /themes/* parce qu'un thème y est normalement propre à
+# une installation et déployé à la main ; le nôtre est embarqué dans l'image du pod et
+# doit donc être relu en revue comme le reste. Sans cette exception, `git add` refuse
+# le répertoire, et surtout un fichier AJOUTÉ plus tard au thème n'apparaîtrait pas dans
+# `git status` — on livrerait un thème incomplet sans le voir.
+!/themes/lescollections
+# Les deux garde-fous que l'amont applique à son propre thème, repris à l'identique :
+# ce sont des fichiers PROPRES À UNE INSTALLATION (charte d'un client, personnalisation
+# de l'inspecteur). Ils n'ont rien à faire dans l'image, qui est la même pour tous.
+/themes/lescollections/css/local.css
+/themes/lescollections/views/bundles/inspector_info.php
 /themes/default/css/local.css
 /themes/default/views/bundles/inspector_info.php
 /support/scripts/*.php

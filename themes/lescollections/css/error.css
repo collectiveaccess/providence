@@ -1,0 +1,8 @@
+/* Même raison que css/login.css, pour les pages d'erreur : `caGetThemeUrlPath()` ne
+ * retombe pas sur le thème « default », et les vues system/fatal_error_html.php,
+ * system/configuration_error_html.php, system/configuration_error_schema_update_html.php
+ * et system/no_setup_html.php demandent `<thème>/css/error.css`.
+ *
+ * Sans ce fichier, la page qu'on voit le jour où quelque chose casse serait servie sans
+ * style — c'est-à-dire au pire moment possible. */
+@import url("../../default/css/error.css");
