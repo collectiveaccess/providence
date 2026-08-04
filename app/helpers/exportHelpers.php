@@ -1049,24 +1049,20 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 						}
 
 					} elseif ($t_display && ($display_text = $t_display->getDisplayValue($result, $placement_id, array_merge(array('request' => $request, 'purify' => true), is_array($info['settings']) ? $info['settings'] : [])))) {
-						$textrun = $contentCell->createTextRun();
-			
 						if ($request && $config->get('report_include_labels_in_docx_output')) {
-							$textrun->addText(caEscapeForXML($info['display']).': ', $styleBundleNameFont);
+							$contentCell->addText(caEscapeForXML($info['display']).': ', $styleBundleNameFont);
 						}
-						$textrun->addText(
+						$contentCell->addText(
 							preg_replace("![\n\r]!", "<w:br/>", caEscapeForXML(html_entity_decode(strip_tags(br2nl($display_text)), ENT_QUOTES | ENT_HTML5))),
 							$styleContentFont
 						);
 
 					} else {
 						$display_text = $result->get($info['bundle_name']);
-						$textrun = $contentCell->createTextRun();
-			
 						if ($request && $config->get('report_include_labels_in_docx_output')) {
-							$textrun->addText(caEscapeForXML($info['display']).': ', $styleBundleNameFont);
+							$contentCell->addText(caEscapeForXML($info['display']).': ', $styleBundleNameFont);
 						}
-						$textrun->addText(
+						$contentCell->addText(
 							preg_replace("![\n\r]!", "<w:br/>", caEscapeForXML(html_entity_decode(strip_tags(br2nl($display_text)), ENT_QUOTES | ENT_HTML5))),
 							$styleContentFont
 						);
