@@ -1669,6 +1669,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	public function getTypeList($pa_options=null) {
 		if(!is_array($pa_options)) { $pa_options = []; }
 		$ids_only = $pa_options['idsOnly'] ?? false;
+		$idnos_only = $pa_options['idnosOnly'] ?? false;
 		if (isset($pa_options['childrenOfCurrentTypeOnly']) && $pa_options['childrenOfCurrentTypeOnly']) {
 			$pa_options['item_id'] = $this->get('type_id');
 		}
@@ -1681,7 +1682,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		$t_list = new ca_lists();
 		
 		$va_list = $t_list->getItemsForList($type_list_code, $pa_options);
-		if ($ids_only) { 
+		if ($ids_only || $idnos_only) { 
 			CompositeCache::save($key, $va_list, 'typeListCodes');
 			return $va_list; 
 		}
