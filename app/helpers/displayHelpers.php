@@ -5606,19 +5606,21 @@ function caExtractSettingValueByLocale($pa_settings, $ps_key, $ps_locale) {
 /**
  *
  *
- * @param RequestHTTP $po_request
- * @param string $ps_text
- * @param array $pa_options Options include:
+ * @param RequestHTTP $request
+ * @param string $text
+ * @param array $options Options include:
  *      page = Page_id or path to evaluate media within. [Default is null]
  *		value_id = 
  *
  * @return string
  */
-function caProcessReferenceTags($request, $text, $options=null) {
+function caProcessReferenceTags(RequestHTTP $request, string $text, ?array $options=null) {
 	$pm_page = caGetOption('page', $options, null);
 	$idnos = [];
 
-	$allowed_tags = ['b', 'i', 'em', 'strong', 'u', 'strike', 'img', 'video', 'audio', 'div', 'span']; // TODO: make configurable
+	if(!is_array($allowed_tags = $request->getAppConfig()->getList('reference_tag_allowed_html_tags'))) {
+		$allowed_tags = ['b', 'i', 'em', 'strong', 'u', 'strike', 'img', 'video', 'audio', 'div', 'span']; 
+	}
 
 	$text = html_entity_decode($text);
 	$value_id = caGetOption('value_id', $options, null);
@@ -5629,6 +5631,10 @@ function caProcessReferenceTags($request, $text, $options=null) {
 		'object' => 'ca_objects', 'entity' => 'ca_entities', 'place' => 'ca_places',
 		'occurrence' => 'ca_occurrences', 'collection' => 'ca_collections', 'loan' => 'ca_loans',
 		'movement' => 'ca_movements', 'location' => 'ca_storage_locations', 'media' => 'ca_site_page_media', 'mediaRef' => 'ca_attributes'];
+	
+	if(is_array($additional_tags = $request->getAppConfig()->getAssoc('reference_tag_aliases'))) {
+		$tags = array_merge($tags, $additional_tags);
+	}
 	
 	// Old style (bbcode-like) tags
 	foreach($tags as $ref_tag => $ref_type
