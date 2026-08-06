@@ -8069,12 +8069,11 @@ $pa_options["display_form_field_tips"] = true;
 			
 			$vo_sort = new BaseFindEngine($this->getDb());
 			$va_ids = $vo_sort->sortHits($va_ids, $t_instance->tableName(), join(';', $pa_sort), caGetOption('sortDirection', $pa_options, 'asc'), $pa_options);
-		} else {
-			$start = caGetOption('start', $pa_options, 0);
-			$limit = caGetOption('limit', $pa_options, null);
-			if(($start > 0) || ($limit > 0)) {
-				$va_ids = array_slice($va_ids, $start, $limit);
-			}
+		} 
+		$start = caGetOption('start', $pa_options, 0);
+		$limit = caGetOption('limit', $pa_options, null);
+		if(($start > 0) || ($limit > 0)) {
+			$va_ids = array_slice($va_ids, $start, $limit);
 		}
 		
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
