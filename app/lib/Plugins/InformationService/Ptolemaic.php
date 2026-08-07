@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2024 Whirl-i-Gig
+ * Copyright 2020-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,7 +49,7 @@ class WLPlugInformationServicePtolemaic extends BaseInformationServicePlugin Imp
 		parent::__construct();
 		$this->info['NAME'] = 'Ptolemaic Coins Online';
 		
-		$this->description = _t('Provides access to Ptolemaic Coins Online numismatic data service (http://numismatics.org/pco/)');
+		$this->description = _t('Provides access to Ptolemaic Coins Online numismatic data service (%1)', 'http://numismatics.org/pco/');
 	}
 	# ------------------------------------------------
 	# Data

@@ -763,7 +763,7 @@ class ca_user_roles extends BaseModel {
 							foreach($va_type_list as $vn_type_id => $va_type){
 								$vs_descr_app = str_replace("%t", "&quot;".$va_type["name_singular"]."&quot;", $va_action["expand_types"]["description_appendix"]);
 								$vs_label_app = str_replace("%t", "&quot;".$va_type["name_singular"]."&quot;", $va_action["expand_types"]["label_appendix"]);
-								$va_new_actions[$vs_action_key."_type:{$t_instance->tableName()}:{$va_type["idno"]}"] = array(
+								$va_new_actions[$vs_action_key."_type:".$t_instance->tableName().":".$va_type['idno']] = array(
 									"description" => $va_action["description"]." ".$vs_descr_app,
 									"label" => $va_action["label"]." ".$vs_label_app
 								);

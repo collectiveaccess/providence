@@ -171,7 +171,7 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
 		
 		if (!($this->ops_libreoffice_path)) { 
-			$va_status['warnings'][] = _t("LibreOffice cannot be found: conversion to PDF and generation of page previews will not be performed; you can obtain LibreOffice at http://www.libreoffice.org/");
+			$va_status['warnings'][] = _t("LibreOffice cannot be found: conversion to PDF and generation of page previews will not be performed; you can obtain LibreOffice at %1", 'http://www.libreoffice.org/');
 		}
 		
 		return $va_status;

@@ -69,7 +69,7 @@ BaseModel::$s_ca_models_definitions['ca_locales'] = array(
 				'DISPLAY_WIDTH' => 8, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Dialect'), 'DESCRIPTION' => _t('Optional dialect specifier for locale. Up to 8 characters, this code is usually one defined by the language lists at http://www.ethnologue.com.'),
+				'LABEL' => _t('Dialect'), 'DESCRIPTION' => _t('Optional dialect specifier for locale. Up to 8 characters, this code is usually one defined by the language lists at %1.', 'http://www.ethnologue.com'),
 				'BOUNDS_LENGTH' => array(0,8)
 		),
 		'dont_use_for_cataloguing' => array(

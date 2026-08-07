@@ -1028,7 +1028,7 @@ trait CLIUtilsImportExport {
 	 */
 	public static function load_chenhall_nomenclatureParamList() {
 		return array(
-			"file|f=s" => _t('Excel XLSX-format https://nomemclature.info Chenhall Nomenclature file to load.'),
+			"file|f=s" => _t('Excel XLSX-format %1 Chenhall Nomenclature file to load.', 'https://nomemclature.info'),
 			"list|l=s" => _t('Code for list to load Chenhall Nomenclature into. If list with code does not exist it will be created.'),
 			"update|u=s" => _t('Update an existing Chenhall installation.')
 		);
@@ -1052,7 +1052,7 @@ trait CLIUtilsImportExport {
 	 *
 	 */
 	public static function load_chenhall_nomenclatureHelp() {
-		return _t('Loads Chenhall Nomenclature from Excel XLSX format file into the specified list. You can obtain a copy of the Nomenclature from https://nomenclature.info.');
+		return _t('Loads Chenhall Nomenclature from Excel XLSX format file into the specified list. You can obtain a copy of the Nomenclature from %1', 'https://nomenclature.info.');
 	}
 	# -------------------------------------------------------
 	/**

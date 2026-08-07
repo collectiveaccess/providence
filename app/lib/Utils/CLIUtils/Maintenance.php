@@ -1649,7 +1649,7 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function generate_missing_guidsHelp() {
-		return _t('Generates guids for all records that don\'t have one yet. This can be useful if you plan on using the data synchronization/replication feature in the future. For more info see here: http://docs.collectiveaccess.org/wiki/Replication');
+		return _t('Generates guids for all records that don\'t have one yet. This can be useful if you plan on using the data synchronization/replication feature in the future. For more info see here: %1', 'http://docs.collectiveaccess.org/wiki/Replication');
 	}
 	# -------------------------------------------------------
 	/**
@@ -1703,7 +1703,7 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function remove_unused_guidsHelp() {
-		return _t('Generates guids for all records that don\'t have one yet. This can be useful if you plan on using the data synchronization/replication feature in the future. For more info see here: http://docs.collectiveaccess.org/wiki/Replication');
+		return _t('Generates guids for all records that don\'t have one yet. This can be useful if you plan on using the data synchronization/replication feature in the future. For more info see here: %1', 'http://docs.collectiveaccess.org/wiki/Replication');
 	}
 	# -------------------------------------------------------
 	/**
@@ -1784,7 +1784,7 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function remove_duplicate_recordsHelp() {
-		return _t('Lists and optionally removed duplicate records. For more info on how the algorithm works see here: http://docs.collectiveaccess.org/wiki/Deduplication');
+		return _t('Lists and optionally removed duplicate records. For more info on how the algorithm works see here: %1', 'http://docs.collectiveaccess.org/wiki/Deduplication');
 	}
 	# -------------------------------------------------------
 	/**

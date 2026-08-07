@@ -290,7 +290,7 @@ $_ca_attribute_settings['GeoNamesAttributeValue'] = array(		// global
 		'default' => 'name,adminName2,adminName1,countryName,continentCode',
 		'width' => 90, 'height' => 4,
 		'label' => _t('GeoNames elements'),
-		'description' => _t('Comma-separated list of GeoNames attributes to be pulled from the service to build the text representation for the selected location. See http://www.geonames.org/export/geonames-search.html for further reference, including the available element names. Note that latitude and longitude are always added to the text value to enable map display.')
+		'description' => _t('Comma-separated list of GeoNames attributes to be pulled from the service to build the text representation for the selected location. See %1 for further reference, including the available element names. Note that latitude and longitude are always added to the text value to enable map display.', 'http://www.geonames.org/export/geonames-search.html')
 	),
 	'gnDelimiter' => array(
 		'formatType' => FT_TEXT,
