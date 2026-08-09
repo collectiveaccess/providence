@@ -216,7 +216,7 @@ $_ca_attribute_settings['GeoNamesAttributeValue'] = array(		// global
 		'default' => 0,
 		'width' => 1, 'height' => 1,
 		'label' => _t('Hide coordinates'),
-		'description' => _t('Check this options to hide latitude and longitude coordinates.')
+		'description' => _t('Check this option to hide latitude and longitude coordinates.')
 	),
 	'canBeEmpty' => array(
 		'formatType' => FT_NUMBER,

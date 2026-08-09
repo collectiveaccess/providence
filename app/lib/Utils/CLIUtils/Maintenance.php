@@ -1855,7 +1855,7 @@ trait CLIUtilsMaintenance {
 	# -------------------------------------------------------
 	public static function check_url_reference_integrityParamList() {
 		return [
-			"users|u=s" => _t('User names to notify if there are errors. Multiple entries are delimited by comma or semicolon. Invalid or non-existing user named will be ignored. [Optional]'),
+			"users|u=s" => _t('User names to notify if there are errors. Multiple entries are delimited by comma or semicolon. Invalid or non-existing user names will be ignored. [Optional]'),
 			"groups|g=s" => _t('Groups to notify if there are errors. They\'re identified by group code. Multiple entries are delimited by comma or semicolon. Invalid or non-existing groups will be ignored. [Optional]'),
 		];
 	}
@@ -2211,7 +2211,7 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function check_future_values_for_history_tracking_policiesShortHelp() {
-		return _t('Updates current values for all records with tracking policies for which values with upcoming data have been set.');
+		return _t('Updates current values for all records with tracking policies for which values with upcoming dates have been set.');
 	}
 	# -------------------------------------------------------
 	/**
@@ -2581,7 +2581,7 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function check_representation_primary_valuesHelp() {
-		return _t('Every record with related representations must have at least one of those representation relationships marked as the primary relationship. The primary representation will be used as the default media for the record. In some situations it is possible that one or more representations can be related to a record without any having the "is primary" designation. Records without primary representations may dispaly oddly, or not at all. This command will check all representations relationships and ensure that all records with related representations have at least one marked as primary.');
+		return _t('Every record with related representations must have at least one of those representation relationships marked as the primary relationship. The primary representation will be used as the default media for the record. In some situations it is possible that one or more representations can be related to a record without any having the "is primary" designation. Records without primary representations may display oddly, or not at all. This command will check all representations relationships and ensure that all records with related representations have at least one marked as primary.');
 	}
 	# -------------------------------------------------------
 	/**
@@ -2633,7 +2633,7 @@ trait CLIUtilsMaintenance {
 					if($repair) {
 						$instance->set($hier_id_fld, $root_id);
 						$instance->update();
-						DataMigrationUtils::postError($instance, _t('While fixing hierarchy_id (%1) root value', $hier_id_fld));
+						DataMigrationUtils::postError($instance, _t('Fixed hierarchy_id (%1) root value', $hier_id_fld));
 					}
 					$c++;
 				}

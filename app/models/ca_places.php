@@ -200,7 +200,7 @@ BaseModel::$s_ca_models_definitions['ca_places'] = array(
 			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
 			'BOUNDS_CHOICE_LIST' => array(
 				_t('Do not inherit') => 0,
-				_t('Inherir') => 1
+				_t('Inherit') => 1
 			),
 			'LABEL' => _t('Inherit item access control settings from parents?'), 'DESCRIPTION' => _t('Determines whether item access control settings set from parent objects are applied to this object.')
 		),
