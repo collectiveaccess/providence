@@ -25,6 +25,7 @@ monthTable = {
 
 # List of day names, starting with Sunday
 dayListDisplay = [Domenica, Lunedì, Martedì, Mercoledì, Giovedì, Venerdì, Sabato]
+dayListShortDisplay = [Dom, Lun, Mar, Mer, Gio, Ven, Sab]
 
 rangePreConjunctions = [da, entro]
 rangeConjunctions = [fino a, –, -, e, .., compreso]
@@ -41,6 +42,13 @@ meridianTable = {
 	a.m. = am,
 	p.m. = pm
 }
+
+intervalPastIndicator = [past]
+intervalFutureIndicator = [future, next]
+intervalDaysIndicator = [day, days, d]
+intervalWeeksIndicator = [week, weeks, w]
+intervalMonthsIndicator = [month, months, m]
+intervalYearsIndicator = [year, years, yr, y]
 
 dateCircaIndicator = [circa, c, c., ca, ca.]
 dateProbablyIndicator = [probably, possibly]

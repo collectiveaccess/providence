@@ -64,7 +64,6 @@ a:hover{
     color: #858585;
 }
 h1 { font-family: 'DIN-Regular', arial, sans-serif;}
-h2 { font-size: 13px; color: #666; }
 
 h5 {
     margin: 0px;
@@ -124,9 +123,9 @@ h5 {
     background-image: none;
     border: 0px;
     border-radius: 0;
-    -moz-box-shadow: 0 0 5px #888;
-    -webkit-box-shadow: 0 0 5px#888;
-    box-shadow: 0 0 5px #888;
+    -moz-box-shadow: 0 0 1px #333;
+    -webkit-box-shadow: 0 0 1px #333;
+    box-shadow: 0 0 1px #333;
     min-height: 20px;
     height: 58px;
 }
@@ -141,7 +140,6 @@ h5 {
     height:30px;
 }
 #navWrapper {
-	position: absolute;
 	float: right;
 	left: 50%;
 }
@@ -1378,7 +1376,7 @@ div.formLabelUploadSizeNote {
 
 .caDupeLabelMessageBox {
     margin: 0 auto;
-    width: 200px;
+    min-width: 200px;
     font-family: Helvetica Neue, sans-serif;
     color: #EB0000;
 }
@@ -2620,7 +2618,7 @@ select.searchToolsSelect {
     color:#138290;
 }
 
-.objectThumbnailsImageContainer {
+.objectThumbnailsImageContainer, .entityThumbnailsImageContainer, .occurrenceThumbnailsImageContainer {
 	position: relative;
 	width: 172px;
 	border-top: 2px solid #eee;
@@ -3022,14 +3020,14 @@ img.caRepToolsRotateControlButton:hover {
 #caMediaOverlayContent {
 	margin: 0px;
 	width: 100%;
-	height: 100%;
+	height: calc(100% - 40px);
 	overflow: auto;
 	text-align: center;
 	background-color: #000;
 }
 
 div.caMediaOverlayControls {
-	background-color: rgba(0,0,0,.5);
+	background-color: rgba(0,0,0,1.0);
 	color:#FFF;
 	font-size: 11px;
 	text-align:center;
@@ -6130,7 +6128,11 @@ a.caDeleteLabelButton {
 /* Item-level access screen                         */
 /* -------------------------------------------------*/
 
-.globalAccess {
+div.globalAccess hr {
+	border: 1px dashed #ccc;
+}
+
+div.globalAccess {
     background-color:#eee;
     border-radius: 4px;
     -moz-border-radius: 4px;
@@ -6138,31 +6140,49 @@ a.caDeleteLabelButton {
     padding:10px;
     margin-bottom: 15px;
 }
-.globalAccess .title {
-    font-size: 18px;
+div.globalAccess .title {
+    font-size: 20px;
     font-family: arial;
     font-weight: normal;
 }
-.globalAccess .bundleContainer {
+
+div.globalAccess div.subtitle {
+    font-size: 16px;
+    font-family: arial;
+    font-weight: normal;
+    margin: 10px 0 5px 0; 
+}
+
+div.globalAccess div.inheritanceControl {
+    margin: 5px 0 5px 0; 
+}
+
+div.globalAccess div.control {
+    font: 12px "Helvetica Neue", Arial, Helvetica, Sans-serif;
+    margin: 10px 0 5px 0;
+}
+
+div.globalAccess .bundleContainer {
     border: 0px;
     padding-left:0px;
+    background-color:#eee;
+    
 }
-.globalAccess .labelInfo {
+div.globalAccess .labelInfo {
     background-color:#eee;
     border-top: none;
 }
-.globalAccess h2 {
+div.globalAccess h2 {
     padding-top:10px;
     border-top: dotted 1px #ccc;
     font-family: arial;
     font-weight: normal;
 }
-#editGlobalAccess {
-    display:none;
+
+div.publicAccessHeader {
+
 }
-#editUserAccess {
-    display:none;
-}
+
 .editLink a{
     text-decoration:none;
     font-size: 12px;
@@ -6196,6 +6216,7 @@ span.accessName {
 div.inheritName {
     font-size: 9px; 
     font-style: italic;
+    font-weight: normal;
 }
 
 .titleTd td{
@@ -6461,7 +6482,7 @@ table.caSummaryDownloadOptionsPanelAlertControls {
     margin: 0px;
     padding:0px !important;
     border: 2px solid #999999;
-    z-index: 9999;			/* needs to be on top of menu bar, which has z-index=30000 */
+    z-index: 1000;			/* Menu Bar is now hidden when quickadd enabled. ck-editor bubbles are set to 1000, anything higher than this and ckeditor can't be used in quickadds */
     background-color: #FFFFFF;
 }
 
@@ -7652,6 +7673,7 @@ a.currentSet {
 
 div.objectRepresentationListImage {
     width: 120px;
+    text-align: center;
 }
 
 div.objectRepresentationListImageContainer {
@@ -8221,12 +8243,12 @@ li p {
 	padding: 0 !important;
 }
 
-.ck-body-wrapper {
+/*.ck-body-wrapper {
 	position: fixed !important;
 	z-index: 30000 !important;
 	top: 100%;
 	left: 100%;
-}
+}*/
 
 .roleList, .groupList {
 	display: flex; 
@@ -8288,4 +8310,69 @@ button.passwordView {
 	margin: 0 0 0 -38px; 
 	border: none; 
 	background-color: transparent;
+}
+
+.componentGrid {
+	display: table;
+	width: 100%;
+	font-size: 11px;
+	font-weight: normal;
+	padding: 10px 5px 10px 5px;
+	border-collapse: collapse;
+}
+
+.componentRow {
+	display: table-row;
+}
+
+.componentRowDisabled {
+	display: table-row;
+	color: #555;
+}
+.componentRowDisabled a {
+	color: #555;
+	text-decoration: none;
+}
+
+.componentItem {
+	display: table-cell;
+	padding: 10px;
+	border: 1px dotted #999;
+}
+
+.componentItemSelected {
+	font-style: italic;
+	font-weight: bold;
+}
+
+.componentHeader {
+	display: table-row;
+}
+
+.componentHeaderItem {
+	display: table-cell;
+	padding: 10px;
+	border: 1px dotted #999;
+	font-weight: bold;
+}
+
+.aclLabel {
+	font-weight: normal;
+}
+
+
+.panoramaViewer {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.panoramaViewer .cloudimage-360-inner-box {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.panoramaViewer .cloudimage-360-inner-box canvas {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important; /* Prevents image distortion */
 }

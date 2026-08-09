@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2025 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -64,6 +64,7 @@ class ObjectComponentController extends ActionController {
 		if ($vn_parent_id = $this->request->getParameter('parent_id', pInteger)) {
 			$this->opo_result_context->setParameter($t_subject->tableName().'_last_parent_id', $vn_parent_id);
 		}
+		$t_parent = new ca_objects($vn_parent_id);
 		
 		//
 		// Is record of correct type?
@@ -84,6 +85,21 @@ class ObjectComponentController extends ActionController {
 			}
 		}
 		
+		
+		// Set type restrictions to component types
+		$component_types = $t_parent->getComponentTypes(); 
+		if (is_array($component_types) && sizeof($component_types) && !in_array('*', $component_types)) {
+			$this->view->setVar('restrict_to_types', $component_types);
+		}
+		
+		// Get type
+		if (!($vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pString))) {
+			$vn_type_id =  array_shift(caMakeTypeIDList($t_subject->tableName(), $component_types, array('dontIncludeSubtypesInTypeRestriction' => true)));
+		}
+		
+		$this->request->setParameter('type_id', $vn_type_id);
+		$t_subject->set('type_id', $vn_type_id);
+		
 		// Set "context" id from those editors that need to restrict idno lookups to within the context of another field value (eg. idno's for ca_list_items are only unique within a given list_id)
 		if ($vn_parent_id > 0) {
 			$t_parent = Datamodel::getInstanceByTableName($this->ops_table_name);
@@ -93,30 +109,24 @@ class ObjectComponentController extends ActionController {
 				}
 				$pidno = $t_parent->get('idno');
 				$subject_idno_instance = $t_subject->getIDNoPlugInInstance();
-				$subject_idno_element_count = sizeof($subject_idno_instance->getElements());
+				$subject_idno_instance->setType($t_subject->getTypecode());
+				$subject_idno_element_count = sizeof($subject_idno_instance->getElements() ?? []);
 				$parent_idno_instance = $t_parent->getIDNoPlugInInstance();
-				$parent_idno_element_count = sizeof($parent_idno_instance->getElements());
-				
-				if(!$subject_idno_instance || !$subject_idno_instance->isSerialFormat($subject_idno_instance->getFormat()) || ($subject_idno_element_count > $parent_idno_instance) && strlen($pidno)) {
+				$parent_idno_element_count = sizeof($parent_idno_instance->getElements() ?? []);
+				if(
+					(
+						!$subject_idno_instance || 
+						!$subject_idno_instance->isSerialFormat($subject_idno_instance->getFormat()) || 
+						($parent_idno_instance && ($subject_idno_element_count > $parent_idno_element_count))
+					) 
+					&& strlen($pidno)
+					&& (bool)$this->request->config->get('ca_objects_component_inherit_idno')
+				) {
 					$t_subject->set('idno', $pidno);
 				}
 			}
 		}
 		
-		// Get type
-		if (!($vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pString))) {
-			$vn_type_id =  array_shift(caMakeTypeIDList($t_subject->tableName(), $this->request->config->getList('ca_objects_component_types'), array('dontIncludeSubtypesInTypeRestriction' => true)));
-		}
-		
-		// Set type restrictions to component types
-		$va_component_types = $this->request->config->getList('ca_objects_component_types');
-		
-		if (is_array($va_component_types) && sizeof($va_component_types) && !in_array('*', $va_component_types)) {
-			$this->view->setVar('restrict_to_types', $va_component_types);
-		}
-		
-		$this->request->setParameter('type_id', $vn_type_id);
-		$t_subject->set('type_id', $vn_type_id);
 		
 		$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $vn_type_id);
 		

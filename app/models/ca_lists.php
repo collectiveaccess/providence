@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -251,12 +251,12 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		if ($this->getPrimaryKey()) {
 			// create root in ca_list_items
 			$t_item_root = new ca_list_items();
-			$t_item_root->setMode(ACCESS_WRITE);
 			if ($this->inTransaction()) { $t_item_root->setTransaction($this->getTransaction()); }
 			$t_item_root->set('list_id', $this->getPrimaryKey());
 			$t_item_root->set('idno', $vs_title = 'Root node for '.$this->get('list_code'));
 			$t_item_root->set('is_enabled', 0);
-			$t_item_root->set('item_value', 'Root');
+			$t_item_root->set('item_value', 0);
+			$t_item_root->set('status', 0);
 			$t_item_root->insert();
 			
 			if ($t_item_root->numErrors()) {
@@ -277,6 +277,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			ExternalCache::flush('listItems');
+			CompositeCache::flush('SqlSearch2SearchExpansionDict');
 		}
 		
 		return $vn_rc;
@@ -288,6 +289,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	public function update($pa_options=null) {
 		if ($vn_rc = parent::update($pa_options)) {
 			ExternalCache::flush('listItems');
+			CompositeCache::flush('SqlSearch2SearchExpansionDict');
 		}
 		return $vn_rc;
 	}
@@ -314,6 +316,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			ExternalCache::flush('listItems');
+			CompositeCache::flush('SqlSearch2SearchExpansionDict');
 		}
 
 		return $vn_rc;
@@ -366,6 +369,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			return false;
 		}
 		
+		ExternalCache::flush('listItems');
+		CompositeCache::flush('SqlSearch2SearchExpansionDict');
 		return $t_item;
 	}
 	# ------------------------------------------------------
@@ -417,6 +422,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			return false;
 		}
 
+		CompositeCache::flush('SqlSearch2SearchExpansionDict');
 		return $t_item;
 	}
 	# ------------------------------------------------------
@@ -595,7 +601,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					$va_items[] = $vn_item_id;
 					continue;
 				}
-				if ((isset($pa_options['idnosOnly']) && $pa_options['idnosOnly'])) {
+				if ($pa_options['idnosOnly'] ?? false) {
 					$va_items[] = $qr_res->get('idno');
 					continue;
 				}
@@ -610,7 +616,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				$va_seen_locales[$vn_locale_id] = true;
 			}
 			
-			if ((isset($pa_options['idsOnly']) && $pa_options['idsOnly'])) {
+			if (($pa_options['idsOnly'] ?? false) || ($pa_options['idnosOnly'] ?? false)) {
 				ExternalCache::save($vs_cache_key, $va_items, 'listItems');
 				return $va_items;
 			}
@@ -650,7 +656,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			foreach($va_list_items as $vn_i => $va_item) {
 				if ($pn_type_id && $va_item['NODE']['type_id'] != $pn_type_id) { continue; }
 				if ($vb_enabled_only && !$va_item['NODE']['is_enabled']) { continue; }
-				if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0) && in_array((int)$va_item['access'], $pa_check_access, true)) { continue; }
+				if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0) && !in_array((int)$va_item['NODE']['access'], $pa_check_access, true)) { continue; }
 				
 				$vn_item_id = $va_item['NODE']['item_id'];
 				$vn_parent_id = $va_item['NODE']['parent_id'];
@@ -1354,14 +1360,15 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			return $t_list_item->getPrimaryKey();
 		}
 		
-		return caGetOption('useFirstElementAsDefaultDefault', $pa_options, false) ? array_shift($this->getItemsForList($vn_list_id, array_merge($pa_options, array('idsOnly' => true)))) : null; 
+		$item = $this->getItemsForList($vn_list_id, array_merge($pa_options, array('idsOnly' => true))) ?? [];
+		return caGetOption('useFirstElementAsDefaultDefault', $pa_options, false) ? array_shift($item) : null; 
 	}
 	# ------------------------------------------------------
 	/**
 	 * Convert list code to list_id
 	 */
 	private function _getListID($pm_list_name_or_id) {
-		return ca_lists::getListID($pm_list_name_or_id, array('transaction' => $this->getTransaction()));
+		return ca_lists::getListID($pm_list_name_or_id, ['transaction' => $this->getTransaction()]);
 	}
 	# ------------------------------------------------------
 	/**
@@ -1374,7 +1381,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @return int list for the specified list, or null if the list does not exist
 	 */
 	static function getListID($pm_list_name_or_id, $pa_options=null) {
-	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $pm_list_name_or_id);
+	    $vs_cache_key = caMakeCacheKeyFromOptions($pa_options ?? [], $pm_list_name_or_id ?? '');
 		if (ca_lists::$s_list_id_cache[$vs_cache_key] ?? null) {
 			return ca_lists::$s_list_id_cache[$vs_cache_key];
 		}

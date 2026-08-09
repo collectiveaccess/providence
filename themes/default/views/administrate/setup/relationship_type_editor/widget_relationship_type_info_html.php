@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2010 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,6 +25,4 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	print caEditorInspector($this, array('backText' => _t('Back to browser')));
-?>
+print caEditorInspector($this, ['backText' => _t('Back to browser')]);

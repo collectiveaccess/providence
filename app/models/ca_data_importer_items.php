@@ -486,6 +486,24 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Filter to relationship types'),
 			'description' => _t('Restricts the mapping to pull only records related with the designated relationship types from the source. This option is only supported by sources that have a notion of related data and relationship types, most notably (and for now only) the CollectiveAccessDataReader.')
 		);
+		$settings['restrictReplaceToTypes'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Restrict relationship removal to types'),
+			'description' => _t('Restricts the mapping to remove only relationships linking to an record with one of the specified types. Used when the "replace" option is set for a relationship mapping.')
+		);
+		$settings['restrictReplaceToRelationshipTypes'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Restrict relationship removal to relationship types'),
+			'description' => _t('Restricts the mapping to remove only relationships with the specified relationship types. Used when the "replace" option is set for a relationship mapping.')
+		);
 		$settings['hierarchicalDelimiter'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -749,7 +767,7 @@ class ca_data_importer_items extends BaseModel {
 			'takesLocale' => false,
 			'default' => false,
 			'label' => _t('Always replace values?'),
-			'description' => _t('Always replace values, removing existing, ones even if existing record policy does not mandate replacement (Eg. is not merge_on_idno_with_replace, Etc.).')
+			'description' => _t('Always replace values, removing existing ones even if existing record policy does not mandate replacement (Eg. is not merge_on_idno_with_replace, Etc.).')
 		);	
 		$settings['replaceIfExpression'] = array(
 			'formatType' => FT_TEXT,

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2024 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,7 +40,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	public function __construct() {
 		parent::__construct(); // sets app.conf
 
-		$this->opo_linked_data_conf = Configuration::load( $this->opo_config->get( 'linked_data_config' ) );
+		$this->opo_linked_data_conf = Configuration::load('linked_data.conf');
 	}
 
 	# ------------------------------------------------
@@ -97,9 +97,11 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 
 		// Set default values for options
 		$pa_options[ CURLOPT_URL ]            = caGetOption( CURLOPT_URL, $pa_options,
-			"http://vocab.getty.edu/sparql.json?query={$ps_query}" );
+			"https://vocab.getty.edu/sparql.json?query={$ps_query}" );
 		$pa_options[ CURLOPT_CONNECTTIMEOUT ] = caGetOption( CURLOPT_CONNECTTIMEOUT, $pa_options, 2 );
 		$pa_options[ CURLOPT_RETURNTRANSFER ] = caGetOption( CURLOPT_RETURNTRANSFER, $pa_options, 1 );
+		$pa_options[ CURLOPT_FOLLOWLOCATION ] = caGetOption( CURLOPT_FOLLOWLOCATION, $pa_options, true );
+		$pa_options[ CURLOPT_MAXREDIRS ] = caGetOption( CURLOPT_MAXREDIRS, $pa_options, 5 );
 		$pa_options[ CURLOPT_USERAGENT ]      = caGetOption( CURLOPT_USERAGENT, $pa_options,
 			'CollectiveAccess web service lookup' );
 
@@ -431,7 +433,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	}
 
 	protected function _getServiceUrl() {
-		return 'http://vocab.getty.edu/' . $this->getConfigName();
+		return 'https://vocab.getty.edu/' . $this->getConfigName();
 	}
 
 	/**
@@ -475,6 +477,8 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		 * "Coney Island" you get all kinds of Islands, just not the one you're looking for. It's in there somewhere but
 		 * the order field might prevent it from showing up within the limit. So we do our own little piece of "query rewriting" here.
 		 */
+		 
+		$ps_search = strip_tags($ps_search);	// HTML tags do funny things to Getty lookups
 		if ( is_numeric( $ps_search ) ) {
 			$vs_search = $ps_search;
 		} elseif ( isURL( $ps_search ) ) {

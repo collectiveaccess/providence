@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -81,7 +81,7 @@ class BaseEditorController extends ActionController {
 		//
 		// Are we duplicating?
 		//
-		if (($vs_mode == 'dupe') && $this->request->user->canDoAction('can_duplicate_'.$t_subject->tableName())) {
+		if (($vs_mode == 'dupe') && $this->request->user->canDoAction('can_duplicate_'.$t_subject->tableName()) && $t_subject->isLoaded()) {
 			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
 				throw new ApplicationException(_t('CSRF check failed'));
 				return;
@@ -110,7 +110,6 @@ class BaseEditorController extends ActionController {
 				'duplicate_children' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_children')
 			))) {
 				$this->notification->addNotification(_t('Duplicated %1 "%2" (%3)', $vs_type_name, $t_subject->getLabelForDisplay(), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
-
 				// Trigger duplicate hook
 				$this->opo_app_plugin_manager->hookDuplicateItem(
 					[
@@ -122,7 +121,8 @@ class BaseEditorController extends ActionController {
 						'request' => $this->request
 					]
 				);
-
+				Session::save();
+				
 				// redirect to edit newly created dupe.
 				$this->response->setRedirect(caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), array($t_subject->primaryKey() => $t_dupe->getPrimaryKey())));
 				return;
@@ -169,9 +169,30 @@ class BaseEditorController extends ActionController {
 		//
 		// get default screen
 		//
-		if (!($vn_type_id = $t_subject->getTypeID())) {
-			$vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger);
+		if (!($type_id = $t_subject->getTypeID())) {
+			$type = $this->request->getParameter($t_subject->getTypeFieldName() ?? 'type_id', pString);
+			switch($this->ops_table_name) {
+				case 'ca_relationship_types':
+					$t_rel = new ca_relationship_types($type);
+					$type_ids = $t_rel->isLoaded() ? [$t_rel->get('type_id')] : null; 
+					break;
+				default:
+					$type_ids = caMakeTypeIDList($this->ops_table_name, [$type]);
+					break;
+			}
+			if (!$type_ids) {
+				$type_id = null;
+			} else {
+				$type_id = array_shift($type_ids);
+			}
+			if(($this->ops_table_name !== 'ca_relationship_types') && !$type_id && $t_subject->hasField('type_id') && !$t_subject->getFieldInfo('type_id', 'IS_NULL')) {
+				$this->notification->addNotification(_t('Invalid type: %1', $type), __NOTIFICATION_TYPE_ERROR__);
+
+				$this->postError(1270, _t('Invalid type: %1', $type),"BaseEditorController->Edit()");
+				return;
+			}
 		}
+		$this->request->setParameter('type_id', $type_id, 'POST');
 
 		if (!$t_ui || !$t_ui->getPrimaryKey()) {
 			$this->notification->addNotification(_t('There is no configuration available for this editor. Check your system configuration and ensure there is at least one valid configuration for this type of editor.'), __NOTIFICATION_TYPE_ERROR__);
@@ -180,7 +201,7 @@ class BaseEditorController extends ActionController {
 			return;
 		}
 
-		$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
+		$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 			[],
 			[]
 		);
@@ -390,6 +411,9 @@ class BaseEditorController extends ActionController {
 			}
 
 		} else {
+			if ($t_subject->numErrors()) {
+				$this->notification->addNotification(join("; ", $t_subject->getErrors()), __NOTIFICATION_TYPE_ERROR__);
+			}
 			$vs_message = _t("Saved changes to %1", $vs_type_name);
 		}
 
@@ -494,9 +518,9 @@ class BaseEditorController extends ActionController {
 		// if we came here through a rel link, show save and return button
 		$this->getView()->setVar('show_save_and_return', (bool) $this->getRequest()->getParameter('rel', pInteger));
 
-		if(((int)$t_subject->get('access') !== (int)$orig_access) && ($t_subject->tableName() === 'ca_collections')) {
-			ca_acl::applyAccessInheritanceToRelatedObjectsFromCollection($t_subject);
-		}
+		// if(((int)$t_subject->get('access') !== (int)$orig_access) && ($t_subject->tableName() === 'ca_collections')) {
+// 			ca_acl::applyAccessInheritanceToRelatedObjectsFromCollection($t_subject);
+// 		}
 
 		// Are there metadata dictionary alerts?
 		$violations_to_prompt = $t_subject->getMetadataDictionaryRuleViolations(null, ['limitToShowAsPrompt' => true, 'screen_id' => $this->request->getActionExtra()]);
@@ -670,7 +694,8 @@ class BaseEditorController extends ActionController {
 	 * Redirects to a sensible location after a record delete. Defaults to the last find action
 	 * for the current table, which depending on the table may not be available. Can be
 	 * overridden in subclasses/implementations.
-	 * @param string $ps_table table name
+	 *
+	 * @param string $t_subject Instance of deleted row
 	 */
 	protected function redirectAfterDelete($t_subject) {
 		$this->getRequest()->close();
@@ -997,8 +1022,8 @@ class BaseEditorController extends ActionController {
 	public function Access(?array $options=null) {
 		AssetLoadManager::register('tableList');
 		list($subject_id, $t_subject) = $this->_initView($options);
-		if(!method_exists($t_subject, 'supportsACL') || !$t_subject->supportsACL()) {  throw new ApplicationException(_t('ACL not enabled')); }
-
+		
+		if(!caShowAccessControlScreen($t_subject, ['anywhere' => true])) { throw new ApplicationException(_t('ACL not enabled')); }
 		if(!$this->verifyAccess($t_subject)) { return; }
 
 		if ((!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) {
@@ -1016,120 +1041,19 @@ class BaseEditorController extends ActionController {
 	 */
 	public function SetAccess(?array $options=null) {
 		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
-	    	throw new ApplicationException(_t('CSRF check failed'));
+	    	$this->Edit();
 	    	return;
 	    }
 		list($subject_id, $t_subject) = $this->_initView($options);
-		if(!method_exists($t_subject, 'supportsACL') || !$t_subject->supportsACL()) {  throw new ApplicationException(_t('ACL not enabled')); }
-
-		if(!$this->verifyAccess($t_subject)) { return; }
-
-		if ((!$t_subject->isSaveable($this->request)) || (!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) {
-			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2570?r='.urlencode($this->request->getFullUrlPath()));
-			return;
+		
+		if(!$t_subject->setACLAccessFromForm($this->request) && ($t_subject->numErrors() > 0)) {
+			$error = array_shift($t_subject->errors);
+			$error_num = $error->getErrorNumber();
+			$this->response->setRedirect($this->request->config->get('error_display_url')."/n/{$error_num}?r=".urlencode($this->request->getFullUrlPath()));
 		}
 		
-		$subject_table = $t_subject->tableName();
-		$subject_pk = $t_subject->primaryKey();
-		
-		$form_prefix = $this->request->getParameter('_formName', pString);
-
-		$this->opo_app_plugin_manager->hookBeforeSaveItem(array(
-			'id' => $subject_id,
-			'table_num' => $t_subject->tableNum(),
-			'table_name' => $subject_table, 
-			'instance' => &$t_subject,
-			'is_insert' => false)
-		);
-		
-		// Force all?
-		if(($set_all = $this->request->getParameter('set_all_acl_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_acl_inherit_from_parent', pInteger))) {
-			if(!ca_acl::setInheritanceSettingForAllChildRows($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
-				$this->postError(1250, _t('Could not set ACL inheritance settings on child items'),"BaseEditorController->SetAccess()");
-			}
-			$_REQUEST['form_timestamp'] = time();
-		}
-		if(
-			($subject_table === 'ca_collections')
-			&&
-			($set_all = $this->request->getParameter('set_all_acl_inherit_from_ca_collections', pInteger)) || ($set_none = $this->request->getParameter('set_none_acl_inherit_from_ca_collections', pInteger))
-		) {
-			if(!ca_acl::setInheritanceSettingForRelatedObjects($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
-				$this->postError(1250, _t('Could not set ACL inheritance settings on related objects'),"BaseEditorController->SetAccess()");
-			}
-			$_REQUEST['form_timestamp'] = time();
-		}
-		if(
-			($subject_table === 'ca_collections')
-			&&
-			($set_all = $this->request->getParameter('set_all_access_inherit_from_parent', pInteger)) || ($set_none = $this->request->getParameter('set_none_access_inherit_from_parent', pInteger))
-		) {
-			if(!ca_acl::setAccessInheritanceSettingToRelatedObjectsFromCollection($t_subject, $t_subject->getPrimaryKey(), $set_all)) {
-				$this->postError(1250, _t('Could not set public access inheritance settings on related objects'),"BaseEditorController->SetAccess()");
-			}
-			$_REQUEST['form_timestamp'] = time();
-		}
-
-		// Save user ACL's
-		$users_to_set = [];
-		foreach($_REQUEST as $key => $val) {
-			if (preg_match("!^{$form_prefix}_user_id(.*)$!", $key, $matches)) {
-				$user_id = (int)$this->request->getParameter($form_prefix.'_user_id'.$matches[1], pInteger);
-				$access = $this->request->getParameter($form_prefix.'_user_access_'.$matches[1], pInteger);
-				if ($access >= 0) {
-					$users_to_set[$user_id] = $access;
-				}
-			}
-		}
-		$t_subject->setACLUsers($users_to_set, ['preserveInherited' => true]);
-
-		// Save group ACL's
-		$groups_to_set = [];
-		foreach($_REQUEST as $key => $val) {
-			if (preg_match("!^{$form_prefix}_group_id(.*)$!", $key, $matches)) {
-				$group_id = (int)$this->request->getParameter($form_prefix.'_group_id'.$matches[1], pInteger);
-				$access = $this->request->getParameter($form_prefix.'_group_access_'.$matches[1], pInteger);
-				if ($access >= 0) {
-					$groups_to_set[$group_id] = $access;
-				}
-			}
-		}
-		$t_subject->setACLUserGroups($groups_to_set, ['preserveInherited' => true]);
-
-		// Save "world" ACL
-		$t_subject->setACLWorldAccess($this->request->getParameter("{$form_prefix}_access_world", pInteger));
-
-		// Set ACL-related intrinsic fields
-		if ($t_subject->hasField('acl_inherit_from_ca_collections') || $t_subject->hasField('acl_inherit_from_parent') || $t_subject->hasField('access_inherit_from_parent')) {
-			if ($t_subject->hasField('acl_inherit_from_ca_collections')) {
-				$t_subject->set('acl_inherit_from_ca_collections', $this->request->getParameter('acl_inherit_from_ca_collections', pInteger));
-			}
-			if ($t_subject->hasField('acl_inherit_from_parent')) {
-				$t_subject->set('acl_inherit_from_parent', $this->request->getParameter('acl_inherit_from_parent', pInteger));
-			}
-			if ($t_subject->hasField('access_inherit_from_parent')) {
-				$t_subject->set('access_inherit_from_parent', $this->request->getParameter('access_inherit_from_parent', pInteger));
-			}
-			$t_subject->update();
-
-			if ($t_subject->numErrors()) {
-				$this->postError(1250, _t('Could not set ACL inheritance settings: %1', join("; ", $t_subject->getErrors())),"BaseEditorController->SetAccess()");
-			}
-		}
-		
-		ca_acl::updateACLInheritanceForRow($t_subject);
-
-		$this->opo_app_plugin_manager->hookSaveItem(
-			[
-				'id' => $subject_id,
-				'table_num' => $t_subject->tableNum(),
-				'table_name' => $subject_table,
-				'instance' => &$t_subject,
-				'is_insert' => false,
-				'request' => $this->request
-			]
-		);
-
+		$this->notification->addNotification(_t('Saved settings'), __NOTIFICATION_TYPE_INFO__);
+		ca_acl::removeRedundantACLEntries($t_subject->getDb());
 		$this->Access();
 	}
 	# -------------------------------------------------------
@@ -1208,30 +1132,42 @@ class BaseEditorController extends ActionController {
 		AssetLoadManager::register('imageScroller');
 		AssetLoadManager::register('datePickerUI');
 
+
+		$t_subject = Datamodel::getInstanceByTableName($this->ops_table_name);
+		
+		// Load Rich Text Editor Assets based on which type is selected
+		if(strtolower($t_subject->getAppConfig()->get("wysiwyg_editor")) == 'ckeditor'){
+			AssetLoadManager::register('ck5');
+		}
+		else{
+			AssetLoadManager::register('quilljs');
+		}
+
 		$vn_above_id = $vn_after_id = null;
 		
-		$t_subject = Datamodel::getInstanceByTableName($this->ops_table_name);
 		$vn_subject_id = $this->request->getParameter($t_subject->primaryKey(), pInteger);
 
 		if (!$vn_subject_id || !$t_subject->load($vn_subject_id)) {
 			// empty (ie. new) rows don't have a type_id set, which means we'll have no idea which attributes to display
 			// so we get the type_id off of the request
-			if (!$vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger)) {
-				$vn_type_id = null;
+			if (!($type_ids = caMakeTypeIDList($this->ops_table_name, [$this->request->getParameter($t_subject->getTypeFieldName(), pString)], ['includeSubtypes' => false]))) {
+				$type_id = null;
+			} else {
+				$type_id = array_shift($type_ids);
 			}
 
 			// then set the empty row's type_id
 			if($t_subject->hasField($t_subject->getTypeFieldName())) {
-				$t_subject->set($t_subject->getTypeFieldName(), $vn_type_id);
+				$t_subject->set($t_subject->getTypeFieldName(), $type_id);
 			}
 
 			// then reload the definitions (which includes bundle specs)
 			$t_subject->reloadLabelDefinitions();
 		} else {
-			$vn_type_id = $t_subject->getTypeID();
+			$type_id = $t_subject->getTypeID();
 		}
 
-		$t_ui = $this->_getUI($vn_type_id, $pa_options);
+		$t_ui = $this->_getUI($type_id, $pa_options);
 
 		$this->view->setVar($t_subject->primaryKey(), $vn_subject_id);
 		$this->view->setVar('subject_id', $vn_subject_id);
@@ -1306,10 +1242,10 @@ class BaseEditorController extends ActionController {
 		list($vn_subject_id, $t_subject, $t_ui) = $this->_initView($pa_options);
 		if (!$this->request->isLoggedIn()) { return []; }
 
-		if (!($vn_type_id = $t_subject->getTypeID()) && !($vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger))) {
-		    $vn_type_id = $t_subject->getDefaultTypeID();
+		if (!($type_id = $t_subject->getTypeID()) && !($type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger))) {
+		    $type_id = $t_subject->getDefaultTypeID();
 		}
-		$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $pa_params['default']['module'], $pa_params['default']['controller'], $pa_params['default']['action'],
+		$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $type_id, $pa_params['default']['module'], $pa_params['default']['controller'], $pa_params['default']['action'],
 			isset($pa_params['parameters']) ? $pa_params['parameters'] : null,
 			isset($pa_params['requires']) ? $pa_params['requires'] : null,
 			($vn_subject_id > 0) ? false : true,
@@ -1411,6 +1347,7 @@ class BaseEditorController extends ActionController {
 						break;
 				}
 				
+				if(!$va_item['is_enabled'] && !sizeof($va_subtypes)) { continue; }
 				if($this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_use_indented_type_lists')) {
 					$no_new_submenu = $this->getRequest()->config->get($this->ops_table_name.'_no_new_submenu'); 
 					$va_types[$vs_key][] = array(
@@ -1496,6 +1433,7 @@ class BaseEditorController extends ActionController {
 					break;
 			}
 
+			if(!$va_type['is_enabled'] && !sizeof($va_subsubtypes)) { continue; }
 			if($use_indented_lists) {
 				$offset = $level * 16;
 				$va_subtypes[$vs_key][$va_type['item_id']] = array(
@@ -1638,31 +1576,32 @@ class BaseEditorController extends ActionController {
 	 * reload an editing form.
 	 */
 	public function reload() {
-		list($vn_subject_id, $t_subject) = $this->_initView();
+		list($subject_id, $t_subject) = $this->_initView();
 
 		if(!$this->verifyAccess($t_subject)) { return; }
 
-		$ps_bundle = $this->request->getParameter("bundle", pString);
-		$pn_placement_id = $this->request->getParameter("placement_id", pInteger);
+		$bundle = $this->request->getParameter("bundle", pString);
+		$placement_id = $this->request->getParameter("placement_id", pInteger);
 		
-		$ps_sort = $this->request->getParameter("sort", pString);
-		$ps_sort_direction = $this->request->getParameter("sortDirection", pString);
+		$sort = $this->request->getParameter("sort", pString);
+		$sort_direction = $this->request->getParameter("sortDirection", pString);
 
 		$form_name = $this->request->getParameter("formName", pString);
+		$reload_item_list_only = $this->request->getParameter("reloadItemListOnly", pInteger);
 
-		switch($ps_bundle) {
+		switch($bundle) {
 			case '__inspector__':
-				$this->response->addContent($this->info(array($t_subject->primaryKey() => $vn_subject_id, 'type_id' => $this->request->getParameter("type_id", pInteger))));
+				$this->response->addContent($this->info(array($t_subject->primaryKey() => $subject_id, 'type_id' => $this->request->getParameter("type_id", pInteger))));
 				break;
 			default:
-				$t_placement = new ca_editor_ui_bundle_placements($pn_placement_id);
+				$t_placement = new ca_editor_ui_bundle_placements($placement_id);
 
 				if (!$t_placement->getPrimaryKey()) {
 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 					return;
 				}
 
-				if ($t_placement->get('bundle_name') != $ps_bundle) {
+				if ($t_placement->get('bundle_name') != $bundle) {
 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 					return;
 				}
@@ -1670,11 +1609,18 @@ class BaseEditorController extends ActionController {
 				if (!is_array($bundle_sort_defaults = $this->request->user->getVar('bundleSortDefaults'))) { 
 					$bundle_sort_defaults = [];
 				}
-				$bundle_sort_defaults["P{$pn_placement_id}"] = ['sort' => $ps_sort, 'sortDirection' => $ps_sort_direction];
+				$bundle_sort_defaults["P{$placement_id}"] = ['sort' => $sort, 'sortDirection' => $sort_direction];
 				$this->request->user->setVar('bundleSortDefaults', $bundle_sort_defaults);
 				
 				$bundle_label = null;
-				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, "P{$pn_placement_id}", array_merge($t_placement->get('settings') ?? [], ['placement_id' => $pn_placement_id]), ['formName' => $form_name, 'request' => $this->request, 'contentOnly' => true, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction, 'userSetSort' => true], $bundle_label));
+				
+				$content = $t_subject->getBundleFormHTML($bundle, "P{$placement_id}", array_merge($t_placement->get('settings') ?? [], ['placement_id' => $placement_id]), ['formName' => $form_name, 'request' => $this->request, 'contentOnly' => true, 'sort' => $sort, 'sortDirection' => $sort_direction, 'userSetSort' => true, 'relatedListOnly' => $reload_item_list_only], $bundle_label);
+				if($reload_item_list_only) {
+					$this->response->setContentType('application/json');
+					$this->response->addContent(json_encode($content));
+				} else {
+					$this->response->addContent($content);
+				}
 				break;
 		}
 	}
@@ -1683,22 +1629,22 @@ class BaseEditorController extends ActionController {
 	 * Return partial list of values for bundle. Used for incremental loading of relationship lists.
 	 */
 	public function loadBundleValues() {
-		list($vn_subject_id, $t_subject) = $this->_initView();
+		list($subject_id, $t_subject) = $this->_initView();
 
 		if(!$this->verifyAccess($t_subject)) { return; }
 		
-		$ps_bundle_name = $this->request->getParameter("bundle", pString);
-		if ($this->request->user->getBundleAccessLevel($t_subject->tableName(), $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
+		$bundle_name = $this->request->getParameter("bundle", pString);
+		if ($this->request->user->getBundleAccessLevel($t_subject->tableName(), $bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
 
-		$pn_placement_id = $this->request->getParameter("placement_id", pInteger);
-		$pn_start = (int)$this->request->getParameter("start", pInteger);
-		if (!($pn_limit = $this->request->getParameter("limit", pInteger))) { $pn_limit = null; }
+		$placement_id = $this->request->getParameter("placement_id", pInteger);
+		$start = (int)$this->request->getParameter("start", pInteger);
+		if (!($limit = $this->request->getParameter("limit", pInteger))) { $limit = null; }
 		$sort = $this->request->getParameter("sort", pString);
 		$sort_direction = $this->request->getParameter("sortDirection", pString);
 
-		$t_placement = new ca_editor_ui_bundle_placements($pn_placement_id);
+		$t_placement = new ca_editor_ui_bundle_placements($placement_id);
 		
-		$d = $t_subject->getBundleFormValues($ps_bundle_name, "{$pn_placement_id}", $t_placement->get('settings'), array('start' => $pn_start, 'limit' => $pn_limit, 'sort' => $sort, 'sortDirection' => $sort_direction, 'request' => $this->request, 'contentOnly' => true));
+		$d = $t_subject->getBundleFormValues($bundle_name, "{$placement_id}", $t_placement->get('settings'), array('start' => $start, 'limit' => $limit, 'sort' => $sort, 'sortDirection' => $sort_direction, 'request' => $this->request, 'contentOnly' => true));
 
 		$this->response->setContentType('application/json');
 		$this->response->addContent(json_encode(['sort' => array_keys($d ?? []), 'data' => $d]));
@@ -1788,7 +1734,7 @@ class BaseEditorController extends ActionController {
 		}
 		
 		$vn_item_id 		= (isset($pa_parameters[$vs_pk])) ? $pa_parameters[$vs_pk] : null;
-		$vn_type_id 		= (isset($pa_parameters['type_id'])) ? $pa_parameters['type_id'] : null;
+		$type_id 		= (isset($pa_parameters['type_id'])) ? $pa_parameters['type_id'] : null;
 
 		$t_item->load($vn_item_id);
 
@@ -1823,7 +1769,7 @@ class BaseEditorController extends ActionController {
 				$this->view->setVar('object_collection_collection_ancestors', []); // collections to display as object parents when ca_objects_x_collections_hierarchy_enabled is enabled
 				if (($t_item->tableName() == 'ca_objects') && $t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) {
 					// Is object part of a collection?
-					if(is_array($va_collections = $t_item->getRelatedItems('ca_collections', array('restrictToRelationshipTypes' => array($t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')))))) {
+					if(is_array($va_collections = $t_item->getRelatedItems('ca_collections', array('restrictToRelationshipTypes' => caGetObjectCollectionHierarchyRelationshipTypes())))) {
 						$this->view->setVar('object_collection_collection_ancestors', $va_collections);
 					}
 				}
@@ -1843,14 +1789,14 @@ class BaseEditorController extends ActionController {
 			}
 		} else {
 			if($t_item->hasField('type_id')) {
-				$t_item->set('type_id', $vn_type_id);
+				$t_item->set('type_id', $type_id);
 			}
 		}
 		$this->view->setVar('t_item', $t_item);
 		$this->view->setVar('screen', $this->request->getActionExtra());						// name of screen
 		$this->view->setVar('result_context', $this->getResultContext());
 
-		$this->view->setVar('t_ui', $t_ui = $this->_getUI($vn_type_id));
+		$this->view->setVar('t_ui', $t_ui = $this->_getUI($type_id));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2069,10 +2015,10 @@ class BaseEditorController extends ActionController {
 			//
 			// View object representation
 			//
-			require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
 			$t_instance = new ca_object_representations($pn_representation_id);
 			
-			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE')))) {
+			$vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE');
+			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype))) {
 				throw new ApplicationException(_t('Invalid viewer for '.$vs_mimetype));
 			}
 			

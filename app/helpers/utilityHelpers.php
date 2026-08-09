@@ -1663,7 +1663,7 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Returns the media class to which a MIME type belongs, or null if the MIME type does not belong to a class. Possible classes are 'image', 'video', 'audio', 'document', '3d', 'vr' and 'binary'.
+	 * Returns the media class to which a MIME type belongs, or null if the MIME type does not belong to a class. Possible classes are 'image', 'video', 'audio', 'document', '3d', 'panorama' and 'binary'.
 	 *
 	 * @param string $mimetype A media MIME type
 	 * @param array $options Options include:
@@ -1706,7 +1706,7 @@ function caFileIsIncludable($ps_file) {
 						return $for_iiif ? 'Video' : 'video';
 						break;
 					case 'application/dicom':
-						return $for_iiif ? 'Image' : 'image';;
+						return $for_iiif ? 'Image' : 'image';
 						break;
 					case 'application/ply':
 					case 'application/stl':
@@ -1716,7 +1716,9 @@ function caFileIsIncludable($ps_file) {
 						return $for_iiif ? '3D' : '3d';
 						break;
 					case 'x-world/x-qtvr':
-						return $for_iiif ? 'VR' : 'vr';
+					case 'application/panorama':
+					case 'application/orbitvu':
+						return $for_iiif ? 'PANORAMA' : 'panorama';
 						break;
 					case 'application/octet-stream':
 						return $for_iiif ? 'Binary' : 'binary';
@@ -3078,11 +3080,32 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $ps_date_expression
 	 * @return bool
 	 */
-	function caDateEndsInFuture($ps_date_expression) {
-		if ($va_date = caDateToHistoricTimestamps($ps_date_expression)) {
-			$va_now = caDateToHistoricTimestamps(_t('now'));
+	function caDateEndsInFuture(?string $date_expression) {
+		if(!trim($date_expression)) { return false; }
+		if ($date = caDateToHistoricTimestamps($date_expression)) {
+			$now = caDateToHistoricTimestamps(_t('now'));
 			if (
-				($va_date['end'] >= $va_now['end'])
+				($date['end'] >= $now['end'])
+			) {
+				return true;
+			}
+		}
+		return false;
+	}
+	# ----------------------------------------
+	/**
+	 * Returns true if the date expression starts before the current date/time.
+	 * Only the start point of the expression is considered.
+	 *
+	 * @param string $date_expression
+	 * @return bool
+	 */
+	function caDateStartsInPast(?string $date_expression) {
+		if(!trim($date_expression)) { return false; }
+		if ($date = caDateToHistoricTimestamps($date_expression)) {
+			$now = caDateToHistoricTimestamps(_t('now'));
+			if (
+				($date['start'] <= $now['start'])
 			) {
 				return true;
 			}
@@ -4475,11 +4498,14 @@ function caFileIsIncludable($ps_file) {
 		$vb_in_tag = $vb_in_single_quote = $vb_in_double_quote = $vb_have_seen_param_delimiter = $vb_is_ca_get_ref = false;
 		$vs_tag = '';
 		$vs_last_char = null;
+		
+		$chars = preg_split('//u', $ps_template, -1, PREG_SPLIT_NO_EMPTY);
 
-		for($i=0; $i < mb_strlen($ps_template); $i++) {
-			switch($vs_char = mb_substr($ps_template, $i, 1)) {
+		for($i=0; $i < sizeof($chars); $i++) {
+			$vs_char = $chars[$i];
+			switch($vs_char) {
 				case '{':
-				    if (!$vb_in_tag && !$vb_in_single_quote && (mb_substr($ps_template, $i+1, 1) === '^')) {
+				    if (!$vb_in_tag && !$vb_in_single_quote && (($chars[$i + 1] ?? null) === '^')) {
 				        continue(2);
 				    }
 				    break;
@@ -4544,7 +4570,7 @@ function caFileIsIncludable($ps_file) {
 						if (
 							($vb_is_ca_get_ref && !$vb_have_seen_param_delimiter && (!preg_match("![A-Za-z0-9_\-\.~:]!", $vs_char)))
 							||
-							(($vs_char === ':') && !preg_match("!^[:]*[A-Za-z0-9]+!", mb_substr($ps_template, $i + 1)))	// colon not followed by letters, numbers or another colon is not part of tag
+							(($vs_char === ':') && !preg_match("!^[:]*[A-Za-z0-9]+!", ($chars[$i + 1] ?? null)))	// colon not followed by letters, numbers or another colon is not part of tag
 						) {
 							if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
 							$vs_tag = '';
@@ -4557,7 +4583,6 @@ function caFileIsIncludable($ps_file) {
 			}
 			$vs_last_char = $vs_char;
 		}
-
 		if ($vb_in_tag) {
 			if ($vs_tag = trim($vs_tag)) { $va_tags[] = $vs_tag; }
 		}
@@ -4577,6 +4602,7 @@ function caFileIsIncludable($ps_file) {
 
 			$va_tags[$vn_i] = rtrim($vs_tag, ")/.,%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
 		}
+		
 		return array_filter($va_tags, "strlen");
 	}
 	# ----------------------------------------
@@ -4782,14 +4808,17 @@ function caFileIsIncludable($ps_file) {
 	 * @param int $length Length of generated password
 	 * @param array $options Options include:
 	 *		uppercase = force password to use all uppercase characters. [Default is false]
+	 *		policies = password policy configuration, overriding that set in authentication.conf [Default is null - use authentication.conf settings]
 	 *
 	 * @return string
 	 */
 	function caGenerateRandomPassword($length=6, $options=null) {
 		$auth_config = Configuration::load('authentication.conf');
+		
+		$policies = caGetOption('policies', $options, $auth_config->get('password_policies'));
 
 		if(strtolower($auth_config->get('auth_adapter')) === 'causers') { // password policies only apply to integral auth system
-			if (is_array($policies = $auth_config->get('password_policies')) && sizeof($policies)) {
+			if (is_array($policies) && sizeof($policies)) {
 				$limits = [];
 				foreach($policies as $k => $psettings) {
 					if(isset($psettings['rules']) && is_array($psettings['rules'])) {
@@ -4879,11 +4908,28 @@ function caFileIsIncludable($ps_file) {
 			throw new UrlFetchException(_t("Cannot open temporary file for media fetched from URL [%1]", $url));
 		}
 		
+		if($curl_path = caCurlImpersonateInstalled()) {
+			$ch = new CurlImpersonate\CurlImpersonate();
+			$ch->setopt(CURLCMDOPT_URL, $url);
+			$ch->setopt(CURLCMDOPT_METHOD, 'GET');
+			$ch->setopt(CURLCMDOPT_HEADER, false);
+			$ch->setopt(CURLCMDOPT_ENGINE, $curl_path);
+			
+			$ch->execStream();
+			
+			while ($data = $ch->readStream(1024*128)) {
+				fputs($r_outgoing_fp, $data);
+			}
+			fclose($r_outgoing_fp);
+			return $tmp_file;
+		}
+
+
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_FILE, $r_outgoing_fp);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 240);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-		curl_exec($ch);
+		curl_exec($ch);	
  
 		if(curl_errno($ch)){
 			throw new UrlFetchException(_t('Media fetch from URL [%1] failed: %2', $url, curl_error($ch)));
@@ -5274,9 +5320,22 @@ function caFileIsIncludable($ps_file) {
 	function caUrlExists(string $url, ?array $options=null) : bool { 
 		$allow_redirects = caGetOption('allowRedirects', $options, true);
 		
-		if(!is_array($headers = @get_headers($url))) { return false; }
-	
-		if(preg_match("!([\d]{3}) OK$!i", $headers[0], $m)) {
+		if($curl_path = caCurlImpersonateInstalled()) {
+			$ch = new CurlImpersonate\CurlImpersonate();
+			$ch->setopt(CURLCMDOPT_URL, $url);
+			$ch->setopt(CURLCMDOPT_METHOD, 'GET');
+			$ch->setopt(CURLCMDOPT_HEADER, false);
+			$ch->setopt(CURLCMDOPT_ENGINE, $curl_path);
+			
+			$headers = explode("\n", $ch->execStandard(['head' => true]));
+		} else {
+			if(!is_array($headers = @get_headers($url))) { return false; }
+		}
+		if(
+			preg_match("!([\d]{3}) (OK|MOVED)!i", $headers[0], $m)
+			||
+			preg_match("!HTTP/[\d]{1} ([\d]{3})!i", $headers[0], $m)
+		) {
 			$sc = (int)$m[1];
 			if(($sc >= 200) && ($sc <= 299)) { return true; }
 			if($allow_redirects && ($sc >= 300) && ($sc <= 399)) { return true; }
@@ -5315,7 +5374,7 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 *
 	 */
-	 function caGetObjectCollectionHierarchyRelationshipTypes() {
+	function caGetObjectCollectionHierarchyRelationshipTypes() {
 	 	$config = Configuration::load();
 	 	
 	 	if($type = $config->get('ca_objects_x_collections_hierarchy_relationship_type')) {
@@ -5327,4 +5386,14 @@ function caFileIsIncludable($ps_file) {
 	 	}
 	 	return null;
 	 }
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetExcelCellFromSheet($sheet, mixed $coordinate) {
+			if (is_array($coordinate)) {
+				$coordinate = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($coordinate[0]) . $coordinate[1];
+			}
+			return $sheet->getCell($coordinate);
+		};
 	# ----------------------------------------

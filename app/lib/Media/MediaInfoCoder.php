@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2024 Whirl-i-Gig
+ * Copyright 2006-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -119,13 +119,13 @@ class MediaInfoCoder {
 		
 		if ($ps_version) {
 			if (!$ps_key) {
-				return $va_media_info[$ps_version];
+				return $va_media_info[$ps_version] ?? null;
 			} else { 
-			    if ($v = $va_media_info[$ps_version][$ps_key]) { return $v; }
+			    if ($v = ($va_media_info[$ps_version][$ps_key] ?? null)) { return $v; }
 			    
 			    // Make case insensitive
-			    if ($v = $va_media_info[$ps_version][strtoupper($ps_key)]) { return $v; }
-			    if ($v = $va_media_info[$ps_version][strtolower($ps_key)]) { return $v; }
+			    if ($v = ($va_media_info[$ps_version][strtoupper($ps_key)] ?? null)) { return $v; }
+			    if ($v = ($va_media_info[$ps_version][strtolower($ps_key)] ?? null)) { return $v; }
 				return null;
 			}
 		} else {
@@ -172,7 +172,7 @@ class MediaInfoCoder {
 			return null;
 		}
 		
-		$va_volume_info = $this->opo_volume_info->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
+		$va_volume_info = $this->opo_volume_info->getVolumeInformation($va_media_info[$ps_version]["VOLUME"] ?? null);
 		if (!is_array($va_volume_info)) {
 			return false;
 		}
@@ -237,7 +237,7 @@ class MediaInfoCoder {
 			return null;
 		}
 		
-		$va_volume_info = $this->opo_volume_info->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
+		$va_volume_info = $this->opo_volume_info->getVolumeInformation($va_media_info[$ps_version]["VOLUME"] ?? null);
 		if (!is_array($va_volume_info)) {
 			return false;
 		}
@@ -302,14 +302,18 @@ class MediaInfoCoder {
 		$o_media = new Media();
 		
 		$o_vol = new MediaVolumes();
-		$va_volume = $o_vol->getVolumeInformation($va_media_info[$ps_version]['VOLUME']);
+		$va_volume = $o_vol->getVolumeInformation($va_media_info[$ps_version]['VOLUME'] ?? null);
 		
-		$va_properties = $va_media_info[$ps_version]["PROPERTIES"];
+		$va_properties = $va_media_info[$ps_version]["PROPERTIES"] ?? null;
 		if (isset($pa_options['width'])) { $va_properties['width'] = $pa_options['width']; }
 		if (isset($pa_options['height'])) { $va_properties['height'] = $pa_options['height']; }
 		
+		$pa_options['FETCHED_ORIGINAL_URL'] = $va_media_info['INPUT']['FETCHED_ORIGINAL_URL'] ?? null;
+		$pa_options['FETCHED_FROM'] = $va_media_info['INPUT']['FETCHED_FROM'] ?? null;
+		$pa_options['FETCHED_BY'] = $va_media_info['INPUT']['FETCHED_BY'] ?? null;
+		$pa_options['FETCHED_ON'] = $va_media_info['INPUT']['FETCHED_ON'] ?? null;
 		
-		return $o_media->htmlTag($va_media_info[$ps_version]["MIMETYPE"], $vs_url, $va_properties, $pa_options, $va_volume);
+		return $o_media->htmlTag($va_media_info[$ps_version]["MIMETYPE"] ?? null, $vs_url, $va_properties, $pa_options, $va_volume);
 	}
 	# ---------------------------------------------------------------------------
 	/**

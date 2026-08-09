@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2023 Whirl-i-Gig
+ * Copyright 2007-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,14 +29,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
 require_once(__CA_LIB_DIR__."/BaseObject.php");
 require_once(__CA_LIB_DIR__."/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/Controller/Request/RequestHTTP.php");
+require_once(__CA_LIB_DIR__."/Controller/Router.php");
 require_once(__CA_LIB_DIR__."/Controller/Response/ResponseHTTP.php");
 require_once(__CA_LIB_DIR__."/AccessRestrictions.php");
 require_once(__CA_LIB_DIR__."/ApplicationPluginManager.php");
@@ -58,8 +54,12 @@ class RequestDispatcher extends BaseObject {
 	private $ops_default_action;
 	private $ops_application_plugins_path;
 	private $ops_theme_plugins_path;
+	
+	private $router = null;
 	# -------------------------------------------------------
 	public function __construct($request=null, $response=null) {
+		$this->router = new \CA\Controller\Router();
+		
 		parent::__construct();
 		
 		if ($request) {
@@ -211,6 +211,21 @@ class RequestDispatcher extends BaseObject {
 									}
 							
 									if ($vb_is_error) {
+										// Try routing table?
+										if($route = $this->router->dispatch($this->request)) {
+											$action_path = explode('/', $route['to']['action']);
+											$this->opa_module_path = $route['to']['module'] ? [$route['to']['module']] : [];
+											$this->request->setModulePath($route['to']['module'] ? $route['to']['module'] : '');
+											$this->request->setController($this->ops_controller = $route['to']['controller']);
+											$this->request->setAction($this->ops_action = array_shift($action_path));
+											$this->request->setActionExtra($this->ops_action_extra = join('/', $action_path));
+											
+											foreach($route['to']['params'] ?? [] as $p => $v) {
+												$this->request->setParameter($p, $v);
+											}
+											continue;
+										}
+			
 										// Try to load "Default" controller in controllers directory and call method with controller name
 										if (file_exists($this->ops_controller_path.'/DefaultController.php') && @include_once($this->ops_controller_path.'/DefaultController.php')) {
 						

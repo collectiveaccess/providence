@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2025 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,13 +60,15 @@ $entity_lookup_params['types'] = join(",",array_map(function($v) { return $v['it
 
 $policy  					= $this->getVar('policy');
 $policy_info  				= $this->getVar('policy_info');
-
 $display_mode 				= caGetOption('displayMode', $settings, null);
 
 $allow_value_interstitial_edit 	= !caGetOption('hide_value_interstitial_edit', $settings, false);
 $allow_value_delete 		= !caGetOption('hide_value_delete', $settings, false);
 
-$batch			= $this->getVar('batch');
+$batch						= $this->getVar('batch');
+
+$loan_types 				= array_keys($policy_info['elements']['ca_loans'] ?? []);
+$movement_types 			= array_keys($policy_info['elements']['ca_movements'] ?? []);
 
 $home_location_idno = null;
 if ($t_subject->hasField('home_location_id')) {
@@ -706,7 +708,7 @@ if($show_entity_controls) {
 </div>
 
 <div id="caRelationQuickAddPanel<?= $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
-	<div id="caRelationQuickAddPanel<?= $vs_id_prefix; ?>ContentArea">
+	<div id="caRelationQuickAddPanel<?= $vs_id_prefix; ?>ContentArea" data-relatedTable="<?= $t_subject->tableName(); ?>" data-relatedID="<?= $t_subject->getPrimaryKey(); ?>" data-relationshipType="" data-createRelationshipOnSave="<?= $this->getVar('quickadd_create_relationship_on_save'); ?>">
 	<div class='dialogHeader'><?= _t('Quick Add'); ?></div>
 		
 	</div>
@@ -717,10 +719,13 @@ if($show_entity_controls) {
 	</div>
 </div>
 
+<script type="text/javascript">
+<?php if($display_mode === 'tabs') { ?>
+		jQuery("#<?= $vs_id_prefix; ?>Tabs").tabs({ selected: 0 });	
+<?php } ?>	
 <?php
 	if (!$read_only) {
 ?>
-<script type="text/javascript">
 	var caRelationQuickAddPanel<?= $vs_id_prefix; ?>, caRelationInterstitialEditPanel<?= $vs_id_prefix; ?>;
 	jQuery(document).ready(function() {
 	
@@ -750,9 +755,7 @@ if($show_entity_controls) {
 			e.preventDefault();
 		});
 		
-	<?php if($display_mode === 'tabs') { ?>
-			jQuery("#<?= $vs_id_prefix; ?>Tabs").tabs({ selected: 0 });	
-	<?php } ?>	
+	
 	
 			if (caUI.initPanel) {
 				caRelationQuickAddPanel<?= $vs_id_prefix; ?> = caUI.initPanel({ 
@@ -926,7 +929,7 @@ if($show_entity_controls) {
 				showEmptyFormsOnLoad: 0,
 				minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_loans_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 				relationshipTypes: <?= json_encode($this->getVar('loan_relationship_types_by_sub_type')); ?>,
-				autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Loan', 'Get', []); ?>',
+				autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Loan', 'Get', ['types' => $loan_types]); ?>',
 				types: <?= json_encode($settings['restrict_to_types']); ?>,
 				readonly: <?= $read_only ? "true" : "false"; ?>,
 				isSortable: <?= ($read_only || $vs_sort) ? "false" : "true"; ?>,
@@ -975,7 +978,7 @@ if($show_entity_controls) {
 				showEmptyFormsOnLoad: 0,
 				minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_movements_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
 				relationshipTypes: <?= json_encode($this->getVar('movement_relationship_types_by_sub_type')); ?>,
-				autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Movement', 'Get', []); ?>',
+				autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Movement', 'Get', ['types' => $movement_types]); ?>',
 				types: <?= json_encode($settings['restrict_to_types']); ?>,
 				readonly: <?= $read_only ? "true" : "false"; ?>,
 				isSortable: <?= ($read_only || $vs_sort) ? "false" : "true"; ?>,
@@ -1189,6 +1192,7 @@ if($show_entity_controls) {
 
 		});
 	});
-</script>
 <?php
 	}
+?>
+</script>

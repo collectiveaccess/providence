@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019-2022 Whirl-i-Gig
+ * Copyright 2019-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,32 +25,31 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	AssetLoadManager::register('sortableUI');
+AssetLoadManager::register('sortableUI');
 
-	$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$t_entry 				= $this->getVar('t_entry');	
-	$t_rule					= $this->getVar('t_rule');
-	
-	$settings_values_list	= $this->getVar('settings_values_list');
-	$settings_tags			= $this->getVar('settings_tags');
-	$settings				= $this->getVar('settings');
+$id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
+$t_entry 				= $this->getVar('t_entry');	
+$t_rule					= $this->getVar('t_rule');
 
-	$va_initial_values = $this->getVar('rules');	// list of existing rules
-	if(!is_array($va_initial_values)) { $va_initial_values = []; }
-	$va_errors = $va_failed_inserts = [];
-	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings);
+$settings_values_list	= $this->getVar('settings_values_list');
+$settings_tags			= $this->getVar('settings_tags');
+$settings				= $this->getVar('settings');
+
+$initial_values = $this->getVar('rules');	// list of existing rules
+if(!is_array($initial_values)) { $initial_values = []; }
+$errors = $failed_inserts = [];
+
+print caEditorBundleShowHideControl($this->request, $id_prefix);
+print caEditorBundleMetadataDictionary($this->request, $id_prefix, $settings);
  ?>
- <div id="<?= $vs_id_prefix; ?>">
+ <div id="<?= $id_prefix; ?>">
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form
 	//
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
-		<div id="<?= $vs_id_prefix; ?>Item_{n}" class="labelInfo">
+		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo">
 			<span class="formLabelError">{error}</span>
 			<table class="uiScreenItem">
 				<tr>
@@ -67,7 +66,7 @@
 									</td>
 								</tr>
 							</table>
-							<?= str_replace("textarea", "textentry", $t_rule->getHTMLSettingForm(array('settings' => $settings_values_list, 'format' => "{$vs_id_prefix}_^setting_name_{n}", 'no_tooltips' => true))); ?>
+							<?= str_replace("textarea", "textentry", $t_rule->getHTMLSettingForm(array('settings' => $settings_values_list, 'format' => "{$id_prefix}_^setting_name_{n}", 'no_tooltips' => true))); ?>
 						</div>
 					</td>
 					<td valign="top">
@@ -78,9 +77,6 @@
 				</tr>
 			</table>
 		</div>
-<?php
-	//print TooltipManager::getLoadHTML('bundle_ca_tour_stops_list');
-?>
 	</textarea>
 	
 	<div class="bundleContainer">
@@ -95,21 +91,21 @@
 ?>
 			
 <script type="text/javascript">
-	caUI.initBundle('#<?= $vs_id_prefix; ?>', {
-		fieldNamePrefix: '<?= $vs_id_prefix; ?>_',
+	caUI.initBundle('#<?= $id_prefix; ?>', {
+		fieldNamePrefix: '<?= $id_prefix; ?>_',
 		templateValues: ['rule_code', 'rule_level', 'expression', 'rule_id', 'typename', <?= join(", ", array_map(function($v) { return "'{$v}'"; }, $settings_tags)); ?>],
-		initialValues: <?= json_encode($va_initial_values); ?>,
-		initialValueOrder: <?= json_encode(array_keys($va_initial_values)); ?>,
-		errors: <?= json_encode($va_errors); ?>,
-		forceNewValues: <?= json_encode($va_failed_inserts); ?>,
-		itemID: '<?= $vs_id_prefix; ?>Item_',
+		initialValues: <?= json_encode($initial_values); ?>,
+		initialValueOrder: <?= json_encode(array_keys($initial_values)); ?>,
+		errors: <?= json_encode($errors); ?>,
+		forceNewValues: <?= json_encode($failed_inserts); ?>,
+		itemID: '<?= $id_prefix; ?>Item_',
 		templateClassName: 'caItemTemplate',
 		itemListClassName: 'caItemList',
 		itemClassName: 'labelInfo',
 		addButtonClassName: 'caAddItemButton',
 		deleteButtonClassName: 'caDeleteItemButton',
-		showOnNewIDList: ['<?= $vs_id_prefix; ?>_edit_name_'],
-		hideOnNewIDList: ['<?= $vs_id_prefix; ?>_rule_info_', '<?= $vs_id_prefix; ?>_edit_'],
+		showOnNewIDList: ['<?= $id_prefix; ?>_edit_name_'],
+		hideOnNewIDList: ['<?= $id_prefix; ?>_rule_info_', '<?= $id_prefix; ?>_edit_'],
 		showEmptyFormsOnLoad: 1,
 		isSortable: false,
 		defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>

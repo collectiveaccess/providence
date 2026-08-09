@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2025 Whirl-i-Gig
+ * Copyright 2010-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -105,7 +105,9 @@ class trackProcessingWidget extends BaseWidget implements IWidget {
 			
 			if ((int)$row["error_code"] > 0) {
 				$o_e = new ApplicationError((int)$row["error_code"], '', '', '', false, false);
-				$row["error_message"] = $o_e->getErrorMessage();
+				if(!($row["error_message"] = $o_e->getErrorDescription())) {
+					$row["error_message"] = $o_e->getErrorMessage();
+				}
 			} else {
 				$row["error_message"] = '';
 			}

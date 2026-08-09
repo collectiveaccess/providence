@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,6 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
+$config = Configuration::load();
+
 $id_prefix 					= $this->getVar('placement_code').$this->getVar('id_prefix');
 $labels 					= $this->getVar('labels');
 $t_label 					= $this->getVar('t_label');
@@ -94,7 +96,7 @@ $show_checked 				= $t_subject->getTypeSetting('show_checked_for_preferred_label
 ?>
 							</tr>
 <?php
-	if (Configuration::load()->get('ca_entities_user_settable_sortable_value')) {
+	if ($config->get('ca_entities_user_settable_sortable_value')) {
 ?>
 							<tr>
 								<td colspan="2">
@@ -177,7 +179,7 @@ $show_checked 				= $t_subject->getTypeSetting('show_checked_for_preferred_label
 								<td colspan="5"><?= $t_label->htmlFormElement('displayname', null, array('width' => '670px', 'name' => "{fieldNamePrefix}displayname_{n}", 'id' => "{fieldNamePrefix}displayname_{n}", "value" => "{{displayname}}", 'width' => '670px', 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_preferred', 'textAreaTagName' => 'textentry', 'readonly' => $read_only)); ?></td>
 							</tr>
 <?php
-	 if (Configuration::load()->get('ca_entities_user_settable_sortable_value')) {
+	 if ($config->get('ca_entities_user_settable_sortable_value')) {
 ?>
 							<tr>
 								<td colspan="5">
@@ -254,7 +256,7 @@ $show_checked 				= $t_subject->getTypeSetting('show_checked_for_preferred_label
 								</td>
 							</tr>
 <?php
-	 if (Configuration::load()->get('ca_entities_user_settable_sortable_value')) { 
+	 if ($config->get('ca_entities_user_settable_sortable_value')) { 
 ?>
 							<tr>
 								<td colspan="5">
@@ -335,8 +337,8 @@ $show_checked 				= $t_subject->getTypeSetting('show_checked_for_preferred_label
 		readonly: <?= $read_only ? "1" : "0"; ?>,
 		defaultLocaleID: <?= ca_locales::getDefaultCataloguingLocaleID(); ?>,
 		defaultAccess: <?= json_encode(caGetDefaultItemValue('access_statuses')); ?>,
-		checkForDupes: <?= ($t_label->getAppConfig()->get('ca_entities_warn_when_preferred_label_exists') ? 'true' : 'false') ?>,
+		checkForDupes: <?= ($config->get('ca_entities_warn_when_preferred_label_exists') ? 'true' : 'false') ?>,
 		checkForDupesUrl: '<?= caNavUrl($this->request, 'editor/entities', 'EntityEditor', 'checkForDupeLabels')?>',
-		dupeLabelWarning: '<?= _t('Label is already in use'); ?>'
+		dupeLabelWarning: <?= json_encode($config->get('ca_entities_warn_when_preferred_label_exists_message') ?? _t('Label is already in use')); ?>
 	});
 </script>

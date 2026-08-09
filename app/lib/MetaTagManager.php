@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2025 Whirl-i-Gig
+ * Copyright 2010-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,30 +27,47 @@
  */
 class MetaTagManager {
 	# --------------------------------------------------------------------------------
-	private static $opa_tags;
-	private static $ops_window_title = '';
+	/**
+	 * List of tags to render
+	 
+	 * @array
+	 */
+	private static $tags;
+	
+	/**
+	 * Window title text, overriding application default
+	 *
+	 * @string
+	 */
+	private static $window_title = '';
 	# --------------------------------------------------------------------------------
 	/**
-	 * Initialize 
+	 * Initialize tag lists
 	 *
 	 * @return void
 	 */
 	static function init() {
-		MetaTagManager::$opa_tags = array('meta' => array(), 'link' => array());
+		MetaTagManager::$tags = ['meta' => [], 'link' => []];
 	}
 	# --------------------------------------------------------------------------------
 	/**
 	 * Add <meta> tag to response
 	 *
-	 * @param $ps_tag_name (string) - name attribute of <meta> tag
-	 * @param $ps_content (string) - content of <meta> tag
-	 * @return (bool) - Returns true if tooltip was successfully added, false if not
+	 * @param string $tag_name Name attribute of <meta> tag
+	 * @param string|array $content Content of <meta> tag
+	 *
+	 * @return bool True if tag was added
 	 */
-	static function addMeta($ps_tag_name, $ps_content) {			
-		if (!is_array(MetaTagManager::$opa_tags)) { MetaTagManager::init(); }
-		if (!$ps_tag_name) { return false; }
+	static function addMeta(string $tag_name, string|array $content) : bool {			
+		if (!is_array(MetaTagManager::$tags)) { MetaTagManager::init(); }
+		if (!$tag_name) { return false; }
 		
-		MetaTagManager::$opa_tags['meta'][$ps_tag_name] = $ps_content;
+		if(!is_array(MetaTagManager::$tags['meta'][$tag_name])) { MetaTagManager::$tags['meta'][$tag_name] = []; }
+		if(is_array($content)) {
+			MetaTagManager::$tags['meta'][$tag_name] = array_merge(MetaTagManager::$tags['meta'][$tag_name], $content);
+		} else {
+			MetaTagManager::$tags['meta'][$tag_name][] = $content;
+		}
 		
 		return true;
 	}
@@ -58,36 +75,42 @@ class MetaTagManager {
 	/**
 	 * Add <meta> tag to response with property
 	 *
-	 * @param $ps_tag_property (string) - name attribute of <meta> tag
-	 * @param $ps_content (string) - content of <meta> tag
-	 * @return (bool) - Returns true if was successfully added, false if not
+	 * @param string $tag_property Name attribute of <meta> tag
+	 * @param string|array $content Content of <meta> tag
+	 *
+	 * @return bool True if tag was added
 	 */
-	static function addMetaProperty($ps_tag_property, $ps_content) {			
-		if (!is_array(MetaTagManager::$opa_tags)) { MetaTagManager::init(); }
-		if (!$ps_tag_property) { return false; }
+	static function addMetaProperty(string $tag_property, string|array $content) : bool {			
+		if (!is_array(MetaTagManager::$tags)) { MetaTagManager::init(); }
+		if (!$tag_property) { return false; }
 		
-		MetaTagManager::$opa_tags['meta_property'][$ps_tag_property] = $ps_content;
-		
+		if(!is_array(MetaTagManager::$tags['meta_property'][$tag_property])) { MetaTagManager::$tags['meta_property'][$tag_property] = []; }
+		if(is_array($content)) {
+			MetaTagManager::$tags['meta_property'][$tag_property] = array_merge(MetaTagManager::$tags['meta_property'][$tag_property], $content);
+		} else {
+			MetaTagManager::$tags['meta_property'][$tag_property][] = $content;
+		}
 		return true;
 	}
 	# --------------------------------------------------------------------------------
 	/**
 	 * Add <link> tag to response.
 	 *
-	 * @param $ps_rel (string) - rel attribute of <link> tag
-	 * @param $ps_href (string) - href attribute of <link> tag
-	 * @param $ps_type (string) - type attribute of <link> tag [optional]
-	 * @return (bool) - Always return true
+	 * @param string $rel Rel attribute of <link> tag
+	 * @param string $href Href attribute of <link> tag
+	 * @param string $type string Type attribute of <link> tag (optional)
+	 *
+	 * @return bool True if link was added
 	 */
-	static function addLink($ps_rel, $ps_href, $ps_type=null) {			
-		if (!is_array(MetaTagManager::$opa_tags)) { MetaTagManager::init(); }
-		if (!$ps_rel) { return false; }
+	static function addLink(string $rel, string $href, ?string $type=null) : bool {			
+		if (!is_array(MetaTagManager::$tags)) { MetaTagManager::init(); }
+		if (!$rel) { return false; }
 		
-		MetaTagManager::$opa_tags['link'][] = array(
-			'href' => $ps_href,
-			'rel' => $ps_rel,
-			'type' => $ps_type
-		);
+		MetaTagManager::$tags['link'][] = [
+			'href' => $href,
+			'rel' => $rel,
+			'type' => $type
+		];
 		
 		return true;
 	}
@@ -95,23 +118,23 @@ class MetaTagManager {
 	/**
 	 * Add <script> tag to response.
 	 *
-	 * @param $ps_src (string) - href attribute of <script> tag
-	 * @param $ps_type (string) - type attribute of <link> tag [optional]
-	 * @return (bool) - Always return true
+	 * @param string $src Href attribute of <script> tag
+	 * @param string $type Type attribute of <link> tag [optional]
+	 * @return bool True if script ref was added
 	 */
-	static function addScript($ps_src, $ps_type=null,$options=null) {
-		if (!is_array(MetaTagManager::$opa_tags)) { MetaTagManager::init(); }
+	static function addScript(string $src, ?string $type=null, ?array $options=null) : bool {
+		if (!is_array(MetaTagManager::$tags)) { MetaTagManager::init(); }
 
-		MetaTagManager::$opa_tags['script'][] = array(
-			'src' => $ps_src,
-			'type' => $ps_type
-		);
+		MetaTagManager::$tags['script'][] = [
+			'src' => $src,
+			'type' => $type
+		];
 
 		return true;
 	}
 	# --------------------------------------------------------------------------------
 	/**
-	 * Clears all currently set tags
+	 * Clears all set tags
 	 *
 	 * @return void
 	 */
@@ -120,47 +143,55 @@ class MetaTagManager {
 	}
 	# --------------------------------------------------------------------------------
 	/**
-	 * Returns <meta> and <link> tags
+	 * Returns set <meta> and <link> tags for inclusion in response <head>
 	 *
-	 * @return (string) - HTML <meta> and <link> tags
+	 * @return string HTML <meta> and <link> tags
 	 */
-	static function getHTML() {
-		$vs_buf = '';
-		if (!is_array(MetaTagManager::$opa_tags)) { MetaTagManager::init(); }
+	static function getHTML() : string {
+		$buf = '';
+		if (!is_array(MetaTagManager::$tags)) { MetaTagManager::init(); }
 		
-		if(is_array(MetaTagManager::$opa_tags)) {
-			if (is_array(MetaTagManager::$opa_tags['meta'] ?? null) && sizeof(MetaTagManager::$opa_tags['meta'])) {	
-				foreach(MetaTagManager::$opa_tags['meta'] as $vs_tag_name => $vs_content) {
-					$vs_buf .= "<meta name='".htmlspecialchars($vs_tag_name, ENT_QUOTES)."' content='".htmlspecialchars($vs_content, ENT_QUOTES)."'/>\n";
+		if(is_array(MetaTagManager::$tags)) {
+			if (is_array(MetaTagManager::$tags['meta'] ?? null) && sizeof(MetaTagManager::$tags['meta'])) {	
+				foreach(MetaTagManager::$tags['meta'] as $tag_name => $content) {
+					if(!is_array($content)) { $content = [$content]; }
+					
+					foreach($content as $c) {
+						$buf .= "<meta name='".htmlspecialchars($tag_name, ENT_QUOTES)."' content='".htmlspecialchars($c, ENT_QUOTES)."'/>\n";
+					}
 				}
 			}
-			if (is_array(MetaTagManager::$opa_tags['meta_property'] ?? null) && sizeof(MetaTagManager::$opa_tags['meta_property'])) {	
-				foreach(MetaTagManager::$opa_tags['meta_property'] as $vs_tag_property => $vs_content) {
-					$vs_buf .= "<meta property='".htmlspecialchars($vs_tag_property, ENT_QUOTES)."' content='".htmlspecialchars($vs_content, ENT_QUOTES)."'/>\n";
+			if (is_array(MetaTagManager::$tags['meta_property'] ?? null) && sizeof(MetaTagManager::$tags['meta_property'])) {	
+				foreach(MetaTagManager::$tags['meta_property'] as $tag_property => $content) {
+					if(!is_array($content)) { $content = [$content]; }
+					foreach($content as $c) {
+						$buf .= "<meta property='".htmlspecialchars($tag_property, ENT_QUOTES)."' content='".htmlspecialchars($c, ENT_QUOTES)."'/>\n";
+					}
 				}
 			}
-			if (is_array(MetaTagManager::$opa_tags['link'] ?? null) && sizeof(MetaTagManager::$opa_tags['link'])) {	
-				foreach(MetaTagManager::$opa_tags['link'] as $vn_i => $va_link) {
-					$vs_buf .= "<link rel='".htmlspecialchars($va_link['rel'], ENT_QUOTES)."' href='".htmlspecialchars($va_link['href'], ENT_QUOTES)."' ".($va_link['type'] ? " type='".$va_link['type']."'" : "")."/>\n";
+			if (is_array(MetaTagManager::$tags['link'] ?? null) && sizeof(MetaTagManager::$tags['link'])) {	
+				foreach(MetaTagManager::$tags['link'] as $i => $link) {
+					$buf .= "<link rel='".htmlspecialchars($link['rel'], ENT_QUOTES)."' href='".htmlspecialchars($link['href'], ENT_QUOTES)."' ".($link['type'] ? " type='".$link['type']."'" : "")."/>\n";
 				}
 			}
-			if (is_array(MetaTagManager::$opa_tags['script'] ?? null) && sizeof(MetaTagManager::$opa_tags['script'])) {
-				foreach(MetaTagManager::$opa_tags['script'] as $vn_i => $va_link) {
-					$vs_buf .= "<script src='".htmlspecialchars($va_link['src'], ENT_QUOTES)."' ".($va_link['type'] ? " type='".$va_link['type']."'" : "")."></script>\n";
+			if (is_array(MetaTagManager::$tags['script'] ?? null) && sizeof(MetaTagManager::$tags['script'])) {
+				foreach(MetaTagManager::$tags['script'] as $i => $link) {
+					$buf .= "<script src='".htmlspecialchars($link['src'], ENT_QUOTES)."' ".($link['type'] ? " type='".$link['type']."'" : "")."></script>\n";
 				}
 			}
 		}
-		return $vs_buf;
+		return $buf;
 	}
 	# --------------------------------------------------------------------------------
 	/**
-	 * Set window title
+	 * Set window title text, overriding application default
 	 *
-	 * @param string $title The window title
-	 * @return bool Always returns true
+	 * @param string $title Window title text
+	 *
+	 * @return bool True if window title text was set
 	 */
 	static function setWindowTitle(string $title) : bool {
-		MetaTagManager::$ops_window_title = $title;
+		MetaTagManager::$window_title = $title;
 		
 		return true;
 	}
@@ -171,7 +202,7 @@ class MetaTagManager {
 	 * @return string
 	 */
 	static function getWindowTitle() : ?string {
-		return MetaTagManager::$ops_window_title ? MetaTagManager::$ops_window_title : Configuration::load()->get('app_display_name');
+		return MetaTagManager::$window_title ? MetaTagManager::$window_title : Configuration::load()->get('app_display_name');
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -181,6 +212,7 @@ class MetaTagManager {
 	 * @param array $options Options include:
 	 *		persist = Persist highlight text in session. [Default is true]
 	 *		removeWildcards = Strip asterisks from highlight text. [Default is true]
+	 *
 	 * @return bool Always returns true
 	 */
 	static function setHighlightText(?array $highlight_text, ?array $options=null) : bool {
@@ -201,7 +233,7 @@ class MetaTagManager {
 	/**
 	 * Get list of text to highlight
 	 *
-	 * @return array
+	 * @return array Return text to highlight, or null if no highlighting is required
 	 */
 	static function getHighlightText() : ?array {
 		global $g_highlight_text;

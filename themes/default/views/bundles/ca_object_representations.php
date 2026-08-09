@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2023 Whirl-i-Gig
+ * Copyright 2020-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -45,7 +45,6 @@ if ($use_classic_interface || $is_batch) {
 $force_values = $this->getVar('forceValues');
 
 $id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
-$t_instance 		= $this->getVar('t_instance');
 $t_item 			= $this->getVar('t_item');			// object representation
 $table_num 			= $t_item->tableNum();
 
@@ -102,7 +101,7 @@ if (is_array($bundles_to_edit_order) && sizeof($bundles_to_edit_order)) {
 	$bundles_to_edit_proc = $bundles_to_edit_sorted;
 }
 
-$embedded_import_opts = (bool)$this->request->getAppConfig()->get('allow_user_selection_of_embedded_metadata_extraction_mapping') ? ca_data_importers::getImportersAsHTMLOptions(['formats' => ['exif', 'mediainfo'], 'tables' => [$t_instance->tableName(), 'ca_object_representations'], 'nullOption' => (bool)$this->request->getAppConfig()->get('allow_user_embedded_metadata_extraction_mapping_null_option') ? '-' : null]) : [];
+$embedded_import_opts = (bool)$this->request->getAppConfig()->get('allow_user_selection_of_embedded_metadata_extraction_mapping') ? ca_data_importers::getImportersAsHTMLOptions(['formats' => ['exif', 'mediainfo'], 'tables' => [$t_subject->tableName(), 'ca_object_representations'], 'nullOption' => (bool)$this->request->getAppConfig()->get('allow_user_embedded_metadata_extraction_mapping_null_option') ? '-' : null]) : [];
 
 $count = $this->getVar('relationship_count');
 
@@ -413,8 +412,8 @@ if (!RequestHTTP::isAjax()) {
 ?>
 	    <div class='bundleSubLabel'>
 <?php
-			print caEditorBundleBatchEditorControls($this->request, $settings['placement_id'] ?? null, $t_subject, $t_instance->tableName(), $settings);
-            print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
+			print caEditorBundleBatchEditorControls($this->request, $settings['placement_id'] ?? null, $t_subject, $t_subject->tableName(), $settings);
+            print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), $t_subject->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
 
 		    if (($rep_count > 1) && $this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
 			    print "<div class='mediaMetadataActionButton' style='float: right'>".caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1)." "._t('Download all'), 'button', '*', '*', 'DownloadMedia', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()])."</div>";
@@ -443,7 +442,7 @@ if (!RequestHTTP::isAjax()) {
  	jQuery(document).ready(function() {
 		caRelationBundle<?= $id_prefix; ?> = caUI.initRelationBundle('#<?= "{$id_prefix}"; ?>', {
 			fieldNamePrefix: '<?= $id_prefix; ?>_',
-			templateValues: ['label', 'id', '_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'media', 'locale_id', 'icon', 'type', 'metadata', 'rep_type_id', 'type_id', 'typename', 'center_x', 'center_y', 'idno' <?= (is_array($bundles_to_edit_proc) && sizeof($bundles_to_edit_proc)) ? ", ".join(", ", array_map(function($v) { return "'{$v}'"; }, $bundles_to_edit_proc)) : ''; ?>],
+			templateValues: ['label', 'id', '_display', 'status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'is_embedded', 'media', 'locale_id', 'icon', 'type', 'metadata', 'rep_type_id', 'type_id', 'typename', 'center_x', 'center_y', 'idno' <?= (is_array($bundles_to_edit_proc) && sizeof($bundles_to_edit_proc)) ? ", ".join(", ", array_map(function($v) { return "'{$v}'"; }, $bundles_to_edit_proc)) : ''; ?>],
 			initialValues: <?= json_encode($initial_values, JSON_INVALID_UTF8_IGNORE); ?>,
 			initialValueOrder: <?= json_encode(array_keys($initial_values)); ?>,
 			errors: <?= json_encode($errors); ?>,

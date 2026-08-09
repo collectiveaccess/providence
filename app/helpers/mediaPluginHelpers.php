@@ -491,6 +491,15 @@ function caExifToolInstalled($ps_exiftool_path=null, $options=null) {
  */
 function caWhisperInstalled(array $options=null) {
 	$detect = caGetOption('returnPathToDetect', $options, false);
+	
+	$logger = caGetLogger();
+	if($python_venv_path = caGetExternalApplicationPath('python_venv_path')) {
+		$shell_path = getenv('PATH');
+		$shell_path = "{$python_venv_path}:{$shell_path}";
+		putenv("PATH=$shell_path");
+		$logger->logInfo(_t('[mediaPluginHelpers::caWhisperInstalled] Added python venv path %1 to environment PATH variable. Full path is now %2', $python_venv_path, $shell_path));	
+	}
+	
 	if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains($detect ? "mediahelper_whisper_detect_installed" : "mediahelper_whisper_installed", "mediaPluginInfo")) { return CompositeCache::fetch($detect ? "mediahelper_whisper_detect_installed" : "mediahelper_whisper_installed", "mediaPluginInfo"); }
 	
 	$path = __CA_BASE_DIR__.($detect ? '/support/scripts/whisper_detect.py' : '/support/scripts/whisper_transcribe.py');
@@ -500,7 +509,6 @@ function caWhisperInstalled(array $options=null) {
 		CompositeCache::save($detect ? "mediahelper_whisper_detect_installed" : "mediahelper_whisper_installed", $path, "mediaPluginInfo");
 		return $path;
 	}
-	$logger = caGetLogger();
 	$logger->logError(_t('[mediaPluginHelpers::caWhisperInstalled] Whisper is not installed. Return code was %1; message was %2', $return, join("; ", $output)));	
 	return false;
 }
@@ -540,6 +548,42 @@ function caPDFMinerInstalled($ps_pdfminer_path=null, $options=null) {
 	CompositeCache::save("mediahelper_pdfminer_installed", $ps_pdfminer_path, "mediaPluginInfo");
 	
 	return $vb_ret ? $ps_pdfminer_path : false;
+}
+# ------------------------------------------------------------------------------------------------
+/**
+ * Detects if curl-impersonate (https://github.com/lwthiker/curl-impersonate) is installed in the given path.
+ *
+ * @param string $$path path to curl-impersonate client
+ * @param array $options Options include:
+ *		noCache = Don't cached path value. [Default is false]
+ *
+ * @return mixed Path to executable if installed, false if not installed
+ */
+function caCurlImpersonateInstalled(?string $path=null, ?array $options=null) {
+	if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_curl_impersonate_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_curl_impersonate_installed", "mediaPluginInfo"); }
+	if(!$path) { $path = caGetExternalApplicationPath('curl_impersonate'); }
+
+	if (!caIsValidFilePath($path)) { 
+		CompositeCache::save("mediahelper_curl_impersonate_installed", false, "mediaPluginInfo");
+		return false; 
+	}
+
+	if (!@is_readable($path)) { 
+		CompositeCache::save("mediahelper_curl_impersonate_installed", false, "mediaPluginInfo");
+		return false; 
+	}
+	if ((caGetOSFamily() == OS_WIN32) && $path) { 
+		CompositeCache::save("mediahelper_curl_impersonate_installed", $ps_pdfminer_path, "mediaPluginInfo");
+		return $path; 
+	} // don't try exec test on Windows
+
+	caExec($path." --version > /dev/null",$output, $return);
+	
+	$ret = ($return == 0);
+
+	CompositeCache::save("mediahelper_curl_impersonate_installed", $path, "mediaPluginInfo");
+	
+	return $ret ? $path : false;
 }
 # ------------------------------------------------------------------------------------------------
 /**

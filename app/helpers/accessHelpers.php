@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2025 Whirl-i-Gig
+ * Copyright 2010-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -438,6 +438,11 @@ function caMakeTypeList($pm_table_name_or_num, $pa_type_ids, $pa_options=null) {
 	if (is_array($pa_type_ids) && !sizeof($pa_type_ids)) { return array(); }
 	if (!is_array($pa_type_ids)) { $pa_type_ids = strlen($pa_type_ids) ? [$pa_type_ids] : []; }
 	
+	$pa_type_ids = array_filter($pa_type_ids, function($v) {
+		if(is_null($v) || is_array($v) || !strlen($v)) { return false; }
+		return true;
+	});
+	
 	if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
 	
 	if (isset($pa_options['dont_include_subtypes_in_type_restriction'])) {
@@ -499,6 +504,10 @@ function caMakeSourceIDList($pm_table_name_or_num, $pa_sources, $pa_options=null
 	if(isset($pa_options['dontIncludeSubsourcesInSourceRestriction']) && (!isset($pa_options['dont_include_subsources_in_source_restriction']) || !$pa_options['dont_include_subsources_in_source_restriction'])) { $pa_options['dont_include_subsources_in_source_restriction'] = $pa_options['dontIncludeSubsourcesInSourceRestriction']; }
 	
 	if (!is_array($pa_sources)) { $pa_sources = strlen($pa_sources) ? [$pa_sources] : []; }
+	$pa_sources = array_filter($pa_sources, function($v) {
+		if(is_null($v) || is_array($v) || !strlen($v)) { return false; }
+		return true;
+	});
 	
 	if (isset($pa_options['dont_include_subsources_in_source_restriction']) && $pa_options['dont_include_subsources_in_source_restriction']) {
 		$pa_options['noChildren'] = true;
@@ -555,8 +564,15 @@ function caMakeSourceIDList($pm_table_name_or_num, $pa_sources, $pa_options=null
  * @return array List of numeric type_ids
  */
 function caMakeRelationshipTypeIDList($pm_table_name_or_num, $pa_types, $pa_options=null) {
-	if (!$pa_types) { return []; }
-	if (!is_array($pa_types)) { $pa_types = [$pa_types]; }
+	if(!$pa_types) { return []; }
+	if(!is_array($pa_types)) { $pa_types = [$pa_types]; }
+	
+	$pa_types = array_filter($pa_types, function($v) {
+		if(is_null($v) || is_array($v)|| !strlen($v)) { return false; }
+		return true;
+	});
+	
+	if(!sizeof($pa_types)) { return []; }
 	
 	if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
 	
@@ -873,19 +889,52 @@ function caTranslateBundlesForAccessChecking($ps_table_name, $ps_bundle_name) {
 }
 # ---------------------------------------------------------------------------------------------
 /**
- * Determine if ACL is enabled system wide, or for a specific row
+ * Determine if ACL is enabled system wide, or for a specific row. Default to returning back-end ACL availability only.
+ * To check if ACL is enabled for front-end (Pawtucket) use set the 'forPawtucket' option.
  *
  * @param BaseModel|string $t_item A model instance or model name to test. If null system-wide ACL status is returned. [Default is null]
- * @param array $options Array of options from caller. If 'dontFilterByACL' key is set to true then ACL will be returned as disabled.
- * 
+ * @param array $options Array of options. Options include:
+ *		dontFilterByACL = If set to true then ACL will be returned as disabled even if configured to be active. [Default is false]
+ *		forPawtucket = Check if ACL is enabled for front-end use. Will return true if set, even if back-end ACL is disabled. [Default is false]
+ *		forPawtucketOnly = Check if ACL is enabled for front-end use only. [Default is false]
+ *		forProvidenceOnly = Check if ACL is enabled for back-end use only. [Default is false]
+ * 		anywhere = Check if ACL is enabled for front-end or back-end use. [Default is false]
+ *		useSettingsOnly = Return ACL enabled status based upon configuration settings only, ignoring __CA_DISABLE_ACL__ constant. [Default is false]
  * @return bool
  */
 function caACLIsEnabled($t_item=null, ?array $options=null) : bool {
-	if(defined("__CA_DISABLE_ACL__") && __CA_DISABLE_ACL__) { return false; }
+	$use_settings_only = caGetOption('useSettingsOnly', $options, false);
+	if(!$use_settings_only && defined("__CA_DISABLE_ACL__") && __CA_DISABLE_ACL__) { return false; }
 	if($options['dontFilterByACL'] ?? false) { return false; }
 	$config = Configuration::load();
-	if(!$config->get('perform_item_level_access_checking')) { return false; } 
+	
+	$for_pawtucket = ($options['forPawtucket'] ?? false);
+	$for_pawtucket_only = ($options['forPawtucketOnly'] ?? false);
+	$for_providence_only = ($options['forProvidenceOnly'] ?? false);
+	$anywhere = ($options['anywhere'] ?? false);
+	
+	if($for_pawtucket || $for_pawtucket_only || $for_providence_only || $anywhere) { 
+		if(!is_a($t_item, 'BaseModel')) { 
+			if(is_a($t_item, 'SearchResult')) {
+				$t_item = Datamodel::getInstance($t_item->tableName(), true); 
+			} elseif(is_string($t_item) || is_numeric($t_item)) {
+				$t_item = Datamodel::getInstance($t_item, true); 
+			} else {
+				return false;
+			}
+		}
+		$paw_only = ($config->get('pawtucket_only_acl') || ($t_item && $config->get($t_item->tableName().'_pawtucket_only_acl'))); // || (!$for_pawtucket_only && $config->get('perform_item_level_access_checking')));
+		if($anywhere && $paw_only) { 	
+			return true; 
+		} elseif($for_providence_only && !$paw_only) {
+			return true;
+		} elseif($for_pawtucket || $for_pawtucket_only) {
+			return $paw_only;
+		}
+	}
 	if(!is_a($t_item, 'BaseModel')) { $t_item = Datamodel::getInstance($t_item, true); }
+	
+	if(!$config->get('perform_item_level_access_checking') || ($t_item && $config->get($t_item->tableName().'_dont_do_item_level_access_control'))) { return false; } 
 	if($t_item && method_exists($t_item, "supportsACL")) {
 		return (bool)$t_item->supportsACL();
 	}
@@ -893,6 +942,70 @@ function caACLIsEnabled($t_item=null, ?array $options=null) : bool {
 }
 # ---------------------------------------------------------------------------------------------
 /**
+ * 
+ *
+ */
+function caGetACLItemLevelMap() : ?array {
+	$config = Configuration::load();
+	$map = $config->get('access_to_acl_item_access_level_map') ?? null;
+	return $map;
+}
+# ---------------------------------------------------------------------------------------------
+/**
+ * 
+ *
+ * @param BaseModel|string $t_item A model instance or model name to test. If null system-wide ACL status is returned. [Default is null]
+ * @param array $options Array of options from caller. If 'dontFilterByACL' key is set to true then ACL will be returned as disabled.
+ * 
+ * @return bool
+ */
+function caShowAccessControlScreen($t_item=null, ?array $options=null) : bool {
+	if(caACLIsEnabled($t_item, $options)) { return true; }
+	
+	$config = Configuration::load();
+	if($config->get('acl_show_public_access_controls')) { return true; }
+	
+	if(!is_a($t_item, 'BaseModel')) { $t_item = Datamodel::getInstance($t_item, true); }
+	
+	if($t_item) {
+		if($config->get($t_item->tableName().'_acl_show_public_access_controls')) { return true; }
+	}
+	
+	return false;
+}
+# ---------------------------------------------------------------------------------------------
+/**
+ * 
+ *
+ * 
+ * @return bool
+ */
+function caSuspendCheckAccessChecks($t_item) : bool {
+	$acl_is_enabled = caACLIsEnabled($t_item, ['forPawtucket' => true]);
+	return (caAppIsPawtucket() && $acl_is_enabled);
+}
+# ---------------------------------------------------------------------------------------------
+/**
+ * 
+ *
+ * 
+ * @return bool
+ */
+function caDontEnforceACLForAdministrators(?ca_users $t_user) : bool {
+	$is_admin = (is_a($t_user, 'ca_users') && $t_user->canDoAction('is_administrator'));
+	
+	if (caAppIsProvidence() && $is_admin) { return true; }
+	
+	$config = Configuration::load();
+	$bypass_enabled = $config->get('acl_dont_enforce_for_administrator');
+	if(!$bypass_enabled) { return false; }
+	
+	if($is_admin) { return true; }
+	
+	return false;
+}
+# ---------------------------------------------------------------------------------------------
+/*
  * Determine if source access control is enabled system wide, or for a specific row
  *
  * @param BaseModel|string $t_item A model instance or model name to test. If null system-wide ACL status is returned. [Default is null]
@@ -906,5 +1019,55 @@ function caSourceAccessControlIsEnabled($t_item=null, ?array $options=null) : bo
 	if(!is_a($t_item, 'BaseModel')) { $t_item = Datamodel::getInstance($t_item, true); }
 	if($config->get($t_item->tableName().'_dont_do_source_access_control')) { return false; } 
 	return true;
+}
+# ---------------------------------------------------------------------------------------------
+/**
+ *
+ */
+function caGetAccessConfigOption(BaseModelWithAttributes $t_item, string $config_opt, ?array $options=null) : mixed {
+	$config = Configuration::load();
+	
+	$keys = [$config_opt];
+	if(is_a($t_item, 'BaseModelWithAttributes')) {
+		array_unshift($keys, $t_item->tableName().'_'.$config_opt);
+		array_unshift($keys, $t_item->tableName().'_'.$t_item->getTypeCode().'_'.$config_opt);
+	}
+	$ret = null;
+	foreach($keys as $a) {
+		if($config->exists($a)) { 
+			$ret = (bool)$config->get($a); 
+			break;
+		}
+	}
+	return $ret;
+}
+# ---------------------------------------------------------------------------------------------
+/**
+ *
+ */
+function caConvertACLStringToConstant(string $name) : int {
+	switch($name) {
+		case 'edit':
+			return __CA_BUNDLE_ACCESS_EDIT__;
+		case 'read':
+			return __CA_BUNDLE_ACCESS_READONLY__;
+		case 'none':
+		default:
+			return __CA_BUNDLE_ACCESS_NONE__;
+	}
+}
+# ---------------------------------------------------------------------------------------------
+/**
+ *
+ */
+function caConvertUserGroupAccessStringToInt(string $name) : int {
+	switch($name) {
+		case 'read':
+			return 1;
+		case 'edit':
+			return 2;
+		default:
+			return 0;
+	}
 }
 # ---------------------------------------------------------------------------------------------

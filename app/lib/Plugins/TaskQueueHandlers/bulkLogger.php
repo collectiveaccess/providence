@@ -93,7 +93,6 @@ class WLPlugTaskQueueHandlerbulkLogger Extends WLPlug Implements IWLPlugTaskQueu
 		
 		$report = ['errors' => [], 'notes' => [], 'count' => 0];
 		
-		
 		$log_entries = $parameters['logEntries'] ?? null;
 		if(!is_array($log_entries) || !sizeof($log_entries)) {
 			$report['errors'][] = _t('No log entries set for %1::%2', $table, $row_id);

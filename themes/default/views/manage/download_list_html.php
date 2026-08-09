@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2023 Whirl-i-Gig
+ * Copyright 2023-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -129,7 +129,7 @@ $downloaded_count 	= array_reduce($download_list, function($c, $v) {
 <?php
 		if(in_array($download['status'], ['COMPLETE', 'DOWNLOADED'], true)) {
 ?>						
-					<?= caJSButton($this->request, __CA_NAV_ICON_DOWNLOAD__, _t("Download"), 'download'.$download['download_id'], ['class' => 'downloadLink', 'data-download_id' => $download['download_id']], []); ?>
+					<?= caJSButton($this->request, __CA_NAV_ICON_DOWNLOAD__, '', 'download'.$download['download_id'], ['class' => 'downloadLink', 'data-download_id' => $download['download_id']], []); ?>
 <?php
 		}
 	?>			

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2023 Whirl-i-Gig
+ * Copyright 2016-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 class MediaViewerManager {
 	# -------------------------------------------------------
 	/** 
@@ -101,9 +100,11 @@ class MediaViewerManager {
 	 *
 	 */
 	public static function getViewerForMimetype(string $context, ?string $mimetype, ?array $options=null) {
-		if(!$mimetype) { return null; }
 		$config = Configuration::load('media_display.conf');
-		if(caGetOption('alwaysUseCloverViewer', $options, (bool)$config->get('always_use_clover_viewer'))) {
+		
+		if(!$mimetype) { 
+			$viewer = 'EmbeddedMedia'; 
+		} elseif(caGetOption('alwaysUseCloverViewer', $options, (bool)$config->get('always_use_clover_viewer'))) {
 			$viewer = 'Clover';
 		} else {
 			$info = caGetMediaDisplayInfo($context, $mimetype);

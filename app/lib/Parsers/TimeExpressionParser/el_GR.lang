@@ -24,6 +24,7 @@ monthTable = {
 
 # List of day names, starting with Sunday
 dayListDisplay = [Κυριακή, Δευτέρα, Τρίτη, Τετάρτη, Πέμπτη, Παρασκευή, Σάββατο]
+dayListShortDisplay = [Κυριακή, Δευτέρα, Τρίτη, Τετάρτη, Πέμπτη, Παρασκευή, Σάββατο]
 
 rangePreConjunctions = [από, μεταξύ]
 rangeConjunctions = [παρά, –, -, και, ..]
@@ -40,6 +41,13 @@ meridianTable = {
 	a.m. = π.μ.,
 	p.m. = μ.μ.
 }
+
+intervalPastIndicator = [past]
+intervalFutureIndicator = [future, next]
+intervalDaysIndicator = [day, days, d]
+intervalWeeksIndicator = [week, weeks, w]
+intervalMonthsIndicator = [month, months, m]
+intervalYearsIndicator = [year, years, yr, y]
 
 dateCircaIndicator = [περίπου, c, c., ca, ca.]
 dateProbablyIndicator = [probably, possibly]

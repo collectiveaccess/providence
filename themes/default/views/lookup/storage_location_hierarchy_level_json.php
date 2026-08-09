@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,16 +25,15 @@
  *
  * ----------------------------------------------------------------------
  */
+$list = $this->getVar('storage_location_list');
+foreach($list as $level => $level_content) {
+	foreach($level_content as $key => $info) {
+		if (!is_array($info)) { continue; }
 
-	$va_list = $this->getVar('storage_location_list');
-	foreach($va_list as $vs_level => $va_level_content) {
-		foreach($va_level_content as $vs_key => $va_info) {
-			if (!is_array($va_info)) { continue; }
-
-			if (isset($va_info['is_enabled']) && !$va_info['is_enabled']) {
-				$va_level_content[$vs_key]['name'] .= ' ⨂';
-			}
+		if (isset($info['is_enabled']) && !$info['is_enabled']) {
+			$level_content[$key]['name'] .= ' ⨂';
 		}
-		$va_list[$vs_level] = $va_level_content;
 	}
-	print json_encode($va_list);
+	$list[$level] = $level_content;
+}
+print json_encode($list);

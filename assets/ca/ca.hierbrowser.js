@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -76,6 +76,7 @@ var caUI = caUI || {};
 			currentSelectionDisplayPrefix: '',
 			currentSelectionIDID: '',
 			allowSelection: true,
+			setInitItemIDAsCurrentSelection: false,		/* Simulate user click on initially selected item as set in initItemID setting */
 
 			allowExtractionFromHierarchy: false,
 			extractFromHierarchyButtonIcon: null,
@@ -483,6 +484,10 @@ var caUI = caUI || {};
 							if (that.selectedItemIDs[level] == item['item_id']) {
 								foundSelected = true;
 								that._foundSelectedForLevel[level] = true;
+								
+								if(that.setInitItemIDAsCurrentSelection && (level == (that.selectedItemIDs.length -1))) {
+									that.selectItem(level, item['item_id'], item['parent_id'], (item['children'] > 0), item);
+								}
 							}
 							if (that.uiStyle == 'horizontal') {
 								var moreButton = '';

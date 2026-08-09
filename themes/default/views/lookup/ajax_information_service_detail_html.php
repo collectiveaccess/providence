@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,6 +25,5 @@
  *
  * ----------------------------------------------------------------------
  */
-	$va_data = $this->getVar('detail');
-	
-	print $va_data['display'];
+$data = $this->getVar('detail');
+print $data['display'] ?? '';

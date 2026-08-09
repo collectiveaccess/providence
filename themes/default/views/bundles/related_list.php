@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2023 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,9 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 $vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-$t_instance 		= $this->getVar('t_instance');
 /** @var BundlableLabelableBaseModelWithAttributes $t_item */
 $t_item 			= $this->getVar('t_item');			// related item
 /** @var BaseRelationshipModel $t_item_rel */
@@ -46,6 +44,7 @@ $va_display_list	= $this->getVar('display_list');
 $va_initial_values	= $this->getVar('initialValues');
 $vs_bundle_name		= $this->getVar('bundle_name');
 $vs_interstitial_selector = $vs_id_prefix . 'Item_';
+$settings			= $this->getVar('settings');
 
 $va_ids = array();
 foreach($va_initial_values as $vn_rel_id => $va_rel_info) {
@@ -60,7 +59,8 @@ $va_additional_search_controller_params = array(
 	'primaryTable' => $t_subject->tableName(),
 	'primaryID' => $t_subject->getPrimaryKey(),
 	'relatedTable' => $t_item->tableName(),
-	'idPrefix' => $vs_id_prefix
+	'idPrefix' => $vs_id_prefix,
+	'placement_id' => $vn_placement_id
 );
 
 $vs_url_string = '';
@@ -69,7 +69,7 @@ foreach($va_additional_search_controller_params as $vs_key => $vs_val) {
 	$vs_url_string .= '/' . $vs_key . '/' . urlencode($vs_val);
 }
 
-$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), $vs_bundle_name) == __CA_BUNDLE_ACCESS_READONLY__));
+$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_subject->tableName(), $vs_bundle_name) == __CA_BUNDLE_ACCESS_READONLY__));
 $vb_dont_show_del	=	((isset($va_settings['dontShowDeleteButton']) && $va_settings['dontShowDeleteButton'])) ? true : false;
 
 // params to pass during related item lookup
@@ -133,7 +133,7 @@ foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) 
 </script>
 <div id="<?= $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?= $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 	<div class='bundleSubLabel batchEditPanel'>
-		<?= caEditorBundleBatchEditorControls($this->request, $vn_placement_id, $t_subject, $t_instance->tableName(), $va_settings); ?>
+		<?= caEditorBundleBatchEditorControls($this->request, $vn_placement_id, $t_subject, $t_subject->tableName(), $va_settings); ?>
 		
 		<div class="button batchEdit batchEditSelected" id="batchEditSelected<?= $vs_id_prefix; ?>"><a href="#"><?= caNavIcon(__CA_NAV_ICON_BATCH_EDIT__, '15px')._t(' Batch edit selected'); ?></a></div>
 	</div>
@@ -278,8 +278,8 @@ foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) 
 			interstitialButtonClassName: 'caInterstitialEditButton',
 			interstitialPanel: caRelationEditorPanel<?= $vs_id_prefix; ?>,
 			interstitialUrl: '<?= caNavUrl($this->request, 'editor', 'Interstitial', 'Form', array('t' => $t_item_rel->tableName())); ?>',
-			interstitialPrimaryTable: '<?= $t_instance->tableName(); ?>',
-			interstitialPrimaryID: <?= (int)$t_instance->getPrimaryKey(); ?>,
+			interstitialPrimaryTable: '<?= $t_subject->tableName(); ?>',
+			interstitialPrimaryID: <?= (int)$t_subject->getPrimaryKey(); ?>,
 
 			relationshipTypes: <?= json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
 			templateValues: ['label', 'id', 'type_id', , 'typename', 'idno_sort'],
@@ -310,7 +310,7 @@ foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) 
 		jQuery('#batchEditSelected<?= $vs_id_prefix; ?>').on('click', function(e) {
 			let ids = caGetSelectedItemIDsForRelatedList<?= $vs_id_prefix; ?>();
 			if(ids.length > 0) {
-				window.location = '<?= caNavUrl($this->request, '*', '*', 'BatchEdit', ['placement_id' => $vn_placement_id, 'primary_id' => $t_instance->getPrimaryKey(), 'screen' => $this->request->getActionExtra()]);?>/ids/' + ids.join(";");
+				window.location = '<?= caNavUrl($this->request, '*', '*', 'BatchEdit', ['placement_id' => $vn_placement_id, 'primary_id' => $t_subject->getPrimaryKey(), 'screen' => $this->request->getActionExtra()]);?>/ids/' + ids.join(";");
 			}
 			e.preventDefault();
 			return false;

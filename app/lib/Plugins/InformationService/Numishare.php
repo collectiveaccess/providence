@@ -66,15 +66,6 @@ class WLPlugInformationServiceNumishare extends BaseInformationServicePlugin Imp
 		$this->description = _t('Provides access to Numishare-based numismatic data services');
 	}
 	# ------------------------------------------------
-	/** 
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return WLPlugInformationServiceNumishare::$s_settings;
-	}
-	# ------------------------------------------------
 	# Data
 	# ------------------------------------------------
 	/** 

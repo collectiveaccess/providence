@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,14 +25,12 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	$va_list = $this->getVar('relationship_type_list');
- 
- 	foreach($va_list as $vs_key => $va_info) {
- 		$va_list[$vs_key]['name'] = $va_list[$vs_key]['name'];
-		if ($va_info['is_default']) {
- 			$va_list[$vs_key]['name'] = $va_list[$vs_key]['name'].' ◉';
- 		}
- 	}
-	print json_encode($va_list);
-?>
+$list = $this->getVar('relationship_type_list');
+
+foreach($list as $key => $info) {
+	$list[$key]['name'] = $list[$key]['name'];
+	if ($info['is_default']) {
+		$list[$key]['name'] = $list[$key]['name'].' ◉';
+	}
+}
+print json_encode($list);

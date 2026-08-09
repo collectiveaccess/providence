@@ -25,4 +25,4 @@
  *
  * ----------------------------------------------------------------------
  */
-	print json_encode(['matches' => $this->getVar('id_list'), 'sequences' => $this->getVar('sequences')]);
+print json_encode(['matches' => $this->getVar('id_list'), 'sequences' => $this->getVar('sequences')]);

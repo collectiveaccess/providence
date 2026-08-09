@@ -29,6 +29,8 @@
  * 
  * ----------------------------------------------------------------------
  */
+use AnthonyMartin\GeoLocation\GeoPoint;
+use Geocoder\Query\GeocodeQuery;
 require_once(__CA_LIB_DIR__.'/Attributes/Values/LengthAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Parsers/gPoint.php');
 
@@ -491,88 +493,77 @@ function caParseGISSearch($value) {
 	$value = str_replace(" to ", " .. ", $value);
 	$value = preg_replace('![^A-Za-z0-9,\.\-~ ]+!', '', $value);
 	
-	$va_tokens = preg_split('![ ]+!', $value);
+	$tokens = preg_split('![ ]+!', $value);
 	
-	$vn_lat1 = $vn_long1 = $vn_lat2 = $vn_long2 = null;
-	$vn_dist = null;
-	$vn_state = 0;
-	while(sizeof($va_tokens)) {
-		$vs_token = trim(array_shift($va_tokens));
+	$lat1 = $long1 = $lat2 = $long2 = null;
+	$dist = null;
+	$state = 0;
+	while(sizeof($tokens)) {
+		$vs_token = trim(array_shift($tokens));
 		if(!$vs_token) { continue; }
-		switch($vn_state) {
+		switch($state) {
 			case 0:		// start
-				$va_tmp = explode(',', $vs_token);
-				if (sizeof($va_tmp) != 2) { return false; }
-				$vn_lat1 = (float)$va_tmp[0];
-				$vn_long1 = (float)$va_tmp[1];
+				$tmp = explode(',', $vs_token);
+				if (sizeof($tmp) != 2) { return false; }
+				$lat1 = (float)$tmp[0];
+				$long1 = (float)$tmp[1];
 				
-				if (!sizeof($va_tokens)) {
+				if (!sizeof($tokens)) {
 					return array(
-						'min_latitude' => $vn_lat1,
-						'max_latitude' => $vn_lat1,
-						'min_longitude' => $vn_long1,
-						'max_longitude' => $vn_long1
+						'min_latitude' => $lat1,
+						'max_latitude' => $lat1,
+						'min_longitude' => $long1,
+						'max_longitude' => $long1
 					);
 				}
 				
-				$vn_state = 1;
+				$state = 1;
 				break;
 			case 1:		// conjunction
 				switch($vs_token) {
 					case '~':
-						$vn_state = 3;
+						$state = 3;
 						break(2);
 					case '..' :
-						$vn_state = 2;
+						$state = 2;
 						break(2);
 					default:
-						$vn_state = 2;
+						$state = 2;
 						break;
 				}
 				// fall through
 			case 2:	// second lat/long
-				$va_tmp = explode(',', $vs_token);
-				if (sizeof($va_tmp) != 2) { return false; }
-				$vn_lat2 = (float)$va_tmp[0];
-				$vn_long2 = (float)$va_tmp[1];
+				$tmp = explode(',', $vs_token);
+				if (sizeof($tmp) != 2) { return false; }
+				$lat2 = (float)$tmp[0];
+				$long2 = (float)$tmp[1];
 				
-				if (($vn_lat1 == 0) || ($vn_lat2 == 0) || ($vn_long1 == 0) || ($vn_long2 == 0)) { return null; }
+				if (($lat1 == 0) || ($lat2 == 0) || ($long1 == 0) || ($long2 == 0)) { return null; }
 				
 				return array(
-					'min_latitude' => ($vn_lat1 > $vn_lat2) ? $vn_lat2 : $vn_lat1,
-					'max_latitude' => ($vn_lat1 < $vn_lat2) ? $vn_lat2 : $vn_lat1,
-					'min_longitude' => ($vn_long1 > $vn_long2) ? $vn_long2 : $vn_long1,
-					'max_longitude' => ($vn_long1 < $vn_long2) ? $vn_long2 : $vn_long1,
+					'min_latitude' => ($lat1 > $lat2) ? $lat2 : $lat1,
+					'max_latitude' => ($lat1 < $lat2) ? $lat2 : $lat1,
+					'min_longitude' => ($long1 > $long2) ? $long2 : $long1,
+					'max_longitude' => ($long1 < $long2) ? $long2 : $long1,
 				);
 				break;
 			case 3:	// distance
-				//
-				// TODO: The lat/long delta calculations below are very rough. We should replace with more accurate formulas.
-				//
 				$t_length = new LengthAttributeValue();
-				$va_length_val = $t_length->parseValue($vs_token, array('displayLabel' => 'distance'));
-				$vn_length = ((float)array_shift(explode(' ', preg_replace('![^\d\.]+!', '', $va_length_val['value_decimal1'])))) / 1000;		// kilometers
-				$vn_lat1_km = (10000/90) * $vn_lat1;
-				$vn_long1_km = (10000/90) * $vn_long1;
+				$length_val = $t_length->parseValue($vs_token, array('displayLabel' => 'distance'));
+				$length = ((float)array_shift(explode(' ', preg_replace('![^\d\.]+!', '', $length_val['value_decimal1'])))) / 1000;		// kilometers
 				
-				$vn_lat1 = (($vn_lat1_km + ($vn_length/2)))/(10000/90);
-				$vn_long1 = (($vn_long1_km + ($vn_length/2)))/(10000/90);
-				
-				$vn_lat2 = (($vn_lat1_km - ($vn_length/2)))/(10000/90);
-				$vn_long2 = (($vn_long1_km - ($vn_length/2)))/(10000/90);
-				
-				if (($vn_lat1 == 0) || ($vn_lat2 == 0) || ($vn_long1 == 0) || ($vn_long2 == 0)) { return null; }
+				$pt = new GeoPoint($lat1, $long1);
+				$bb = $pt->boundingBox($length, 'km');
 				
 				return array(
-					'min_latitude' => ($vn_lat1 > $vn_lat2) ? $vn_lat2 : $vn_lat1,
-					'max_latitude' =>  ($vn_lat1 < $vn_lat2) ? $vn_lat2 : $vn_lat1,
-					'min_longitude' =>  ($vn_long1 > $vn_long2) ? $vn_long2 : $vn_long1,
-					'max_longitude' =>  ($vn_long1 < $vn_long2) ? $vn_long2 : $vn_long1,
-					'distance' => $vn_length
+					'min_latitude' => $bb->getMinLatitude(),
+					'max_latitude' =>  $bb->getMaxLatitude(),
+					'min_longitude' => $bb->getMinLongitude(),
+					'max_longitude' =>  $bb->getMaxLongitude(),
+					'distance' => $length
 				);
 				
 				break;
-			
 		}
 	}
 	
@@ -687,6 +678,8 @@ function caGetCoordinateDataFromResult($data, string $bundle, ?array $options=nu
 	if (is_subclass_of($data, 'BaseModel')) {
 		// Convert instance to search result
 		$data = caMakeSearchResult($data->tableName(), [$data->getPrimaryKey()]);
+	} else {
+		$data->seek(0);
 	}
 	
 	if (is_subclass_of($data, 'SearchResult')) {
@@ -790,5 +783,137 @@ function caGetCoordinateDataFromResult($data, string $bundle, ?array $options=nu
 		return ['coordinates' => array_values($georef_list)];
 	}
 	return null;
+}
+# --------------------------------------------------------------------------------------------
+/**
+ *
+ */
+$g_geo_cache = [];
+function caGeocodeAddress(string $address, ?array $options=null) : ?array {
+	global $g_geo_cache;
+	
+	$address = trim($address);
+	if(!strlen($address)) { return null; }
+	
+	if(isset($g_geo_cache[strtolower(trim($address))])) {
+		return $g_geo_cache[strtolower(trim($address))];
+	}
+	
+	$geocoder = new \Geocoder\ProviderAggregator();
+	$client  = new \GuzzleHttp\Client();
+			
+	$provider_list = [];
+			
+	if(!is_array($provider_conf = Configuration::load()->getList('geocode_providers'))) {
+		$provider_conf = ['Nominatim'];
+	}
+	foreach($provider_conf as $p) {
+		switch(strtolower($p)) {
+			case 'nominatim':
+				$provider_list[] = \Geocoder\Provider\Nominatim\Nominatim::withOpenStreetMapServer($client, __CA_APP_NAME__);
+				break;
+			case 'geonames':
+				$provider_list[] = new \Geocoder\Provider\Geonames\Geonames($client, __CA_APP_NAME__);
+				break;
+			case 'googlemaps':
+				if(!defined('__CA_GOOGLE_MAPS_KEY__') || !__CA_GOOGLE_MAPS_KEY__) { break; }
+				$provider_list[] = new \Geocoder\Provider\GoogleMaps\GoogleMaps($client, __CA_APP_NAME__, __CA_GOOGLE_MAPS_KEY__);
+				break;
+		}
+	}
+	if(sizeof($provider_list) > 0) {
+		$chain = new \Geocoder\Provider\Chain\Chain($provider_list);
+		$geocoder->registerProvider($chain);
+		
+		$result = $geocoder->geocodeQuery(GeocodeQuery::create($address));
+	
+		try {
+			if(!$result || !$result->first()){
+				return null;
+			}
+		} catch(\Geocoder\Exception\CollectionIsEmpty $e) {
+			return null;
+		}
+		
+		$uresult = null;
+		if($geocoder_type) {
+			foreach($result as $r) {
+				if($r->getType() === $geocoder_type) {
+					$uresult = $r;
+					break;
+				}
+			}
+		}
+		
+		if(!$uresult) { $uresult = $result->first(); }
+		if(!$uresult) { return null; }
+		$utype = method_exists($uresult, 'getType') ? $uresult->getType() : null;
+		$is_postcode = ($utype == 'postcode');
+		
+		$country = $uresult->getCountry();
+		$locality = $uresult->getLocality();
+		$sublocality = $uresult->getSubLocality();
+		
+		$alevels = [];
+		$admin_levels = $uresult->getAdminLevels();
+		foreach($admin_levels as $a) {
+			$alevels[] = $a->getName();
+		}
+
+		$coords = $uresult->getCoordinates();
+		$lat = $coords->getLatitude();
+		$long = $coords->getLongitude();
+
+		if($lat && $long) {
+			$res = [
+				'address' => $address,
+				'coords' => $lat.','.$long,
+				'latitude' => $lat,
+				'longitude' => $long,
+				'country' => $country ? $country->getName()  : null,
+				'locality' => $locality,
+				'sublocality' => $sublocality,
+				'adminlevels' => $alevels,
+				'type' => $utype
+			];
+			
+			$hier = [];
+			foreach(['country', 'adminlevels', 'locality', 'sublocality'] as $l) {
+				if(is_array($res[$l])) {
+					foreach($res[$l] as $a) {
+						$hier[] = $a;
+						if(preg_match("!^".preg_quote($a, '!')."!i", $address)) { break(2); }
+					}
+				} elseif(strlen($res[$l])) {
+					$hier[] = $res[$l];
+					if(preg_match("!^".preg_quote($res[$l], '!')."!i", $address)) { break; }
+				}
+			}
+			$res['hierarchy'] = $hier;
+			
+			if(caGetOption('returnBounds', $options, false) && !$is_postcode) {
+				if($bounds = $uresult->getBounds()) {
+					$res['bounds'] = [
+						'north' => $bounds->getNorth(),
+						'east' => $bounds->getEast(),
+						'south' => $bounds->getSouth(),
+						'west' => $bounds->getWest()
+					];
+					if(
+						(sprintf("%4.4f", abs($res['bounds']['north'] - $res['bounds']['south'])) <= 0.0001)
+						&&
+						(sprintf("%4.4f", abs($res['bounds']['east'] - $res['bounds']['west'])) <= 0.0001)
+					){
+						unset($res['bounds']);
+					}
+				}
+			} 
+			$g_geo_cache[strtolower(trim($address))] = $res;
+			return $res;
+		} else {
+			$g_geo_cache[strtolower(trim($address))] = null;
+			return null;
+		}
+	}
 }
 # --------------------------------------------------------------------------------------------

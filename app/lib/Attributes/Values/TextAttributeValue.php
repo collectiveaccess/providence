@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -251,6 +251,16 @@ $_ca_attribute_settings['TextAttributeValue'] = array(		// global
 		'label' => _t('Reference media in'),
 		'description' => _t('Allow in-line references in text to a media element.')
 	),
+	'expandSearchUsingList' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'showLists' => true,
+		'allowNull' => true,
+		'default' => '',
+		'width' => "200px", 'height' => 1,
+		'label' => _t('Expand searches using list'),
+		'description' => _t('Expand text searches on this element using the specified list.')
+	),
 	'moveArticles' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_CHECKBOXES,
@@ -287,7 +297,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 		
 		// process reference tags
 		if ($g_request && caGetOption('doRefSubstitution', $options, __CA_APP_TYPE__ == 'PAWTUCKET')) {
-			return caProcessReferenceTags($g_request, $this->ops_text_value);
+			return caProcessReferenceTags($g_request, $this->ops_text_value, ['value_id' => $this->opn_value_id, 'context' => 'attribute']);
 		}
 		
 		if(caGetOption('stripEnclosingParagraphTags', $options, false)) {

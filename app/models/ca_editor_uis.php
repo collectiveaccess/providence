@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -767,7 +767,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_bundles = [];
 		$qr_res = $o_db->query("
-			SELECT *
+			SELECT ceus.parent_id, ceus.ui_id, ceus.idno, ceus.color, ceus.icon, ceuibp.*
 			FROM ca_editor_ui_bundle_placements ceuibp
 			INNER JOIN ca_editor_ui_screens AS ceus ON ceus.screen_id = ceuibp.screen_id
 			WHERE
@@ -804,6 +804,27 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		    $va_placements = array_map(function($v) use ($labels) { $v['screen_label'] = $labels[$v['screen_id']]; return $v; }, $va_placements);
 		}
 		return self::$s_screen_bundle_cache[$vs_cache_key] = $va_placements;
+	}
+	# ----------------------------------------
+	/**
+	 * Return all placements on all screens in the current UI
+	 *
+	 * @param mixed $type_id
+	 * @param array $options
+	 *
+	 * return array
+	 */
+	public function getPlacements(mixed $type_id=null, ?array $options=null) : ?array {
+		$screens = $this->getScreens($type_id, $options);
+		if(is_array($screens)) { 
+			$placements = [];
+			foreach($screens as $screen_id => $sinfo) {
+				$bv = $this->getScreenBundlePlacements($sinfo['screen_id'], $type_id, $options);
+				$placements = array_merge($placements, $bv);
+			}
+			return $placements;
+		}
+		return null;
 	}
 	# ----------------------------------------
 	/**

@@ -76,7 +76,7 @@
 				
 					if (!($vs_template = caGetOption("{$vs_ref_table_name}_displayTemplate", $va_settings, null))) {
 						$vs_template = $t_instance->getAppConfig()->get("{$vs_ref_table_name}_lookup_settings");
-						if(!is_array($vs_template) && $vs_template)) {
+						if(!is_array($vs_template) && $vs_template) {
 							$vs_template = [$vs_template];
 						}
 						if (is_array($vs_template)) {

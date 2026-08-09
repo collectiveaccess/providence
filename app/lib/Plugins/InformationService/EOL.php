@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2024 Whirl-i-Gig
+ * Copyright 2018-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,7 +40,7 @@ $g_information_service_settings_EOL= array(
 		'default' => '',
 		'width' => 90, 'height' => 1,
 		'label' => _t('API Key'),
-		'description' => _t('EOLkey code. See http://www.ubio.org/index.php?pagename=xml_services for details. Default is the ubio_keycode setting in app.conf')
+		'description' => _t('EOLkey code. See %1 for details.', 'http://www.ubio.org/index.php?pagename=xml_services')
 	)
 );
 
@@ -59,15 +59,6 @@ class WLPlugInformationServiceEOL extends BaseInformationServicePlugin Implement
 		$this->info['NAME'] = 'Encyclopedia of Life (EOL)';
 		
 		$this->description = _t('Provides access to Encyclopedia of Life (EOL) service');
-	}
-	# ------------------------------------------------
-	/** 
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return WLPlugInformationServiceEOL::$s_settings;
 	}
 	# ------------------------------------------------
 	# Data

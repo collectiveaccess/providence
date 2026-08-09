@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2024 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,7 +40,7 @@ $g_information_service_settings_Wikipedia = array(
 		'default' => 'en',
 		'width' => 30, 'height' => 1,
 		'label' => _t('Wikipedia language'),
-		'description' => _t('2- or 3-letter language code for Wikipedia to use. Defaults to "en". See http://meta.wikimedia.org/wiki/List_of_Wikipedias')
+		'description' => _t('2- or 3-letter language code for Wikipedia to use. Defaults to "en". See %1', 'http://meta.wikimedia.org/wiki/List_of_Wikipedias')
 	),
 );
 
@@ -59,15 +59,6 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 		$this->info['NAME'] = 'Wikipedia';
 		
 		$this->description = _t('Provides access to Wikipedia service');
-	}
-	# ------------------------------------------------
-	/** 
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return WLPlugInformationServiceWikipedia::$s_settings;
 	}
 	# ------------------------------------------------
 	# Data

@@ -280,7 +280,7 @@ class SearchEngine extends SearchBase {
 				}
 			}
 			
-			if (isset($options['checkAccess']) && (is_array($options['checkAccess']) && sizeof($options['checkAccess'])) && $t_table->hasField('access')) {
+			if (!caACLIsEnabled($t_table, ['forPawtucket' => true]) && isset($options['checkAccess']) && (is_array($options['checkAccess']) && sizeof($options['checkAccess'])) && $t_table->hasField('access')) {
 				$va_access_values = $options['checkAccess'];
 				$this->addResultFilter($this->ops_tablename.'.access', 'IN', join(",",$va_access_values));
 			} 

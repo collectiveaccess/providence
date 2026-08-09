@@ -454,7 +454,6 @@ class XMLProfileParser extends BaseProfileParser {
 			}
 		}
 		$this->data['relationshipTypes'] = $types_by_table;
-		
 		return true;
 	}
 	# --------------------------------------------------
@@ -473,6 +472,17 @@ class XMLProfileParser extends BaseProfileParser {
 			$include_subtypes_right = self::getAttribute($type, "includeSubtypesRight");
 			$deleted = self::getAttribute($type, "deleted");
 			
+			$type_restrictions = [];
+			if($left_restriction || $right_restriction) {
+				$type_restrictions[] = [
+					'sub_type_left_id' => $left_restriction, 'sub_type_right_id' => $right_restriction,
+					'include_subtypes_left' => $include_subtypes_left, 'include_subtypes_right' => $include_subtypes_right
+				];
+			}
+			if($type->typeRestrictions) {
+				$type_restrictions = array_merge($type_restrictions, self::processTypeRestrictionListsForRelationshipTypes($type->typeRestrictions));
+			}
+			
 
 			$this->logStatus(_t('Processing relationship type with code %1', $type_code));
 
@@ -488,15 +498,11 @@ class XMLProfileParser extends BaseProfileParser {
 				'code' => $type_code,
 				'default' => $default,
 				'rank' => $rank,
-				'typeRestrictionLeft' => $left_restriction,
-				'typeRestrictionRight' => $right_restriction,
-				'includeSubtypesLeft' => $include_subtypes_left,
-				'includeSubtypesRight' => $include_subtypes_right,
+				'typeRestrictions' => $type_restrictions,
 				'types' => $sub_types,
 				'deleted' => $deleted
 			];
 		}
-		
 		return $type_list;
 	}
 	# --------------------------------------------------
@@ -1078,6 +1084,24 @@ class XMLProfileParser extends BaseProfileParser {
 				$values[] = [
 					'type' => self::getAttribute($restriction, 'type'),
 					'includeSubtypes' => self::getAttribute($restriction, 'includeSubtypes')
+				];
+			}
+		}
+		return $values;
+	}
+	# --------------------------------------------------
+	/**
+	 *
+	 */
+	private static function processTypeRestrictionListsForRelationshipTypes($type_restrictions) {
+		$values = [];
+		if($type_restrictions) {
+			foreach($type_restrictions->children() as $restriction) {
+				$values[] = [
+					'sub_type_left_id' => self::getAttribute($restriction, 'left'),
+					'sub_type_right_id' => self::getAttribute($restriction, 'right'),
+					'include_subtypes_left' => self::getAttribute($restriction, 'includeSubtypesLeft'),
+					'include_subtypes_right' => self::getAttribute($restriction, 'includeSubtypesRight')
 				];
 			}
 		}

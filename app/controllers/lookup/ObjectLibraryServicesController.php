@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2016-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_LIB_DIR__."/BaseLookupController.php");
 require_once(__CA_APP_DIR__.'/helpers/libraryServicesHelpers.php');
 
@@ -36,21 +35,22 @@ class ObjectLibraryServicesController extends BaseLookupController {
 	protected $ops_name_singular = 'object';
 	protected $ops_search_class = 'ObjectSearch';
 	# -------------------------------------------------------
-	public function Get($pa_additional_query_params=null, $pa_options=null) {
-
+	public function Get($additional_query_params=null, $options=null) {
 		$o_library_conf = caGetLibraryServicesConfiguration();
-		$va_restrict_to_circulation_statuses = $o_library_conf->get('restrict_to_circulation_statuses');
-		if($va_restrict_to_circulation_statuses && is_array($va_restrict_to_circulation_statuses) && (sizeof($o_library_conf->get('restrict_to_circulation_statuses')) > 0)) {
-			$va_status_ids = [];
+		$restrict_to_circulation_statuses = $o_library_conf->get('restrict_to_circulation_statuses');
+		if($restrict_to_circulation_statuses && is_array($restrict_to_circulation_statuses) && (sizeof($o_library_conf->get('restrict_to_circulation_statuses')) > 0)) {
+			$status_ids = [];
 
-			foreach($va_restrict_to_circulation_statuses as $vs_status) {
-				$va_status_ids[] = caGetListItemID('object_circulation_statuses', $vs_status);
+			foreach($restrict_to_circulation_statuses as $vs_status) {
+				$status_ids[] = caGetListItemID('object_circulation_statuses', $vs_status);
 			}
 
-			$pa_options['filters'][] = array("ca_objects.circulation_status_id", "IN", join(',', $va_status_ids));
+			$options['filters'][] = array("ca_objects.circulation_status_id", "IN", join(',', $status_ids));
 		}
+		
+		$options['template'] = $o_library_conf->get('checkout_item_lookup_settings') ?? null;
 
-		return parent::Get($pa_additional_query_params, $pa_options);
+		return parent::Get($additional_query_params, $options);
 	}
 	# -------------------------------------------------------
 }

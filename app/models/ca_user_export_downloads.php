@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2023 Whirl-i-Gig
+ * Copyright 2023-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -53,7 +53,7 @@ BaseModel::$s_ca_models_definitions['ca_user_export_downloads'] = array(
 			'DISPLAY_WIDTH' => 30, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false, 
 			'BOUNDS_LENGTH' => [0, 30],
-			'DEFAULT' => 'IN_PROGRESS',
+			'DEFAULT' => 'PROCESSING',
 			'BOUNDS_CHOICE_LIST' => array(
 				_t('Queued') => 'QUEUED',
 				_t('Processing') => 'PROCESSING',
@@ -68,7 +68,7 @@ BaseModel::$s_ca_models_definitions['ca_user_export_downloads'] = array(
 			'DISPLAY_WIDTH' => 30, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false, 
 			'BOUNDS_LENGTH' => [0, 30],
-			'DEFAULT' => 'IN_PROGRESS',
+			'DEFAULT' => null,
 			'BOUNDS_CHOICE_LIST' => array(
 				_t('Summary') => 'SUMMARY',
 				_t('Results') => 'RESULTS',

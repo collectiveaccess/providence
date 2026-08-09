@@ -639,6 +639,7 @@ create table ca_object_lots
 (
    lot_id                         int unsigned                   not null AUTO_INCREMENT,
    type_id                        int unsigned                   not null,
+   parent_id                      int unsigned,
    lot_status_id                  int unsigned                   not null,
    idno_stub                      varchar(255)                   not null,
    idno_stub_sort                 varchar(255)                   not null,
@@ -665,13 +666,16 @@ create table ca_object_lots
    deaccession_type_id            int unsigned                   null,
    source_id                      int unsigned,
    source_info                    longtext                       not null,
+   hier_lot_id                    int unsigned                   not null,
+   hier_left                      decimal(30,20) unsigned        not null,
+   hier_right                     decimal(30,20) unsigned        not null,
    deleted                        tinyint unsigned               not null default 0,
-   `rank`                           int unsigned                   not null default 0,
-   acl_inherit_from_parent         tinyint unsigned              not null default 0,
-   access_inherit_from_parent      tinyint unsigned              not null default 0,
-   submission_user_id               int unsigned                   null,
+   `rank`                         int unsigned                   not null default 0,
+   acl_inherit_from_parent        tinyint unsigned               not null default 0,
+   access_inherit_from_parent     tinyint unsigned               not null default 0,
+   submission_user_id             int unsigned                   null,
    submission_group_id            int unsigned                   null,
-   submission_status_id              int unsigned                   null,
+   submission_status_id           int unsigned                   null,
    submission_via_form            varchar(100)                   null,
    submission_session_id          int unsigned                   null,
    primary key (lot_id),
@@ -679,6 +683,9 @@ create table ca_object_lots
    constraint fk_ca_object_lots_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
       
+   constraint fk_ca_object_lots_parent_id foreign key (parent_id)
+      references ca_object_lots (lot_id) on delete restrict on update restrict,
+         
     constraint fk_ca_object_lots_source_id foreign key (source_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
       
@@ -726,6 +733,9 @@ create index i_submission_group_id on ca_object_lots(submission_group_id);
 create index i_submission_status_id on ca_object_lots(submission_status_id);
 create index i_submission_via_form on ca_object_lots(submission_via_form);
 create index i_submission_session_id on ca_object_lots(submission_session_id);
+create index i_parent_id on ca_object_lots(parent_id);
+create index i_hier_left on ca_object_lots(hier_left);
+create index i_hier_right on ca_object_lots(hier_right);
 
 
 /*==========================================================================*/
@@ -1589,6 +1599,27 @@ create index i_parent_id on ca_relationship_types(parent_id);
 create index i_hier_type_id on ca_relationship_types(hier_type_id);
 create index i_hier_left on ca_relationship_types(hier_left);
 create index i_hier_right on ca_relationship_types(hier_right);
+
+
+/*==========================================================================*/
+create table ca_relationship_type_restrictions (
+   restriction_id                 smallint unsigned              not null AUTO_INCREMENT,
+   type_id                        smallint unsigned,
+   sub_type_left_id               int unsigned                   null,
+   include_subtypes_left          tinyint unsigned               not null default 0,
+   sub_type_right_id              int unsigned                   null,
+   include_subtypes_right         tinyint unsigned               not null default 0,
+   settings                       longtext                       not null,
+   `rank`                         smallint unsigned              not null default 0,
+   primary key (restriction_id),
+   
+   index i_type_id				(type_id),
+   index i_sub_type_left_id		(sub_type_left_id),
+   index i_sub_type_right_id	(sub_type_right_id),
+   unique index u_all           (type_id, sub_type_left_id, sub_type_right_id),
+   constraint fk_ca_relationship_type_restrictions_type_id foreign key (type_id)
+      references ca_relationship_types (type_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 
 /*==========================================================================*/
@@ -2849,6 +2880,7 @@ create table ca_acl
    notes                          char(10)                       not null,
    inherited_from_table_num       tinyint unsigned               null,
    inherited_from_row_id          int unsigned                   null,
+   include_representations		  tinyint unsigned               not null default 0,
    primary key (acl_id),
    constraint fk_ca_acl_group_id foreign key (group_id)
       references ca_user_groups (group_id) on delete restrict on update restrict,
@@ -5229,7 +5261,8 @@ create table ca_items_x_tags (
 	table_num	tinyint unsigned not null,
 	row_id		int unsigned not null,
 	
-	tag_id		int unsigned not null,
+	tag_id		int unsigned null,
+	item_id		int unsigned null,
 	
 	user_id		int unsigned,
 	access		tinyint unsigned not null default 0,
@@ -5246,6 +5279,7 @@ create table ca_items_x_tags (
 	key i_row_id (row_id),
 	key i_table_num (table_num),
 	key i_tag_id (tag_id),
+	key i_item_id (item_id),
 	key i_user_id (user_id),
 	key i_access (access),
 	key i_created_on (created_on),
@@ -5254,6 +5288,9 @@ create table ca_items_x_tags (
 	
    constraint fk_ca_items_x_tags_tag_id foreign key (tag_id)
       references ca_item_tags (tag_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_items_x_tags_item_id foreign key (item_id)
+      references ca_list_items (item_id) on delete restrict on update restrict,
       
    constraint fk_ca_items_x_tags_user_id foreign key (user_id)
       references ca_users (user_id) on delete restrict on update restrict,
@@ -7047,9 +7084,11 @@ create table ca_sql_search_word_index (
   word_id int(10) unsigned not null,
   boost tinyint unsigned not null default 1,
   access tinyint unsigned not null default 1,
-  word_index tinyint unsigned not null default 0,
-  word_count tinyint unsigned not null default 0,
-  field_index tinyint unsigned not null default 0,
+  word_index mediumint unsigned not null default 0,
+  word_count mediumint unsigned not null default 0,
+  field_index mediumint unsigned not null default 0,
+  timecode_start decimal(10,3) not null default 0,
+  timecode_end decimal(10,3) not null default 0,
   primary key (index_id)
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
@@ -7065,6 +7104,8 @@ CREATE index i_index_field_num on ca_sql_search_word_index(word_id, table_num, f
 CREATE index i_index_delete ON ca_sql_search_word_index(table_num, row_id, field_table_num, field_num);
 CREATE INDEX i_index_field_num_container on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, field_container_id, rel_type_id, row_id, access, boost, field_index);
 CREATE INDEX i_field_word on ca_sql_search_word_index(field_num, field_table_num, table_num, word_id, row_id);
+CREATE INDEX i_timecode_start on ca_sql_search_word_index(timecode_start, timecode_end);
+CREATE INDEX i_timecode_end on ca_sql_search_word_index(timecode_end);
 
 /*==========================================================================*/
 create table ca_sql_search_ngrams (
@@ -7985,4 +8026,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (207, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (212, unix_timestamp());

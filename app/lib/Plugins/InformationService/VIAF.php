@@ -45,7 +45,7 @@ $g_information_service_settings_viaf = [
 		],
 		'default' => 'cql.any',
 		'width' => 90, 'height' => 1,
-		'label' => _t(''),
+		'label' => _t('Search on'),
 		'description' => _t('Search on')
 	]
 ];
@@ -73,13 +73,6 @@ class WLPlugInformationServiceVIAF extends BaseInformationServicePlugin implemen
         $this->info['NAME'] = 'VIAF';
 
         $this->description = _t('Provides access to VIAF service');
-    }
-	# ------------------------------------------------
-	/** 
-	 *
-	 */
-    public function getAvailableSettings() {
-        return WLPlugInformationServiceVIAF::$s_settings;
     }
 	# ------------------------------------------------
 	/** 

@@ -78,7 +78,10 @@ if(caUI.panelCount === undefined) { caUI.panelCount = 0; }
 			}
 			
 			if (that.center || that.centerVertical) {
-				jQuery('#' + that.panelID).css("top", ((jQuery(window).height() - jQuery('#' + that.panelID).height())/2) + "px");
+				// need to make sure the top of the quickadd window isn't hidden, or you can't close it
+				let panel_height = (jQuery(window).height() - jQuery('#' + that.panelID).height())/2;
+
+				jQuery('#' + that.panelID).css("top", (panel_height < 0) ? 0 : panel_height  + "px");
 			}
 			
 			jQuery('#' + that.panelID).fadeIn(that.panelTransitionSpeed, function() { that.isChanging = false; });

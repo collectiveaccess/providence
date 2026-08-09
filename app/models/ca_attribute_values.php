@@ -346,13 +346,23 @@ class ca_attribute_values extends BaseModel {
 					if (substr($vs_key, 0, 1) === '_') { continue; }
 					if (($vs_key === 'value_blob') && (isset($va_values['_file']) && $va_values['_file'])) {
 						$this->useBlobAsFileField(true);	// force value_blob field to be treated as FT_FILE by BaseModel
-						$this->set($vs_key, $vs_val, array('original_filename' => $va_values['value_longtext2']));
-						$this->set('source_info', md5_file($vs_val));
+						
+						if($vs_val === '__CLEAR__') {
+							$this->clearFile($vs_key);
+						} else {
+							$this->set($vs_key, $vs_val, array('original_filename' => $va_values['value_longtext2']));
+							$this->set('source_info', md5_file($vs_val));
+						}
 					} else {
 						if (($vs_key === 'value_blob') && (isset($va_values['_media']) && $va_values['_media'])) {
 							$this->useBlobAsMediaField(true);	// force value_blob field to be treated as FT_MEDIA by BaseModel
-							$this->set($vs_key, $vs_val, array('original_filename' => $va_values['value_longtext2']));
-							$this->set('source_info', md5_file($vs_val));
+							
+							if($vs_val === '__CLEAR__') {
+								$this->clearMedia($vs_key);
+							} else {
+								$this->set($vs_key, $vs_val, array('original_filename' => $va_values['value_longtext2']));
+								$this->set('source_info', md5_file($vs_val));
+							}
 						} else {
 							$this->set($vs_key, $vs_val);
 						}

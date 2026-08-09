@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -493,13 +493,21 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$return_all_available_if_empty = (isset($options['returnAllAvailableIfEmpty']) && !$settings_only) ? (bool)$options['returnAllAvailableIfEmpty'] : false;
 		$table = (isset($options['table'])) ? $options['table'] : $this->getTableNum();
 		$pn_user_id = isset($options['user_id']) ? $options['user_id'] : null;
+		$screen_id = preg_replace("!^screen!i", "", caGetOption('screen_id', $options, null));
+		$placement_id = preg_replace("!^P!i", "", caGetOption('placement_id', $options, null));
+		
+		if(
+			!$table && $screen_id &&
+			($t_screen = ca_editor_ui_screens::find($screen_id, ['returnAs' => 'firstModelInstance'])) &&
+			($t_ui = ca_editor_uis::find($t_screen->get('ui_id'), ['returnAs' => 'firstModelInstance']))
+		) {
+			$table = $t_ui->get('editor_type');
+		}
 		
 		$table_name = Datamodel::getTableName($table);
 		
 		$deleted_elements = ca_metadata_elements::getElementsAsList(true, $table_name, null, !$no_cache, false, true, null, ['deletedOnly' => true]);
 		
-		$screen_id = caGetOption('screen_id', $options, null);
-		$placement_id = caGetOption('placement_id', $options, null);
 		
 		if (!$screen_id && !$placement_id && !($screen_id = $this->getPrimaryKey())) {
 			if ($return_all_available_if_empty && $table) {
@@ -507,8 +515,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			}
 			return []; 
 		}
-		$screen_id = preg_replace("!^screen!i", "", $screen_id);
-		$placement_id = preg_replace("!^P!i", "", $placement_id);
 		
 		
 		if (!$no_cache && $screen_id && isset(ca_editor_ui_screens::$s_placement_list_cache[$screen_id]) && ca_editor_ui_screens::$s_placement_list_cache[$screen_id]) {
@@ -676,6 +682,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					if (!$t_instance->getLabelTableInstance()) { continue(2); }
 					
 					$va_additional_settings = array(
+						'allowLocales' => [
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'default' => null,
+							'useLocaleList' => true,
+							'width' => '400px', 'height' => 6,
+							'label' => _t('Allow locales'),
+							'multiple' => true,
+							'description' => _t('Specify specific locales to allow for this element.')
+						],
 						'usewysiwygeditor' => array(
 							'formatType' => FT_NUMBER,
 							'displayType' => DT_SELECT,
@@ -909,7 +925,26 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'description' => _t('If checked an option to batch edit related records will be displayed.')
 							)
 						);	
-						
+						if(preg_match("/^([a-z_]+)_related_list$/", $bundle, $va_matches)) {
+							$va_additional_settings['dontShowRelationshipType'] = [
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => '0',
+								'label' => _t('Do not show relationship type'),
+								'description' => _t('If checked the relationship type will not automatically be shown in the results list.')
+							];
+							$va_additional_settings['dontShowInterstitialEditor'] = [
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => '0',
+								'label' => _t('Do not show interstitial editor'),
+								'description' => _t('If checked the interstitial editing control will not be shown.')
+							];
+						}
 						if(
 							!($policies = array_merge(
 								ca_objects::getHistoryTrackingCurrentValuePolicies($vs_rel_table, ['uses' => [$t_instance->tableName()]]),
@@ -1113,6 +1148,37 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'options' => [_t('Preferred label') => 'preferred_labels', _t('Identifier') => $t_rel->getProperty('ID_NUMBERING_ID_FIELD')],
 								'label' => _t('Prepopulate quick add fields with search text'),
 								'description' => _t('Select quickadd form fields to be pre-filled with the user-entered search value. If no fields are selected then the preferred label will be prepopulated by default.')
+							),
+							'defaultQuickaddType' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'useList' => $t_rel->getTypeListCode(),
+								'width' => "475px", 'height' => 1,
+								'takesLocale' => false,
+								'default' => '',
+								'allowNull' => true,
+								'multiple' => false,
+								'label' => _t('Default type for quickadd'),
+								'description' => _t('Set default type for quickadds, overriding type list default.')
+							),
+							'alwaysQuickAdd' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => '',
+								'allowNull' => false,
+								'label' => _t('Always open quickadd window when adding relationship?'),
+								'description' => _t('If checked a quickadd window will be opened each time a relationship is added.')
+							),
+							'createRelationshipOnQuickaddSave' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => '0',
+								'label' => _t('Immediately create relationship when quick add is saved?'),
+								'description' => _t('If checked saving a quick added record will immediately create a relationship to the primary record. By default the relationship is set in the primary editing form but not created until the primary record is saved.')
 							),
 							'sort' => array(
 								'formatType' => FT_TEXT,
@@ -1733,6 +1799,20 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									// @todo: maybe add settings!?
 								);
 								break;
+							case 'ca_objects_deaccession':
+								$va_additional_settings['alwaysOpen'] = [
+									'formatType' => FT_NUMBER,
+									'displayType' => DT_SELECT,
+									'options' => array(
+										_t('Yes') => 1,
+										_t('No') => 0
+									),
+									'default' => 0,
+									'width' => "100px", 'height' => 1,
+									'label' => _t('Always keep open?'),
+									'description' => _t('By default deaccession fields are hidden until the <em>deaccessioned</em> check box is set. Set this option to force all fields to be shown at all times.')
+								];
+								break;
 							case 'ca_objects_history':
 							case 'ca_objects_location':
 							case 'history_tracking_chronology':
@@ -1832,7 +1912,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => 'dont_force',
 										'width' => "200px", 'height' => 1,
-										'label' => _t('Always Expand/collapse'),
+										'label' => _t('Always expand/collapse'),
 										'description' => _t('Controls the expand/collapse behavior')
 									),
 									'hide_include_child_history_controls' => array(

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2023 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -62,7 +62,7 @@ $g_information_service_settings_ala_nsl = array(
 		'description' => _t("Specify additional fields to include in the search index.
 			Field names should be separated by one or more spaces or new lines.
 			Any values that do not match the available fields will be ignored.
-			Available fields are at https://biodiversity.org.au/nsl/docs/main.html#nslsimplename."),
+			Available fields are at %1.", 'https://biodiversity.org.au/nsl/docs/main.html#nslsimplename'),
 	)
 );
 
@@ -163,15 +163,6 @@ class WLPlugInformationServiceALANSL extends BaseInformationServicePlugin implem
 		$this->info['NAME'] = 'ALA-National Species List';
 
 		$this->description = _t('Provides access to Atlas of Living Australia National Species List services');
-	}
-
-	/**
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return self::$s_settings;
 	}
 
 	/**

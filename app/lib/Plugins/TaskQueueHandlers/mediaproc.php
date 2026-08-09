@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2025 Whirl-i-Gig
+ * Copyright 2006-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,50 +71,50 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 	 * @param array $pa_rec An raw database record array for the queued task (eg. each key a field in ca_task_queue and the values are raw database data that has not been manipulated or unserialized)
 	 * @return array An array of printable parameters for the task; array keys are parameter codes, values are arrays with two keys: 'label' = a printable parameter description'; 'value' is a printable parameter setting
 	 */
-	public function getParametersForDisplay($pa_rec) {
-		$va_parameters = caUnserializeForDatabase($pa_rec["parameters"]);
-		$va_params = array();
+	public function getParametersForDisplay($rec) {
+		$parameters = caUnserializeForDatabase($rec["parameters"]);
+		$params = array();
 		
-		$va_params['input_format'] = array(
+		$params['input_format'] = array(
 			'label' => _t('Format'),
-			'value' => Media::getTypenameForMimetype($va_parameters["INPUT_MIMETYPE"])
+			'value' => Media::getTypenameForMimetype($parameters["INPUT_MIMETYPE"])
 		);
-		if (file_exists($va_parameters["FILENAME"]) && ($size = filesize($va_parameters["FILENAME"]))) {
-			$va_params['input_file_size'] = array(
+		if (file_exists($parameters["FILENAME"]) && ($size = filesize($parameters["FILENAME"]))) {
+			$params['input_file_size'] = array(
 				'label' => _t('Filesize'),
 				'value' => sprintf("%s", caFormatFileSize($size))
 			);
 		}
-		$va_params['table'] = array(
+		$params['table'] = array(
 			'label' => _t('Source'),
-			'value' => $va_parameters["TABLE"].':'.$va_parameters["FIELD"].':'.$va_parameters["PK_VAL"]
+			'value' => $parameters["TABLE"].':'.$parameters["FIELD"].':'.$parameters["PK_VAL"]
 		);
 		
-		if (is_array($va_parameters["VERSIONS"])) {
-			$va_params['version'] = array(
+		if (is_array($parameters["VERSIONS"])) {
+			$params['version'] = array(
 				'label' => _t('Versions'),
-				'value' => join(", ", array_keys($va_parameters["VERSIONS"]))
+				'value' => join(", ", array_keys($parameters["VERSIONS"]))
 			);
 		}
 		
-		if (is_array($va_parameters["RULES"] ?? null) && sizeof($va_parameters["RULES"]) > 0) {
+		if (is_array($parameters["RULES"] ?? null) && sizeof($parameters["RULES"]) > 0) {
 			$vs_rules = '';
 		
-			foreach($va_parameters["RULES"] as $vs_rule => $va_rule_info) {
+			foreach($parameters["RULES"] as $vs_rule => $rule_info) {
 				$vs_params .= "\t".$vs_rule." => ";
-				$va_rule_list = array();
-				foreach($va_rule_info as $vs_key => $vs_val) {
-					$va_rule_list[] = "$vs_key = $vs_val";
+				$rule_list = array();
+				foreach($rule_info as $vs_key => $vs_val) {
+					$rule_list[] = "$vs_key = $vs_val";
 				}
-				$vs_rules = join("; ", $va_rule_list)."\n";
+				$vs_rules = join("; ", $rule_list)."\n";
 			}
-			$va_params['rule_list'] = array(
+			$params['rule_list'] = array(
 				'label' => _t('Media processing rules'),
 				'value' => $vs_rules
 			);
 		}
 		
-		return $va_params;
+		return $params;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -127,83 +127,85 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 	 * @param array $pa_parameters An unserialized parameters array for the current task (eg. unserialized data from ca_task_queue.parameters)
 	 * @return array Returns false on error, or an array with processing details on success
 	 */
-	public function process($pa_parameters) {
-		$vs_table = 		$pa_parameters["TABLE"];				// name of table of record we're processing
-		$vs_field = 		$pa_parameters["FIELD"];				// name of field in record we're processing
-		$vs_pk = 			$pa_parameters["PK"];					// Field name of primary key of record we're processing
-		$vn_id = 			$pa_parameters["PK_VAL"];				// Value of primary key
+	public function process($parameters) {
+		$table = 		$parameters["TABLE"];				// name of table of record we're processing
+		$field = 		$parameters["FIELD"];				// name of field in record we're processing
+		$pk = 			$parameters["PK"];					// Field name of primary key of record we're processing
+		$id = 			$parameters["PK_VAL"];				// Value of primary key
 		
 		$o_log = caGetLogger();
 		
-		$vs_input_mimetype = $pa_parameters["INPUT_MIMETYPE"];		// Mimetype of input file
-		$vs_input_file = 		$pa_parameters["FILENAME"];			// Full path to input file
+		$input_mimetype = $parameters["INPUT_MIMETYPE"];		// Mimetype of input file
+		$input_file = 		$parameters["FILENAME"];			// Full path to input file
 		// Array of media versions to process; keys are version names, 
 		// values are arrays with info about processing for that version
 		// Currently the info array contains a single key, 'VOLUME', which indicates 
 		// the volume the version should be written to
-		$va_versions = 		$pa_parameters["VERSIONS"];				
+		$versions = 		$parameters["VERSIONS"];				
 		
-		$va_options = 		$pa_parameters["OPTIONS"];				// Array of processing options; names of options to employ are keys, settings are values
+		$options = 		$parameters["OPTIONS"];				// Array of processing options; names of options to employ are keys, settings are values
 		
 		// If true, then input media is *not* deleted
-		$vb_dont_delete_original_media = (bool)$pa_parameters["DONT_DELETE_OLD_MEDIA"];
+		$dont_delete_original_media = (bool)$parameters["DONT_DELETE_OLD_MEDIA"];
 		
-		$va_report = array('errors' => array(), 'notes' => array());
+		$report = array('errors' => array(), 'notes' => array());
 		
 		$o_media_volumes 			= new MediaVolumes();
 		$o_media 					= new Media();
-		$o_media_proc_settings 		= new MediaProcessingSettings($vs_table, $vs_field);
+		$o_media_proc_settings 		= new MediaProcessingSettings($table, $field);
 		
-		$vs_media_type 				= $o_media_proc_settings->canAccept($vs_input_mimetype);
-		$va_version_info 			= $o_media_proc_settings->getMediaTypeVersions($vs_media_type);
+		$media_type 				= $o_media_proc_settings->canAccept($input_mimetype);
+		$version_info 				= $o_media_proc_settings->getMediaTypeVersions($media_type);
 		
-		if(!file_exists($vs_input_file)) {
-			$msg = _t("Record %1.field = file '%2' did not exist; queued file was discarded", $vs_table, $vs_input_file);
-			$va_report['errors'][] = $msg;
+		$report = ['errors' => [], 'notes' => [], 'count' => 0];
+		
+		if(!file_exists($input_file)) {
+			$msg = _t("Record %1.field = file '%2' did not exist; queued file was discarded", $table, $input_file);
+			$report['errors'][] = $msg;
 			$o_log->logError("[TaskQueue] {$msg}");
-			return $va_report;
+			return $report;
 		}
 		
-		if ($t_instance = Datamodel::getInstanceByTableName($vs_table, true)) {
-			if ($t_instance->hasField($vs_field)) {
-				if (!$t_instance->load($vn_id)) {
+		if ($t_instance = Datamodel::getInstanceByTableName($table, true)) {
+			if ($t_instance->hasField($field)) {
+				if (!$t_instance->load($id)) {
 					# record no longer exists
-					if (!$vb_dont_delete_original_media) {
-						@unlink($vs_input_file);
+					if (!$dont_delete_original_media) {
+						@unlink($input_file);
 					}
 					$o_media->cleanup();
 					
-					$msg = _t("Record %1.field = %2 did not exist; queued file was discarded", $vs_table, $vn_id);
-					$va_report['errors'][] = $msg;
+					$msg = _t("Record %1.field = %2 did not exist; queued file was discarded", $table, $id);
+					$report['errors'][] = $msg;
 					$o_log->logError("[TaskQueue] {$msg}");
 					
-					return $va_report;
+					return $report;
 				}
 			} else {
 				# bad field name
-				$msg = _t("Invalid media field '%1' in table '%2'", $vs_field, $vs_table);
+				$msg = _t("Invalid media field '%1' in table '%2'", $field, $table);
 				$o_log->logError("[TaskQueue] {$msg}");
 				$this->error->setError(551, $msg,"mediaproc->process()");	
 				return false;
 			}
 		} else {
 			# bad table name
-			$msg = _t("Invalid media field table '%1'", $vs_table);
+			$msg = _t("Invalid media field table '%1'", $table);
 			$o_log->logError("[TaskQueue] {$msg}");
 			$this->error->setError(550, $msg, "mediaproc->process()");	
 			return false;
 		}
 		
-		$va_old_media_to_delete = array();
-		if(!file_exists($vs_input_file)) {
-			$msg = _t("Input media file '%1' does not exist", $vs_input_file);
+		$old_media_to_delete = array();
+		if(!file_exists($input_file)) {
+			$msg = _t("Input media file '%1' does not exist", $input_file);
 			$o_log->logError("[TaskQueue] {$msg}");
 			$this->error->setError(505, $msg, "mediaproc->process()");
 			$o_media->cleanup();
 			return false;
 		}
-		if(!is_readable($vs_input_file)) {
-			$msg = _t("Denied permission to read input media file '%1'", $vs_input_file);
+		if(!is_readable($input_file)) {
+			$msg = _t("Denied permission to read input media file '%1'", $input_file);
 			$o_log->logError("[TaskQueue] {$msg}");
 			$this->error->setError(506, $msg,"mediaproc->process()");
 			$o_media->cleanup();
@@ -211,60 +213,60 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 		}
 		
 		$media_desc = $t_instance->getMediaInfo('media');
-		foreach($va_versions as $v => $va_version_settings) {
-			$vs_use_icon = null;
+		foreach($versions as $v => $version_settings) {
+			$use_icon = null;
 							
-			if (!$o_media->read($vs_input_file)) {
-				$msg = _t("Could not process input media file '%1': %2", $vs_input_file, join('; ', $o_media->getErrors()));
+			if (!$o_media->read($input_file)) {
+				$msg = _t("Could not process input media file '%1': %2", $input_file, join('; ', $o_media->getErrors()));
 				$o_log->logError("[TaskQueue] {$msg}");
 				$this->error->setError(1600, $msg, "mediaproc->process()");
 				$o_media->cleanup();
 				return false;
 			}
 			
-			$vs_rule 			= isset($va_version_info[$v]['RULE']) ? $va_version_info[$v]['RULE'] : '';
-			$va_rules 			= $o_media_proc_settings->getMediaTransformationRule($vs_rule);
-			$va_volume_info 	= $o_media_volumes->getVolumeInformation($va_version_settings['VOLUME']);
+			$rule 			= isset($version_info[$v]['RULE']) ? $version_info[$v]['RULE'] : '';
+			$rules 			= $o_media_proc_settings->getMediaTransformationRule($rule);
+			$volume_info 	= $o_media_volumes->getVolumeInformation($version_settings['VOLUME']);
 			
-			if (!is_array($va_rules) || (sizeof($va_rules) == 0)) { 
-				$vs_output_mimetype = $vs_input_mimetype; 
+			if (!is_array($rules) || (sizeof($rules) == 0)) { 
+				$output_mimetype = $input_mimetype; 
 				#
 				# don't process this media, just copy the file
 				#
-				$vs_ext = Media::getExtensionForMimetype($vs_output_mimetype);
+				$ext = Media::getExtensionForMimetype($output_mimetype);
 			
-				if (!$vs_ext) {
-					$msg = _t("File could not be copied for %1; can't convert mimetype %2 to extension", $vs_field, $vs_output_mimetype);
+				if (!$ext) {
+					$msg = _t("File could not be copied for %1; can't convert mimetype %2 to extension", $field, $output_mimetype);
 					$o_log->logError("[TaskQueue] {$msg}");
 					$this->error->setError(1600, $msg, "mediaproc->process()");
 					$o_media->cleanup();
 					return false;
 				}
 				
-				if (($vs_dirhash = $this->_getDirectoryHash($va_volume_info["absolutePath"], $vn_id)) === false) {
-					$msg = _t("Couldn't create subdirectory for file for %1", $vs_field);
+				if (($dirhash = $this->_getDirectoryHash($volume_info["absolutePath"], $id)) === false) {
+					$msg = _t("Couldn't create subdirectory for file for %1", $field);
 					$o_log->logError("[TaskQueue] {$msg}");
 					$this->error->setError(1600, $msg, "mediaproc->process()");
 					$o_media->cleanup();
 					return false;
 				}
-				$vs_magic = rand(0,99999);
-				$vs_filepath = $va_volume_info["absolutePath"]."/".$vs_dirhash."/".$vs_magic."_".$vs_table."_".$vs_field."_".$vn_id."_".$v.".".$vs_ext;
+				$magic = rand(0,99999);
+				$filepath = $volume_info["absolutePath"]."/".$dirhash."/".$magic."_".$table."_".$field."_".$id."_".$v.".".$ext;
 				
-				if (!copy($vs_input_file, $vs_filepath)) {
-					$msg =  _t("File could not be copied for %1", $vs_field);
+				if (!copy($input_file, $filepath)) {
+					$msg =  _t("File could not be copied for %1", $field);
 					$o_log->logError("[TaskQueue] {$msg}");
 					$this->error->setError(504, $msg, "mediaproc->process()");
 					$o_media->cleanup();
 					return false;
 				}
 				
-				if (is_array($va_volume_info["mirrors"]) && sizeof($va_volume_info["mirrors"]) > 0) {
-					$entity_key = join("/", array($vs_table, $vs_field, $vn_id, $v));
-					$row_key = join("/", array($vs_table, $vn_id));
-					foreach ($va_volume_info["mirrors"] as $vs_mirror_code => $va_mirror_info) {
-						$vs_mirror_method = $va_mirror_info["method"];
-						$vs_queue = $vs_mirror_method."mirror";
+				if (is_array($volume_info["mirrors"]) && sizeof($volume_info["mirrors"]) > 0) {
+					$entity_key = join("/", array($table, $field, $id, $v));
+					$row_key = join("/", array($table, $id));
+					foreach ($volume_info["mirrors"] as $mirror_code => $mirror_info) {
+						$mirror_method = $mirror_info["method"];
+						$queue = $mirror_method."mirror";
 						$tq = new TaskQueue();
 						if (!($tq->cancelPendingTasksForEntity($entity_key))) {
 							$msg = _t("Could not cancel pending tasks");
@@ -274,31 +276,31 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 							return false;
 						}
 						if ($tq->addTask(
-							$vs_queue,
+							$queue,
 							array(
-								"MIRROR" => $vs_mirror_code, 
-								"VOLUME" => $va_version_settings['VOLUME'], 
-								"FIELD" => $vs_field, "TABLE" => $vs_table,
+								"MIRROR" => $mirror_code, 
+								"VOLUME" => $version_settings['VOLUME'], 
+								"FIELD" => $field, "TABLE" => $table,
 								"VERSION" => $v, 
 								"FILES" => array(
 									array(
-										"FILE_PATH" => $vs_filepath,
-										"ABS_PATH" => $va_volume_info["absolutePath"],
-										"HASH" => $vs_dirhash,
-										"FILENAME" => $vs_magic."_".$vs_table."_".$vs_field."_".$vn_id."_".$v.".".$vs_ext
+										"FILE_PATH" => $filepath,
+										"ABS_PATH" => $volume_info["absolutePath"],
+										"HASH" => $dirhash,
+										"FILENAME" => $magic."_".$table."_".$field."_".$id."_".$v.".".$ext
 									)
 								),
 								
-								"MIRROR_INFO" => $va_mirror_info,
+								"MIRROR_INFO" => $mirror_info,
 								
-								"PK" => $vs_pk,
-								"PK_VAL" => $vn_id
+								"PK" => $pk,
+								"PK_VAL" => $id
 							), 
 							array("priority" => 100, "entity_key" => $entity_key, "row_key" => $row_key))) 
 						{
 							continue;
 						} else {
-							$msg = _t("Couldn't queue mirror using '%1' for version '%2' (handler '%3')", $vs_mirror_method, $v, $vs_queue);
+							$msg = _t("Couldn't queue mirror using '%1' for version '%2' (handler '%3')", $mirror_method, $v, $queue);
 							$o_log->logError("[TaskQueue] {$msg}");
 							$this->error->setError(100, $msg, "mediaproc->process()");
 						}
@@ -307,38 +309,38 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 				}
 				
 				$media_desc[$v] = array(
-					"VOLUME" => $va_version_settings['VOLUME'],	
-					"MIMETYPE" => $vs_output_mimetype,
+					"VOLUME" => $version_settings['VOLUME'],	
+					"MIMETYPE" => $output_mimetype,
 					"WIDTH" => $o_media->get("width"),
 					"HEIGHT" => $o_media->get("height"),
 					"PROPERTIES" => $o_media->getProperties(),
-					"FILENAME" => $vs_table."_".$vs_field."_".$vn_id."_".$v.".".$vs_ext,
-					"HASH" => $vs_dirhash,
-					"MAGIC" => $vs_magic,
-					"EXTENSION" => $vs_ext,
-					"MD5" => md5_file($vs_filepath),
-					"FILE_LAST_MODIFIED" => filemtime($vs_filepath)
+					"FILENAME" => $table."_".$field."_".$id."_".$v.".".$ext,
+					"HASH" => $dirhash,
+					"MAGIC" => $magic,
+					"EXTENSION" => $ext,
+					"MD5" => md5_file($filepath),
+					"FILE_LAST_MODIFIED" => filemtime($filepath)
 				);
 			} else {
 				$o_media->set('version', $v);
-				foreach($va_rules as $operation => $pa_parameters){
+				foreach($rules as $operation => $parameters){
 					if ($operation === 'SET') {
-						foreach($pa_parameters as $pp => $pv) {
+						foreach($parameters as $pp => $pv) {
 							if ($pp == 'format') {
-								$vs_output_mimetype = $pv;
+								$output_mimetype = $pv;
 							} else {
 								$o_media->set($pp, $pv);
 							}
 						}
 					} else {
-						if(is_array($va_media_center = $t_instance->getMediaCenter($vs_field))) {
-							$pa_parameters['_centerX'] = caGetOption('x', $va_media_center, 0.5);
-							$pa_parameters['_centerY'] = caGetOption('y', $va_media_center, 0.5);
+						if(is_array($media_center = $t_instance->getMediaCenter($field))) {
+							$parameters['_centerX'] = caGetOption('x', $media_center, 0.5);
+							$parameters['_centerY'] = caGetOption('y', $media_center, 0.5);
 					
-							if (($pa_parameters['_centerX'] < 0) || ($pa_parameters['_centerX'] > 1)) { $pa_parameters['_centerX'] = 0.5; }
-							if (($pa_parameters['_centerY'] < 0) || ($pa_parameters['_centerY'] > 1)) { $pa_parameters['_centerY'] = 0.5; }
+							if (($parameters['_centerX'] < 0) || ($parameters['_centerX'] > 1)) { $parameters['_centerX'] = 0.5; }
+							if (($parameters['_centerY'] < 0) || ($parameters['_centerY'] > 1)) { $parameters['_centerY'] = 0.5; }
 						}
-						if (!($o_media->transform($operation, $pa_parameters))) {
+						if (!($o_media->transform($operation, $parameters))) {
 						  $this->error = $o_media->errors[0];
 						  
 						  $msg = $this->error->getErrorMessage();
@@ -349,50 +351,50 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 					}
 				}
 				
-				if (!$vs_output_mimetype) { $vs_output_mimetype = $vs_input_mimetype; }
+				if (!$output_mimetype) { $output_mimetype = $input_mimetype; }
 				
-				if (!($vs_ext = Media::getExtensionForMimetype($vs_output_mimetype))) {
-					$msg = _t("File could not be processed for %1; can't convert mimetype %2 to extension", $vs_field, $vs_output_mimetype);
+				if (!($ext = Media::getExtensionForMimetype($output_mimetype))) {
+					$msg = _t("File could not be processed for %1; can't convert mimetype %2 to extension", $field, $output_mimetype);
 					$o_log->logError("[TaskQueue] {$msg}");
 					$this->error->setError(1600, $msg, "mediaproc->process()");
 					$o_media->cleanup();
 					return false;
 				}
 				
-				if (($vs_dirhash = $this->_getDirectoryHash($va_volume_info["absolutePath"], $vn_id)) === false) {
-					$msg = _t("Couldn't create subdirectory for file for %1", $vs_field);
+				if (($dirhash = $this->_getDirectoryHash($volume_info["absolutePath"], $id)) === false) {
+					$msg = _t("Couldn't create subdirectory for file for %1", $field);
 					$o_log->logError("[TaskQueue] {$msg}");
 					$this->error->setError(1600, $msg, "mediaproc->process()");
 					$o_media->cleanup();
 					return false;
 				}
-				$vs_magic = rand(0,99999);
-				$vs_filepath = $va_volume_info["absolutePath"]."/".$vs_dirhash."/".$vs_magic."_".$vs_table."_".$vs_field."_".$vn_id."_".$v;
+				$magic = rand(0,99999);
+				$filepath = $volume_info["absolutePath"]."/".$dirhash."/".$magic."_".$table."_".$field."_".$id."_".$v;
 			
-				if (!($vs_output_file = $o_media->write($vs_filepath, $vs_output_mimetype, $va_options))) {
+				if (!($output_file = $o_media->write($filepath, $output_mimetype, $options))) {
 					$this->error = $o_media->errors[0];
 					$o_media->cleanup();
 					return false;
 				} else {
 					if (
-							($vs_output_file === __CA_MEDIA_VIDEO_DEFAULT_ICON__)
+							($output_file === __CA_MEDIA_VIDEO_DEFAULT_ICON__)
 							||
-							($vs_output_file === __CA_MEDIA_AUDIO_DEFAULT_ICON__)
+							($output_file === __CA_MEDIA_AUDIO_DEFAULT_ICON__)
 							||
-							($vs_output_file === __CA_MEDIA_DOCUMENT_DEFAULT_ICON__)
+							($output_file === __CA_MEDIA_DOCUMENT_DEFAULT_ICON__)
 					) {
-						$vs_use_icon = $vs_output_file;
+						$use_icon = $output_file;
 					} else {
-						$va_output_files[] = $vs_output_file;
+						$output_files[] = $output_file;
 					}
 				}
 				
-				if (is_array($va_volume_info["mirrors"]) && sizeof($va_volume_info["mirrors"]) > 0) {
-					$entity_key = join("/", array($vs_table, $vs_field, $vn_id, $v));
-					$row_key = join("/", array($vs_table, $vn_id));
-					foreach ($va_volume_info["mirrors"] as $vs_mirror_code => $va_mirror_info) {
-						$vs_mirror_method = $va_mirror_info["method"];
-						$vs_queue = $vs_mirror_method."mirror";
+				if (is_array($volume_info["mirrors"]) && sizeof($volume_info["mirrors"]) > 0) {
+					$entity_key = join("/", array($table, $field, $id, $v));
+					$row_key = join("/", array($table, $id));
+					foreach ($volume_info["mirrors"] as $mirror_code => $mirror_info) {
+						$mirror_method = $mirror_info["method"];
+						$queue = $mirror_method."mirror";
 						$tq = new TaskQueue();
 						if (!($tq->cancelPendingTasksForEntity($entity_key))) {
 							$msg = _t("Could not cancel pending tasks");
@@ -402,31 +404,31 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 							return false;
 						}
 						if ($tq->addTask(
-							$vs_queue,
+							$queue,
 							array(
-								"MIRROR" => $vs_mirror_code, 
-								"VOLUME" => $va_version_settings['VOLUME'], 
-								"FIELD" => $vs_field, "TABLE" => $vs_table,
+								"MIRROR" => $mirror_code, 
+								"VOLUME" => $version_settings['VOLUME'], 
+								"FIELD" => $field, "TABLE" => $table,
 								"VERSION" => $v, 
 								"FILES" => array(
 									array(
-										"FILE_PATH" => $vs_filepath,
-										"ABS_PATH" => $va_volume_info["absolutePath"],
-										"HASH" => $vs_dirhash,
-										"FILENAME" => $vs_magic."_".$vs_table."_".$vs_field."_".$vn_id."_".$v.".".$vs_ext
+										"FILE_PATH" => $filepath,
+										"ABS_PATH" => $volume_info["absolutePath"],
+										"HASH" => $dirhash,
+										"FILENAME" => $magic."_".$table."_".$field."_".$id."_".$v.".".$ext
 									)
 								),
 								
-								"MIRROR_INFO" => $va_mirror_info,
+								"MIRROR_INFO" => $mirror_info,
 								
-								"PK" => $vs_pk,
-								"PK_VAL" => $vn_id
+								"PK" => $pk,
+								"PK_VAL" => $id
 							), 
 							array("priority" => 100, "entity_key" => $entity_key, "row_key" => $row_key))) 
 						{
 							continue;
 						} else {
-							$msg = _t("Couldn't queue mirror using '%1' for version '%2' (handler '%3')", $vs_mirror_method, $v, $vs_queue);
+							$msg = _t("Couldn't queue mirror using '%1' for version '%2' (handler '%3')", $mirror_method, $v, $queue);
 							$o_log->logError("[TaskQueue] {$msg}");
 							$this->error->setError(100, $msg, "mediaproc->process()");
 						}
@@ -434,33 +436,33 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 					}
 				}
 				
-				if ($vs_use_icon) {
+				if ($use_icon) {
 					$media_desc[$v] = array(
-						"MIMETYPE" => $vs_output_mimetype,
-						"USE_ICON" => $vs_use_icon,
+						"MIMETYPE" => $output_mimetype,
+						"USE_ICON" => $use_icon,
 						"WIDTH" => $o_media->get("width"),
 						"HEIGHT" => $o_media->get("height")
 					);
 				} else {
 					$media_desc[$v] = array(
-						"VOLUME" => $va_version_settings['VOLUME'],					
-						"MIMETYPE" => $vs_output_mimetype,
+						"VOLUME" => $version_settings['VOLUME'],					
+						"MIMETYPE" => $output_mimetype,
 						"WIDTH" => $o_media->get("width"),
 						"HEIGHT" => $o_media->get("height"),
 						"PROPERTIES" => $o_media->getProperties(),
-						"FILENAME" => $vs_table."_".$vs_field."_".$vn_id."_".$v.".".$vs_ext,
-						"HASH" => $vs_dirhash,
-						"MAGIC" => $vs_magic,
-						"EXTENSION" => $vs_ext,
-						"MD5" => md5_file($vs_filepath.".".$vs_ext),
-						"FILE_LAST_MODIFIED" => filemtime($vs_filepath.".".$vs_ext)
+						"FILENAME" => $table."_".$field."_".$id."_".$v.".".$ext,
+						"HASH" => $dirhash,
+						"MAGIC" => $magic,
+						"EXTENSION" => $ext,
+						"MD5" => md5_file($filepath.".".$ext),
+						"FILE_LAST_MODIFIED" => filemtime($filepath.".".$ext)
 					);
 				}
 			}
-			if (!$vb_dont_delete_original_media) {
-				$vs_old_media_path = $t_instance->getMediaPath($vs_field, $v);
-				if (($vs_old_media_path) && ($vs_filepath.".".$vs_ext != $vs_old_media_path) && ($vs_input_file != vs_old_media_path)) {
-					$va_old_media_to_delete[] = $vs_old_media_path;
+			if (!$dont_delete_original_media) {
+				$old_media_path = $t_instance->getMediaPath($field, $v);
+				if (($old_media_path) && ($filepath.".".$ext != $old_media_path) && ($input_file != vs_old_media_path)) {
+					$old_media_to_delete[] = $old_media_path;
 				}
 			}
 		}
@@ -468,35 +470,35 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 		#
 		# Update record
 		#
-		if ($t_instance->load($vn_id)) {
+		if ($t_instance->load($id)) {
 			if (method_exists($t_instance, "useBlobAsMediaField")) {	// support for attributes - force field to be FT_MEDIA
 				$t_instance->useBlobAsMediaField(true); 
 			}
-			$md = $t_instance->get($vs_field, array('returnWithStructure' => true, 'returnAsArray' => true));
-			$va_merged_media_desc = is_array($md) ? array_shift($md) : array();
-			foreach($media_desc as $vs_k => $va_v) {
-				$va_merged_media_desc[$vs_k] = $va_v;
+			$md = $t_instance->get($field, array('returnWithStructure' => true, 'returnAsArray' => true));
+			$merged_media_desc = is_array($md) ? array_shift($md) : array();
+			foreach($media_desc as $k => $v) {
+				$merged_media_desc[$k] = $v;
 			}
 			
-			$t_instance->setMediaInfo($vs_field, $va_merged_media_desc);
+			$t_instance->setMediaInfo($field, $merged_media_desc);
 			
 			try {
 				$t_instance->update(['force' => true, 'dontImportEmbeddedMetadata' => true]);
 				if ($t_instance->numErrors()) {
 					# get rid of files we just created
-					foreach($va_output_files as $vs_to_delete) {
-						@unlink($vs_to_delete); 
+					foreach($output_files as $to_delete) {
+						@unlink($to_delete); 
 					}
-					$msg = _t("Could not update %1.%2: %3", $vs_table, $vs_field, join(", ", $t_instance->getErrors()));
+					$msg = _t("Could not update %1.%2: %3", $table, $field, join(", ", $t_instance->getErrors()));
 					$o_log->logError("[TaskQueue] {$msg}");
 					$this->error->setError(560, $msg, "mediaproc->process()");
 					$o_media->cleanup();
 					return false;
 				} 
-				$va_report['notes'][] = _t("Processed file %1", $vs_input_file);
+				$report['notes'][] = _t("Processed file %1", $input_file);
 			} catch(MediaExistsException $e) {
-				$va_report['errors'][] = _t("Skipping file %1 because it already exists and duplicated are not allowed", $vs_input_file);
-				return $va_report;
+				$report['errors'][] = _t("Skipping file %1 because it already exists and duplicated are not allowed", $input_file);
+				return $report;
 			}
 			
 			
@@ -507,8 +509,8 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 				if (method_exists($t_instance, 'removeAllFiles')) {
 					$t_instance->removeAllFiles();                // get rid of any previously existing frames (they might be hanging ar
 				}
-				$o_media->read($vs_input_file);
-				$va_preview_frame_list = $o_media->writePreviews(
+				$o_media->read($input_file);
+				$preview_frame_list = $o_media->writePreviews(
 					array(
 						'writeAllPages' => true,
 						'width' => $o_media->get("width"), 
@@ -523,38 +525,37 @@ class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueue
 						'outputDirectory' => __CA_TEMP_DIR__
 					)
 				);
-				if (is_array($va_preview_frame_list)) {
-					foreach($va_preview_frame_list as $vn_time => $vs_frame) {
-						$t_instance->addFile($vs_frame, $vn_time, true);	// the resource path for each frame is it's time, in seconds (may be fractional) for video, or page number for documents
-						@unlink($vs_frame);		// clean up tmp preview frame file
+				if (is_array($preview_frame_list)) {
+					foreach($preview_frame_list as $time => $frame) {
+						$t_instance->addFile($frame, $time, true);	// the resource path for each frame is it's time, in seconds (may be fractional) for video, or page number for documents
+						@unlink($frame);		// clean up tmp preview frame file
 					}
 				}
 			}
 			
 			
 			
-			if (!$vb_dont_delete_original_media) {
-				@unlink($vs_input_file);
+			if (!$dont_delete_original_media) {
+				@unlink($input_file);
 			}
 			
-			foreach($va_old_media_to_delete as $vs_to_delete) {
-				@unlink($vs_to_delete);
+			foreach($old_media_to_delete as $to_delete) {
+				@unlink($to_delete);
 			}
 			
 			$o_media->cleanup();
-			return $va_report;
 		} else {
 			# record no longer exists
-			if (!$vb_dont_delete_original_media) {
-				@unlink($vs_input_file);
+			if (!$dont_delete_original_media) {
+				@unlink($input_file);
 			}
-			$msg = _t("Record {$vs_table}.field = {$vn_id} did not exist; queued file was discarded");
+			$msg = _t("Record {$table}.field = {$id} did not exist; queued file was discarded");
 			$o_log->logError("[TaskQueue] {$msg}");
 			$o_media->cleanup();
 			
-			$va_report['errors'][] = $msg;
-			return $va_report;
+			$report['errors'][] = $msg;
 		}
+		return $report;
 	}
 	# --------------------------------------------------------------------------------
 	/**

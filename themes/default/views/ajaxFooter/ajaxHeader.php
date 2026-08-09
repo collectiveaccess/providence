@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2024 Whirl-i-Gig
+ * Copyright 2024-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,9 +25,8 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- // If Ajax-loaded content is HTML then include HTML to Javascript libraries; we don't want 
- // to emit HTML when returning JSON (or anything else that's not HTML)
+// If Ajax-loaded content is HTML then include HTML to Javascript libraries; we don't want 
+// to emit HTML when returning JSON (or anything else that's not HTML)
 if(caGetHTTPResponse()->getContentType() === 'text/html') {
-	print AssetLoadManager::getLoadHTML($this->request, ['outputTarget' => 'header']);
+	print AssetLoadManager::getLoadHTML($this->request, ['outputTarget' => 'header', 'forAjax' => true]);
 }

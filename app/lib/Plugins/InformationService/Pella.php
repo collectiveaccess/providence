@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2024 Whirl-i-Gig
+ * Copyright 2018-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -51,16 +51,7 @@ class WLPlugInformationServicePella extends BaseInformationServicePlugin Impleme
 		parent::__construct();
 		$this->info['NAME'] = 'PELLA';
 		
-		$this->description = _t('Provides access to PELLA numismatic data service (http://numismatics.org/pella/)');
-	}
-	# ------------------------------------------------
-	/** 
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return WLPlugInformationServicePella::$s_settings;
+		$this->description = _t('Provides access to PELLA numismatic data service (%1)', 'http://numismatics.org/pella/');
 	}
 	# ------------------------------------------------
 	# Data

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2025 Whirl-i-Gig
+ * Copyright 2011-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,8 +32,8 @@
 ?>
 <?= _t("<div class='error'>There are issues with your configuration</div>
 	    <div class='errorDescription'>General installation instructions can be found
-	    <a href='https://docs.collectiveaccess.org' target='_blank' rel='noopener noreferrer'>here</a>.
-	    For more specific information on detected issues review the messages below:</div>"); ?>
+	    <a href='%1' target='_blank' rel='noopener noreferrer'>here</a>.
+	    For more specific information on detected issues review the messages below:</div>", 'https://docs.collectiveaccess.org'); ?>
 	<br/><br/>
 <?php
 foreach (self::$opa_error_messages as $vs_message) {

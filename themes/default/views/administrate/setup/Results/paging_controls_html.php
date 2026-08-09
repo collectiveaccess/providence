@@ -25,10 +25,12 @@
  *
  * ----------------------------------------------------------------------
  */
- 
+
 	$vo_result 					= $this->getVar('result');
 	$vs_controller_name 		= $this->getVar('controller');
-	
+    // Number of search results
+    $vn_num_hits        = (int)$vo_result->numHits();
+
 	$va_previous_link_params 	= array('page' => $this->getVar('page') - 1);
 	$va_next_link_params 		= array('page' => $this->getVar('page') + 1);
 	$va_jump_to_params 			= array();
@@ -53,7 +55,26 @@
 		$vs_searchNav .= "</div>";
 		$vs_searchNav .= '<form action="#">'._t('Jump to page').': <input type="text" size="3" name="page" id="jumpToPageNum" value=""/> <a href="#" onclick=\'jQuery("#resultBox").load("'.caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), $va_jump_to_params).'/page/" + jQuery("#jumpToPageNum").val());\' class="button">'.caNavIcon(__CA_NAV_ICON_GO__, "14px").'</a></form>';
 	}
-	$vs_searchNav .= _t('Your %1 found', $this->getVar('mode_name')).' '.$vo_result->numHits().' '.$this->getVar(($vo_result->numHits() == 1) ? 'mode_type_singular' : 'mode_type_plural');
+	// ------------------------------------------------------------------
+	// Summary line below the paging controls:
+	// If no results found → use the dedicated "Your search found no %1" string
+	// Otherwise → keep the previous behavior
+	// ------------------------------------------------------------------
+	if ($vn_num_hits === 0) {
+		$vs_searchNav .= _t(
+			"Your search found no %1",
+			$this->getVar('mode_type_plural')
+		);
+	} else {
+		$vs_searchNav .= _t(
+			                 'Your %1 found',
+			                 $this->getVar('mode_name')
+		                 ) . ' '
+		                 . $vn_num_hits . ' '
+		                 . $this->getVar(
+				($vn_num_hits == 1) ? 'mode_type_singular' : 'mode_type_plural'
+			);
+	}
 	$vs_searchNav .= "</div>";
 	print $vs_searchNav;
 ?>

@@ -10433,9 +10433,8 @@ msgstr "Aucune aide disponible pour %1"
 
 #: ../../app/lib/Utils/DataMigrationUtils.php:177
 #: ../../app/lib/Utils/DataMigrationUtils.php:924
-#, fuzzy
 msgid "[%1] "
-msgstr "%1 ensemble"
+msgstr "[%1] "
 
 #: ../../app/lib/Utils/DataMigrationUtils.php:201
 msgid ""
@@ -21447,10 +21446,8 @@ msgstr "Nom de la collection"
 #: ../../app/models/ca_movement_labels.php:102
 #: ../../app/models/ca_object_lot_labels.php:103
 #: ../../app/models/ca_storage_location_labels.php:102
-#, fuzzy
 msgid "Is preferred"
-msgstr ""
-"%3 Impossible de définir un label préféré pour l’élément de liste %1: %2"
+msgstr "Est préféré"
 
 #: ../../app/models/ca_entities_x_entities.php:41
 msgid "entity ⇔ entity relationship"

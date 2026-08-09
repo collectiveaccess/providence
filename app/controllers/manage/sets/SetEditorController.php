@@ -356,12 +356,15 @@ class SetEditorController extends BaseEditorController {
 				'created_on' => _t('now'),
 				'user_id' => $this->request->getUserID(),
 				'status' => 'QUEUED',
-				'download_type' => 'SETS',
-				'metadata' => ['searchExpression' => $exp, 'searchExpressionForDisplay' => $exp_display, 'format' => caExportFormatForTemplate($subject_table, $export_format), 'mode' => 'LABELS', 'table' => $subject_table, 'findType' => null]
+				'download_type' => 'SET',
+				'metadata' => [
+					'searchExpression' => $exp, 'searchExpressionForDisplay' => $exp_display, 
+					'format' => caExportFormatForTemplate($subject_table, $export_format), 
+					'mode' => 'SETS', 'table' => $subject_table, 'findType' => null
+				]
 			]);
-			$download_id = $t_download->insert();
+			$download_id = $t_download->insert() ? $t_download->getPrimaryKey() : null;
 			
-						
 			if ($o_tq->addTask(
 				'dataExport',
 				[
@@ -370,6 +373,9 @@ class SetEditorController extends BaseEditorController {
 					'findType' => null,
 					'table' => $subject_table,
 					'results' => $record_ids,
+					'display_id' => $display_id,
+					'set_id' => $t_set->getPrimaryKey(),
+					'set_code' => $t_set->get('ca_sets.set_code'),
 					'format' => caExportFormatForTemplate($subject_table, $export_format),
 					'sort' => null,
 					'sortDirection' => null,

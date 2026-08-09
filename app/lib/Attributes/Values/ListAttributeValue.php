@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -360,7 +360,6 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 	 */
 	public function getDisplayValue($pa_options=null) {
 		$use_singular = caGetOption('useSingular', $pa_options, false);
-		
 		if (isset($pa_options['output'])) {
 			switch(strtolower($pa_options['output'])) {
 				case 'idno':
@@ -371,7 +370,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 					$pa_options['idsOnly'] = false;
 					$pa_options['returnDisplayText'] = true;
 					break;
-				case 'itemValue':
+				case 'itemvalue':
 					$pa_options['returnItemValue'] = true;
 					break;
 				default:

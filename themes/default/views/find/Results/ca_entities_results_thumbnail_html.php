@@ -1,14 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
  * themes/default/views/find/Results/ca_entities_results_thumbnail_html.php :
- * 		basic object search form view script 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2020 Whirl-i-Gig
+ * Copyright 2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,68 +25,76 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vo_result 				= $this->getVar('result');
-	$vn_items_per_page 		= $this->getVar('current_items_per_page');
-	$vs_current_sort 		= $this->getVar('current_sort');
-	$vo_ar					= $this->getVar('access_restrictions');
-	$vs_image_name 			= $this->request->config->get('no_image_icon');
-	$vb_hide_children		= $this->getVar('hide_children');
+$result 				= $this->getVar('result');
+$items_per_page 		= $this->getVar('current_items_per_page');
+$current_sort 			= $this->getVar('current_sort');
+$ar						= $this->getVar('access_restrictions');
+$image_name 			= $this->request->config->get('no_image_icon');
+$hide_children		= $this->getVar('hide_children');
 
+$result_desc			= $this->getVar('result_desc');
 ?>
 <form id="caFindResultsForm">
 	<table border="0" cellpadding="0px" cellspacing="0px" width="100%">
 <?php
-		$vn_display_cols = 4;
-		$vn_col = 0;
-		$vn_item_count = 0;
+		$display_cols = 4;
+		$col = 0;
+		$item_count = 0;
 		
-		if (!($vs_caption_template = $this->request->config->get('ca_entities_results_thumbnail_caption_template'))) { $vs_caption_template = "^ca_entities.preferred_labels.name%truncate=27&ellipsis=1<br/>^ca_entities.idno"; }
+		if (!($caption_template = $this->request->config->get('ca_entities_results_thumbnail_caption_template'))) { $caption_template = "^ca_entities.preferred_labels.displayname%truncate=27&ellipsis=1<br/>^ca_entities.idno"; }
 		
-		while(($vn_item_count < $vn_items_per_page) && ($vo_result->nextHit())) {
-			$vn_entity_id = $vo_result->get('entity_id');
-			
-			if (!$vn_col) { 
+		while(($item_count < $items_per_page) && ($result->nextHit())) {
+			$entity_id = $result->get('entity_id');
+			if (!$col) { 
 				print "<tr>";
 			}
-			$vs_caption = $vo_result->getWithTemplate($vs_caption_template);
+			$caption = $caption_template ? $result->getWithTemplate($caption_template) : caEditorLink($this->request, $result->get('idno'), '', 'ca_entities', $entity_id);
 			
 			
 			# --- get the height of the image so can calculate padding needed to center vertically
-			$va_media_info = $vo_result->getMediaInfo('ca_object_representations.media', 'preview170');
-			$va_tmp = $vo_result->getMediaTags('ca_object_representations.media', 'preview170');
+			$media_info = $result->getMediaInfo('ca_object_representations.media', 'preview170');
+			$tmp = $result->getMediaTags('ca_object_representations.media', 'preview170');
 
-			$vb_has_image = true;
-			if (sizeof($va_tmp) == 0) {
-				$va_tmp[] = "<span style='opacity: 0.3;'>".caNavIcon(__CA_NAV_ICON_OVERVIEW__, "64px");
-				$vn_padding_top = $vn_padding_top_bottom = 60;
-				$vb_has_image = false;
+			$has_image = true;
+			if ((sizeof($tmp) == 0) || !is_array($media_info)) {
+				$tmp[] = "<span style='opacity: 0.3;'>".caNavIcon(__CA_NAV_ICON_OVERVIEW__, "64px");
+				$padding_top = $padding_top_bottom = 60;
+				$has_image = false;
 			} else {
-				$vn_padding_top = 0;
-				$vn_padding_top_bottom =  ((180 - $va_media_info["HEIGHT"]) / 2);
+				$padding_top = 0;
+				$padding_top_bottom =  ((180 - $media_info["HEIGHT"]) / 2);
 			}
 ?>
 			<td align="center" valign="top" style="padding:2px 2px 2px 2px;">
-				<div class="objectThumbnailsImageContainer" style="padding: <?= $vn_padding_top_bottom; ?>px 0px <?= $vn_padding_top_bottom; ?>px 0px;"> 
-					<input type="checkbox" name="add_to_set_ids" value="<?= (int)$vn_entity_id; ?>" class="addItemToSetControl addItemToSetControlInThumbnails"/>		
-					<?= caEditorLink($this->request, array_shift($va_tmp), 'qlButtonEditorLink', 'ca_entities', $vn_entity_id, array(), array('data-id' => $vn_entity_id)); ?>
-					<?php if ($vb_has_image) { ?><div class="qlButtonContainerThumbnail" id="ql_<?= $vn_entity_id; ?>"><a class='qlButton' data-id="<?= $vn_entity_id; ?>"><?= _t("Quick Look"); ?></a></div><?php } ?>
+				<div class="entityThumbnailsImageContainer" style="padding: <?= $padding_top_bottom; ?>px 0px <?= $padding_top_bottom; ?>px 0px;"> 
+					<input type="checkbox" name="add_to_set_ids" value="<?= (int)$entity_id; ?>" class="addItemToSetControl addItemToSetControlInThumbnails"/>		
+					<?= caEditorLink($this->request, array_shift($tmp), 'qlButtonEditorLink', 'ca_entities', $entity_id, array(), array('data-id' => $entity_id)); ?>
+					<?php if ($has_image) { ?><div class="qlButtonContainerThumbnail" id="ql_<?= $entity_id; ?>"><a class='qlButton' data-id="<?= $entity_id; ?>"><?= _t("Quick Look"); ?></a></div><?php } ?>
 				</div>
-				<div class="thumbCaption"><?= $vs_caption; ?><br/><?= caEditorLink($this->request, $vs_idno, '', 'ca_entities', $vn_entity_id); ?></div>
+				<div class="thumbCaption">
+<?php
+	if($result_desc) {
+?>
+					<div class='searchResultDesc'><span class='searchResultDescHeading'><?= _t('Matched on'); ?>:</span><?= caFormatSearchResultDesc($entity_id, $result_desc, ['maxTitleLength' => 20, 'request' => $this->request]) ?></div>
+<?php
+	}
+?>			
+					<?= $caption; ?>
+				</div>
 			</td>
 <?php
-			$vn_col++;
-			if($vn_col == $vn_display_cols){
+			$col++;
+			if($col == $display_cols){
 				print "</tr>";
-				$vn_col = 0;
+				$col = 0;
 			}
 			
-			$vn_item_count++;
+			$item_count++;
 		}
-		if($vn_col > 0){
-			while($vn_col < $vn_display_cols){
+		if($col > 0){
+			while($col < $display_cols){
 				print "<td><!-- empty --></td>";
-				$vn_col++;
+				$col++;
 			}
 			print "</tr>";
 		}
@@ -100,7 +107,7 @@
 			jQuery(".qlButtonContainerThumbnail").css("display", "none"); 
 			jQuery("#ql_" + jQuery(this).data("id")).css("display", "block");
 		});
-		jQuery(".objectThumbnailsImageContainer").on("mouseleave", function(e) {
+		jQuery(".entityThumbnailsImageContainer").on("mouseleave", function(e) {
 			jQuery(".qlButtonContainerThumbnail").css("display", "none");
 		});
 		jQuery(".qlButton").on("click", function(e) {

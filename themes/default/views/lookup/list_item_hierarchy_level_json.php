@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 $list = $this->getVar('list_item_list');
 foreach($list as $level => $level_content) {
 	foreach($level_content as $key => $info) {

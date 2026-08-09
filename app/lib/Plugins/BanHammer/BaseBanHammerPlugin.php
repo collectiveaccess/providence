@@ -82,7 +82,7 @@ class BaseBanHammerPlugin {
 	/**
 	 * Ban is partial or global?
 	 */
-	static protected function getTTLFromConfig(array $config) : int {
+	static protected function getTTLFromConfig(?array $config) : int {
 		$ttl = $config['ttl'] ?? 24 * 60 * 60;	// default is 24 hours
 		$ttl = (int)$ttl;
 		if($ttl <= 0) { $ttl = 24 * 60 * 60; }

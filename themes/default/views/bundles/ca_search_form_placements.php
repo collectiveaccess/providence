@@ -75,7 +75,7 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 				
 				availableDisplayList: <?= json_encode($va_available_display_items); ?>,
 				initialDisplayList: 	<?= json_encode($va_to_display_items); ?>,
-				initialDisplayListOrder : <?= json_encode(array_keys($va_to_display_items)); ?>,
+				initialDisplayListOrder : <?= json_encode(array_keys($va_to_display_items ?? [])); ?>,
 				
 				availableSearchID: 'bundleEditorAvailableListSearch',
 				

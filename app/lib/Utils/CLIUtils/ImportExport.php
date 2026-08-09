@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2024 Whirl-i-Gig
+ * Copyright 2018-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1028,7 +1028,7 @@ trait CLIUtilsImportExport {
 	 */
 	public static function load_chenhall_nomenclatureParamList() {
 		return array(
-			"file|f=s" => _t('Excel XLSX-format https://nomemclature.info Chenhall Nomenclature file to load.'),
+			"file|f=s" => _t('Excel XLSX-format %1 Chenhall Nomenclature file to load.', 'https://nomemclature.info'),
 			"list|l=s" => _t('Code for list to load Chenhall Nomenclature into. If list with code does not exist it will be created.'),
 			"update|u=s" => _t('Update an existing Chenhall installation.')
 		);
@@ -1052,7 +1052,7 @@ trait CLIUtilsImportExport {
 	 *
 	 */
 	public static function load_chenhall_nomenclatureHelp() {
-		return _t('Loads Chenhall Nomenclature from Excel XLSX format file into the specified list. You can obtain a copy of the Nomenclature from https://nomenclature.info.');
+		return _t('Loads Chenhall Nomenclature from Excel XLSX format file into the specified list. You can obtain a copy of the Nomenclature from %1', 'https://nomenclature.info.');
 	}
 	# -------------------------------------------------------
 	/**
@@ -1314,18 +1314,18 @@ trait CLIUtilsImportExport {
 		$rows = [];
 
 		// output header
-
+		$r = fopen($file, "w");
 		$row = array();
 		foreach($display_list as $display_item) {
 			$row[] = $display_item['display'];
 		}
-		$rows[] = join($delimiter, $row);
+		
+		fputcsv($r, $row, $delimiter);
 
 		$result->seek(0);
 
-		$r = fopen($file, "w");
 		while($result->nextHit()) {
-			$row = array();
+			$row = [];
 			foreach($display_list as $placement_id => $display_item) {
 				$vs_value = html_entity_decode($t_display->getDisplayValue($result, $placement_id, array('convert_codes_to_display_text' => true, 'convertLineBreaks' => false)), ENT_QUOTES, 'UTF-8');
 				$vs_value = preg_replace("![\r\n\t]+!", " ", $vs_value);

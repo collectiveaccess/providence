@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2022 Whirl-i-Gig
+ * Copyright 2008-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
 require_once(__CA_MODELS_DIR__."/ca_objects.php"); 
 require_once(__CA_MODELS_DIR__."/ca_object_lots.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representation_multifiles.php");
@@ -68,11 +67,12 @@ class ObjectEditorController extends BaseEditorController {
 	public function postSave($t_object, $pb_is_insert) {
 		if (
 			$this->request->config->get('ca_objects_x_collections_hierarchy_enabled') && 
-			($coll_rel_type = $this->request->config->get('ca_objects_x_collections_hierarchy_relationship_type')) && 
+			is_array($coll_rel_types = caGetObjectCollectionHierarchyRelationshipTypes()) && 
+			sizeof($coll_rel_types) &&
 			($collection_id = $this->request->getParameter('collection_id', pInteger)) &&
-			!$t_object->relationshipExists('ca_collections', $collection_id, $coll_rel_type)
+			!$t_object->relationshipExists('ca_collections', $collection_id, $coll_rel_types[0])
 		) {
-			if (!($t_object->addRelationship('ca_collections', $collection_id, $coll_rel_type))) {
+			if (!($t_object->addRelationship('ca_collections', $collection_id, $coll_rel_types[0]))) {
 				$this->notification->addNotification(_t("Could not add parent collection to object: %1", join("; ", $t_object->getErrors())), __NOTIFICATION_TYPE_ERROR__);
 			}
 			$t_object->isChild();

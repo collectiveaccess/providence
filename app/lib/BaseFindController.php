@@ -410,7 +410,7 @@ class BaseFindController extends ActionController {
 	/**
 	  * 
 	  */
-	protected function _setBottomLineValues($po_result, $pa_display_list, $pt_display) {
+	protected function _setBottomLineValues($po_result, $pa_display_list, $pt_display, ?array $options=null) {
 		$vn_page_num 			= $this->opo_result_context->getCurrentResultsPageNumber();
 		if (!($items_per_page = $this->opo_result_context->getItemsPerPage())) { 
 			$items_per_page = $this->opn_items_per_page_default; 
@@ -420,19 +420,24 @@ class BaseFindController extends ActionController {
 		$vb_bottom_line_is_set = false;
 		foreach($pa_display_list as $placement_id => $va_placement) {
 			if(isset($va_placement['settings']['bottom_line']) && $va_placement['settings']['bottom_line']) {
-				$va_bottom_line[$placement_id] = caProcessBottomLineTemplateForPlacement($this->request, $va_placement, $po_result, array('pageStart' => ($vn_page_num - 1) * $items_per_page, 'pageEnd' => (($vn_page_num - 1) * $items_per_page) + $items_per_page));
+				$va_bottom_line[$placement_id] = caProcessBottomLineTemplateForPlacement(
+					$this->request, $va_placement, $po_result, 
+					array_merge(['pageStart' => ($vn_page_num - 1) * $items_per_page, 'pageEnd' => (($vn_page_num - 1) * $items_per_page) + $items_per_page], $options ?? [])
+				);
 				$vb_bottom_line_is_set = true;
 			} else {
 				$va_bottom_line[$placement_id] = '';
 			}
 		}
-		
 		$this->view->setVar('bottom_line', $vb_bottom_line_is_set ? $va_bottom_line : null);
 		
 		//
 		// Bottom line for display
 		//
-		$this->view->setVar('bottom_line_totals', caProcessBottomLineTemplateForDisplay($this->request, $pt_display, $po_result, array('pageStart' => ($vn_page_num - 1) * $items_per_page, 'pageEnd' => (($vn_page_num - 1) * $items_per_page) + $items_per_page)));
+		$this->view->setVar('bottom_line_totals', caProcessBottomLineTemplateForDisplay(
+			$this->request, $pt_display, $po_result, 
+			array_merge(['pageStart' => ($vn_page_num - 1) * $items_per_page, 'pageEnd' => (($vn_page_num - 1) * $items_per_page) + $items_per_page], $options ?? []))
+		);
 	}
 	# -------------------------------------------------------
 	# Printing
@@ -793,8 +798,9 @@ class BaseFindController extends ActionController {
 	/**
 	 * 
 	 * 
-	 */ 
+	 */
 	public function DownloadMedia() {
+
 		if ($t_subject = Datamodel::getInstanceByTableName($this->ops_tablename, true)) {
 			$o_md_conf = Configuration::load('media_metadata');
 
@@ -802,27 +808,27 @@ class BaseFindController extends ActionController {
 			if (($ids = trim($this->request->getParameter($t_subject->tableName(), pString))) || ($ids = trim($this->request->getParameter($t_subject->primaryKey(), pString)))) {
 				if ($ids !== 'all') {
 					$id_list = explode(';', $ids);
-					
+
 					foreach($id_list as $i => $id) {
 						if (!trim($id) || !(int)$id) { unset($id_list[$i]); }
 					}
 				}
 			}
-	
-			if (!is_array($id_list) || !sizeof($id_list)) { 
+
+			if (!is_array($id_list) || !sizeof($id_list)) {
 				$id_list = $this->opo_result_context->getResultList();	// get media for entire result set
 			}
-			
+
 			if (($limit = (int)$t_subject->getAppConfig()->get('maximum_download_file_count')) > 0) {	// truncate to maximum
 				$id_list = array_slice($id_list, 0, $limit);
 			}
-			
+
 			$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
-					
+
 			$download_list = [];
 			if (is_array($id_list) && sizeof($id_list)) {
 				$preferred_version = $this->request->getParameter('version', pString);
-				
+				$pn_type_id = $this->request->getParameter('type', pString);
 				$element_code = null;
 				if (preg_match('!^attribute([\d]+)$!', $preferred_version, $m)) {
 					// Derive get() spec for FT_MEDIA metadata attribute
@@ -834,17 +840,17 @@ class BaseFindController extends ActionController {
 				if ($qr_res = $t_subject->makeSearchResult($t_subject->tableName(), $id_list, array('filterNonPrimaryRepresentations' => false))) {
 					if (!($limit = ini_get('max_execution_time'))) { $limit = 30; }
 					set_time_limit($limit * 10);	// allow extra time to process files
-					
+
 					while($qr_res->nextHit()) {
 						if(!$element_code) {
 							// representation
 							$version = (!is_array($version_list = $qr_res->getMediaVersions('ca_object_representations.media')) || !in_array($preferred_version, $version_list)) ? 'original' : $preferred_version;
-						
+
 							$paths = $qr_res->getMediaPaths('ca_object_representations.media', $version);
 							$infos = $qr_res->getMediaInfos('ca_object_representations.media');
 							$representation_ids = $qr_res->get('ca_object_representations.representation_id', array('returnAsArray' => true));
 							$representation_types = $qr_res->get('ca_object_representations.type_id', array('returnAsArray' => true));
-						
+
 							foreach($paths as $i => $path) {
 								$ext = array_pop(explode(".", $path));
 								$idno = $qr_res->get($t_subject->tableName().'.idno');
@@ -852,11 +858,12 @@ class BaseFindController extends ActionController {
 								$index = (sizeof($paths) > 1) ? ($i + 1) : '';
 								$representation_id = $representation_ids[$i];
 								$representation_type = caGetListItemIdno($representation_types[$i]);
+								if ($pn_type_id && ((int)$representation_types[$i] !== (int)$pn_type_id)) { continue; }
 
 								// make sure we don't download representations the user isn't allowed to read
 								if(!caCanRead($this->request->user->getPrimaryKey(), 'ca_object_representations', $representation_id)){ continue; }
-									
-								$filename = caGetRepresentationDownloadFileName($this->ops_tablename, ['idno' => $idno, 'index' => $index, 'version' => $version, 'extension' => $ext, 'original_filename' => $original_name, 'representation_id' => $representation_id]);				
+
+								$filename = caGetRepresentationDownloadFileName($this->ops_tablename, ['idno' => $idno, 'index' => $index, 'version' => $version, 'extension' => $ext, 'original_filename' => $original_name, 'representation_id' => $representation_id]);
 
 								if($o_md_conf->get('do_metadata_embedding_for_search_result_media_download')) {
 									if($path_with_embedding = caEmbedMediaMetadataIntoFile($qr_res, $version, ['path' => $path])) {
@@ -871,13 +878,13 @@ class BaseFindController extends ActionController {
 							$paths = $qr_res->get("{$element_code}.{$version}.path", ['returnAsArray' => true]);
 							$idno = $qr_res->get($t_subject->tableName().'.idno');
 							$original_filename = pathinfo($qr_res->get($element_code.'.original_filename'), PATHINFO_BASENAME);
-						
+
 							foreach($paths as $i => $path) {
 								$ext = array_pop(explode(".", $path));
-							
+
 								$index = (sizeof($paths) > 1) ? ($i + 1) : '';
-								$filename = caGetRepresentationDownloadFileName($this->ops_tablename, ['idno' => $idno, 'index' => $index, 'version' => $version, 'extension' => $ext, 'original_filename' => $original_filename], ['mode' => $original_filename ? 'original_filename' : 'idno']);	
-								
+								$filename = caGetRepresentationDownloadFileName($this->ops_tablename, ['idno' => $idno, 'index' => $index, 'version' => $version, 'extension' => $ext, 'original_filename' => $original_filename], ['mode' => $original_filename ? 'original_filename' : 'idno']);
+
 								if (!file_exists($path)) { continue; }
 								$download_list[$path] = $filename;
 							}
@@ -885,14 +892,14 @@ class BaseFindController extends ActionController {
 					}
 				}
 			}
-		
-			$file_count = sizeof($download_list);			
+
+			$file_count = sizeof($download_list);
 			if ($file_count > 1) {
 				$o_zip = new ZipStream();
 				foreach($download_list as $path => $filename) {
 					$o_zip->addFile($path, $filename);
 				}
-				
+
 				$o_view->setVar('zip_stream', $o_zip);
 				$o_view->setVar('archive_name', 'media_for_'.mb_substr(preg_replace('![^A-Za-z0-9]+!u', '_', $this->getCriteriaForDisplay()), 0, 20).'.zip');
 
@@ -906,11 +913,23 @@ class BaseFindController extends ActionController {
 					break;
 				}
 			} else {
+				if ($pn_type_id) {
+					$this->notification->addNotification(
+						_t('Could not generate ZIP file for download'),
+						__NOTIFICATION_TYPE_ERROR__
+					);
+
+					$this->response->setRedirect(
+						caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Index')
+					);
+					return;
+				}
+
 				$this->response->setHTTPResponseCode(204, _t('No files to download'));
 			}
 			return;
 		}
-		
+
 		// post error
 		$this->postError(3100, _t("Could not generate ZIP file for download"),"BaseFindController->DownloadMedia()");
 	}
@@ -1005,9 +1024,15 @@ class BaseFindController extends ActionController {
 		
 		$this->view->setVar('t_item', Datamodel::getInstanceByTableName($this->ops_tablename, true));
 		$this->view->setVar('num_items_rendered', (int)$o_viz->numItemsRendered());
-		
+
 		if ($pb_render_data) {
-			$this->response->addContent($o_viz->getDataForVisualization($ps_viz, array('request' => $this->request)));
+			$this->response->setContentType('application/json');
+			$this->response->addContent(
+				$o_viz->getDataForVisualization(
+					$ps_viz,
+					array('request' => $this->request)
+				)
+			);
 			return;
 		}
 		$this->render('Results/viz_html.php');
@@ -1218,9 +1243,15 @@ class BaseFindController extends ActionController {
 	/**
 	 * Returns string representing the name of the item the search will return
 	 *
-	 * If $ps_mode is 'singular' [default] then the singular version of the name is returned, otherwise the plural is returned
+	 * If $mode is 'singular' [default] then the singular version of the name is returned, otherwise the plural is returned
+	 *
+	 * @param string $mode
+	 * 
+	 * @return string
 	 */
-	public function getResultsDisplayName($mode='singular') {
+	public function getResultsDisplayName(?string $mode='singular') : ?string {
+		global $g_ui_locale;
+		
 		$type_restriction_has_changed = false;
 		$type_id = $this->opo_result_context->getTypeRestriction($type_restriction_has_changed);
 		
@@ -1233,16 +1264,21 @@ class BaseFindController extends ActionController {
 			$t_list->load(array('list_code' => $t_instance->getTypeListCode()));
 		
 			$t_list_item = new ca_list_items();
-			$t_list_item->load(array('list_id' => $t_list->getPrimaryKey(), 'parent_id' => null));
+			$t_list_item->load(['list_id' => $t_list->getPrimaryKey(), 'parent_id' => null]);
 			$hier = caExtractValuesByUserLocale($t_list_item->getHierarchyWithLabels());
 		
 			if (!($name = ($mode == 'singular') ? $hier[$type_id]['name_singular'] ?? '' : $hier[$type_id]['name_plural'] ?? '')) {
-				$name = mb_strtolower(($mode == 'singular') ? $t_instance->getProperty('NAME_SINGULAR') : $t_instance->getProperty('NAME_PLURAL'));
+				$name = ($mode == 'singular') ? $t_instance->getProperty('NAME_SINGULAR') : $t_instance->getProperty('NAME_PLURAL');
 			}
-			return mb_strtolower($name);
 		} else {
-			return mb_strtolower(($mode == 'singular') ? $t_instance->getProperty('NAME_SINGULAR') : $t_instance->getProperty('NAME_PLURAL'));
+			$name = ($mode == 'singular') ? $t_instance->getProperty('NAME_SINGULAR') : $t_instance->getProperty('NAME_PLURAL');
 		}
+	
+		if(strlen($g_ui_locale) && (caGetLanguageForLocale($g_ui_locale) === 'de')) {	// Deutsche Hauptworten mußen groß schreiben bleiben
+			return $name;
+		}
+	
+		return mb_strtolower($name);
 	}
 	# -------------------------------------------------------
 	/**

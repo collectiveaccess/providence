@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,7 +46,17 @@ function caMediaInfoGuessFileFormat($ps_path) {
 		case 'MPEG-4':
 			return 'video/mp4';
 		case 'AVC':
-			return ($va_media_metadata['GENERAL']['Format'] === 'MPEG-4') ? 'video/mp4' : 'video/MP2T';
+			switch($va_media_metadata['GENERAL']['Format']) {
+				case 'MPEG-4':
+					return 'video/mp4';
+					break;
+				case 'MXF':
+					return 'video/mxf';
+					break;
+				default:
+					return 'video/mp2t';
+					break;
+			}
 		case 'AVI':
 			return 'video/avi';
 		case 'Matroska':
@@ -63,6 +73,7 @@ function caMediaInfoGuessFileFormat($ps_path) {
  * @return bool|string
  */
 function caGetID3GuessFileFormat($ps_path) {
+	if(!$ps_path) { return null; }
 	if($va_getid3_info = caExtractMetadataWithGetID3($ps_path)) {
 	
 		if(
@@ -89,6 +100,7 @@ function caGetID3GuessFileFormat($ps_path) {
  * @return array|bool
  */
 function caExtractMetadataWithGetID3($ps_filepath) {
+	if(!$ps_filepath) { return null; }
 	if(MemoryCache::contains($ps_filepath, 'GetID3MediaMetadata')) {
 		return MemoryCache::fetch($ps_filepath, 'GetID3MediaMetadata');
 	}
@@ -139,7 +151,7 @@ function caExtractMetadataWithGetID3($ps_filepath) {
  */
 function caExtractMetadataWithMediaInfo($ps_filepath, $ps_mediainfo_path=null){
 	if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }
-	if (!caIsValidFilePath($ps_mediainfo_path)) { return false; }
+	if (!$ps_filepath || !caIsValidFilePath($ps_mediainfo_path)) { return false; }
 
 	if(MemoryCache::contains($ps_filepath, 'MediaInfoMetadata')) {
 		return MemoryCache::fetch($ps_filepath, 'MediaInfoMetadata');
@@ -177,6 +189,7 @@ function caExtractMetadataWithMediaInfo($ps_filepath, $ps_mediainfo_path=null){
  * @return float|null
  */
 function caExtractVideoFileDurationWithMediaInfo($ps_filepath) {
+	if(!$ps_filepath) { return null; }
 	$ps_mediainfo_path = caGetExternalApplicationPath('mediainfo');
 	if(!caMediaInfoInstalled($ps_mediainfo_path)) { return false; }
 
@@ -223,6 +236,65 @@ function caGetID3IsMpeg4($pa_getid3_info) {
 	}
 
 	return false;
+}
+# ------------------------------------------------------------------------------------------------
+/**
+ * Convert Whisper JSON transcription output to VTT format
+ *
+ * @param string $filepath Path to Whisper JSON file
+ * @param string $vttpath Path to file containing VTT output
+ * @param array $options Options include:
+ *		returnContent = return decoded JSON sdata as array
+ *
+ * @return mixed path to VTT output, array of data (if returnContent option is set), or null on error
+ */
+function caWhisperTranscriptionToVTT(string $filepath, string $vttpath, ?array $options=null) {
+	if(!($json_str = file_get_contents($filepath))) { return null; }
+	if (!($json = json_decode($json_str, true))) { return null; }
+	if(!is_array($segments = $json['segments'] ?? null)) { return null; }
+	
+	if(!($r = fopen($vttpath, "w"))) { return null; }
+	$tc = new TimecodeParser();
+	fputs($r, "WEBVTT\n\n");
+	foreach($segments as $s) {
+		$tc->parse((float)$s['start']);
+		$start = $tc->getText();
+		$tc->parse((float)$s['end']);
+		$end = $tc->getText();
+		$text = trim($s['text']);
+		$id = $s['id'] + 1;
+		
+		$line = "{$id}\n{$start} --> {$end}\n{$text}\n\n";
+		fputs($r, $line);
+	}
+	fclose($r);
+	return !caGetOption('returnContent', $options, false) ? $vttpath : $json;
+}
+# ------------------------------------------------------------------------------------------------
+/**
+ * Convert Whisper JSON transcription output to VTT format
+ *
+ * @param array $data 
+ * @param array $options
+ *
+ * @return array
+ */
+function caWhisperTranscriptionSegmentsToWords(array $data, ?array $options=null) : ?array {
+	if(!is_array($data['segments'] ?? null)) { return null; }
+	
+	$words = [];
+	foreach($data['segments'] as $s) {
+		if(is_array($s['words'])) {
+			foreach($s['words'] as $w) {
+				$words[] = [
+					'word' => $w['word'],
+					'start' => $w['start'],
+					'end' => $w['end']
+				];
+			}
+		}
+	}
+	return $words;
 }
 # ------------------------------------------------------------------------------------------------
 

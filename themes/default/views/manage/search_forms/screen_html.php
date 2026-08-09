@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,51 +25,51 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_form = $this->getVar('t_subject');
-	$vn_form_id = $this->getVar('subject_id');
-	$vn_table_num = $t_form->get("table_num"); 
-	
-	$t_ui = $this->getVar('t_ui');	
+$t_form = $this->getVar('t_subject');
+$form_id = $this->getVar('subject_id');
+$table_num = $t_form->get("table_num"); 
+
+$t_ui = $this->getVar('t_ui');	
 ?>
-	<div class="sectionBox">
+<div class="sectionBox">
 <?php
-		print $vs_control_box = caFormControlBox(
+		print $control_box = caFormControlBox(
 			caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'SearchFormEditorForm').' '.
-			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'manage/search_forms', 'SearchFormEditor', 'Edit/'.$this->request->getActionExtra(), array('form_id' => $vn_form_id)), 
+			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'manage/search_forms', 'SearchFormEditor', 'Edit/'.$this->request->getActionExtra(), ['form_id' => $form_id, 'table_num' => $table_num]), 
 			'', 
-			(intval($vn_form_id) > 0) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/search_forms', 'SearchFormEditor', 'Delete/'.$this->request->getActionExtra(), array('form_id' => $vn_form_id)) : ''
+			(intval($form_id) > 0) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/search_forms', 'SearchFormEditor', 'Delete/'.$this->request->getActionExtra(), array('form_id' => $form_id)) : ''
 		);
 		
-			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/form_id/'.$vn_form_id, 'SearchFormEditorForm', null, 'POST', 'multipart/form-data');
-			
-			$va_form_elements = $t_form->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-									'request' => $this->request, 
-									'formName' => 'SearchFormEditorForm'));
-			
-			if (!$vn_form_id) {
-				// For new forms, show mandatory fields...
-				// ... BUT ...
-				// if table_num is set on the url then create a hidden element rather than show it as a mandatory field
-				// This allows us to set the content type for the form from the calling control
-				$va_mandatory_fields = $t_form->getMandatoryFields();
-				if (($vn_index = array_search('table_num', $va_mandatory_fields)) !== false) {
-					if ($vn_table_num = $t_form->get('table_num')) {
-						print caHTMLHiddenInput('table_num', array('value' => $vn_table_num));
-						unset($va_form_elements['table_num']);
-						unset($va_mandatory_fields[$vn_index]);
-					}
+		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/form_id/'.$form_id, 'SearchFormEditorForm', null, 'POST', 'multipart/form-data');
+		
+		$va_form_elements = $t_form->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
+								'request' => $this->request, 
+								'formName' => 'SearchFormEditorForm'));
+		
+		if (!$form_id) {
+			// For new forms, show mandatory fields...
+			// ... BUT ...
+			// if table_num is set on the url then create a hidden element rather than show it as a mandatory field
+			// This allows us to set the content type for the form from the calling control
+			$va_mandatory_fields = $t_form->getMandatoryFields();
+			if (($index = array_search('table_num', $va_mandatory_fields)) !== false) {
+				if ($table_num = $t_form->get('table_num')) {
+					print caHTMLHiddenInput('table_num', array('value' => $table_num));
+					unset($va_form_elements['table_num']);
+					unset($va_mandatory_fields[$index]);
 				}
 			}
-			
-			print join("\n", $va_form_elements);
-			
-			print $vs_control_box;
+		}
+		
+		print join("\n", $va_form_elements);
+		
+		print $control_box;
 ?>
-			<input type='hidden' name='table_num' value='<?= $vn_table_num; ?>'/>
-			<input type='hidden' name='form_id' value='<?= $vn_form_id; ?>'/>
-		</form>
-	
-		<div class="editorBottomPadding"><!-- empty --></div>
-	</div>
+		<input type='hidden' name='table_num' value='<?= $table_num; ?>'/>
+		<input type='hidden' name='form_id' value='<?= $form_id; ?>'/>
+	</form>
 
 	<div class="editorBottomPadding"><!-- empty --></div>
+</div>
+
+<div class="editorBottomPadding"><!-- empty --></div>

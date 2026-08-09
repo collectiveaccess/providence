@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 namespace CA\MetadataAlerts\TriggerTypes;
 
 class Modification extends Base {
@@ -46,7 +45,6 @@ class Modification extends Base {
 				'width' => '670px', 'height' => 3,
 				'default' => '',
 				'label' => _t('Expression'),
-				'suffix' => _t(''),
 				'description' => _t('Expression to evaluate when record is saved.')
 			]
 		];

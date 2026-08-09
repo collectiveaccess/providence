@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2022-2025 Whirl-i-Gig
+ * Copyright 2022-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,6 +36,7 @@ include_once(__CA_LIB_DIR__."/Media/MediaVolumes.php");
 include_once(__CA_LIB_DIR__."/Media/MediaProcessingSettings.php");
 include_once(__CA_LIB_DIR__."/Datamodel.php");
 include_once(__CA_LIB_DIR__."/ApplicationError.php");
+include_once(__CA_APP_DIR__."/helpers/avHelpers.php");
 
 /**
  * TaskQueue handler plugin for transcription of uploaded AV media using OpenAI Whisper
@@ -43,7 +44,6 @@ include_once(__CA_LIB_DIR__."/ApplicationError.php");
  */
 class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlugTaskQueueHandler {
 	# --------------------------------------------------------------------------------
-	
 	public $error;
 
 	# --------------------------------------------------------------------------------
@@ -107,46 +107,73 @@ class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlug
 		$id = 			$parameters["PK_VAL"];				// Value of primary key
 		
 		$logger = caGetLogger(['logLevel' => 'INFO']);
+		$config = Configuration::load();
+		if(!($model = $config->get('whisper_model'))) { $model = 'base'; }
+		$tmp = explode('.', $model);
+		$end = array_pop($tmp);
+		
+		// Don't try to detect language if model is language-specific
+		$dont_detect = ((sizeof($tmp) > 0) && (strlen($end) >= 2) && (strlen($end) <= 3));
+		$report = ['errors' => [], 'notes' => []];
+		$vtt_output = $vtt_output = null;
 		
 		if(($t = Datamodel::getInstance($table)) && $t->load($id)) {
 			$media_input = $t->getMediaPath($field, 'original');
-			$vtt_output = caGetTempFileName('transcription', 'vtt', ['useAppTmpDir' => true]);
+			$whisper_output = caGetTempFileName('transcription', 'json', ['useAppTmpDir' => true]);
 			
 			if(!($app_path = caWhisperInstalled())) { 
-				$logger->logError(_t("[TaskQueue::mediaTranscription::process] Whisper is not installed (see https://github.com/openai/whisper)", $table, $id));
-				$this->error->setError(551, _t("Whisper is not installed (see https://github.com/openai/whisper)"),"mediaTranscription->process()");	
+				$logger->logError(_t("[TaskQueue::mediaTranscription::process] Whisper is not installed (see %1)", 'https://github.com/openai/whisper'));
+				$this->error->setError(551, _t("Whisper is not installed (see %1)", 'https://github.com/openai/whisper'),"mediaTranscription->process()");	
 				return false;
 			}
 			
 			$locale = __CA_DEFAULT_LOCALE__;
-			if($detect_path = caWhisperInstalled(['returnPathToDetect' => true])) {
-				caExec("{$detect_path} --input={$media_input} --tmpdir=".__CA_TEMP_DIR__, $output, $return);
-				$lang = preg_quote(join('', $output ?? []), '/');
-				if(($return == 0) && strlen($lang) && !preg_match("/^{$lang}_/", $locale) && ($locales = ca_locales::localesForLanguage($lang, ['codesOnly' => true])) && is_array($locales) && sizeof($locales)) {
-					$locale = array_shift($locales);
-				} else {
-					$logger->logNotice(_t('[TaskQueue::mediaTranscription::process] Could not detect language of media. Using default locale %1.', $locale));
+			
+			if(!$dont_detect) {
+				if($detect_path = caWhisperInstalled(['returnPathToDetect' => true])) {
+					caExec("{$detect_path} --model={$model} --input={$media_input} --tmpdir=".__CA_TEMP_DIR__, $output, $return);
+					$lang = preg_quote(join('', $output ?? []), '/');
+					if(($return == 0) && strlen($lang) && !preg_match("/^{$lang}_/", $locale) && ($locales = ca_locales::localesForLanguage($lang, ['codesOnly' => true])) && is_array($locales) && sizeof($locales)) {
+						$locale = array_shift($locales);
+					} else {
+						$logger->logNotice(_t('[TaskQueue::mediaTranscription::process] Could not detect language of media. Using default locale %1.', $locale));
+					}
 				}
 			}
-			caExec("{$app_path} --input={$media_input} --output={$vtt_output} --tmpdir=".__CA_TEMP_DIR__, $output, $return);
-			if($return == 0) {
-				if(!$t->addCaptionFile($vtt_output, $locale)) {
+			caExec("{$app_path} --model={$model}  --format=json --words=1 --input={$media_input} --output={$whisper_output} --tmpdir=".__CA_TEMP_DIR__, $output, $return);
+
+			if((int)$return == 0) {
+				// Convert JSON file to VTT
+				$vtt_output = caGetTempFileName('transcription', 'vtt', ['useAppTmpDir' => true]);
+				$content = caWhisperTranscriptionToVTT($whisper_output, $vtt_output, ['returnContent' => true]);
+				
+				$words = is_array($content) ? caWhisperTranscriptionSegmentsToWords($content) : [];
+				
+				if(!$t->addCaptionFile($vtt_output, $locale, ['content' => $words])) {
 					$logger->logError(_t('[TaskQueue::mediaTranscription::process] Could not add VTT transcription file to %1::%2: %3', $table, $id, join('; ', $t->getErrors())));
 					$this->error->setError(551, _t("Could not add VTT transcription file to %1::%2: %3", $table, $id, join('; ', $t->getErrors())),"mediaTranscription->process()");	
-				} else {
-					@unlink($vtt_output);
-					return true;
 				}
+				
+				// Attach JSON output as sidecar
+				if(method_exists($t, 'addSidecarFile')) {
+					$t->addSidecarFile($whisper_output, _t('Generated by Whisper at %1', date('c')));
+				}
+				
+				@unlink($whisper_output);
+				@unlink($vtt_output);
+				return $report;
 			} else {
 				$logger->logError(_t('[TaskQueue::mediaTranscription::process] Could not transcribe media %1. Return code was %2; message was %3', $media_input, $return, join('; ', $output)));
 				$this->error->setError(551, _t("Could not transcribe media %1. Return code was %2; message was %3", $media_input, $return, join('; ', $output)),"mediaTranscription->process()");	
 			}
-			@unlink($vtt_output);
 		} else {
 			// Bad table/id
 			$logger->logError(_t("[TaskQueue::mediaTranscription::process] Invalid table or id. Table was '%1'; id was '%2'", $table, $id)); 
 			$this->error->setError(551, _t("Invalid table or id. Table was '%1'; id was '%2'", $table, $id),"mediaTranscription->process()");	
 		}
+		
+		@unlink($whisper_output);
+		@unlink($vtt_output);
 		return false;
 	}
 	# --------------------------------------------------------------------------------
@@ -156,7 +183,7 @@ class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlug
 	 *
 	 * Returns true on success, false on error
 	 */
-	public function cancel($pn_task_id, $parameters) {
+	public function cancel($task_id, $parameters) {
 		# delete tmp file
 		@unlink($parameters["FILENAME"]);
 		

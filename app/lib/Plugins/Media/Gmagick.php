@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2025 Whirl-i-Gig
+ * Copyright 2012-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -902,7 +902,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->handle->setimageformat($this->magick_names[$mimetype]);
 			# set quality
 			if (($this->properties["quality"] ?? null) && ($this->properties["mimetype"] != "image/tiff")){ 
-				$this->handle->setcompressionquality($this->properties["quality"]);
+				$this->handle->setcompressionquality($this->properties["quality"] ?: 75);
 			}
 			
 			$this->handle->setimagebackgroundcolor(new GmagickPixel(caGetOption('background', $this->properties, "#FFFFFF")));
@@ -1257,6 +1257,32 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}	
 	# ------------------------------------------------
 	/**
+	 * Merge multiple images into a single image.
+	 *
+	 * @param array $images Array of images to compose. Each image in list is represented by an array with three keys: "path" (file path of image, "x" (offset from left, in pixels), "y" (offset from top, in pixels)
+	 * @param string $filepath File path to write merged image to
+	 * @param int $width Width, in pixeels, of merged image
+	 * @param int $height Height, in pixeels, of merged image
+	 *
+	 * @return bool True on success, false on failure
+	 */
+	public function compose(array $images, string $filepath, int $width, int $height) :  bool {
+		$im = new Gmagick();
+		$ext = pathinfo($filepath, PATHINFO_EXTENSION);
+		$im->newimage($width, $height, 'transparent', $ext);
+		foreach($images as $image) {
+			$layer = new Gmagick($image['path']);
+			$im->compositeimage($layer, 1, (int)$image['x'], (int)$image['y']);
+			
+			$layer->clear();
+			$layer->destroy();
+		}
+		$ret = $im->writeimage($filepath);
+		$im->clear();
+		return $ret ? true : false;	
+	}	
+	# ------------------------------------------------
+	/**
 	 *
 	 */
 	private function _dcrawConvertToTiff($filepath) {
@@ -1349,8 +1375,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			
 			$format = $this->handle->getimageformat();
 			
-			// Set background color for transparent PNG or GIF
-			if ($background && in_array($format, ['PNG', 'GIF'])) {
+			// Set background color for transparent PNG, GIF or TIFF
+			if ($background && in_array($format, ['PNG', 'GIF', 'TIFF'])) {
 				$geometry = $this->handle->getimagegeometry();
 				$r = new Gmagick();
 				$r_new_image = $r->newimage($geometry['width'], $geometry['height'], $background, $format);
