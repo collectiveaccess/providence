@@ -177,14 +177,12 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 
 		if (!$this->ops_ghostscript_path) {
 			$va_status['warnings'][] = _t("Ghostscript cannot be found: image previews will not be created");
-		}
-		else{w
+		} else {
 			$va_status['notices'][] = _t("Found Ghostscript");
 		}
 		if (!$this->ops_pdftotext_path) {
 			$va_status['warnings'][] = _t("PDFToText cannot be found: indexing of text in PDF files will not be performed; you can obtain PDFToText at %1", 'http://www.foolabs.com/xpdf/download.html');
-		}
-		else{
+		} else{
 			$va_status['notices'][] = _t("Found PDFToText");
 		}
 
