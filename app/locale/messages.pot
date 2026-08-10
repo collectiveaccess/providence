@@ -1,17 +1,14 @@
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: My First CollectiveAccess System\n"
-"POT-Creation-Date: 2026-08-07 15:55-0400\n"
+"POT-Creation-Date: 31\n"
 "PO-Revision-Date: 31\n"
 "Last-Translator: info@put-your-domain-here.com\n"
-"Language-Team: CollectiveAccess\n"
-"Language: en_US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.9\n"
+"X-Generator: CollectiveAccess 2.0\n"
 
 msgid "Save"
 msgstr ""
@@ -8977,9 +8974,6 @@ msgstr ""
 msgid "Indicates if the place is deleted or not."
 msgstr ""
 
-msgid "Inherir"
-msgstr ""
-
 msgid "User submitting this place"
 msgstr ""
 
@@ -10837,7 +10831,7 @@ msgstr ""
 msgid "Hide coordinates"
 msgstr ""
 
-msgid "Check this options to hide latitude and longitude coordinates."
+msgid "Check this option to hide latitude and longitude coordinates."
 msgstr ""
 
 msgid "Maximum number of GeoNames results"
@@ -11245,7 +11239,7 @@ msgstr ""
 msgid "Sub-elements may not be used as checklists"
 msgstr ""
 
-msgid "dependent field visibility is only supported for radio buttons and drop-down (select"
+msgid "Dependent field visibility is only supported for radio buttons and drop-down (select"
 msgstr ""
 
 msgid "Check this option if you want to require that a loan be selected."
@@ -12742,13 +12736,13 @@ msgstr ""
 msgid "Invalid FotoWare base url"
 msgstr ""
 
-msgid "Could not render media: not rendition url returned"
+msgid "Could not render media: no rendition url returned"
 msgstr ""
 
 msgid "Could not render media"
 msgstr ""
 
-msgid "Could not get metdata definitions: %1"
+msgid "Could not get metadata definitions: %1"
 msgstr ""
 
 msgid "Invalid Legistar client value"
@@ -13192,7 +13186,7 @@ msgstr ""
 msgid "Could not send files because target %1 is not defined"
 msgstr ""
 
-msgid "Sent %1 files for for target %2 via %3"
+msgid "Sent %1 files for target %2 via %3"
 msgstr ""
 
 msgid "Could not send %1 files for target %2 via %3: %4"
@@ -17008,7 +17002,7 @@ msgstr ""
 msgid "You must specify a mapping"
 msgstr ""
 
-msgid "Set %1 does take items imported by mapping"
+msgid "Set %1 does not take items imported by mapping"
 msgstr ""
 
 msgid "Could not import source %1: %2"
@@ -17023,7 +17017,7 @@ msgstr ""
 msgid "The format of the data to import. (Ex. XLSX"
 msgstr ""
 
-msgid "Limit logging to specific event types when log level is set to INFO. Limit logging to specific event types for log level INFO. Valid values are: GENERAL (general status messages"
+msgid "Limit logging to specific event types when log level is set to INFO. Valid values are: GENERAL (general status messages"
 msgstr ""
 
 msgid "When importing an Excel .xslx file"
@@ -17314,7 +17308,7 @@ msgstr ""
 msgid "Could not import mapping %1: %2"
 msgstr ""
 
-msgid "Required. importer mapping to write to file."
+msgid "Required. Importer mapping to write to file."
 msgstr ""
 
 msgid "Required. File to save importer to."
@@ -17881,7 +17875,7 @@ msgstr ""
 msgid "This utility generates a new system GUID for the current system. This can be useful is you used a copy of another system to set it up and are now trying to sync/replicate data between the two. You may have to reset the system GUID for one of them in that case."
 msgstr ""
 
-msgid "User names to notify if there are errors. Multiple entries are delimited by comma or semicolon. Invalid or non-existing user named will be ignored. [Optional]"
+msgid "User names to notify if there are errors. Multiple entries are delimited by comma or semicolon. Invalid or non-existing user names will be ignored. [Optional]"
 msgstr ""
 
 msgid "Groups to notify if there are errors. They're identified by group code. Multiple entries are delimited by comma or semicolon. Invalid or non-existing groups will be ignored. [Optional]"
@@ -17956,7 +17950,7 @@ msgstr ""
 msgid "CollectiveAccess supports tracking of location and use histories through history tracking policies. Current values for each record for each policy are cached to speed browses and display. From time to time these values may become out of date. Use this command to regenerate the cached values based upon the current state of the database."
 msgstr ""
 
-msgid "Updates current values for all records with tracking policies for which values with upcoming data have been set."
+msgid "Updates current values for all records with tracking policies for which values with upcoming dates have been set."
 msgstr ""
 
 msgid "CollectiveAccess supports tracking of location and use histories through history tracking policies. Current values for each record for each policy are cached to speed browses and display. For records with values having future dates"
@@ -18010,7 +18004,7 @@ msgstr ""
 msgid "%1 %2 has invalid hierarchy_id %3; root id was %4 "
 msgstr ""
 
-msgid "While fixing hierarchy_id (%1"
+msgid "Fixed hierarchy_id (%1"
 msgstr ""
 
 msgid "Found %1 invalid hierarchy ids"
@@ -20239,13 +20233,13 @@ msgstr ""
 msgid "Analytics code (start of &lt;body&gt;"
 msgstr ""
 
-msgid "Content to be added to the end of the &lt;body&gt; section on all Pawtucket pages. Your analytics provider should have provided this content."
+msgid "Content to be added to the start of the &lt;body&gt; section on all Pawtucket pages. Your analytics provider should have provided this content."
 msgstr ""
 
 msgid "Analytics code (end of &lt;body&gt;"
 msgstr ""
 
-msgid "Content to be added to the start of the &lt;body&gt; section on all Pawtucket pages. Your analytics provider should have provided this content."
+msgid "Content to be added to the end of the &lt;body&gt; section on all Pawtucket pages. Your analytics provider should have provided this content."
 msgstr ""
 
 msgid "$ps_key"
@@ -23613,3 +23607,4 @@ msgstr ""
 
 msgid "Calendar"
 msgstr ""
+
