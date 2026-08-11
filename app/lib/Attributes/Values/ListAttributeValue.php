@@ -128,7 +128,6 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 	'render' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_SELECT,
-		'default' => 1,
 		'width' => 40, 'height' => 1,
 		'label' => _t('Render list in editor as'),
 		'description' => _t('Set the presentation of the list when editing to select, checkboxes, radio buttons, type-ahead lookup or browser.'),
