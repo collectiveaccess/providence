@@ -263,8 +263,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$key = md5(serialize($pm_id));
 		if(CompositeCache::contains($key, 'metadataElements')) { 
 			$this->_FIELD_VALUES = CompositeCache::fetch($key, 'metadataElements');
-			
 			if(!is_array($this->_FIELD_VALUES) || !sizeof($this->_FIELD_VALUES)) { return false; }
+			$this->loadSettings();
 			return true;
 		}
 		if ($vn_rc = parent::load($pm_id, $pb_use_cache)) {
@@ -282,7 +282,6 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 */
 	public function loadSettings() : void {
 		$this->opa_element_settings = $this->get('settings');
-		
 		// Set data type default values if no setting value is present
 		if ($o_value = \CA\Attributes\Attribute::getValueInstance($this->get('datatype'))) {
 			$available_settings = $o_value->getAvailableSettings($this->opa_element_settings) ?? [];
