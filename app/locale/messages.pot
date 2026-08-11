@@ -23869,3 +23869,2937 @@ msgstr ""
 msgid "Calendar"
 msgstr ""
 
+msgid "Advanced search form"
+msgstr ""
+
+msgid "Use advanced search forms in your dashboard"
+msgstr ""
+
+msgid "Search form"
+msgstr ""
+
+msgid "Search form to display"
+msgstr ""
+
+msgid "Advanced search form widget"
+msgstr ""
+
+msgid "Actions for advanced search form widget"
+msgstr ""
+
+msgid "Can use advanced search form widget"
+msgstr ""
+
+msgid "User can use widget that allows usage of an advanced search form in the dashboard."
+msgstr ""
+
+msgid "The number of form elements to place in each row of the search form. A value of one or two is recommended in most situations."
+msgstr ""
+
+msgid "Clock"
+msgstr ""
+
+msgid "Tells time in digital or faux analog formats"
+msgstr ""
+
+msgid "Analog"
+msgstr ""
+
+msgid "Digital"
+msgstr ""
+
+msgid "Display mode"
+msgstr ""
+
+msgid "Show seconds?"
+msgstr ""
+
+msgid "If enabled display of time will be to the second. Otherwise it will be to the minute."
+msgstr ""
+
+msgid "Counts"
+msgstr ""
+
+msgid "Keep track of record totals for objects and authorities"
+msgstr ""
+
+msgid "Counts widget"
+msgstr ""
+
+msgid "Actions for counts widget"
+msgstr ""
+
+msgid "Can use counts widget"
+msgstr ""
+
+msgid "User can use dashboard widget that keeps track of totals for objects and authorities."
+msgstr ""
+
+msgid "Paragraph"
+msgstr ""
+
+msgid "Format counts as list or text paragraph?"
+msgstr ""
+
+msgid "Hide counts when zero"
+msgstr ""
+
+msgid "If checked zero totals will be hidden."
+msgstr ""
+
+msgid "Show count for objects?"
+msgstr ""
+
+msgid "If checked total number of objects will be displayed."
+msgstr ""
+
+msgid "Show count for objects broken out by type?"
+msgstr ""
+
+msgid "If checked total number of each type of object will be displayed."
+msgstr ""
+
+msgid "Show count for lots?"
+msgstr ""
+
+msgid "If checked total number of lots will be displayed."
+msgstr ""
+
+msgid "Show count for object lots broken out by type?"
+msgstr ""
+
+msgid "If checked total number of each type of object lot will be displayed."
+msgstr ""
+
+msgid "Show count for entities?"
+msgstr ""
+
+msgid "If checked total number of entities will be displayed."
+msgstr ""
+
+msgid "Show count for entities broken out by type?"
+msgstr ""
+
+msgid "If checked total number of each type of entity will be displayed."
+msgstr ""
+
+msgid "Show count for places?"
+msgstr ""
+
+msgid "If checked total number of places will be displayed."
+msgstr ""
+
+msgid "Show count for places broken out by type?"
+msgstr ""
+
+msgid "If checked total number of each type of place will be displayed."
+msgstr ""
+
+msgid "Show count for occurrences?"
+msgstr ""
+
+msgid "If checked total number of occurrences will be displayed."
+msgstr ""
+
+msgid "Show count for occurrences broken out by type?"
+msgstr ""
+
+msgid "If checked total number of each type of occurrence will be displayed."
+msgstr ""
+
+msgid "Show count for collections?"
+msgstr ""
+
+msgid "If checked total number of collections will be displayed."
+msgstr ""
+
+msgid "Show count for collections broken out by type?"
+msgstr ""
+
+msgid "If checked total number of each type of collection will be displayed."
+msgstr ""
+
+msgid "Show count for storage locations?"
+msgstr ""
+
+msgid "If checked total number of storage locations will be displayed."
+msgstr ""
+
+msgid "Show count for storage locations broken out by type?"
+msgstr ""
+
+msgid "If checked total number of each type of storage location will be displayed."
+msgstr ""
+
+msgid "Show count for object representations?"
+msgstr ""
+
+msgid "If checked total number of object representations will be displayed."
+msgstr ""
+
+msgid "Show count for object representations broken out by type?"
+msgstr ""
+
+msgid "If checked total number of each type of object representation will be displayed."
+msgstr ""
+
+msgid "Show count for loans?"
+msgstr ""
+
+msgid "If checked total number of loans will be displayed."
+msgstr ""
+
+msgid "Show count for loans broken out by type?"
+msgstr ""
+
+msgid "If checked total number of each type of loan will be displayed."
+msgstr ""
+
+msgid "Show count for movements?"
+msgstr ""
+
+msgid "If checked total number of movements will be displayed."
+msgstr ""
+
+msgid "Show count for movements broken out by type?"
+msgstr ""
+
+msgid "If checked total number of each type of movement will be displayed."
+msgstr ""
+
+msgid "List exports available for download"
+msgstr ""
+
+msgid "Recently created widget"
+msgstr ""
+
+msgid "Actions for downloads widget"
+msgstr ""
+
+msgid "Can use downloads widget"
+msgstr ""
+
+msgid "User can use widget that shows available export downloads in the dashboard."
+msgstr ""
+
+msgid "Display limit"
+msgstr ""
+
+msgid "Limits the number of downloads to be listed in the widget."
+msgstr ""
+
+msgid "Available downloads"
+msgstr ""
+
+msgid "+ %1 additional download"
+msgstr ""
+
+msgid "+ %1 additional downloads"
+msgstr ""
+
+msgid "No downloads available"
+msgstr ""
+
+msgid "Recent logins"
+msgstr ""
+
+msgid "Displays recent logins to the system"
+msgstr ""
+
+msgid "Last logins widget"
+msgstr ""
+
+msgid "Actions for last logins widget"
+msgstr ""
+
+msgid "Can use last logins widget"
+msgstr ""
+
+msgid "User can use dashboard widget that lists recent user logins."
+msgstr ""
+
+msgid "Show logins occurring less than ^ELEMENT hours ago"
+msgstr ""
+
+msgid "Threshold (in hours) to display logins"
+msgstr ""
+
+msgid "IP address"
+msgstr ""
+
+msgid "Links"
+msgstr ""
+
+msgid "Displays CollectiveAccess project links"
+msgstr ""
+
+msgid "Project website"
+msgstr ""
+
+msgid "Documentation"
+msgstr ""
+
+msgid "Forum"
+msgstr ""
+
+msgid "lol Katz"
+msgstr ""
+
+msgid "I Can Has Cheezburger?"
+msgstr ""
+
+msgid "Message of the day"
+msgstr ""
+
+msgid "Display the message of the day."
+msgstr ""
+
+msgid "No message set"
+msgstr ""
+
+msgid "Message widget"
+msgstr ""
+
+msgid "Actions for message widget"
+msgstr ""
+
+msgid "Can edit message text"
+msgstr ""
+
+msgid "User can edit system-wide message in message widget."
+msgstr ""
+
+msgid "Message text to display."
+msgstr ""
+
+msgid "Notification inbox"
+msgstr ""
+
+msgid "Displays current notifications"
+msgstr ""
+
+msgid "Notifications widget"
+msgstr ""
+
+msgid "Actions for notifications widget"
+msgstr ""
+
+msgid "Can use notifications widget"
+msgstr ""
+
+msgid "User can use dashboard widget that lists notifications."
+msgstr ""
+
+msgid "You have no new notifications"
+msgstr ""
+
+msgid "Mark all as read"
+msgstr ""
+
+msgid "Email sent on %1"
+msgstr ""
+
+msgid "Random Object"
+msgstr ""
+
+msgid "Displays a random object from the collection"
+msgstr ""
+
+msgid "Recent changes"
+msgstr ""
+
+msgid "Lists recent changes to objects or authority items"
+msgstr ""
+
+msgid "Recent changes widget"
+msgstr ""
+
+msgid "Actions for recent changes widget"
+msgstr ""
+
+msgid "Can use recent changes widget"
+msgstr ""
+
+msgid "User can use dashboard widget that lists recent changes in the database."
+msgstr ""
+
+msgid "Type of changes to display"
+msgstr ""
+
+msgid "Show changes made less than ^ELEMENT hours ago"
+msgstr ""
+
+msgid "Threshold (in hours) to display change log entries for"
+msgstr ""
+
+msgid "Changes to <strong>%1</strong> from %2"
+msgstr ""
+
+msgid "edited"
+msgstr ""
+
+msgid "There have been no changes to <strong>%1</strong> from %2."
+msgstr ""
+
+msgid "Lists recently created comments"
+msgstr ""
+
+msgid "moderated"
+msgstr ""
+
+msgid "unmoderated"
+msgstr ""
+
+msgid "Recent comments widget"
+msgstr ""
+
+msgid "Actions for recent comments widget"
+msgstr ""
+
+msgid "Can use recent comment widget"
+msgstr ""
+
+msgid "User can use dashboard widget that lists recently created comments."
+msgstr ""
+
+msgid "Only unmoderated"
+msgstr ""
+
+msgid "Only moderated"
+msgstr ""
+
+msgid "Type of comments to display"
+msgstr ""
+
+msgid "Limits the number of comments to be listed in the widget."
+msgstr ""
+
+msgid "Displaying the last %1 %2 comments"
+msgstr ""
+
+msgid "commented on"
+msgstr ""
+
+msgid "Approved on"
+msgstr ""
+
+msgid "More Info"
+msgstr ""
+
+msgid "There are no %1 comments"
+msgstr ""
+
+msgid "Recent media submissions"
+msgstr ""
+
+msgid "Lists recent user media submissions made via the Pawtucket media upload interface"
+msgstr ""
+
+msgid "Recent media submissions widget"
+msgstr ""
+
+msgid "Actions for recent media submissions widget"
+msgstr ""
+
+msgid "Can use recent media submissions widget"
+msgstr ""
+
+msgid "User can use widget that shows recent user media submissions made via the Pawtucket media upload interface in the dashboard."
+msgstr ""
+
+msgid "Limits the number of records to be listed in the widget."
+msgstr ""
+
+msgid "Showing recently created %1"
+msgstr ""
+
+msgid "%1 file"
+msgstr ""
+
+msgid "%1 files"
+msgstr ""
+
+msgid "%1 %2 (%3)"
+msgstr ""
+
+msgid "%1 (%2) - submitted on %3 by %4<br/>Status: %5"
+msgstr ""
+
+msgid "Registrations"
+msgstr ""
+
+msgid "Lists recent public user registrations"
+msgstr ""
+
+msgid "Recent registrations widget"
+msgstr ""
+
+msgid "Actions for recent registrations widget"
+msgstr ""
+
+msgid "Can use recent registrations widget"
+msgstr ""
+
+msgid "User can use dashboard widget that lists recently created registrations."
+msgstr ""
+
+msgid "Type of registrations to display"
+msgstr ""
+
+msgid "Limits the number of registrations to be listed in the widget."
+msgstr ""
+
+msgid "Displaying the last %1 %2 public registrations"
+msgstr ""
+
+msgid "There are no %1 tags."
+msgstr ""
+
+msgid "Lists recently created tags"
+msgstr ""
+
+msgid "Recent tags widget"
+msgstr ""
+
+msgid "Actions for recent tags widget"
+msgstr ""
+
+msgid "Can use recent tag widget"
+msgstr ""
+
+msgid "User can use dashboard widget that lists recently created tags."
+msgstr ""
+
+msgid "Type of tags to display"
+msgstr ""
+
+msgid "Limits the number of tags to be listed in the widget."
+msgstr ""
+
+msgid "Displaying the last %1 %2 tags"
+msgstr ""
+
+msgid "Recently created"
+msgstr ""
+
+msgid "Lists recently created objects or authority items"
+msgstr ""
+
+msgid "Actions for recently created widget"
+msgstr ""
+
+msgid "Recently created: objects"
+msgstr ""
+
+msgid "User can use widget that shows recently created items to list new objects in the dashboard."
+msgstr ""
+
+msgid "Recently created: entities"
+msgstr ""
+
+msgid "User can use widget that shows recently created items to list new entities in the dashboard."
+msgstr ""
+
+msgid "Recently created: places"
+msgstr ""
+
+msgid "User can use widget that shows recently created items to list new places in the dashboard."
+msgstr ""
+
+msgid "Recently created: occurrences"
+msgstr ""
+
+msgid "User can use widget that shows recently created items to list new occurrences in the dashboard."
+msgstr ""
+
+msgid "Recently created: sets"
+msgstr ""
+
+msgid "User can use widget that shows recently created items to list new sets in the dashboard."
+msgstr ""
+
+msgid "Recently created: collections"
+msgstr ""
+
+msgid "User can use widget that shows recently created items to list new collections in the dashboard."
+msgstr ""
+
+msgid "Recently created: object representations"
+msgstr ""
+
+msgid "User can use widget that shows recently created items to list new object representations in the dashboard."
+msgstr ""
+
+msgid "Recently created: object lots"
+msgstr ""
+
+msgid "User can use widget that shows recently created items to list new object lots in the dashboard."
+msgstr ""
+
+msgid "Type of records to display"
+msgstr ""
+
+msgid "Display identifier"
+msgstr ""
+
+msgid "Display label and identifier"
+msgstr ""
+
+msgid "Showing the last %1 <span style='font-weight:bold; text-transform:lowercase;'>%2</span> created"
+msgstr ""
+
+msgid "Records by status"
+msgstr ""
+
+msgid "Displays objects or authority items by cataloguing status"
+msgstr ""
+
+msgid "Records by status widget"
+msgstr ""
+
+msgid "Actions for records by status widget"
+msgstr ""
+
+msgid "Workflow status: objects"
+msgstr ""
+
+msgid "User can use widget that shows records by workflow status to list new objects in the dashboard."
+msgstr ""
+
+msgid "Workflow status: entities"
+msgstr ""
+
+msgid "User can use widget that shows records by workflow status to list new entities in the dashboard."
+msgstr ""
+
+msgid "Workflow status: places"
+msgstr ""
+
+msgid "User can use widget that shows records by workflow status to list new places in the dashboard."
+msgstr ""
+
+msgid "Workflow status: occurrences"
+msgstr ""
+
+msgid "User can use widget that shows records by workflow status to list new occurrences in the dashboard."
+msgstr ""
+
+msgid "Workflow status: sets"
+msgstr ""
+
+msgid "User can use widget that shows records by workflow status to list new sets in the dashboard."
+msgstr ""
+
+msgid "Workflow status: collections"
+msgstr ""
+
+msgid "User can use widget that shows records by workflow status to list new collections in the dashboard."
+msgstr ""
+
+msgid "Workflow status: object representations"
+msgstr ""
+
+msgid "User can use widget that shows records by workflow status to list new object representations in the dashboard."
+msgstr ""
+
+msgid "Workflow status: object lots"
+msgstr ""
+
+msgid "User can use widget that shows records by workflow status to list new object lots in the dashboard."
+msgstr ""
+
+msgid "Display status"
+msgstr ""
+
+msgid "Status to display"
+msgstr ""
+
+msgid "RSS Viewer"
+msgstr ""
+
+msgid "Display the content of an RSS feed"
+msgstr ""
+
+msgid "Feed URL"
+msgstr ""
+
+msgid "Feed URL to display in the widget."
+msgstr ""
+
+msgid "3"
+msgstr ""
+
+msgid "5"
+msgstr ""
+
+msgid "10"
+msgstr ""
+
+msgid "Number of feed items to display"
+msgstr ""
+
+msgid "Limits the number of the feed items displayed at one time."
+msgstr ""
+
+msgid "No filter"
+msgstr ""
+
+msgid "Remove images"
+msgstr ""
+
+msgid "Remove HTML"
+msgstr ""
+
+msgid "Filter to remove images or HTML?"
+msgstr ""
+
+msgid "Performed saved search queries from your dashboard"
+msgstr ""
+
+msgid "Object Searches"
+msgstr ""
+
+msgid "Entity Searches"
+msgstr ""
+
+msgid "Place Searches"
+msgstr ""
+
+msgid "Object Lot Searches"
+msgstr ""
+
+msgid "Storage Location Searches"
+msgstr ""
+
+msgid "Collection Searches"
+msgstr ""
+
+msgid "Occurrence Searches"
+msgstr ""
+
+msgid "advanced"
+msgstr ""
+
+msgid "basic"
+msgstr ""
+
+msgid "Save search"
+msgstr ""
+
+msgid "Search By Set"
+msgstr ""
+
+msgid "Search for items in your sets."
+msgstr ""
+
+msgid "Object Sets"
+msgstr ""
+
+msgid "Entity Sets"
+msgstr ""
+
+msgid "Place Sets"
+msgstr ""
+
+msgid "Object Lot Sets"
+msgstr ""
+
+msgid "Storage Location Sets"
+msgstr ""
+
+msgid "Collection Sets"
+msgstr ""
+
+msgid "Occurrence Sets"
+msgstr ""
+
+msgid "Processing status"
+msgstr ""
+
+msgid "View the current status of queued processing tasks"
+msgstr ""
+
+msgid "%1 by %2"
+msgstr ""
+
+msgid "Command line or job"
+msgstr ""
+
+msgid "Track processing widget"
+msgstr ""
+
+msgid "Actions for track processing widget"
+msgstr ""
+
+msgid "Can use track processing widget"
+msgstr ""
+
+msgid "User can use dashboard widget that lists processing jobs."
+msgstr ""
+
+msgid "Show jobs completed less than ^ELEMENT hours ago"
+msgstr ""
+
+msgid "Threshold (in hours) to display completed jobs"
+msgstr ""
+
+msgid "Show up to ^ELEMENT jobs per category"
+msgstr ""
+
+msgid "Maximum number of jobs to display per category"
+msgstr ""
+
+msgid "Refresh display every ^ELEMENT seconds"
+msgstr ""
+
+msgid "Frequency (in seconds) to refresh display"
+msgstr ""
+
+msgid "%1 running"
+msgstr ""
+
+msgid "%1 queued"
+msgstr ""
+
+msgid "%1 completed"
+msgstr ""
+
+msgid "%1 stuck"
+msgstr ""
+
+msgid "Jobs currently being processed"
+msgstr ""
+
+msgid "<em>%1</em>"
+msgstr ""
+
+msgid "Jobs queued for later processing"
+msgstr ""
+
+msgid "Jobs queued for later processing (showing %1 of %2)"
+msgstr ""
+
+msgid "+ %1 more queued job"
+msgstr ""
+
+msgid "+ %1 more queued jobs"
+msgstr ""
+
+msgid "Jobs completed in the last %1 hours"
+msgstr ""
+
+msgid "Jobs completed in the last %1 hours (showing %2 of %3)"
+msgstr ""
+
+msgid "Retry"
+msgstr ""
+
+msgid "TASK DID NOT COMPLETE"
+msgstr ""
+
+msgid "Total processing time"
+msgstr ""
+
+msgid "+ %1 more completed job"
+msgstr ""
+
+msgid "+ %1 more completed jobs"
+msgstr ""
+
+msgid "Jobs stuck in the last %1 hours"
+msgstr ""
+
+msgid "Jobs stuck in the last %1 hours (showing %2 of %3)"
+msgstr ""
+
+msgid "There are no running jobs, queued jobs or jobs completed in the last %1 hours."
+msgstr ""
+
+msgid "Item was deleted - row_id: %1; table number: %2"
+msgstr ""
+
+msgid "Remove from watch list"
+msgstr ""
+
+msgid "You have no items on your watch list."
+msgstr ""
+
+msgid "Your Watched Items"
+msgstr ""
+
+msgid "Get a list of your watched items."
+msgstr ""
+
+msgid "Export data to Artefacts Canada"
+msgstr ""
+
+msgid "Artefacts Canada"
+msgstr ""
+
+msgid "Can use Artefacts Canada export functions"
+msgstr ""
+
+msgid "User can export data to Artefacts Canada."
+msgstr ""
+
+msgid "Artefacts Canada export is not enabled"
+msgstr ""
+
+msgid "Artefacts Canada export display '%1' does not exist"
+msgstr ""
+
+msgid "(%1 item)"
+msgstr ""
+
+msgid "(%1 items)"
+msgstr ""
+
+msgid "Set does not exist"
+msgstr ""
+
+msgid "Invalid set %1"
+msgstr ""
+
+msgid "Only object sets may be exported"
+msgstr ""
+
+msgid "Set must not be empty"
+msgstr ""
+
+msgid "Configured display '%1' is not available"
+msgstr ""
+
+msgid "Download Artefacts Canada data as ZIP file (%1)"
+msgstr ""
+
+msgid "Completed export: %1"
+msgstr ""
+
+msgid "Download file is no longer available"
+msgstr ""
+
+msgid "Exporting data to Artefacts Canada"
+msgstr ""
+
+msgid "Run another export"
+msgstr ""
+
+msgid "Complete!"
+msgstr ""
+
+msgid "<h2><em>You must create a set before you can export to Artefacts Canada.</em></h2>"
+msgstr ""
+
+msgid "Export set %1"
+msgstr ""
+
+msgid "Imports records from ResourceSpace"
+msgstr ""
+
+msgid "ResourceSpace"
+msgstr ""
+
+msgid "Can use ResourceSpace import functions"
+msgstr ""
+
+msgid "User can import ResourceSpace records and media."
+msgstr ""
+
+msgid "Importing from ResourceSpace"
+msgstr ""
+
+msgid "Run another import"
+msgstr ""
+
+msgid "Search Resources"
+msgstr ""
+
+msgid "Search Collections"
+msgstr ""
+
+msgid "Enter a ResourceSpace search above to begin"
+msgstr ""
+
+msgid "Import using"
+msgstr ""
+
+msgid "You must load at least one ResourceSpace mapping before you can import"
+msgstr ""
+
+msgid "Loading details..."
+msgstr ""
+
+msgid "Searching ResourceSpace..."
+msgstr ""
+
+msgid "No results found"
+msgstr ""
+
+msgid "Loading next page..."
+msgstr ""
+
+msgid "Loading previous page..."
+msgstr ""
+
+msgid "Imports artist records from ULAN"
+msgstr ""
+
+msgid "Can use ULAN import functions"
+msgstr ""
+
+msgid "User can import ULAN data."
+msgstr ""
+
+msgid "Importing from ULAN"
+msgstr ""
+
+msgid "Import finished!"
+msgstr ""
+
+msgid "Find in ULAN"
+msgstr ""
+
+msgid "You must load at least one ULAN mapping before you can import"
+msgstr ""
+
+msgid "Enter a ULAN search above to begin"
+msgstr ""
+
+msgid "Searching ULAN..."
+msgstr ""
+
+msgid "Imports bibliographic information from WorldCat"
+msgstr ""
+
+msgid "Can use WorldCat import functions"
+msgstr ""
+
+msgid "User can import WorldCat data."
+msgstr ""
+
+msgid "Importing from WorldCat"
+msgstr ""
+
+msgid "Find in WorldCat"
+msgstr ""
+
+msgid "You must load at least one WorldCat mapping before you can import"
+msgstr ""
+
+msgid "Enter a WorldCat search above to begin"
+msgstr ""
+
+msgid "Searching WorldCat..."
+msgstr ""
+
+msgid "Auto-delete sets"
+msgstr ""
+
+msgid "Auto-deleted %1 sets"
+msgstr ""
+
+msgid "Adds a \"duplicate\" menu listing all recently duplicated items and providing an easy way to create additional duplicates."
+msgstr ""
+
+msgid "Duplicate from..."
+msgstr ""
+
+msgid "Cannot load page"
+msgstr ""
+
+msgid "Is not help menu page"
+msgstr ""
+
+msgid "Adds a \"help\" menu"
+msgstr ""
+
+msgid "Help"
+msgstr ""
+
+msgid "Adds a \"history\" menu listing all recently edited items"
+msgstr ""
+
+msgid "generally en-us"
+msgstr ""
+
+msgid "Export Configuration for records through iDigBio RSS feed"
+msgstr ""
+
+msgid "Can configure export to iDigBio"
+msgstr ""
+
+msgid "User can configure settings and records to include in export to iDigBio."
+msgstr ""
+
+msgid "Zusatzfunktionalität für LHM MMS"
+msgstr ""
+
+msgid "Objektidentifikator beginnt mit"
+msgstr ""
+
+msgid "Handles periodic cleanup and email alert tasks for library services features."
+msgstr ""
+
+msgid "[%1] Notice of items coming due for return"
+msgstr ""
+
+msgid "Could not mark checkout coming due message sent time because update failed: %1"
+msgstr ""
+
+msgid "Could not mark checkout coming due message sent time because checkout id %1 was not found"
+msgstr ""
+
+msgid "No email address set for user %1 (%2)"
+msgstr ""
+
+msgid "User id %1 does not exist"
+msgstr ""
+
+msgid "Invalid interval (%1) specified for coming due notices"
+msgstr ""
+
+msgid "[%1] Notice of overdue items"
+msgstr ""
+
+msgid "Could not mark checkout overdue message sent time because update failed: %1"
+msgstr ""
+
+msgid "Could not mark checkout overdue message sent time because checkout id %1 was not found"
+msgstr ""
+
+msgid "Failed to get overdue list"
+msgstr ""
+
+msgid "[%1] Notice of reserved available items"
+msgstr ""
+
+msgid "Could not mark reserved available message sent time because update failed: %1"
+msgstr ""
+
+msgid "Could not mark reserved available message sent time because checkout id %1 was not found"
+msgstr ""
+
+msgid "Failed to get reserved available list"
+msgstr ""
+
+msgid "Handles periodic email alert tasks for system notification features."
+msgstr ""
+
+msgid "Could not set notification subject %1 as read: %2"
+msgstr ""
+
+msgid "Pawtucket Media Import Processor"
+msgstr ""
+
+msgid "Processed %1 sessions"
+msgstr ""
+
+msgid "Error: restrictToTables and excludeTables cannot be used at the same time"
+msgstr ""
+
+msgid "Error: restrictToRules and excludeRules cannot be used at the same time"
+msgstr ""
+
+msgid "Applies rules defined in prepopulate.conf to all relevant records."
+msgstr ""
+
+msgid "This plugin allows prepopulating field values based on display templates. See %1 for more info."
+msgstr ""
+
+msgid "Apply rules only on specified tables. You can include multiple tables with a comma separated list (Ex: --restrictToTables=\"ca_objects,ca_entities\"). Cannot be used with excludeTables"
+msgstr ""
+
+msgid "Apply only specified rules. You can include multiple rules with a comma separated list (Ex: --restrictToRules=\"rule1,rule2\"). Cannot be used with excludeRules"
+msgstr ""
+
+msgid "[prepopulateFields()] error while removing old values during copy of containers: %1"
+msgstr ""
+
+msgid "[prepopulateFields()] error during copy of containers: %1"
+msgstr ""
+
+msgid "Password does not match confirmation. Please try again."
+msgstr ""
+
+msgid "Added group"
+msgstr ""
+
+msgid "Saved changes to group"
+msgstr ""
+
+msgid "Your entry has errors. See below for details."
+msgstr ""
+
+msgid "Added role"
+msgstr ""
+
+msgid "Saved changes to role"
+msgstr ""
+
+msgid "Deleted role"
+msgstr ""
+
+msgid "Added user"
+msgstr ""
+
+msgid "Saved changes to user"
+msgstr ""
+
+msgid "Deleted user"
+msgstr ""
+
+msgid "active"
+msgstr ""
+
+msgid "not active"
+msgstr ""
+
+msgid "There are no users"
+msgstr ""
+
+msgid "The user does not exist"
+msgstr ""
+
+msgid "The registrations have been approved"
+msgstr ""
+
+msgid "Please use the checkboxes to select registrations for approval"
+msgstr ""
+
+msgid "Profile created on %1 by %2"
+msgstr ""
+
+msgid "Is not installed; barcode printing will not be possible."
+msgstr ""
+
+msgid "A tool for extraction of embedded metadata in images, documents and other media. See %1 for additional information."
+msgstr ""
+
+msgid "A tool for extraction of embedded metadata from audio and video files. See %1 for additional information."
+msgstr ""
+
+msgid "Data dictionary is not available"
+msgstr ""
+
+msgid "Added metadata element"
+msgstr ""
+
+msgid "Saved changes to metadata element"
+msgstr ""
+
+msgid "Setting %2 is not valid: %1"
+msgstr ""
+
+msgid "Deleted metadata element"
+msgstr ""
+
+msgid "This element is at the top of the list"
+msgstr ""
+
+msgid "This element is at the bottom of the list"
+msgstr ""
+
+msgid "list/vocabulary term"
+msgstr ""
+
+msgid "list/vocabulary terms"
+msgstr ""
+
+msgid "Added locale"
+msgstr ""
+
+msgid "Saved changes to locale"
+msgstr ""
+
+msgid "Could not delete locale: %1"
+msgstr ""
+
+msgid "Deleted locale"
+msgstr ""
+
+msgid "Invalid child"
+msgstr ""
+
+msgid "Invalid parent"
+msgstr ""
+
+msgid "Couldn't queue batch processing for"
+msgstr ""
+
+msgid "Cannot delete selection"
+msgstr ""
+
+msgid "Cannot change type for selection"
+msgstr ""
+
+msgid "Invalid type_id %1"
+msgstr ""
+
+msgid "Cannot batch edit %1"
+msgstr ""
+
+msgid "Empty selection"
+msgstr ""
+
+msgid "Batch editing %1 %2 with set %3"
+msgstr ""
+
+msgid "No import modes are configured. Check the application configuration <em>media_importer_allowed_modes</em> setting and make sure at least one valid mode is set."
+msgstr ""
+
+msgid "Make imported media primary?"
+msgstr ""
+
+msgid "Match using file name"
+msgstr ""
+
+msgid "Match using directory name"
+msgstr ""
+
+msgid "Match using directory name, then file name"
+msgstr ""
+
+msgid "matches exactly"
+msgstr ""
+
+msgid "starts with"
+msgstr ""
+
+msgid "ends with"
+msgstr ""
+
+msgid "contains"
+msgstr ""
+
+msgid "Cannot write file: directory %1 is not accessible"
+msgstr ""
+
+msgid "Uploaded %1 file"
+msgstr ""
+
+msgid "Skipped %1 file"
+msgstr ""
+
+msgid "Skipped %1 files"
+msgstr ""
+
+msgid "Deleted %1 file"
+msgstr ""
+
+msgid "Deleted %1 files"
+msgstr ""
+
+msgid "Could not delete files (file permissions may not be correct)"
+msgstr ""
+
+msgid "Could not delete %1 of %2 files (file permissions may not be correct)"
+msgstr ""
+
+msgid "Invalid log"
+msgstr ""
+
+msgid "Media uploader is not enabled"
+msgstr ""
+
+msgid "Invalid file count"
+msgstr ""
+
+msgid "A maximum of %1 files may be uploaded at once. Try again with fewer files."
+msgstr ""
+
+msgid "Invalid size"
+msgstr ""
+
+msgid "Uploaded %1 worksheet"
+msgstr ""
+
+msgid "Uploaded %1 worksheets"
+msgstr ""
+
+msgid "Skipped %1 worksheet"
+msgstr ""
+
+msgid "URL is invalid"
+msgstr ""
+
+msgid "No data specified"
+msgstr ""
+
+msgid "Deleted importer"
+msgstr ""
+
+msgid "No url specified"
+msgstr ""
+
+msgid "Could not download data"
+msgstr ""
+
+msgid "Could not read Excel data"
+msgstr ""
+
+msgid "Added import worksheet %1"
+msgstr ""
+
+msgid "Updated import worksheet %1"
+msgstr ""
+
+msgid "Could not add import worksheet: %1"
+msgstr ""
+
+msgid "Invalid importer"
+msgstr ""
+
+msgid "Target is not a child record"
+msgstr ""
+
+msgid "Parent does not exist"
+msgstr ""
+
+msgid "ID list is empty"
+msgstr ""
+
+msgid "Removed %1 items"
+msgstr ""
+
+msgid "Target is a child record; must be root"
+msgstr ""
+
+msgid "Moved %1 items"
+msgstr ""
+
+msgid "Name is empty"
+msgstr ""
+
+msgid "Nothing to add"
+msgstr ""
+
+msgid "Cannot create new album"
+msgstr ""
+
+msgid "Added %1 items into new album"
+msgstr ""
+
+msgid "ID %1 is invalid"
+msgstr ""
+
+msgid "Could not get component list for %1"
+msgstr ""
+
+msgid "Merged media from %1 items"
+msgstr ""
+
+msgid "Could not set type for merged item: %1"
+msgstr ""
+
+msgid "Component system is not configured"
+msgstr ""
+
+msgid "Could not set file name as label for split item: %1"
+msgstr ""
+
+msgid "Split media creating %1 items"
+msgstr ""
+
+msgid "Renumbered contents of lot"
+msgstr ""
+
+msgid "No media is available for download"
+msgstr ""
+
+msgid "Invalid caption file"
+msgstr ""
+
+msgid "Invalid sidecar file"
+msgstr ""
+
+msgid "+ %1 duplicate %2"
+msgstr ""
+
+msgid "Could not create duplicate %1: %2"
+msgstr ""
+
+msgid "Could not add parent collection to object: %1"
+msgstr ""
+
+msgid "Saved annotation."
+msgstr ""
+
+msgid "Invalid annotation_id"
+msgstr ""
+
+msgid "user defined"
+msgstr ""
+
+msgid "Invalid table name"
+msgstr ""
+
+msgid "Borrowed by %1 on %2"
+msgstr ""
+
+msgid "Returned <em>%1</em> (%2) borrowed by %3 on %4"
+msgstr ""
+
+msgid "Could not check in <em>%1</em> (%2): %3"
+msgstr ""
+
+msgid "<em>%1</em> (%2) is not out"
+msgstr ""
+
+msgid "[%1] Receipt for check in"
+msgstr ""
+
+msgid "Could send receipt: %1"
+msgstr ""
+
+msgid "No id specified"
+msgstr ""
+
+msgid "Out with this user"
+msgstr ""
+
+msgid "Out with %1 reservation"
+msgstr ""
+
+msgid "Out with %1 reservations"
+msgstr ""
+
+msgid "Available with %1 reservations"
+msgstr ""
+
+msgid "The user currently has this item"
+msgstr ""
+
+msgid "The user has reserved this item"
+msgstr ""
+
+msgid "Currently reserved by %1"
+msgstr ""
+
+msgid "Will reserve"
+msgstr ""
+
+msgid "held by %1 since %2"
+msgstr ""
+
+msgid "Due on"
+msgstr ""
+
+msgid "User already has <em>%1</em>"
+msgstr ""
+
+msgid "Reserved <em>%1</em>"
+msgstr ""
+
+msgid "Could not reserve <em>%1</em>: %2"
+msgstr ""
+
+msgid "Checked out <em>%1</em>; due date is %2"
+msgstr ""
+
+msgid "Checked out <em>%1</em>"
+msgstr ""
+
+msgid "Could not check out <em>%1</em>: %2"
+msgstr ""
+
+msgid "[%1] Receipt for check out"
+msgstr ""
+
+msgid "Could not send receipt: %1"
+msgstr ""
+
+msgid "Receipt for check out"
+msgstr ""
+
+msgid "Removed reservation for <em>%1</em>"
+msgstr ""
+
+msgid "Invalid set id"
+msgstr ""
+
+msgid " and %1 more"
+msgstr ""
+
+msgid "Cannot view search logs"
+msgstr ""
+
+msgid "Invalid element code"
+msgstr ""
+
+msgid "Value suggestion is not supported for this metadata element"
+msgstr ""
+
+msgid "You do not have access to this bundle"
+msgstr ""
+
+msgid "Element code is not bound to the specified table"
+msgstr ""
+
+msgid "ERROR: Invalid element_id"
+msgstr ""
+
+msgid "ERROR: You do not have access to this item"
+msgstr ""
+
+msgid "ERROR: Invalid service"
+msgstr ""
+
+msgid "ERROR"
+msgstr ""
+
+msgid "No matches found"
+msgstr ""
+
+msgid "Invalid bundle name"
+msgstr ""
+
+msgid "No matches found for <em>%1</em>"
+msgstr ""
+
+msgid "There are no unmoderated comments"
+msgstr ""
+
+msgid "The comment does not exist"
+msgstr ""
+
+msgid "Could not approve comment"
+msgstr ""
+
+msgid "Your comments have been approved"
+msgstr ""
+
+msgid "Please use the checkboxes to select comments for approval"
+msgstr ""
+
+msgid "Could not delete comment"
+msgstr ""
+
+msgid "Your comments have been deleted"
+msgstr ""
+
+msgid "Please use the checkboxes to select comments for deletion"
+msgstr ""
+
+msgid "Deleted %1 download"
+msgstr ""
+
+msgid "Deleted %1 downloads"
+msgstr ""
+
+msgid "Could not delete %1 download"
+msgstr ""
+
+msgid "Could not delete %1 downloads"
+msgstr ""
+
+msgid "You cannot edit this group"
+msgstr ""
+
+msgid "You cannot delete this group"
+msgstr ""
+
+msgid "Alerts are not available"
+msgstr ""
+
+msgid "Could not mark notification as read"
+msgstr ""
+
+msgid "Saved values"
+msgstr ""
+
+msgid "There are no saved searches"
+msgstr ""
+
+msgid "Your search could not be deleted"
+msgstr ""
+
+msgid "Your searches have been deleted"
+msgstr ""
+
+msgid "Please use the checkboxes to select searches for deletion"
+msgstr ""
+
+msgid "At least two sets must be selected"
+msgstr ""
+
+msgid "Deleted %1 set"
+msgstr ""
+
+msgid "Deleted %1 sets"
+msgstr ""
+
+msgid "Could not delete set %1: %2"
+msgstr ""
+
+msgid "You do not have access to the selected sets"
+msgstr ""
+
+msgid "Invalid operation"
+msgstr ""
+
+msgid "%1 et. al."
+msgstr ""
+
+msgid "Could not create new set: %1"
+msgstr ""
+
+msgid "Could not add label to new set: %1"
+msgstr ""
+
+msgid "Could not add items to new set: %1"
+msgstr ""
+
+msgid "Created new set <em>%1</em>"
+msgstr ""
+
+msgid "Set was not created because it has no contents"
+msgstr ""
+
+msgid "All sets"
+msgstr ""
+
+msgid "Sets by user"
+msgstr ""
+
+msgid "There are no unmoderated tags"
+msgstr ""
+
+msgid "The tag does not exist"
+msgstr ""
+
+msgid "Could not approve tag"
+msgstr ""
+
+msgid "Your tags have been approved"
+msgstr ""
+
+msgid "Please use the checkboxes to select tags for approval"
+msgstr ""
+
+msgid "Could not delete tag"
+msgstr ""
+
+msgid "Your tags have been deleted"
+msgstr ""
+
+msgid "Please use the checkboxes to select tags for deletion"
+msgstr ""
+
+msgid "Invalid path"
+msgstr ""
+
+msgid "There are no user sorts"
+msgstr ""
+
+msgid "Your sorts have been deleted"
+msgstr ""
+
+msgid "Please use the checkboxes to select sorts to remove"
+msgstr ""
+
+msgid "Sort doesn't exist"
+msgstr ""
+
+msgid "There are no watched items"
+msgstr ""
+
+msgid "Your watched items have been deleted"
+msgstr ""
+
+msgid "Please use the checkboxes to select items to remove from your watch list"
+msgstr ""
+
+msgid "Added set '%1' with %2 items"
+msgstr ""
+
+msgid "You cannot edit that display"
+msgstr ""
+
+msgid "You cannot edit that rule"
+msgstr ""
+
+msgid "No trigger"
+msgstr ""
+
+msgid "You cannot edit that form"
+msgstr ""
+
+msgid "You cannot edit this set"
+msgstr ""
+
+msgid "The set does not exist"
+msgstr ""
+
+msgid "Row_id is invalid"
+msgstr ""
+
+msgid "No set defined"
+msgstr ""
+
+msgid "Could not duplicate items in set: %1"
+msgstr ""
+
+msgid "Records have been successfully duplicated and added to set"
+msgstr ""
+
+msgid "Cannot duplicate items"
+msgstr ""
+
+msgid "Set export is too large for immediate download."
+msgstr ""
+
+msgid "No items are available for export"
+msgstr ""
+
+msgid "Set: %1"
+msgstr ""
+
+msgid "Set export is queued for processing and will be sent to %1 when ready."
+msgstr ""
+
+msgid "Couldn't queue set export"
+msgstr ""
+
+msgid "Invalid action"
+msgstr ""
+
+msgid "Cannot view statistics"
+msgstr ""
+
+msgid "Invalid data filter"
+msgstr ""
+
+msgid "view all"
+msgstr ""
+
+msgid "Statistics for site <em>%1</em>"
+msgstr ""
+
+msgid "Statistics for group <em>%1</em>"
+msgstr ""
+
+msgid "No statistics available"
+msgstr ""
+
+msgid "Statistics for %1"
+msgstr ""
+
+msgid "Statistics for all %1 sites"
+msgstr ""
+
+msgid "Login was invalid"
+msgstr ""
+
+msgid "You are now logged in"
+msgstr ""
+
+msgid "You are now logged out"
+msgstr ""
+
+msgid "Passwords did not match. Please try again."
+msgstr ""
+
+msgid "Password was successfully changed. You can now log in with your new password."
+msgstr ""
+
+msgid "No duplication preferences for %1"
+msgstr ""
+
+msgid "Saved preference settings"
+msgstr ""
+
+msgid "%1 item"
+msgstr ""
+
+msgid "%1 items"
+msgstr ""
+
+msgid "Summary for %1 (%2)"
+msgstr ""
+
+msgid "EAD Collection hierarchy builder"
+msgstr ""
+
+msgid "Builds a collection hierarchy from an EAD &lt;dsc&gt; block."
+msgstr ""
+
+msgid "EADCollectionHierarchyBuilder refinery may only be used in imports to ca_collections"
+msgstr ""
+
+msgid "Target CollectiveAccess element EADCollectionHierarchyBuilder must be ca_collections._collection"
+msgstr ""
+
+msgid "Level mappings"
+msgstr ""
+
+msgid "Mappings for each level in the hierarchy"
+msgstr ""
+
+msgid "Collection hierarchy builder"
+msgstr ""
+
+msgid "Builds a collection hierarchy."
+msgstr ""
+
+msgid "collectionHierarchyBuilder refinery may only be used in imports to ca_collections"
+msgstr ""
+
+msgid "Hierarchical types"
+msgstr ""
+
+msgid "Hierarchical type list (indexed against values split with hierarchical delimiter)"
+msgstr ""
+
+msgid "List indicating sequence of checks for an existing record; values of array can be \"preferred_labels\" (or \"label\"), \"nonpreferred_labels\", \"idno\" or a metadata element code. Ex. array(\"idno\", \"label\") will first try to match on idno and then label if the first match fails"
+msgstr ""
+
+msgid "Parents"
+msgstr ""
+
+msgid "Collection parents to create"
+msgstr ""
+
+msgid "Ignore parent when trying to match row"
+msgstr ""
+
+msgid "Ignore parent when trying to match row."
+msgstr ""
+
+msgid "Ignore type when trying to match row"
+msgstr ""
+
+msgid "Ignore type when trying to match row."
+msgstr ""
+
+msgid "Indented collection hierarchy builder"
+msgstr ""
+
+msgid "Imports spreadsheets with hierarchies expressed indented values spread across several columns as hierarchical collections."
+msgstr ""
+
+msgid "collectionIndentedHierarchyBuilder refinery may only be used in imports to ca_collections"
+msgstr ""
+
+msgid "collectionIndentedHierarchyBuilder requires levels option be set to a list of data source placeholders"
+msgstr ""
+
+msgid "Could not create relationship between collection and %1: %2"
+msgstr ""
+
+msgid "Levels"
+msgstr ""
+
+msgid "List of sources for hierarchy levels"
+msgstr ""
+
+msgid "Level types"
+msgstr ""
+
+msgid "List of types for hierarchy levels"
+msgstr ""
+
+msgid "Level idnos"
+msgstr ""
+
+msgid "List of sources for hierarchy level idnos"
+msgstr ""
+
+msgid "Return data"
+msgstr ""
+
+msgid "Process only"
+msgstr ""
+
+msgid "Operating mode"
+msgstr ""
+
+msgid "Set to \"returnData\" to return the id of lowest item in the hierarchy to the importer; set to \"processOnly\" to create the list items in the hierarchy but not return values to the importer. Default is to process only."
+msgstr ""
+
+msgid "Attributes"
+msgstr ""
+
+msgid "Sets or maps metadata for the entity record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "List of relationships to process."
+msgstr ""
+
+msgid "Collection splitter"
+msgstr ""
+
+msgid "Provides several collection-related import functions: splitting of multiple collections in a string into individual values, mapping of type and relationship type for related collections, and merging collection data with names."
+msgstr ""
+
+msgid "Sets the value of the delimiter to break on, separating data source values"
+msgstr ""
+
+msgid "List indicating sequence of checks for an existing record; values of array can be \"label\" and \"idno\". Ex. array(\"idno\", \"label\") will first try to match on idno and then label if the first match fails"
+msgstr ""
+
+msgid "Do not create new records"
+msgstr ""
+
+msgid "If set splitter will only match on existing records and will not create new ones."
+msgstr ""
+
+msgid "Skip if value"
+msgstr ""
+
+msgid "Skip if imported value is in the specified list of values."
+msgstr ""
+
+msgid "Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.  Note for object data: if the relationship type matches that set as the hierarchy control, the object will be pulled in as a \"child\" element in the collection hierarchy."
+msgstr ""
+
+msgid "Relationship type orientation"
+msgstr ""
+
+msgid "Sets directionality of collection-collection relationships. Use LTOR for left-to-right directionality; RTOL for right-to-left directionality. LTOR is the default."
+msgstr ""
+
+msgid "Extract relationship type"
+msgstr ""
+
+msgid "If set splitter will attempt to extract relationship type from data. By default it will look for text enclosed in parens. Set to {} or [] or look for text enclosed with those brackets instead."
+msgstr ""
+
+msgid "Collection type"
+msgstr ""
+
+msgid "Accepts a constant list item idno from the list collection_types or a reference to the location in the data source where the type can be found."
+msgstr ""
+
+msgid "Sets or maps metadata for the collection record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "Attribute delimiters"
+msgstr ""
+
+msgid "Delimiters to use for each mapped attribute."
+msgstr ""
+
+msgid "Collection parents to create, if required"
+msgstr ""
+
+msgid "Relationship type default"
+msgstr ""
+
+msgid "Sets the default relationship type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess system."
+msgstr ""
+
+msgid "Relationship type delimiter"
+msgstr ""
+
+msgid "If set splitter will use the relationship type value as a list of types and create a relationship for each."
+msgstr ""
+
+msgid "Collection type default"
+msgstr ""
+
+msgid "Sets the default collection type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list collection_types."
+msgstr ""
+
+msgid "Interstitial attributes"
+msgstr ""
+
+msgid "Sets or maps metadata for the interstitial collection <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "List of non-preferred labels to apply to collections."
+msgstr ""
+
+msgid "Text transformation"
+msgstr ""
+
+msgid "Transform text case."
+msgstr ""
+
+msgid "Use raw values"
+msgstr ""
+
+msgid "If set splitter will use raw data values without processing such as replacement values, regular expressions, etc."
+msgstr ""
+
+msgid "Date Accuracy"
+msgstr ""
+
+msgid "Modifies a date based on accuracy in another column."
+msgstr ""
+
+msgid "Date Accuracy Field"
+msgstr ""
+
+msgid "The field in which the date accuracy is stored (case-insensitive values are defined by accuracyValueDay, accuracyValueMonth and accuracyValueYear settings)"
+msgstr ""
+
+msgid "Date Format"
+msgstr ""
+
+msgid "The format in which the input dates are expected"
+msgstr ""
+
+msgid "Date Accuracy Value: Day"
+msgstr ""
+
+msgid "The case-insensitive value in the accuracy field that indicates that the date is accurate to the day"
+msgstr ""
+
+msgid "Date Accuracy Value: Month"
+msgstr ""
+
+msgid "The case-insensitive value in the accuracy field that indicates that the date is accurate to the month"
+msgstr ""
+
+msgid "Date Accuracy Value: Year"
+msgstr ""
+
+msgid "The case-insensitive value in the accuracy field that indicates that the date is accurate to the year"
+msgstr ""
+
+msgid "Date Parse Failure Return Mode"
+msgstr ""
+
+msgid "Defines what should be returned if the input date cannot be parsed, available values are \"null\" (the default) and \"original\""
+msgstr ""
+
+msgid "Unknown Accuracy Value Return Mode"
+msgstr ""
+
+msgid "Defines what should be returned if the value of the accuracy column is unknown, available values are \"null\", \"original\" and \"normalised\" (the default)"
+msgstr ""
+
+msgid "Date joiner"
+msgstr ""
+
+msgid "Joins data with partial date values into a single valid date expression for import."
+msgstr ""
+
+msgid "[dateJoinerRefinery] Could not parse date expression %1 assembled from range"
+msgstr ""
+
+msgid "present"
+msgstr ""
+
+msgid "[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnDate"
+msgstr ""
+
+msgid "[dateJoinerRefinery] Could not find multiColumnDate values. Is your configuration correct?"
+msgstr ""
+
+msgid "[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnRange"
+msgstr ""
+
+msgid "[dateJoinerRefinery] Could not find multiColumnRange value for start date. Is your configuration correct?"
+msgstr ""
+
+msgid "[dateJoinerRefinery] Could not find multiColumnRange value for end date. Is your configuration correct?"
+msgstr ""
+
+msgid "[dateJoinerRefinery] Could not find multiColumnRange values. Is your configuration correct?"
+msgstr ""
+
+msgid "Two-column range"
+msgstr ""
+
+msgid "Multi-column range"
+msgstr ""
+
+msgid "Multi-column date"
+msgstr ""
+
+msgid "Join mode"
+msgstr ""
+
+msgid "Determines how dateJoiner joins date values together. Two-column range is the default if mode is not specified."
+msgstr ""
+
+msgid "Date expression"
+msgstr ""
+
+msgid "Date expression (For Two-column range)"
+msgstr ""
+
+msgid "Date start"
+msgstr ""
+
+msgid "Maps the date from the data source that is the beginning of the conjoined date range. (For Two-column range)."
+msgstr ""
+
+msgid "Excel will sometimes return the present date for blank dates. Set this option to treat them as blanks. (For Two-column range)."
+msgstr ""
+
+msgid "Skip start date if expression"
+msgstr ""
+
+msgid "Omits start date from range if specified expression is true. (For Two-column range)."
+msgstr ""
+
+msgid "Skip start date if empty"
+msgstr ""
+
+msgid "Omits start date from range if empty. (For Two-column range)."
+msgstr ""
+
+msgid "Skip start date replacement value"
+msgstr ""
+
+msgid "Value to replace start date with when start date is skipped. (For Two-column range)."
+msgstr ""
+
+msgid "Date end"
+msgstr ""
+
+msgid "Maps the date from the data source that is the end of the conjoined date range. (For Two-column range)"
+msgstr ""
+
+msgid "Skip end date if expression"
+msgstr ""
+
+msgid "Omits end date from range if specified expression is true. (For Two-column range)."
+msgstr ""
+
+msgid "Skip end date if empty"
+msgstr ""
+
+msgid "Omits end date from range if it is empty. (For Two-column range)."
+msgstr ""
+
+msgid "Skip end date replacement value"
+msgstr ""
+
+msgid "Value to replace end date with when end date is skipped. (For Two-column range)."
+msgstr ""
+
+msgid "Date start day"
+msgstr ""
+
+msgid "Maps the day value for the start date from the data source. (For Multi-column range)"
+msgstr ""
+
+msgid "Date start month"
+msgstr ""
+
+msgid "Maps the month value for the start date from the data source. (For Multi-column range)"
+msgstr ""
+
+msgid "Date start year"
+msgstr ""
+
+msgid "Maps the year value for the start date from the data source. (For Multi-column range)"
+msgstr ""
+
+msgid "Date end day"
+msgstr ""
+
+msgid "Maps the day value for the end date from the data source. (For Multi-column range)"
+msgstr ""
+
+msgid "Date end month"
+msgstr ""
+
+msgid "Maps the month value for the end date from the data source. (For Multi-column range)"
+msgstr ""
+
+msgid "Date end year"
+msgstr ""
+
+msgid "Maps the year value for the end date from the data source. (For Multi-column range)"
+msgstr ""
+
+msgid "Date day"
+msgstr ""
+
+msgid "Maps the day value for the date from the data source. (For Multi-column date)"
+msgstr ""
+
+msgid "Date month"
+msgstr ""
+
+msgid "Maps the month value for the date from the data source. (For Multi-column date)"
+msgstr ""
+
+msgid "Date year"
+msgstr ""
+
+msgid "Maps the year value for the date from the data source. (For Multi-column date)"
+msgstr ""
+
+msgid "Entity hierarchy builder"
+msgstr ""
+
+msgid "Builds an entity hierarchy."
+msgstr ""
+
+msgid "entityHierarchyBuilder refinery may only be used in imports to ca_entities"
+msgstr ""
+
+msgid "entity parents to create"
+msgstr ""
+
+msgid "Do not parse name"
+msgstr ""
+
+msgid "Take the entity name as is from the data source and insert it without intervention in the surname and display name fields. This is often useful for organization names, especially when using the entity class \"org\" setting."
+msgstr ""
+
+msgid "Entity joiner"
+msgstr ""
+
+msgid "Converts data with partial entity names into a valid entities for import."
+msgstr ""
+
+msgid "[entityJoinerRefinery] No relationship type is set for entity %1"
+msgstr ""
+
+msgid "[entityJoinerRefinery] No entity type is set for entity %1"
+msgstr ""
+
+msgid "Accepts a constant value for the forename or a reference to the location in the data source where the forename can be found."
+msgstr ""
+
+msgid "Middle name"
+msgstr ""
+
+msgid "Accepts a constant value for the middle name or a reference to the location in the data source where the middle name can be found."
+msgstr ""
+
+msgid "Accepts a constant value for the surname or a reference to the location in the data source where the surname can be found."
+msgstr ""
+
+msgid "Accepts a constant value for the display name or a reference to the location in the data source where the display name can be found."
+msgstr ""
+
+msgid "Accepts a constant value for the entity prefix or a reference to the location in the data source where the prefix can be found."
+msgstr ""
+
+msgid "Accepts a constant value for the entity suffix or a reference to the location in the data source where the suffix can be found."
+msgstr ""
+
+msgid "Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found."
+msgstr ""
+
+msgid "Accepts a constant list item idno from the list entity_types or a reference to the location in the data source where the type can be found"
+msgstr ""
+
+msgid "Entity type default"
+msgstr ""
+
+msgid "Sets the default entity type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list entity_types."
+msgstr ""
+
+msgid "Non-preferred labels to process"
+msgstr ""
+
+msgid "List of non-preferred label values or references to locations in the data source where nonpreferred label values can be found. Use the <em>split</em> value for a label to indicate a value that should be split into entity label components before import."
+msgstr ""
+
+msgid "Sets or maps metadata for the interstitial entity <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "Entity splitter"
+msgstr ""
+
+msgid "Provides several entity-related import functions: splitting of entity names into component names (forename, surname, Etc.), splitting of many names in a string into separate names, and merging entity data with entity names (life dates, nationality, Etc.)."
+msgstr ""
+
+msgid "Sets the value of the delimiter to break on, separating data source values."
+msgstr ""
+
+msgid "List indicating sequence of checks for an existing record; values of array can be \"label\", \"idno\" or \"displayname\". Ex. array(\"idno\", \"label\", \"displayname\") will first try to match on idno and label [forename, surname] if the first match fails, then finally the displayname field"
+msgstr ""
+
+msgid "Format to force entity display name to after parsing. You can pass a template using name element prefixed with carets (^) or one of the following: surnameCommaForename, forenameCommaSurname, forenameSurname, original."
+msgstr ""
+
+msgid "Sets directionality of entity-entity relationships. Use LTOR for left-to-right directionality; RTOL for right-to-left directionality. LTOR is the default."
+msgstr ""
+
+msgid "Entity parents to create, if required"
+msgstr ""
+
+msgid "List of non-preferred labels to apply to entities."
+msgstr ""
+
+msgid "Label fields to ignore when matching"
+msgstr ""
+
+msgid "List of label fields to ignore for matching purposes."
+msgstr ""
+
+msgid "List item hierarchy builder"
+msgstr ""
+
+msgid "Builds a list item hierarchy."
+msgstr ""
+
+msgid "listItemHierarchyBuilder refinery may only be used in imports to ca_list_items"
+msgstr ""
+
+msgid "List to add items to"
+msgstr ""
+
+msgid "List item parents to create"
+msgstr ""
+
+msgid "Indented list item hierarchy builder"
+msgstr ""
+
+msgid "Imports spreadsheets with hierarchies expressed as indented values spread across several columns as hierarchical lists."
+msgstr ""
+
+msgid "listItemIndentedHierarchyBuilder refinery may only be used in imports to ca_list_items"
+msgstr ""
+
+msgid "listItemIndentedHierarchyBuilder requires levels option be set to a list of data source placeholders"
+msgstr ""
+
+msgid "listItemIndentedHierarchyBuilder requires list option be set"
+msgstr ""
+
+msgid "listItemIndentedHierarchyBuilder could not create list %1: %2"
+msgstr ""
+
+msgid "listItemIndentedHierarchyBuilder could not create list label %1: %2"
+msgstr ""
+
+msgid "Code of list to import items into"
+msgstr ""
+
+msgid "List item identifier"
+msgstr ""
+
+msgid "List item description"
+msgstr ""
+
+msgid "List item splitter"
+msgstr ""
+
+msgid "Provides several list item-related import functions: splitting of many items in a string into separate names, and merging entity data with item names."
+msgstr ""
+
+msgid "[listItemSplitterRefinery] Could not find list %1; item was skipped"
+msgstr ""
+
+msgid "Sets the value of the delimiter to break hierarchical values on."
+msgstr ""
+
+msgid "Hierarchical list item types"
+msgstr ""
+
+msgid "A semicolon-delimited list of list item types to apply to hierarchical list items extracted using the hierarchical delimiter."
+msgstr ""
+
+msgid "Sets directionality of list item-list item relationships. Use LTOR for left-to-right directionality; RTOL for right-to-left directionality. LTOR is the default."
+msgstr ""
+
+msgid "List item type"
+msgstr ""
+
+msgid "Accepts a constant list item idno from the list list_item_types or a reference to the location in the data source where the type can be found."
+msgstr ""
+
+msgid "Sets or maps metadata for the list item record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "Sets the default relationship type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess system"
+msgstr ""
+
+msgid "List item type default"
+msgstr ""
+
+msgid "Sets the default list item type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list list_item_types"
+msgstr ""
+
+msgid "List item parents to create, if required"
+msgstr ""
+
+msgid "List hierarchy to create, if required"
+msgstr ""
+
+msgid "Sets or maps metadata for the interstitial vocabulary <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "List of non-preferred labels to apply to list items."
+msgstr ""
+
+msgid "Loan splitter"
+msgstr ""
+
+msgid "Provides several loan-related import functions: splitting of multiple loans in a string into individual values, mapping of type and relationship type for related loans, and merging loan data with loan names."
+msgstr ""
+
+msgid "Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.  Note for object data: if the relationship type matches that set as the hierarchy control, the object will be pulled in as a \"child\" element in the loan hierarchy."
+msgstr ""
+
+msgid "Sets directionality of loan-loan relationships. Use LTOR for left-to-right directionality; RTOL for right-to-left directionality. LTOR is the default."
+msgstr ""
+
+msgid "Accepts a constant list item idno from the list loan_types or a reference to the location in the data source where the type can be found."
+msgstr ""
+
+msgid "Sets or maps metadata for the loan record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "Loan parents to create, if required"
+msgstr ""
+
+msgid "Loan type default"
+msgstr ""
+
+msgid "Sets the default loan type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list loan_types."
+msgstr ""
+
+msgid "Sets or maps metadata for the interstitial loan <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "List of non-preferred labels to apply to loans."
+msgstr ""
+
+msgid "Measurement splitter"
+msgstr ""
+
+msgid "Splits strings representing physical measurements into individual quantities."
+msgstr ""
+
+msgid "Units"
+msgstr ""
+
+msgid "Units of measurements"
+msgstr ""
+
+msgid "Elements"
+msgstr ""
+
+msgid "Element list"
+msgstr ""
+
+msgid "Movement splitter"
+msgstr ""
+
+msgid "Provides several movement-related import functions: splitting of multiple movements in a string into individual values, mapping of type and relationship type for related movements, and merging movement data with movement names."
+msgstr ""
+
+msgid "Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.  Note for object data: if the relationship type matches that set as the hierarchy control, the object will be pulled in as a \"child\" element in the movement hierarchy."
+msgstr ""
+
+msgid "Sets directionality of movement-movement relationships. Use LTOR for left-to-right directionality; RTOL for right-to-left directionality. LTOR is the default."
+msgstr ""
+
+msgid "movement type"
+msgstr ""
+
+msgid "Accepts a constant list item idno from the list movement_types or a reference to the location in the data source where the type can be found."
+msgstr ""
+
+msgid "Sets or maps metadata for the movement record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "movement parents to create, if required"
+msgstr ""
+
+msgid "movement type default"
+msgstr ""
+
+msgid "Sets the default movement type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list movement_types."
+msgstr ""
+
+msgid "Sets or maps metadata for the interstitial movement <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "List of non-preferred labels to apply to movements."
+msgstr ""
+
+msgid "object hierarchy builder"
+msgstr ""
+
+msgid "Builds an object hierarchy."
+msgstr ""
+
+msgid "objectHierarchyBuilder refinery may only be used in imports to ca_objects"
+msgstr ""
+
+msgid "object parents to create"
+msgstr ""
+
+msgid "Do not match on label"
+msgstr ""
+
+msgid "set to prohibit matching using label"
+msgstr ""
+
+msgid "Object lot splitter"
+msgstr ""
+
+msgid "Provides several lot-related import functions: splitting of multiple lots in a string into individual values, mapping of type and relationship type for related lots, and merging lot data with lot names."
+msgstr ""
+
+msgid "Sets directionality of object lot-object lot relationships. Use LTOR for left-to-right directionality; RTOL for right-to-left directionality. LTOR is the default."
+msgstr ""
+
+msgid "Lot type"
+msgstr ""
+
+msgid "Accepts a constant list item idno from the list object_lot_types or a reference to the location in the data source where the type can be found."
+msgstr ""
+
+msgid "Lot status"
+msgstr ""
+
+msgid "Accepts a constant list item idno from the list object_lot_statuses or a reference to the location in the data source where the status can be found."
+msgstr ""
+
+msgid "Sets or maps metadata for the lot record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "Lot type default"
+msgstr ""
+
+msgid "Sets the default lot type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list object_lot_types."
+msgstr ""
+
+msgid "Lot status default"
+msgstr ""
+
+msgid "Sets the default lot status that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list object_lot_statuses."
+msgstr ""
+
+msgid "Sets or maps metadata for the interstitial lot <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "List of non-preferred labels to apply to lots."
+msgstr ""
+
+msgid "Object representation splitter"
+msgstr ""
+
+msgid "Splits object representations"
+msgstr ""
+
+msgid "Object type"
+msgstr ""
+
+msgid "Accepts a constant list item idno from the list object_representation_types or a reference to the location in the data source where the type can be found."
+msgstr ""
+
+msgid "Sets or maps metadata for the object record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "Object representation type default"
+msgstr ""
+
+msgid "Sets the default object representation type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list object_representation_types."
+msgstr ""
+
+msgid "Sets or maps metadata for the interstitial object representation <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "Set first identified media as primary"
+msgstr ""
+
+msgid "Match mode"
+msgstr ""
+
+msgid "Match type"
+msgstr ""
+
+msgid "Object splitter"
+msgstr ""
+
+msgid "Splits objects"
+msgstr ""
+
+msgid "Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.  Note for object data: if the relationship type matches that set as the hierarchy control, the object will be pulled in as a \"child\" element in the object hierarchy."
+msgstr ""
+
+msgid "Sets directionality of object-object relationships. Use LTOR for left-to-right directionality; RTOL for right-to-left directionality. LTOR is the default."
+msgstr ""
+
+msgid "Accepts a constant list item idno from the list object_types or a reference to the location in the data source where the type can be found."
+msgstr ""
+
+msgid "Object parents to create, if required"
+msgstr ""
+
+msgid "Object type default"
+msgstr ""
+
+msgid "Sets the default object type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list object_types."
+msgstr ""
+
+msgid "Sets or maps metadata for the interstitial object <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "Occurrence hierarchy builder"
+msgstr ""
+
+msgid "Builds an occurrence hierarchy."
+msgstr ""
+
+msgid "occurrenceHierarchyBuilder refinery may only be used in imports to ca_occurrences"
+msgstr ""
+
+msgid "Occurrence parents to create"
+msgstr ""
+
+msgid "Occurrence splitter"
+msgstr ""
+
+msgid "Provides several occurrence-related import functions: splitting of multiple occurrences in a string into individual values, mapping of type and relationship type for related occurrences, building occurrence hierarchies and merging occurrence data with names."
+msgstr ""
+
+msgid "Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.  Note for object data: if the relationship type matches that set as the hierarchy control, the object will be pulled in as a \"child\" element in the occurrence hierarchy."
+msgstr ""
+
+msgid "Sets directionality of occurrence-occurrence relationships. Use LTOR for left-to-right directionality; RTOL for right-to-left directionality. LTOR is the default."
+msgstr ""
+
+msgid "Occurrence type"
+msgstr ""
+
+msgid "Accepts a constant list item idno from the list occurrence_types or a reference to the location in the data source where the type can be found."
+msgstr ""
+
+msgid "Sets or maps metadata for the occurrence record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "Occurrence parents to create, if required"
+msgstr ""
+
+msgid "Occurrence type default"
+msgstr ""
+
+msgid "Sets the default occurrence type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list occurrence_types."
+msgstr ""
+
+msgid "Sets or maps metadata for the interstitial occurrence <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "List of non-preferred labels to apply to occurrences."
+msgstr ""
+
+msgid "Place hierarchy builder"
+msgstr ""
+
+msgid "Builds a place hierarchy."
+msgstr ""
+
+msgid "placeHierarchyBuilder refinery may only be used in imports to ca_places"
+msgstr ""
+
+msgid "[placeHierarchyBuilderRefinery] No place hierarchies are defined"
+msgstr ""
+
+msgid "Identifies the hierarchy (list_item id or idno) to add items to."
+msgstr ""
+
+msgid "Deprecated synonym for placeHierarchy setting."
+msgstr ""
+
+msgid "Place parents to create"
+msgstr ""
+
+msgid "Indented placed hierarchy builder"
+msgstr ""
+
+msgid "Imports spreadsheets with place hierarchies expressed as indented values spread across several columns as hierarchical lists."
+msgstr ""
+
+msgid "placeIndentedHierarchyBuilder refinery may only be used in imports to ca_places"
+msgstr ""
+
+msgid "placeIndentedHierarchyBuilder requires levels option be set to a list of data source placeholders"
+msgstr ""
+
+msgid "placeIndentedHierarchyBuilder requires hierarchy option be set"
+msgstr ""
+
+msgid "placeIndentedHierarchyBuilder requires place_hierarchies list to be defined"
+msgstr ""
+
+msgid "placeIndentedHierarchyBuilder could not create place hierarchy %1: %2"
+msgstr ""
+
+msgid "Code of place hierarchy to import places into"
+msgstr ""
+
+msgid "Set to \"returnData\" to return the id of lowest place in the hierarchy to the importer; set to \"processOnly\" to create the places in the hierarchy but not return values to the importer. Default is to process only."
+msgstr ""
+
+msgid "Place splitter"
+msgstr ""
+
+msgid "Provides several place-related import functions: splitting of multiple places in a string into individual values, mapping of type and relationship type for related places, building place hierarchies and merging place data with names."
+msgstr ""
+
+msgid "[placeSplitterRefinery] No place hierarchies are defined"
+msgstr ""
+
+msgid "Sets directionality of place-place relationships. Use LTOR for left-to-right directionality; RTOL for right-to-left directionality. LTOR is the default."
+msgstr ""
+
+msgid "Place type"
+msgstr ""
+
+msgid "Accepts a constant list item idno from the list place_types or a reference to the location in the data source where the type can be found."
+msgstr ""
+
+msgid "Sets or maps metadata for the place record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "Place parents to create, if required"
+msgstr ""
+
+msgid "Place hierarchy to create, if required."
+msgstr ""
+
+msgid "Identifier of the place hierarchy to add places under."
+msgstr ""
+
+msgid "Place type default"
+msgstr ""
+
+msgid "Sets the default place type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list place_types"
+msgstr ""
+
+msgid "Sets or maps metadata for the interstitial place <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "List of non-preferred labels to apply to places."
+msgstr ""
+
+msgid "Storage location hierarchy builder"
+msgstr ""
+
+msgid "Builds a storage location hierarchy."
+msgstr ""
+
+msgid "storageLocationHierarchyBuilder refinery may only be used in imports to ca_storage_locations"
+msgstr ""
+
+msgid "Storage location parents to create"
+msgstr ""
+
+msgid "Indented storage location hierarchy builder"
+msgstr ""
+
+msgid "Imports spreadsheets with hierarchies expressed as indented values spread across several columns as hierarchical storage location."
+msgstr ""
+
+msgid "storageLocationIndentedHierarchyBuilder refinery may only be used in imports to ca_storage_locations"
+msgstr ""
+
+msgid "storageLocationIndentedHierarchyBuilder requires levels option be set to a list of data source placeholders"
+msgstr ""
+
+msgid "Storage location splitter"
+msgstr ""
+
+msgid "Provides several storage location-related import functions: splitting of multiple locations in a string into individual values, mapping of type and relationship type for related locations, building location hierarchies and merging location data with names."
+msgstr ""
+
+msgid "Hierarchical storage location types"
+msgstr ""
+
+msgid "A semicolon-delimited list of storage location types to apply to hierarchical storage locations extracted using the hierarchical delimiter."
+msgstr ""
+
+msgid "Sets directionality of storage location-storage location relationships. Use LTOR for left-to-right directionality; RTOL for right-to-left directionality. LTOR is the default."
+msgstr ""
+
+msgid "Storage location type"
+msgstr ""
+
+msgid "Accepts a constant list item idno from the list storage_location_types or a reference to the location in the data source where the type can be found."
+msgstr ""
+
+msgid "Sets or maps metadata for the storage location record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "Storage location parents to create, if required"
+msgstr ""
+
+msgid "Storage location type default"
+msgstr ""
+
+msgid "Sets the default storage location type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list storage_location_types"
+msgstr ""
+
+msgid "Sets or maps metadata for the interstitial storage location <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "List of non-preferred labels to apply to storage locations."
+msgstr ""
+
+msgid "Tour maker"
+msgstr ""
+
+msgid "Creates tour records as required during import."
+msgstr ""
+
+msgid "[tourMakerRefinery] No value set for tour"
+msgstr ""
+
+msgid "[tourMakerRefinery] No tour type is set for tour %1"
+msgstr ""
+
+msgid "[tourMakerRefinery] Could not create tour %1: %2"
+msgstr ""
+
+msgid "[tourMakerRefinery] Could not add label for tour %1: %2"
+msgstr ""
+
+msgid "[tourMakerRefinery] Could not save data for tour %1: %2"
+msgstr ""
+
+msgid "Accepts a constant list item idno from the list tour_types or a reference to the location in the data source where the type can be found."
+msgstr ""
+
+msgid "Sets or maps metadata for the tour record by referencing the metadataElement code or the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "Sets the default tour type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list tour_types."
+msgstr ""
+
+msgid "Tour stop splitter"
+msgstr ""
+
+msgid "Provides several tourstop location-related import functions."
+msgstr ""
+
+msgid "[tourStopSplitterRefinery] No relationship type is set for tour stop %1"
+msgstr ""
+
+msgid "[tourStopSplitterRefinery] No collection type is set for tour stop %1"
+msgstr ""
+
+msgid "[tourStopSplitterRefinery] Could not find tour %1 to relate stop stops to."
+msgstr ""
+
+msgid "[tourStopSplitterRefinery] No parent found for %1"
+msgstr ""
+
+msgid "Tour stop type"
+msgstr ""
+
+msgid "Accepts a constant list item idno from the list tour_stop_types or a reference to the location in the data source where the type can be found."
+msgstr ""
+
+msgid "Sets or maps metadata for the tour stop record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "Identifies the tour to add the stop to."
+msgstr ""
+
+msgid "Tour stop type default"
+msgstr ""
+
+msgid "Sets the default tour stop type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list tour_stop_types"
+msgstr ""
+
+msgid "Sets or maps metadata for the interstitial tour stop <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
+msgstr ""
+
+msgid "List of non-preferred labels to apply to tour stops."
+msgstr ""
+
