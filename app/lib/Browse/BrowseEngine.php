@@ -7353,6 +7353,7 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 									".(sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '')."";
 							$qr_labels = $this->opo_db->query($vs_sql);
 
+							$sort = ($va_facet_info['sort'] ?? null);
 							while($qr_labels->nextRow()) {
 								$va_fetched_row = $qr_labels->getRow();
 								
@@ -7376,16 +7377,30 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 								foreach($va_ordering_fields_to_fetch as $vs_to_fetch) {
 									$va_facet_item[$vs_to_fetch] = $va_fetched_row[$vs_to_fetch];
 								}
-
-								$va_facet[$label_values['label_sort_']][$va_fetched_row[$vs_rel_pk]][$va_fetched_row['locale_id']] = $va_facet_item;
+								if($sort){
+									$va_facet[$va_fetched_row[$vs_rel_pk]][$va_fetched_row['locale_id']] = $va_facet_item;
+								} else {
+									$va_facet[$label_values['label_sort_']][$va_fetched_row[$vs_rel_pk]][$va_fetched_row['locale_id']] = $va_facet_item;
+								}
 							}
 						}
 						
-						$acc = [];
-						foreach($va_facet as $k => $x) {
-							$acc = array_merge($acc, $x);
+						if($sort){
+							if($qr_sort = caMakeSearchResult($va_facet_info['table'], array_keys($va_facet), ['sort' => $sort, 'sortDirection' => $va_facet_info['sort_direction'] ?? 'asc'])) {
+								
+								$sort_acc = [];
+								while($qr_sort->nextHit()) {
+									$sort_acc[$k = $qr_sort->get($vs_rel_pk)] = $va_facet[$k];
+								}
+							}
+							$va_facet = $sort_acc;
+						} else {
+							$acc = [];
+							foreach($va_facet as $k => $x) {
+								$acc = array_merge($acc, $x);
+							}
+							$va_facet = $acc;
 						}
-						$va_facet = $acc;
 						
 						// get attributes for facet items
 						if (sizeof($va_attrs_to_fetch)) {
