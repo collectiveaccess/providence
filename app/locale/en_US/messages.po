@@ -103,6 +103,14 @@ msgstr ""
 msgid "Source"
 msgstr ""
 
+msgid ""
+"Access values are used to control if and to whom a record should be displayed in a "
+"public-facing Pawtucket-based interface. Users logged into the Pawtucket interface "
+"will be given the levels of access specified here. If you wish to use the default "
+"Pawtucket access policy for an access value set the level to \"Use Pawtucket default."
+"\""
+msgstr ""
+
 msgid "Access status"
 msgstr ""
 
@@ -134,6 +142,9 @@ msgid "Groups"
 msgstr ""
 
 msgid "User profile"
+msgstr ""
+
+msgid "Password must not include the phrase \"%value\""
 msgstr ""
 
 msgid "Password must include at least %value special character"
@@ -229,7 +240,7 @@ msgstr ""
 msgid "Tab delimited"
 msgstr ""
 
-msgid "Comma delimited (CSV"
+msgid "Comma delimited (CSV)"
 msgstr ""
 
 msgid "Download"
@@ -238,7 +249,14 @@ msgstr ""
 msgid "Clear search indexing queue lock file"
 msgstr ""
 
-msgid "<p>The search indexing queue is a task run periodically"
+msgid ""
+"<p>The search indexing queue is a task run periodically, usually via cron, to process "
+"pending indexing tasks. Simultaneous instances of the queue processor are prevented "
+"by means of a lock file. The lock file is created when the queue starts and deleted "
+"when it completed. While it is present new queue processing instances will refuse to "
+"start. In some cases, when a queue processing instance is killed or crashes, the lock "
+"file may not be removed and the queue will refuse to re-start. Lingering lock files "
+"may be removed by clicking the button below.</p>"
 msgstr ""
 
 msgid ""
@@ -254,36 +272,16 @@ msgstr ""
 msgid "Export system configuration as installation profile"
 msgstr ""
 
-msgid ""
-"<p>You can export the current configuration of this system as an <em>installation "
-"profile</em>. A profile is an XML document fully describing all of the metadata "
-"elements"
-msgstr ""
-
 msgid "Export and download system configuration"
 msgstr ""
 
 msgid "Rebuild hierarchical indices"
 msgstr ""
 
-msgid ""
-"<p>CollectiveAccess relies upon special <em>indices</em> to speed retrieval of "
-"hierarchical data such as multi-level lists and storage locations. Occasionally these "
-"indices can get out of sync with the actual hierarchical structure of your data. When "
-"this occurs you may experience odd behavior adding"
-msgstr ""
-
-msgid "Indexing %1 (%2/%3"
+msgid "Indexing %1 (%2/%3)"
 msgstr ""
 
 msgid "Rebuild search indices"
-msgstr ""
-
-msgid ""
-"<p>CollectiveAccess relies upon <em>indices</em> when searching your data.  Indices "
-"are simply summaries of your data designed to speed query processing. The precise "
-"form and characteristics of the indices used will vary with the type of search engine "
-"you  are using. They may be stored on disk"
 msgstr ""
 
 msgid "Indexed %1/%2"
@@ -292,21 +290,18 @@ msgstr ""
 msgid "Reload sort values"
 msgstr ""
 
-msgid ""
-"<p>CollectiveAccess relies upon <em>sort values</em> when sorting values that should "
-"not sort alphabetically"
-msgstr ""
-
 msgid "Reloading %1/%2"
 msgstr ""
 
-msgid "Reloading sort values for %1 (%2/%3"
+msgid "Reloading sort values for %1 (%2/%3)"
 msgstr ""
 
 msgid "No facet defined"
 msgstr ""
 
-msgid "Click on a %1 to see more specific %2 within that %3"
+msgid ""
+"Click on a %1 to see more specific %2 within that %3, or use the search field. Click "
+"on the arrow next to a %4 to find %5 related to it."
 msgstr ""
 
 msgid "Group by"
@@ -345,10 +340,10 @@ msgstr ""
 msgid "Relationship"
 msgstr ""
 
-msgid "Type name (forward sense"
+msgid "Type name (forward sense)"
 msgstr ""
 
-msgid "Type name (reverse sense"
+msgid "Type name (reverse sense)"
 msgstr ""
 
 msgid "Current sort"
@@ -456,7 +451,7 @@ msgstr ""
 msgid "Added ^num_items ^item_type_name to <i>^set_name</i>"
 msgstr ""
 
-msgid "<br/>(^num_dupes were already in the set."
+msgid "<br/>(^num_dupes were already in the set.)"
 msgstr ""
 
 msgid "Created set <i>^set_name</i> with ^num_items ^item_type_name"
@@ -788,7 +783,7 @@ msgstr ""
 msgid "Processed successfully"
 msgstr ""
 
-msgid "Batch edit (%1 %2"
+msgid "Batch edit (%1 %2)"
 msgstr ""
 
 msgid "You are about to apply changes to %1 %2. These changes cannot be undone."
@@ -806,10 +801,13 @@ msgstr ""
 msgid "Execute batch edit"
 msgstr ""
 
+msgid "Really delete ALL records in \"%1\"?"
+msgstr ""
+
 msgid "Leave batch editor and delete this set"
 msgstr ""
 
-msgid "Note: The above record(s"
+msgid "Note: The above record(s) were not deleted due to the errors."
 msgstr ""
 
 msgid "Deleted successfully"
@@ -830,9 +828,6 @@ msgid "Perform another media import"
 msgstr ""
 
 msgid "Processed"
-msgstr ""
-
-msgid "$va_notice['status']"
 msgstr ""
 
 msgid "View media"
@@ -946,6 +941,9 @@ msgstr ""
 msgid "Set %1 title to directory and file name"
 msgstr ""
 
+msgid "Status, access &amp; metadata extraction"
+msgstr ""
+
 msgid "Status &amp; access"
 msgstr ""
 
@@ -999,7 +997,11 @@ msgstr ""
 msgid "Skip files"
 msgstr ""
 
-msgid "List names of files you wish to skip during import below"
+msgid ""
+"List names of files you wish to skip during import below, one per line. You may use "
+"asterisks (\"*\") as wildcards to make partial matches. Values enclosed in \"/\" "
+"characters will be treated as <a href=\"%1\" target=\"_new\">Perl-compatible regular "
+"expressions</a>."
 msgstr ""
 
 msgid "Miscellaneous"
@@ -1163,7 +1165,7 @@ msgstr ""
 msgid "Quick Add"
 msgstr ""
 
-msgid "%1 (%2"
+msgid "%1 (%2)"
 msgstr ""
 
 msgid "... and %1 more"
@@ -1233,10 +1235,10 @@ msgstr ""
 msgid "Access to this %1"
 msgstr ""
 
-msgid "All groups and users %1 this %2"
+msgid "All groups and users %1 this %2, unless an exception is created"
 msgstr ""
 
-msgid "Inherit access exceptions from collection(s"
+msgid "Inherit access exceptions from collection(s)?"
 msgstr ""
 
 msgid "Inherit access exceptions from parent?"
@@ -1254,25 +1256,22 @@ msgstr ""
 msgid " %1 of %4 %2 are inheriting access exceptions from this %3"
 msgstr ""
 
-msgid "$config->get('acl_public_access_tooltip"
+msgid "%1 %2 (out of %4 total) are inheriting public access exceptions from %3"
 msgstr ""
 
-msgid "$config->get('acl_item_access_tooltip"
-msgstr ""
-
-msgid "$config->get('acl_exceptions_tooltip"
-msgstr ""
-
-msgid "$config->get('acl_inheritance_tooltip"
-msgstr ""
-
-msgid "%1 %2 (out of %4 total"
-msgstr ""
-
-msgid " %1 %2 (out of %4 total"
+msgid " %1 %2 (out of %4 total) are inheriting public access exceptions from %3"
 msgstr ""
 
 msgid "Set all to not inherit"
+msgstr ""
+
+msgid "%1 %2 (out of %4 total) are inheriting public access settings from %3"
+msgstr ""
+
+msgid "%1 %2 (out of %4 total) are inheriting access exceptions from %3"
+msgstr ""
+
+msgid " %1 %2 (out of %4 total) are inheriting access exceptions from %3"
 msgstr ""
 
 msgid "Add group exception"
@@ -1808,13 +1807,13 @@ msgid ""
 "Use the controls below to create new %1 relative to this record in the hierarchy."
 msgstr ""
 
-msgid "under (child"
+msgid "under (child)"
 msgstr ""
 
-msgid "above (parent"
+msgid "above (parent)"
 msgstr ""
 
-msgid "next to (sibling"
+msgid "next to (sibling)"
 msgstr ""
 
 msgid "Add a new %1 %2 <em>%3</em>"
@@ -1897,12 +1896,6 @@ msgstr ""
 msgid "Add to %1"
 msgstr ""
 
-msgid "caGetOption('collection_control_label"
-msgstr ""
-
-msgid "caGetOption('entity_control_label"
-msgstr ""
-
 msgid "Add to object"
 msgstr ""
 
@@ -1910,9 +1903,6 @@ msgid "Current %1"
 msgstr ""
 
 msgid "No %1 set"
-msgstr ""
-
-msgid "caGetOption('occurrence_control_label"
 msgstr ""
 
 msgid "Return to home location "
@@ -1945,6 +1935,11 @@ msgstr ""
 msgid "Home location is <em>%</em>"
 msgstr ""
 
+msgid ""
+"Home location will be set to <em><ifdef code=\"parent\">^parent ➜ </ifdef>^current</"
+"em> on save."
+msgstr ""
+
 msgid "Home location is not set"
 msgstr ""
 
@@ -1975,7 +1970,11 @@ msgstr ""
 msgid ""
 "Use the button above to add a widget to your dashboard.  You can drag and drop the "
 "widgets in the left or right columns in the order you would like them to appear.  To "
-"customize the information in each widget"
+"customize the information in each widget, click the <i>\"i\"</i> button in the upper "
+"right corner of the widget.  To remove the widget from your dashboard click the \"X\" "
+"button in the upper right corner of the widget.  Click the \"Clear dashboard\" button "
+"above to remove all widgets from your dashboard.  When you are finished editing your "
+"dashboard, click the \"Done\" button above."
 msgstr ""
 
 msgid "To place a dashboard widget in this column drag it here"
@@ -2042,10 +2041,6 @@ msgid "How to use the image viewer"
 msgstr ""
 
 msgid ""
-"You may add text annotations to the image. Each annotation is associated with a point"
-msgstr ""
-
-msgid ""
 "For point annotations a line will appear connecting the location with a text box. The "
 "location will also be highlighted with a red translucent circle. You may drag both "
 "the point of the line and the text box to adjust position."
@@ -2088,7 +2083,7 @@ msgstr ""
 msgid "%1 to toggle visibility of the image overview"
 msgstr ""
 
-msgid "%1 to return the image to the centered"
+msgid "%1 to return the image to the centered, zoomed out \"home\" position"
 msgstr ""
 
 msgid "%1 to toggle visibility of viewer controls"
@@ -2103,7 +2098,7 @@ msgstr ""
 msgid "%1 or %2 to zoom out in small increments"
 msgstr ""
 
-msgid "%1"
+msgid "%1, %2, %3 or %4 to pan the image in small increments"
 msgstr ""
 
 msgid "Delete annotation"
@@ -2120,7 +2115,7 @@ msgstr ""
 
 msgid ""
 "Click on a %1 to find %2 related to it. Click on the arrow next to a %3 to see more "
-"specific %4 within that %5"
+"specific %4 within that %5, or use the search field."
 msgstr ""
 
 msgid "Updated %1 "
@@ -2203,21 +2198,6 @@ msgstr ""
 msgid "Place hierarchy"
 msgstr ""
 
-msgid " 'Hide search form' "
-msgstr ""
-
-msgid " 'Form' "
-msgstr ""
-
-msgid " 'Show search form' "
-msgstr ""
-
-msgid " 'Saved search' "
-msgstr ""
-
-msgid " 'Could not save search' "
-msgstr ""
-
 msgid "You must define a search form before you can use the advanced search."
 msgstr ""
 
@@ -2254,16 +2234,16 @@ msgstr ""
 msgid "Download results"
 msgstr ""
 
-msgid "All results: %1 (representation"
+msgid "All results: %1 (representation)"
 msgstr ""
 
-msgid "Selected results: %1 (representation"
+msgid "Selected results: %1 (representation)"
 msgstr ""
 
-msgid "Selected results: %1 (field"
+msgid "Selected results: %1 (field)"
 msgstr ""
 
-msgid "All results: %1 (field"
+msgid "All results: %1 (field)"
 msgstr ""
 
 msgid "Download media as"
@@ -2323,13 +2303,13 @@ msgstr ""
 msgid "Library check out"
 msgstr ""
 
-msgid "Checkout for %1 (%2"
+msgid "Checkout for %1 (%2)"
 msgstr ""
 
 msgid "User holds:"
 msgstr ""
 
-msgid "Items out (all users"
+msgid "Items out (all users): %1"
 msgstr ""
 
 msgid "Statistics Dashboard"
@@ -2359,16 +2339,16 @@ msgstr ""
 msgid "User activity for %1"
 msgstr ""
 
-msgid "Checkouts (%1"
+msgid "Checkouts (%1)"
 msgstr ""
 
-msgid "Overdue (%1"
+msgid "Overdue (%1)"
 msgstr ""
 
-msgid "Check ins (%1"
+msgid "Check ins (%1)"
 msgstr ""
 
-msgid "Reservations (%1"
+msgid "Reservations (%1)"
 msgstr ""
 
 msgid "created %1"
@@ -2487,7 +2467,10 @@ msgstr ""
 
 msgid ""
 "Web analytics services track and report on application usage and user behavior "
-"patterns. Typically"
+"patterns. Typically, inclusion of service-specific analytics integration code is "
+"required. This code should have been provided by your analytics provider and is "
+"specific to your account.  Enter it below and it will be embedded on all Pawtucket-"
+"served pages."
 msgstr ""
 
 msgid "Global value editor"
@@ -2496,7 +2479,9 @@ msgstr ""
 msgid ""
 "Global values are editable text values that may be displayed in any view template in "
 "your Pawtucket theme. They are especially useful for managing semi-static text "
-"embedded in a web site"
+"embedded in a web site, such as upcoming holiday hours or planned maintenance. You "
+"may edit globals using the form below. Configure additional global values by adding "
+"them to your theme app.conf configuration file."
 msgstr ""
 
 msgid "No global values for Pawtucket are configured"
@@ -2544,10 +2529,10 @@ msgstr ""
 msgid "%1 public pages"
 msgstr ""
 
-msgid "Batch actions"
+msgid "Approve"
 msgstr ""
 
-msgid "Approve"
+msgid "Batch actions"
 msgstr ""
 
 msgid "Comment"
@@ -2569,9 +2554,6 @@ msgid "Needs moderation"
 msgstr ""
 
 msgid "GO"
-msgstr ""
-
-msgid "$this->getVar('mode"
 msgstr ""
 
 msgid "Tag"
@@ -2657,7 +2639,7 @@ msgstr ""
 msgid "The export has been processed. Configure your download below."
 msgstr ""
 
-msgid "Destination(s"
+msgid "Destination(s)"
 msgstr ""
 
 msgid "Export mapping has errors"
@@ -3099,7 +3081,7 @@ msgstr ""
 msgid "File counts by representation access:"
 msgstr ""
 
-msgid "(%1"
+msgid "(%1)"
 msgstr ""
 
 msgid "File counts by %1 access:"
@@ -3164,13 +3146,14 @@ msgstr ""
 
 msgid ""
 "Thank you for your request. We will send you an email with further instructions. If "
-"you don't receive the message after submitting the form"
+"you don't receive the message after submitting the form, please wait a couple of "
+"minutes and also make sure to check your spam and junk folders. If you don't receive "
+"an email within 15 minutes after submitting the form, you may have misspelled your "
+"user name. Either resubmit the previous form or contact your CollectiveAccess "
+"administrator."
 msgstr ""
 
 msgid "Back to login"
-msgstr ""
-
-msgid "$va_group_info['name']"
 msgstr ""
 
 msgid "Batch user interface for %1"
@@ -3192,9 +3175,6 @@ msgid "Do not duplicate"
 msgstr ""
 
 msgid "No preferences available"
-msgstr ""
-
-msgid "$group_info['name']"
 msgstr ""
 
 msgid "Available results views for %1"
@@ -3423,7 +3403,7 @@ msgstr ""
 
 msgid ""
 "Indicates how multifiles should be ordered in a list. Higher ranks are lower in the "
-"list. That is"
+"list. That is, rank is used to sort in ascending order."
 msgstr ""
 
 msgid "attribute value"
@@ -3618,7 +3598,9 @@ msgstr ""
 msgid "Is system display?"
 msgstr ""
 
-msgid "If set"
+msgid ""
+"If set, display will be available to all users as part of the system-wide display "
+"list."
 msgstr ""
 
 msgid "Display type"
@@ -3648,7 +3630,8 @@ msgstr ""
 msgid "Display empty values?"
 msgstr ""
 
-msgid "If checked all values will be displayed"
+msgid ""
+"If checked all values will be displayed, whether there is content for them or not."
 msgstr ""
 
 msgid "Bottom line format"
@@ -3657,13 +3640,13 @@ msgstr ""
 msgid "Format per-page and per-report summary information."
 msgstr ""
 
-msgid "Search/browse (thumbnail view"
+msgid "Search/browse (thumbnail view)"
 msgstr ""
 
-msgid "Search/browse (full view"
+msgid "Search/browse (full view)"
 msgstr ""
 
-msgid "Search/browse (list view"
+msgid "Search/browse (list view)"
 msgstr ""
 
 msgid "Editor summaries"
@@ -3721,6 +3704,9 @@ msgstr ""
 msgid "Maximum length"
 msgstr ""
 
+msgid "Maximum length, in characters, of displayed information."
+msgstr ""
+
 msgid "Locale to use for output."
 msgstr ""
 
@@ -3763,7 +3749,9 @@ msgstr ""
 
 msgid ""
 "Template to format aggregate data for display under this column. The template can "
-"include these aggregate data tags: ^PAGEAVG"
+"include these aggregate data tags: ^PAGEAVG, ^AVG, ^PAGESUM, ^SUM, ^PAGEMin, ^MIN, "
+"^PAGEMAX, ^MAX. For containers follow the tag with the element code of the subelement "
+"to aggregate. Ex. ^SUM:dimensions_width"
 msgstr ""
 
 msgid "Append multipage PDF to output?"
@@ -3821,7 +3809,7 @@ msgstr ""
 msgid "Initial sort direction"
 msgstr ""
 
-msgid "Direction of sort"
+msgid "Direction of sort, when sort is specified."
 msgstr ""
 
 msgid "Initially sort %1 policies using"
@@ -3869,13 +3857,17 @@ msgstr ""
 msgid "Restrict to relationship types"
 msgstr ""
 
-msgid "Restricts display to items related using the specified relationship type(s"
+msgid ""
+"Restricts display to items related using the specified relationship type(s). Leave "
+"all unchecked for no restriction."
 msgstr ""
 
 msgid "Restrict to types"
 msgstr ""
 
-msgid "Restricts display to items of the specified type(s"
+msgid ""
+"Restricts display to items of the specified type(s). Leave all unchecked for no "
+"restriction."
 msgstr ""
 
 msgid "Sort using"
@@ -3909,7 +3901,10 @@ msgstr ""
 msgid "Remove first items from hierarchy?"
 msgstr ""
 
-msgid "If set to a non-zero value"
+msgid ""
+"If set to a non-zero value, the specified number of items at the top of the hierarchy "
+"will be omitted. For example, if set to 2, the root and first child of the hierarchy "
+"will be omitted."
 msgstr ""
 
 msgid "top first"
@@ -4059,7 +4054,8 @@ msgstr ""
 
 msgid ""
 "Period of time for which this label was in effect. This is an option qualification "
-"for the relationship. If left blank"
+"for the relationship. If left blank, this relationship is implied to have existed for "
+"as long as the related items have existed."
 msgstr ""
 
 msgid "Indicates if label is accessible to the public or not."
@@ -4079,6 +4075,12 @@ msgstr ""
 msgid "The locale from which the collection originates."
 msgstr ""
 
+msgid ""
+"The type of the collection. In CollectiveAccess every collection has a single "
+"\"instrinsic\" type that determines the set of descriptive and administrative "
+"metadata that can be applied to it."
+msgstr ""
+
 msgid "Collection identifier"
 msgstr ""
 
@@ -4087,7 +4089,8 @@ msgstr ""
 
 msgid ""
 "Administrative source of the collection. This value is often used to indicate the "
-"administrative sub-division or legacy database from which the collection originates"
+"administrative sub-division or legacy database from which the collection originates, "
+"but can also be re-tasked for use as a simple classification tool if needed."
 msgstr ""
 
 msgid "Home location"
@@ -4176,7 +4179,9 @@ msgstr ""
 msgid "Inherit public access settings from parent?"
 msgstr ""
 
-msgid "Determines whether public access settings (used by Pawtucket-based sites"
+msgid ""
+"Determines whether public access settings (used by Pawtucket-based sites) set for "
+"parent object is applied to this object."
 msgstr ""
 
 msgid "Number of views for this record."
@@ -4322,7 +4327,8 @@ msgstr ""
 
 msgid ""
 "Period of time for which this relationship was in effect. This is an option "
-"qualification for the relationship. If left blank"
+"qualification for the relationship. If left blank, this relationship is implied to "
+"have existed for as long as the related items have existed."
 msgstr ""
 
 msgid ""
@@ -4366,7 +4372,9 @@ msgstr ""
 
 msgid ""
 "This setting can be used to switch the context of the export for this exporter item "
-"and all its children to a different table"
+"and all its children to a different table, for instance to related entities. The "
+"element is automatically repeated for all selected related records. Leave empty to "
+"inherit context from parent item."
 msgstr ""
 
 msgid "Data source"
@@ -4401,7 +4409,10 @@ msgstr ""
 msgid "Text to append to value prior to export."
 msgstr ""
 
-msgid "Format exported value with provided template. Template may include caret (^"
+msgid ""
+"Format exported value with provided template. Template may include caret (^) prefixed "
+"placeholders that refer to data source values. This setting can also be used to set "
+"static values for exporter items without data source."
 msgstr ""
 
 msgid "Truncate to specified length if value exceeds that length."
@@ -4410,7 +4421,9 @@ msgstr ""
 msgid "Repeat element for multiple values"
 msgstr ""
 
-msgid "If the current selector/template returns multiple values"
+msgid ""
+"If the current selector/template returns multiple values, this setting determines if "
+"the element is repeated for each value."
 msgstr ""
 
 msgid "Filter non-primary representations?"
@@ -4430,13 +4443,29 @@ msgstr ""
 msgid "Convert codes to display text"
 msgstr ""
 
+msgid ""
+"If set, id values refering to foreign keys are returned as preferred label text in "
+"the current locale."
+msgstr ""
+
 msgid "Convert codes to idno"
+msgstr ""
+
+msgid "If set, id values refering to foreign keys are returned as idno."
 msgstr ""
 
 msgid "Return id numbers for List attribute values"
 msgstr ""
 
+msgid ""
+"If set, idnos are returned for List attribute values instead of primary key values. "
+"Do not combine this with convertCodesToDisplayText!"
+msgstr ""
+
 msgid "Remove HTML pages from output?"
+msgstr ""
+
+msgid "If set, HTML/XML tags are removed from output."
 msgstr ""
 
 msgid "Skip if expression"
@@ -4464,7 +4493,7 @@ msgstr ""
 
 msgid ""
 "Return-separated list of values from the CollectiveAccess source to be replaced. PCRE-"
-"style regular expressions are allowed (without delimiters"
+"style regular expressions are allowed (without delimiters)."
 msgstr ""
 
 msgid "Replacement values"
@@ -4475,13 +4504,17 @@ msgid ""
 "the original data source."
 msgstr ""
 
-msgid "Locale code to use to get the field values. If not set"
+msgid ""
+"Locale code to use to get the field values. If not set, the system/user default is "
+"used."
 msgstr ""
 
 msgid "Return all locales"
 msgstr ""
 
-msgid "Return all available values for any locale. If not set"
+msgid ""
+"Return all available values for any locale. If not set, only values for the current "
+"locale are returned."
 msgstr ""
 
 msgid "Omit if empty"
@@ -4548,13 +4581,32 @@ msgstr ""
 msgid "Start as ISO8601"
 msgstr ""
 
+msgid ""
+"If set, only the end of a date range is exported for the current mapping. Format is "
+"ISO8601. Only applies to exports of DateRange attributes."
+msgstr ""
+
 msgid "End as ISO8601"
+msgstr ""
+
+msgid ""
+"If set, only the beginning of a date range is exported for the current mapping. "
+"Format is ISO8601. Only applies to exports of DateRange attributes."
 msgstr ""
 
 msgid "Omit time portion of date/time values"
 msgstr ""
 
+msgid "If set, only the date portion of a date/time value is exported."
+msgstr ""
+
 msgid "Do not return value if on the same day as start"
+msgstr ""
+
+msgid ""
+"If set, the exporter will not insert a value for this mapping if the end day of the "
+"DateRange in question is on the same day as the start. Only applies to exports of "
+"DateRange attributes and only in conjunction with end_as_iso8601."
 msgstr ""
 
 msgid "Formatting option for DateRange attributes."
@@ -4563,7 +4615,9 @@ msgstr ""
 msgid "Return geocode coordinates only"
 msgstr ""
 
-msgid "Formatting option for Geocode attributes. Forces return of coordinates only"
+msgid ""
+"Formatting option for Geocode attributes. Forces return of coordinates only, omitting "
+"text labels."
 msgstr ""
 
 msgid "Remove newline characters from text values"
@@ -4583,7 +4637,12 @@ msgid ""
 "import."
 msgstr ""
 
-msgid "A list of Perl-compatible regular expressions. Each expression has two parts"
+msgid ""
+"A list of Perl-compatible regular expressions. Each expression has two parts, a "
+"matching expression and a substitution expression, and is expressed as a JSON object "
+"with <em>match</em> and <em>replaceWith</em> keys. Ex. [{\"match\": \"([\\d]+)\\."
+"([\\d]+)\", \"replaceWith\": \"\\1:\\2\"}, {\"match\": \"[^\\d:]+\", \"replaceWith\": "
+"\"\"}] "
 msgstr ""
 
 msgid "Include deleted records"
@@ -4642,16 +4701,29 @@ msgstr ""
 msgid "Exporter format"
 msgstr ""
 
-msgid "Set exporter type"
+msgid ""
+"Set exporter type, i.e. the format of the exported data. Currently supported: XML, "
+"MARC21 and CSV."
 msgstr ""
 
 msgid "Wrapping text before export"
 msgstr ""
 
-msgid "If this exporter is used for an item set export (as opposed to a single item"
+msgid ""
+"If this exporter is used for an item set export (as opposed to a single item), the "
+"text set here will be inserted before the first item. This can for instance be used "
+"to wrap a repeating set of XML elements in a single global element. The text has to "
+"be valid for the current exporter format."
 msgstr ""
 
 msgid "Wrapping text after export"
+msgstr ""
+
+msgid ""
+"If this exporter is used for an item set export (as opposed to a single item), the "
+"text set here will be inserted after the last item. This can for instance be used to "
+"wrap a repeating set of XML elements in a single global element. The text has to be "
+"valid for the current exporter format."
 msgstr ""
 
 msgid "Wrapping text before record export"
@@ -4667,8 +4739,13 @@ msgid "The text set here will be inserted after each record-level export."
 msgstr ""
 
 msgid ""
+"If set, this mapping will only be available for these types. Multiple types are "
+"separated by commas or semicolons."
+msgstr ""
+
+msgid ""
 "Locale code to use to get the field values when mapping-specific locale is not set. "
-"If not set"
+"If not set, the system/user default is used."
 msgstr ""
 
 msgid "Invalid mapping %1"
@@ -4727,7 +4804,7 @@ msgstr ""
 
 msgid ""
 "The export tree for exporter code '%1' and item with ID %2 is now ready to be "
-"processed by the export format (i.e. transformed to XML"
+"processed by the export format (i.e. transformed to XML, for example)."
 msgstr ""
 
 msgid ""
@@ -4768,13 +4845,16 @@ msgstr ""
 msgid "Source refers to relationship type information. Value for this mapping is '%1'"
 msgstr ""
 
-msgid "Source is a simple get("
+msgid "Source is a simple get() for some bundle. Value for this mapping is '%1'"
 msgstr ""
 
-msgid "get("
+msgid "get() options are: %1"
 msgstr ""
 
-msgid "Source is a get("
+msgid ""
+"Source is a get() that should be repeated for multiple values. Value for this mapping "
+"is '%1'. It includes the custom delimiter ';#;' that is later used to split the value "
+"into multiple values."
 msgstr ""
 
 msgid ""
@@ -4787,7 +4867,9 @@ msgid ""
 "element"
 msgstr ""
 
-msgid "We're now processing other settings like default"
+msgid ""
+"We're now processing other settings like default, prefix, suffix, skipIfExpression, "
+"filterByRegExp, maxLength, plugins and replacements for this mapping"
 msgstr ""
 
 msgid "Local data before processing is: %1"
@@ -4816,7 +4898,7 @@ msgstr ""
 
 msgid ""
 "Raw attribute value array is as follows. The mapping will now be repeated for each "
-"(outer"
+"(outer) attribute. %1"
 msgstr ""
 
 msgid ""
@@ -4837,7 +4919,9 @@ msgstr ""
 msgid "Warning: skipped mapping at row %1 because element was not defined"
 msgstr ""
 
-msgid "Variable name %1 at row %2 is invalid. It should only contain ASCII letters"
+msgid ""
+"Variable name %1 at row %2 is invalid. It should only contain ASCII letters, numbers, "
+"hyphens and underscores. The variable was not created."
 msgstr ""
 
 msgid "Warning: options for element %1 at row %2 are not in proper JSON"
@@ -4930,13 +5014,15 @@ msgstr ""
 msgid "Date and time import began"
 msgstr ""
 
-msgid "Code indicating type of import (eg. OAI"
+msgid "Code indicating type of import (eg. OAI)"
 msgstr ""
 
 msgid "Description of data import event"
 msgstr ""
 
-msgid "Text indicating source of data imported. For OAI and other web service imports"
+msgid ""
+"Text indicating source of data imported. For OAI and other web service imports, this "
+"will be the URL used to access the service."
 msgstr ""
 
 msgid "now"
@@ -4980,7 +5066,7 @@ msgstr ""
 msgid "Elapsed time"
 msgstr ""
 
-msgid "Time"
+msgid "Time, in seconds, taken to import item"
 msgstr ""
 
 msgid "Successfully imported?"
@@ -5051,13 +5137,14 @@ msgstr ""
 
 msgid ""
 "Return-separated list of values from the data source to be replaced.  For example "
-"photo is used in the data source"
+"photo is used in the data source, but photograph is used in CollectiveAccess."
 msgstr ""
 
 msgid ""
 "Return-separated list of CollectiveAccess list item idnos that correspond to the "
 "mapped values from the original data source.  For example sound recording (entered in "
-"the Original values column"
+"the Original values column) maps to audio_digital, which is entered here in the "
+"Replacement values column."
 msgstr ""
 
 msgid "Filter empty values"
@@ -5111,13 +5198,13 @@ msgstr ""
 msgid "Skip mapping if value"
 msgstr ""
 
-msgid "Skip mapping if value for this element is equal to the specified value(s"
+msgid "Skip mapping if value for this element is equal to the specified value(s)."
 msgstr ""
 
 msgid "Skip mapping if not value"
 msgstr ""
 
-msgid "Skip mapping if value for this element is not equal to the specified value(s"
+msgid "Skip mapping if value for this element is not equal to the specified value(s)."
 msgstr ""
 
 msgid "Skip mapping if value for the expression is true."
@@ -5127,7 +5214,9 @@ msgid "Skip group if empty"
 msgstr ""
 
 msgid ""
-"Skip all of the elements in the group if value for this element is empty.  For example"
+"Skip all of the elements in the group if value for this element is empty.  For "
+"example, a field called Description Type would be irrelevant if the Description field "
+"is empty."
 msgstr ""
 
 msgid "Skip group if value"
@@ -5135,7 +5224,7 @@ msgstr ""
 
 msgid ""
 "Skip all of the elements in the group if value for this element is equal to the "
-"specified value(s"
+"specified value(s)."
 msgstr ""
 
 msgid "Skip group if not value"
@@ -5143,7 +5232,7 @@ msgstr ""
 
 msgid ""
 "Skip all of the elements in the group if value for this element is not equal to any "
-"of the specified values(s"
+"of the specified values(s)."
 msgstr ""
 
 msgid "Skip group if expression"
@@ -5155,20 +5244,22 @@ msgstr ""
 msgid "Skip row if empty"
 msgstr ""
 
-msgid "Skip row if value for this element is empty.  For example"
+msgid ""
+"Skip row if value for this element is empty.  For example, do not import the row if "
+"the Description field is empty."
 msgstr ""
 
 msgid "Skip row if value"
 msgstr ""
 
-msgid "Skip the row if value for this element is equal to the specified value(s"
+msgid "Skip the row if value for this element is equal to the specified value(s)."
 msgstr ""
 
 msgid "Skip row if value is not"
 msgstr ""
 
 msgid ""
-"Skip the row if value for this element is not equal to any of the specified value(s"
+"Skip the row if value for this element is not equal to any of the specified value(s)."
 msgstr ""
 
 msgid "Skip row if expression"
@@ -5177,7 +5268,7 @@ msgstr ""
 msgid "Skip the row if value for the expression is true."
 msgstr ""
 
-msgid "Skip row if parent record does not exist (parent_id mappings only"
+msgid "Skip row if parent record does not exist (parent_id mappings only)"
 msgstr ""
 
 msgid ""
@@ -5208,7 +5299,7 @@ msgstr ""
 msgid "Use constant"
 msgstr ""
 
-msgid "Set value to constant"
+msgid "Set value to constant, rather than source value"
 msgstr ""
 
 msgid ""
@@ -5223,7 +5314,7 @@ msgstr ""
 msgid ""
 "Restricts the mapping to pull only records related with the designated types from the "
 "source. This option is only supported by sources that have a notion of related data "
-"and types"
+"and types, most notably (and for now only) the CollectiveAccessDataReader."
 msgstr ""
 
 msgid "Filter to relationship types"
@@ -5232,13 +5323,25 @@ msgstr ""
 msgid ""
 "Restricts the mapping to pull only records related with the designated relationship "
 "types from the source. This option is only supported by sources that have a notion of "
-"related data and relationship types"
+"related data and relationship types, most notably (and for now only) the "
+"CollectiveAccessDataReader."
 msgstr ""
 
 msgid "Restrict relationship removal to types"
 msgstr ""
 
+msgid ""
+"Restricts the mapping to remove only relationships linking to an record with one of "
+"the specified types. Used when the \"replace\" option is set for a relationship "
+"mapping."
+msgstr ""
+
 msgid "Restrict relationship removal to relationship types"
+msgstr ""
+
+msgid ""
+"Restricts the mapping to remove only relationships with the specified relationship "
+"types. Used when the \"replace\" option is set for a relationship mapping."
 msgstr ""
 
 msgid "Hierarchical delimiter for input data"
@@ -5246,7 +5349,7 @@ msgstr ""
 
 msgid ""
 "This option is only supported by sources that have a notion of related data and "
-"relationship types"
+"relationship types, most notably (and for now only) the CollectiveAccessDataReader."
 msgstr ""
 
 msgid "Text to prepend to value prior to import."
@@ -5258,13 +5361,16 @@ msgstr ""
 msgid "Format with template"
 msgstr ""
 
-msgid "Format imported value with provided template. Template may include caret (^"
+msgid ""
+"Format imported value with provided template. Template may include caret (^) prefixed "
+"placeholders that refer to data source values."
 msgstr ""
 
 msgid "Apply one or more tranformations a source value prior to import."
 msgstr ""
 
-msgid "A list of data transformations"
+msgid ""
+"A list of data transformations, each with a list of transformation-specific options."
 msgstr ""
 
 msgid "ignore"
@@ -5277,7 +5383,9 @@ msgid "Error policy"
 msgstr ""
 
 msgid ""
-"Determines how errors are handled for the mapping.  Options are to ignore the error"
+"Determines how errors are handled for the mapping.  Options are to ignore the error, "
+"stop the import when an error is encountered and to receive a prompt when the error "
+"is encountered."
 msgstr ""
 
 msgid "Relationship type"
@@ -5327,6 +5435,12 @@ msgstr ""
 msgid "Match on"
 msgstr ""
 
+msgid ""
+"List indicating sequence of checks for an existing record; values of array can be "
+"\"label\" and \"idno\". Ex. array(\"idno\", \"label\") will first try to match on "
+"idno and then label if the first match fails."
+msgstr ""
+
 msgid "Truncate long labels?"
 msgstr ""
 
@@ -5346,7 +5460,8 @@ msgstr ""
 msgid ""
 "Import parent of subject instead of subject. This option is primarily useful when you "
 "are using a hierarchy builder refinery mapped to parent_id to create the entire "
-"hierarchy (including subject"
+"hierarchy (including subject) and want the bottom-most level of the hierarchy to be "
+"the subject."
 msgstr ""
 
 msgid "Treat value as identifiers for multiple rows"
@@ -5366,13 +5481,17 @@ msgstr ""
 
 msgid ""
 "Transform label using options for formatting entity display names. Default is to use "
-"value as is. Other options are surnameCommaForename"
+"value as is. Other options are surnameCommaForename, forenameCommaSurname, "
+"forenameSurname. See DataMigrationUtils::splitEntityName()."
 msgstr ""
 
 msgid "Use raw data values when testing expression"
 msgstr ""
 
-msgid "When evaluating conditions to skip a mapping"
+msgid ""
+"When evaluating conditions to skip a mapping, row or group via an expression using a "
+"setting such as skipIfExpression, use raw un-transformed data rather than data that "
+"has been transformed with applyRegularExpressions and replacement values."
 msgstr ""
 
 msgid "Media prefix"
@@ -5387,13 +5506,17 @@ msgid "Media match type"
 msgstr ""
 
 msgid ""
-"Determines how file names are compared to the match value. Valid values are STARTS"
+"Determines how file names are compared to the match value. Valid values are STARTS, "
+"ENDS, CONTAINS and EXACT. (Default is EXACT)"
 msgstr ""
 
 msgid "Media match mode"
 msgstr ""
 
-msgid "Determines whether to search on file names"
+msgid ""
+"Determines whether to search on file names, enclosing directory names or both. Valid "
+"values are DIRECTORY_NAME, FILE_AND_DIRECTORY_NAMES and FILE_NAME. (Default is "
+"FILE_NAME)."
 msgstr ""
 
 msgid "Always add values?"
@@ -5401,13 +5524,15 @@ msgstr ""
 
 msgid ""
 "Always add values after existing ones even if existing record policy mandates "
-"replacement (Eg. merge_on_idno_with_replace"
+"replacement (Eg. merge_on_idno_with_replace, Etc.)."
 msgstr ""
 
 msgid "Always replace values?"
 msgstr ""
 
-msgid "Always replace values"
+msgid ""
+"Always replace values, removing existing ones even if existing record policy does not "
+"mandate replacement (Eg. is not merge_on_idno_with_replace, Etc.)."
 msgstr ""
 
 msgid "Replace if expression"
@@ -5421,12 +5546,13 @@ msgstr ""
 
 msgid ""
 "Optional text indicating source of data. Will be set for attributes created with this "
-"mapping. Only supported for metadata attributes (not labels or intrinsics"
+"mapping. Only supported for metadata attributes (not labels or intrinsics)"
 msgstr ""
 
 msgid ""
 "If set for identifier mapping the value will be set as-is without processing. This "
-"option ensures that identifier data is stored without modification"
+"option ensures that identifier data is stored without modification, even if it does "
+"not conform to configured identifier/numbering policy."
 msgstr ""
 
 msgid ""
@@ -5566,10 +5692,12 @@ msgstr ""
 msgid "Importer data types"
 msgstr ""
 
-msgid "Set data types for which this importer is usable.  Ex. XLSX"
+msgid "Set data types for which this importer is usable.  Ex. XLSX, XLS, MYSQL"
 msgstr ""
 
-msgid "Type to set all imported records to. If import includes a mapping to type_id"
+msgid ""
+"Type to set all imported records to. If import includes a mapping to type_id, that "
+"will be privileged and the type setting will be ignored."
 msgstr ""
 
 msgid "Initial rows to skip"
@@ -5590,7 +5718,8 @@ msgid "Mapping identifier"
 msgstr ""
 
 msgid ""
-"Arbitrary alphanumeric code for the import mapping (no special characters or spaces"
+"Arbitrary alphanumeric code for the import mapping (no special characters or "
+"spaces).  Pending implementation."
 msgstr ""
 
 msgid "Map to table"
@@ -5641,13 +5770,22 @@ msgid ""
 msgstr ""
 
 msgid ""
-"Determines how errors are handled for the import.  Options are to ignore the error"
+"Determines how errors are handled for the import.  Options are to ignore the error, "
+"stop the import when an error is encountered and to receive a prompt when the error "
+"is encountered."
 msgstr ""
 
 msgid "Base path"
 msgstr ""
 
-msgid "For XML data formats"
+msgid ""
+"For XML data formats, an XPath expression selecting nodes to be treated as individual "
+"records. If left blank, each XML document will be treated as a single record."
+msgstr ""
+
+msgid ""
+"Set the locale used for all imported data. Leave on \"DEFAULT\" to use the system "
+"default locale. Otherwise set it to a valid locale code (Ex. en_US, es_MX, fr_CA)."
 msgstr ""
 
 msgid "Source URL"
@@ -5668,6 +5806,11 @@ msgid "Default display name format"
 msgstr ""
 
 msgid "Data format-specific settings"
+msgstr ""
+
+msgid ""
+"Data format-specific settings, in JSON-format, for data format readers that support "
+"additional settings."
 msgstr ""
 
 msgid "Warning: skipped mapping at row %1 because source was not defined"
@@ -5776,13 +5919,13 @@ msgstr ""
 msgid "Reading %1"
 msgstr ""
 
-msgid "Skipped file %1 because it does not have a valid file extension (%"
+msgid "Skipped file %1 because it does not have a valid file extension (%)"
 msgstr ""
 
-msgid "Could not open source %1 (format=%2"
+msgid "Could not open source %1 (format=%2)"
 msgstr ""
 
-msgid "Could not read source %1 (format=%2"
+msgid "Could not read source %1 (format=%2)"
 msgstr ""
 
 msgid "Finished reading input source at %1 seconds"
@@ -5816,11 +5959,16 @@ msgid "Invalid transform rule: %1"
 msgstr ""
 
 msgid ""
-"Expression trigger could not be parsed. Please double-check the syntax! Expression "
-"was: %1 [%2]"
+"Row was skipped using rule \"%1\" with default action because an invalid action "
+"(\"%2\") was specified"
 msgstr ""
 
-msgid "[%1] Skipped import because forced primary key '%1' does not exist"
+msgid "Row was skipped using rule \"%1\" with action \"%2\""
+msgstr ""
+
+msgid ""
+"Expression trigger could not be parsed. Please double-check the syntax! Expression "
+"was: %1 [%2]"
 msgstr ""
 
 msgid "[%1] Merged with existing record matched on primary key %2 for %3 by policy %4"
@@ -5898,65 +6046,26 @@ msgstr ""
 msgid "Importing %1 [%2]"
 msgstr ""
 
-msgid "[%3/%4] Processing %1 (%2"
-msgstr ""
-
-msgid " '[%1] Skipped group %2 because target %3 is invalid"
-msgstr ""
-
-msgid "[%1] Skipped mapping for %2 (%3"
-msgstr ""
-
-msgid "[%1] Skipped group %2 because at least one value in list (%3"
-msgstr ""
-
-msgid "[%1] Skipped group %2 because all values in list (%3"
-msgstr ""
-
-msgid "[%1] Skipped row %2 (%3"
-msgstr ""
-
-msgid " '[%1] Skipped row %2 (%3"
-msgstr ""
-
-msgid " '[%1] Skipped group %2 because value from %3 for %4 is empty"
-msgstr ""
-
-msgid " '[%1] Skipped mapping because value from %2 for %3 is empty"
-msgstr ""
-
-msgid " '[%1] Skipped mapping %2 (%3"
-msgstr ""
-
-msgid " '[%1] Skipped group %2 because value for %3 matches value %4"
-msgstr ""
-
-msgid " '[%1] Skipped group %2 because value for %3 matches is not in list of values"
-msgstr ""
-
-msgid " '[%1] Skipped mapping %2 because there is no replacement value for value %3"
-msgstr ""
-
-msgid " '[%1] Skipped mapping because skipIfExpression %2 is true : %3"
-msgstr ""
-
-msgid " '[%1] Skipped group %2 because skipGroupIfExpression %3 is true"
+msgid "[%3/%4] Processing %1 (%2)"
 msgstr ""
 
 msgid ""
-" '[%1] Did not skip group %2 because skipGroupIfExpression %3 is false (data was %4"
+"[%1] Skipped mapping for %2 (%3) because at least one value in list (%4) is empty"
 msgstr ""
 
-msgid " '[%1] Skipped mapping because skipIfExpression %2 is true"
+msgid "[%1] Skipped mapping for %2 (%3) because all values in list (%4) are empty"
 msgstr ""
 
-msgid " '[%1] Replaced data for %2 because replaceIfExpression %3 is true"
+msgid "[%1] Skipped group %2 because at least one value in list (%3) is empty"
 msgstr ""
 
-msgid " '[%1] Did not replace %2 because replaceIfExpression %3 is false (data was %4"
+msgid "[%1] Skipped group %2 because all values in list (%3) are empty"
 msgstr ""
 
-msgid " '[%1] Invalid refinery %2 specified"
+msgid "[%1] Skipped row %2 (%3) because at least one value in list (%4) is empty"
+msgstr ""
+
+msgid "[%1] Skipped row %2 (%3) because all values in list (%4) are empty"
 msgstr ""
 
 msgid "Removed %1 data %2 for %3 because it is duplicated"
@@ -5983,7 +6092,7 @@ msgstr ""
 msgid "Failed to import %1"
 msgstr ""
 
-msgid "[%1] Could not insert new record for %2 (type was %3"
+msgid "[%1] Could not insert new record for %2 (type was %3): "
 msgstr ""
 
 msgid "Created idno %1 at %2 seconds [id=%3]"
@@ -6036,10 +6145,10 @@ msgstr ""
 msgid "[%1] Could not instantiate related table %2"
 msgstr ""
 
-msgid "[%1] Related %2 (%3"
+msgid "[%1] Related %2 (%3) to related %4 with relationship %5"
 msgstr ""
 
-msgid "[%1] Could not add related %2 (%3"
+msgid "[%1] Could not add related %2 (%3) to related %4 with relationship %5:"
 msgstr ""
 
 msgid "While adding rel-rel data"
@@ -6120,6 +6229,9 @@ msgstr ""
 msgid "Import completed"
 msgstr ""
 
+msgid "Rollback successful import run in \"dry run\" mode"
+msgstr ""
+
 msgid ""
 "Could not create object-collection hierarchy child record relationship because no "
 "relationship type was configured"
@@ -6129,6 +6241,9 @@ msgid "Could not create object-collection hierarchy child record relationship: %
 msgstr ""
 
 msgid "Could not create hierarchy child record for %1"
+msgstr ""
+
+msgid "Replaced value \"%1\" (%2) with \"%3\" (%4) for %5 using replacement values"
 msgstr ""
 
 msgid "Importer mapping %1 does not exist"
@@ -6166,10 +6281,13 @@ msgstr ""
 
 msgid ""
 "Descriptive text to use for help for bundle. Will override descriptive text set for "
-"underlying metadata element"
+"underlying metadata element, if set."
 msgstr ""
 
 msgid "Width"
+msgstr ""
+
+msgid "Width, in characters or pixels."
 msgstr ""
 
 msgid "Height"
@@ -6178,10 +6296,10 @@ msgstr ""
 msgid "Read only?"
 msgstr ""
 
-msgid "If checked"
+msgid "If checked, field will not be editable."
 msgstr ""
 
-msgid "Don't force (default"
+msgid "Don't force (default)"
 msgstr ""
 
 msgid "Collapse"
@@ -6298,7 +6416,8 @@ msgstr ""
 
 msgid ""
 "Check this option if you want to use a word-processor like editor with this text "
-"field. If you expect users to enter rich text (italic"
+"field. If you expect users to enter rich text (italic, bold, underline) then you "
+"might want to enable this."
 msgstr ""
 
 msgid "Allow locales"
@@ -6307,7 +6426,10 @@ msgstr ""
 msgid "Specify specific locales to allow for this element."
 msgstr ""
 
-msgid "Layout for value when used in a display (can include HTML"
+msgid ""
+"Layout for value when used in a display (can include HTML). Element code tags "
+"prefixed with the ^ character can be used to represent the value in the template. For "
+"example: <i>^my_element_code</i>."
 msgstr ""
 
 msgid "Use list to suggest values"
@@ -6373,6 +6495,16 @@ msgstr ""
 msgid "Use default"
 msgstr ""
 
+msgid ""
+"Restricts display to items related using the specified relationship type(s). Leave "
+"all unselected for no restriction."
+msgstr ""
+
+msgid ""
+"Restricts display to items of the specified type(s). Leave all unselected for no "
+"restriction."
+msgstr ""
+
 msgid "Restrict to search expression"
 msgstr ""
 
@@ -6384,7 +6516,10 @@ msgstr ""
 msgid "Relationship display template"
 msgstr ""
 
-msgid "Layout for relationship when displayed in list (can include HTML"
+msgid ""
+"Layout for relationship when displayed in list (can include HTML). Element code tags "
+"prefixed with the ^ character can be used to represent the value in the template. For "
+"example: <i>^my_element_code</i>."
 msgstr ""
 
 msgid "If checked only current relationships are displayed."
@@ -6426,7 +6561,10 @@ msgstr ""
 msgid "Do not include sub-types in type restriction"
 msgstr ""
 
-msgid "Normally restricting to type(s"
+msgid ""
+"Normally restricting to type(s) automatically includes all sub-(child) types. If this "
+"option is checked then the lookup results will include items with the selected "
+"type(s) <b>only</b>."
 msgstr ""
 
 msgid "bubbles"
@@ -6472,7 +6610,9 @@ msgstr ""
 
 msgid ""
 "If set to 0 a delete button will allow a cataloguer to clear all relationships.  If "
-"set to 1 or more"
+"set to 1 or more, it will not be possible to delete all relationships once the "
+"minimum is established. Note that this is only a user interface limitations rather "
+"than constraints on the underlying data model."
 msgstr ""
 
 msgid "Maximum number of relationships of this kind that can be associated with an item"
@@ -6507,7 +6647,7 @@ msgstr ""
 msgid "Default type for quickadd"
 msgstr ""
 
-msgid "Set default type for quickadds"
+msgid "Set default type for quickadds, overriding type list default."
 msgstr ""
 
 msgid "Always open quickadd window when adding relationship?"
@@ -6577,53 +6717,53 @@ msgstr ""
 
 msgid ""
 "Placeholder text to display in representation autocomplete search box when linking an "
-"existing representation to a record. (New UI only"
+"existing representation to a record. (New UI only)"
 msgstr ""
 
-msgid "Do not allow linking to existing representations? (New UI only"
+msgid "Do not allow linking to existing representations? (New UI only)"
 msgstr ""
 
 msgid ""
 "Do not provide option to create relationships to existing representations. (New UI "
-"only"
+"only)"
 msgstr ""
 
-msgid "Do not allow selection of media in the import directory? (New UI only"
+msgid "Do not allow selection of media in the import directory? (New UI only)"
 msgstr ""
 
 msgid ""
 "Do not provide option to upload media from the import directory as representations. "
-"(New UI only"
+"(New UI only)"
 msgstr ""
 
-msgid "Do not show representation preferred label? (Classic only"
+msgid "Do not show representation preferred label? (Classic only)"
 msgstr ""
 
-msgid "Do not show representation preferred label. (Classic only"
+msgid "Do not show representation preferred label. (Classic only)"
 msgstr ""
 
-msgid "Do not show representation identifier? (Classic only"
+msgid "Do not show representation identifier? (Classic only)"
 msgstr ""
 
-msgid "Do not show representation identifier. (Classic only"
+msgid "Do not show representation identifier. (Classic only)"
 msgstr ""
 
-msgid "Do not show status? (Classic only"
+msgid "Do not show status? (Classic only)"
 msgstr ""
 
-msgid "Do not show status drop-down. (Classic only"
+msgid "Do not show status drop-down. (Classic only)"
 msgstr ""
 
-msgid "Do not show access? (Classic only"
+msgid "Do not show access? (Classic only)"
 msgstr ""
 
-msgid "Do not show access drop-down. (Classic only"
+msgid "Do not show access drop-down. (Classic only)"
 msgstr ""
 
-msgid "Do not show transcription control? (Classic only"
+msgid "Do not show transcription control? (Classic only)"
 msgstr ""
 
-msgid "Do not show transcription drop-down. (Classic only"
+msgid "Do not show transcription drop-down. (Classic only)"
 msgstr ""
 
 msgid "Classic"
@@ -6644,10 +6784,14 @@ msgstr ""
 msgid "Metadata element editing order"
 msgstr ""
 
-msgid "List metadata element codes separated by commas"
+msgid ""
+"List metadata element codes separated by commas, semicolons or returns in the order "
+"in which they should appear. If omitted the default sort order is used."
 msgstr ""
 
-msgid "Restricts display to items from the specified list(s"
+msgid ""
+"Restricts display to items from the specified list(s). Leave all unselected for no "
+"restriction."
 msgstr ""
 
 msgid "Show <em>return to home locations</em> control?"
@@ -6655,7 +6799,7 @@ msgstr ""
 
 msgid ""
 "If checked a control will be displayed allowing all related objects to be returned to "
-"their home locations (if set"
+"their home locations (if set)."
 msgstr ""
 
 msgid "Use hierarchy browser?"
@@ -6705,7 +6849,9 @@ msgstr ""
 msgid "If checked hierarchy browser will be open when form loads."
 msgstr ""
 
-msgid "Restricts addition of child records / lookups to items of the specified type(s"
+msgid ""
+"Restricts addition of child records / lookups to items of the specified type(s). "
+"Leave all unselected for no restriction."
 msgstr ""
 
 msgid "Label for hierarchy count"
@@ -6850,7 +6996,10 @@ msgstr ""
 msgid "Component display template"
 msgstr ""
 
-msgid "Layout for component when displayed in list (can include HTML"
+msgid ""
+"Layout for component when displayed in list (can include HTML). Element code tags "
+"prefixed with the ^ character can be used to represent the value in the template. For "
+"example: <i>^ca_objects.idno</i>."
 msgstr ""
 
 msgid "Currently selected component display template"
@@ -6897,7 +7046,7 @@ msgstr ""
 msgid "Order chronology items by date or by entry order."
 msgstr ""
 
-msgid "Use defaults from policy (in app.conf"
+msgid "Use defaults from policy (in app.conf)?"
 msgstr ""
 
 msgid ""
@@ -6929,12 +7078,43 @@ msgstr ""
 msgid "Always expand/collapse"
 msgstr ""
 
+msgid "Hide \"Include child history\" controls"
+msgstr ""
+
+msgid ""
+"Check this option if you want to hide the \"Include child history\" controls in this "
+"bundle placement."
+msgstr ""
+
+msgid "Hide \"Add to loan\" controls"
+msgstr ""
+
+msgid ""
+"Check this option if you want to hide the \"Add to loan\" controls in this bundle "
+"placement."
+msgstr ""
+
 msgid "Always create new loan?"
 msgstr ""
 
 msgid ""
 "Check this option if you want to only create new loans when recording location. When "
 "this option is set linking to existing loans is not possible."
+msgstr ""
+
+msgid "\"Add to loan\" control label text"
+msgstr ""
+
+msgid ""
+"Text to label \"Add to loan\" control with. If omitted a default label will be used."
+msgstr ""
+
+msgid "Hide \"Add to movement\" controls"
+msgstr ""
+
+msgid ""
+"Check this option if you want to hide the \"Add to movement\" controls in this bundle "
+"placement."
 msgstr ""
 
 msgid "Always create new movement?"
@@ -6945,6 +7125,54 @@ msgid ""
 "When this option is set linking to existing movements is not possible."
 msgstr ""
 
+msgid "\"Add to movement\" control label text"
+msgstr ""
+
+msgid ""
+"Text to label \"Add to movement\" control with. If omitted a default label will be "
+"used."
+msgstr ""
+
+msgid "Hide \"Update Location\" controls"
+msgstr ""
+
+msgid ""
+"Check this option if you want to hide the \"Update Location\" controls in this bundle "
+"placement."
+msgstr ""
+
+msgid "\"Update location\" control label text"
+msgstr ""
+
+msgid ""
+"Text to label \"Update location\" control with. If omitted a default label will be "
+"used."
+msgstr ""
+
+msgid "Hide \"Return to Home Location\" controls"
+msgstr ""
+
+msgid ""
+"Check this option if you want to hide the \"Return to Home Location\" controls in "
+"this bundle placement."
+msgstr ""
+
+msgid "\"Return to home location\" control label text"
+msgstr ""
+
+msgid ""
+"Text to label \"Return to home location\" control with. If omitted a default label "
+"will be used."
+msgstr ""
+
+msgid "Hide \"Add to occurrence\" controls"
+msgstr ""
+
+msgid ""
+"Check this option if you want to hide the \"Add to occurrence\" controls in this "
+"bundle placement."
+msgstr ""
+
 msgid "Always create new occurrence?"
 msgstr ""
 
@@ -6953,12 +7181,106 @@ msgid ""
 "When this option is set linking to existing occurrences is not possible."
 msgstr ""
 
+msgid "Show \"Add to occurrence\" controls for"
+msgstr ""
+
+msgid "\"Add to occurrence\" control label text"
+msgstr ""
+
+msgid ""
+"Text to label \"Add to occurrence\" control with. If omitted a default label will be "
+"used."
+msgstr ""
+
+msgid "Hide \"Add to collection\" controls"
+msgstr ""
+
+msgid ""
+"Check this option if you want to hide the \"Add to collection\" controls in this "
+"bundle placement."
+msgstr ""
+
+msgid "Show \"Add to\" collection controls for"
+msgstr ""
+
+msgid "\"Add to collection\" control label text"
+msgstr ""
+
+msgid ""
+"Text to label \"Add to collection\" control with. If omitted a default label will be "
+"used."
+msgstr ""
+
+msgid "Hide \"Add to entity\" controls"
+msgstr ""
+
+msgid ""
+"Check this option if you want to hide the \"Add to entity\" controls in this bundle "
+"placement."
+msgstr ""
+
+msgid "Show \"Add to entity\" controls for"
+msgstr ""
+
+msgid "\"Add to entity\" control label text"
+msgstr ""
+
+msgid ""
+"Text to label \"Add to entity\" control with. If omitted a default label will be used."
+msgstr ""
+
+msgid "Hide \"Update Place\" controls"
+msgstr ""
+
+msgid ""
+"Check this option if you want to hide the \"Update Place\" controls in this bundle "
+"placement."
+msgstr ""
+
+msgid "\"Update place\" control label text"
+msgstr ""
+
+msgid ""
+"Text to label \"Update place\" control with. If omitted a default label will be used."
+msgstr ""
+
+msgid "Hide \"Add to object\" controls"
+msgstr ""
+
+msgid ""
+"Check this option if you want to hide the \"Add to object\" controls in this bundle "
+"placement."
+msgstr ""
+
+msgid "\"Add to object\" control label text"
+msgstr ""
+
+msgid ""
+"Text to label \"Add to object\" control with. If omitted a default label will be used."
+msgstr ""
+
 msgid "Use hierarchy browser for storage locations?"
 msgstr ""
 
 msgid ""
 "If checked a hierarchical browser will be used to select storage location items "
 "rather than an auto-complete lookup."
+msgstr ""
+
+msgid "Hide \"edit\" control for individual history values?"
+msgstr ""
+
+msgid ""
+"Check this option if you want to hide \"edit\" controls for each history value in "
+"this bundle placement."
+msgstr ""
+
+msgid "Hide \"delete\" control for individual history values?"
+msgstr ""
+
+msgid ""
+"Check this option if you want to hide \"delete\" controls for each history value in "
+"this bundle placement."
 msgstr ""
 
 msgid "Format of contents list"
@@ -6976,7 +7298,11 @@ msgstr ""
 msgid "If checked the delete relationship control will not be provided."
 msgstr ""
 
-msgid "Layout for each object in the storage location (can include HTML"
+msgid ""
+"Layout for each object in the storage location (can include HTML). The template is "
+"evaluated relative to each object-movement or object-location relationship. Element "
+"code tags prefixed with the ^ character can be used to represent the value in the "
+"template. For example: <i>^ca_objects.idno</i>."
 msgstr ""
 
 msgid "If checked an option to batch edit contents will be displayed."
@@ -6985,7 +7311,7 @@ msgstr ""
 msgid "User-selectable sort options for %1 policies"
 msgstr ""
 
-msgid "Display template (%1"
+msgid "Display template (%1)"
 msgstr ""
 
 msgid "set items"
@@ -7063,6 +7389,9 @@ msgid "Unique code for editor; used to identify the editor for configuration pur
 msgstr ""
 
 msgid "Is system UI?"
+msgstr ""
+
+msgid "If set, user interface will be available to all users."
 msgstr ""
 
 msgid "Editor type"
@@ -7144,13 +7473,14 @@ msgstr ""
 msgid ""
 "Administrative source of the entity. This value is often used to indicate the "
 "administrative sub-division or legacy database from which the entity information "
-"originates"
+"originates, but can also be re-tasked for use as a simple classification tool if "
+"needed."
 msgstr ""
 
 msgid "Entity type"
 msgstr ""
 
-msgid "The type of the entity. eg. individual"
+msgid "The type of the entity. eg. individual, organization, family, etc."
 msgstr ""
 
 msgid "Entity identifier"
@@ -7170,7 +7500,7 @@ msgstr ""
 msgid "Lifetime"
 msgstr ""
 
-msgid "Lifetime of entity (date range"
+msgid "Lifetime of entity (date range)"
 msgstr ""
 
 msgid "Entity hierarchy"
@@ -7241,7 +7571,8 @@ msgstr ""
 
 msgid ""
 "Name as it should be formatted for display (eg. in catalogues and exhibition label "
-"text"
+"text). If you leave this blank the display name will be automatically derived from "
+"the input of other, more specific, fields."
 msgstr ""
 
 msgid "Forename"
@@ -7249,7 +7580,10 @@ msgstr ""
 
 msgid ""
 "A given name that specifies and differentiates between members of a group of "
-"individuals"
+"individuals, especially in a family, all of whose members usually share the same "
+"family name (surname). It is typically a name given to a person, as opposed to an "
+"inherited one such as a family name. You should place the primary forename - in cases "
+"where there is more than one this is usually the first listed - here."
 msgstr ""
 
 msgid "Other forenames"
@@ -7261,7 +7595,11 @@ msgstr ""
 msgid "Middle Name"
 msgstr ""
 
-msgid "Many names include one or more middle names"
+msgid ""
+"Many names include one or more middle names, placed between the forename and the "
+"surname. In the Western world, a middle name is effectively a second given name. You "
+"should enter all middle names here. If there is more than one separate the names with "
+"spaces."
 msgstr ""
 
 msgid "Surname"
@@ -7273,10 +7611,14 @@ msgid ""
 "name."
 msgstr ""
 
-msgid "A prefix may be added to a name to signify veneration"
+msgid ""
+"A prefix may be added to a name to signify veneration, a social position, an official "
+"position or a professional or academic qualification."
 msgstr ""
 
-msgid "A suffix may be added to a name to signify veneration"
+msgid ""
+"A suffix may be added to a name to signify veneration, a social position, an official "
+"position or a professional or academic qualification."
 msgstr ""
 
 msgid "Checked"
@@ -7286,6 +7628,9 @@ msgid "Indicates if components of name have been verified"
 msgstr ""
 
 msgid "Something went wrong when splitting displayname"
+msgstr ""
+
+msgid "Surname, forename or displayname must be set"
 msgstr ""
 
 msgid "Surname or forename must be set"
@@ -7422,13 +7767,13 @@ msgstr ""
 msgid "Class C portion of IP address"
 msgstr ""
 
-msgid "IP4 (start"
+msgid "IP4 (start)"
 msgstr ""
 
 msgid "Starting IP address in Class C IP address range"
 msgstr ""
 
-msgid "IP4 (end"
+msgid "IP4 (end)"
 msgstr ""
 
 msgid ""
@@ -7551,13 +7896,19 @@ msgstr ""
 msgid "list item names"
 msgstr ""
 
-msgid "Item name (singular"
+msgid "Item name (singular)"
 msgstr ""
 
-msgid "Item name (plural"
+msgid "The name of this list item in the singular form (eg. \"disk\", \"lobster\")."
 msgstr ""
 
-msgid "A description of the list item"
+msgid "Item name (plural)"
+msgstr ""
+
+msgid "The name of this list item in the plural form (eg. \"disks\", \"lobsters\")."
+msgstr ""
+
+msgid "A description of the list item, including suggested use notes or definitions."
 msgstr ""
 
 msgid "Is preferred?"
@@ -7641,7 +7992,8 @@ msgstr ""
 
 msgid ""
 "Administrative source of list item. This value is often used to indicate the "
-"administrative sub-division or legacy database from which the object originates"
+"administrative sub-division or legacy database from which the object originates, but "
+"can also be re-tasked for use as a simple classification tool if needed."
 msgstr ""
 
 msgid "Individual person"
@@ -7656,7 +8008,7 @@ msgstr ""
 msgid ""
 "The class of entity the type represents. Use <em>Individual person</em> for entities "
 "that require a fully articulated personal name. Use <em>organization</em> for group "
-"entities such as corporations"
+"entities such as corporations, clubs and families."
 msgstr ""
 
 msgid "Use suffix for organizations?"
@@ -7686,7 +8038,13 @@ msgstr ""
 msgid "Include checked indicator for preferred labels?"
 msgstr ""
 
+msgid "Include \"checked\" checkbox for preferred labels"
+msgstr ""
+
 msgid "Include checked indicator for non-preferred labels?"
+msgstr ""
+
+msgid "Include \"checked\" checkbox for non-preferred labels"
 msgstr ""
 
 msgid "Render in new menu"
@@ -7749,10 +8107,16 @@ msgstr ""
 
 msgid ""
 "Set this if the list is a list used by the system to populate a specific field (as "
-"opposed to a user defined list or vocabulary"
+"opposed to a user defined list or vocabulary). In general, system lists are defined "
+"by the system installer - you should not have to create system lists on your own."
 msgstr ""
 
 msgid "Is hierarchical"
+msgstr ""
+
+msgid ""
+"Set this if the list is hierarchically structured; leave unset if you are creating a "
+"simple \"flat\" list."
 msgstr ""
 
 msgid "Use as vocabulary"
@@ -7783,7 +8147,7 @@ msgstr ""
 msgid "Loan type"
 msgstr ""
 
-msgid "The type of the loan. eg. incoming loan"
+msgid "The type of the loan. eg. incoming loan, outgoing loan, etc."
 msgstr ""
 
 msgid "Loan identifier"
@@ -7794,7 +8158,8 @@ msgstr ""
 
 msgid ""
 "Administrative source of loan. This value is often used to indicate the "
-"administrative sub-division or legacy database from which the object originates"
+"administrative sub-division or legacy database from which the object originates, but "
+"can also be re-tasked for use as a simple classification tool if needed."
 msgstr ""
 
 msgid ""
@@ -7864,7 +8229,7 @@ msgstr ""
 
 msgid ""
 "Indicates that the representation should be used to depict the entity is situations "
-"where only a single representation can be displayed (eg. search results"
+"where only a single representation can be displayed (eg. search results)."
 msgstr ""
 
 msgid "loans ⇔ objects relationship"
@@ -7927,7 +8292,9 @@ msgstr ""
 msgid "Dialect"
 msgstr ""
 
-msgid "Optional dialect specifier for locale. Up to 8 characters"
+msgid ""
+"Optional dialect specifier for locale. Up to 8 characters, this code is usually one "
+"defined by the language lists at %1."
 msgstr ""
 
 msgid "Do not use for cataloguing"
@@ -7982,13 +8349,13 @@ msgstr ""
 msgid "Size of data received"
 msgstr ""
 
-msgid "The size of data received"
+msgid "The size of data received, in bytes."
 msgstr ""
 
 msgid "Total upload size"
 msgstr ""
 
-msgid "The total size of the uploaded file"
+msgid "The total size of the uploaded file, in bytes."
 msgstr ""
 
 msgid "Error code"
@@ -8053,7 +8420,9 @@ msgstr ""
 msgid "Status of session"
 msgstr ""
 
-msgid "Status of session. Possible states: IN_PROGRESS"
+msgid ""
+"Status of session. Possible states: IN_PROGRESS, SUBMITTED, PROCESSING, PROCESSED, "
+"IN_REVIEW, ACCEPTED, REJECTED, ERROR."
 msgstr ""
 
 msgid "File count"
@@ -8062,7 +8431,7 @@ msgstr ""
 msgid "Number of files in upload."
 msgstr ""
 
-msgid "The total size of the upload for all files"
+msgid "The total size of the upload for all files, in bytes."
 msgstr ""
 
 msgid "Associated form metadata"
@@ -8074,16 +8443,16 @@ msgstr ""
 msgid "Media upload session processing queue is already running."
 msgstr ""
 
-msgid "Media file <em>%1</em> is already loaded in %2 (file was skipped"
+msgid "Media file <em>%1</em> is already loaded in %2 (file was skipped)"
 msgstr ""
 
-msgid "Media file <em>%1</em> is already loaded (file was skipped"
+msgid "Media file <em>%1</em> is already loaded (file was skipped)"
 msgstr ""
 
 msgid "Submission was skipped because there are no media files to import"
 msgstr ""
 
-msgid "Could not create hierarchy parent %1: %2 (submission was skipped"
+msgid "Could not create hierarchy parent %1: %2 (submission was skipped)"
 msgstr ""
 
 msgid "Could not set submitter information for hierarchy parent %1: %2"
@@ -8095,10 +8464,10 @@ msgstr ""
 msgid "Could not add media %1 for hierarchy parent %2: %3"
 msgstr ""
 
-msgid "Could not create media child record in %4 for %1 (%2"
+msgid "Could not create media child record in %4 for %1 (%2): %3 (file was skipped)"
 msgstr ""
 
-msgid "Could not add label for media child record in %3 for %1: %2 (file was skipped"
+msgid "Could not add label for media child record in %3 for %1: %2 (file was skipped)"
 msgstr ""
 
 msgid "Could not set submitter information for media child record for %1: %2"
@@ -8113,10 +8482,10 @@ msgstr ""
 msgid "Could not add media %1 for media child record for %2: %3"
 msgstr ""
 
-msgid "Could not create all-in-one record for %1: %2 (submission was skipped"
+msgid "Could not create all-in-one record for %1: %2 (submission was skipped)"
 msgstr ""
 
-msgid "Could not add label for all-in-one record for %1: %2 (submission was skipped"
+msgid "Could not add label for all-in-one record for %1: %2 (submission was skipped)"
 msgstr ""
 
 msgid "Could not set submitter information for all-in-one record for %1: %2"
@@ -8128,10 +8497,10 @@ msgstr ""
 msgid "Could not add media %1 for all-in-one record for %2: %3"
 msgstr ""
 
-msgid "Could not create media record %1 for %2: %3 (file was skipped"
+msgid "Could not create media record %1 for %2: %3 (file was skipped)"
 msgstr ""
 
-msgid "Could not add label for media record %1 for %2: %3 (file was skipped"
+msgid "Could not add label for media record %1 for %2: %3 (file was skipped)"
 msgstr ""
 
 msgid "Could not set submitter information for media record for %1: %2"
@@ -8168,7 +8537,9 @@ msgstr ""
 msgid "Alert target"
 msgstr ""
 
-msgid "Determines what kind of item (objects"
+msgid ""
+"Determines what kind of item (objects, entities, places, etc.) is covered by the "
+"alert ."
 msgstr ""
 
 msgid "Object lots"
@@ -8198,7 +8569,7 @@ msgstr ""
 msgid "Submissions"
 msgstr ""
 
-msgid "Short code for rule (must be unique"
+msgid "Short code for rule (must be unique)"
 msgstr ""
 
 msgid "Trigger settings"
@@ -8278,10 +8649,14 @@ msgstr ""
 msgid "Extended text describing standards for entry in this data entry bundle."
 msgstr ""
 
-msgid "Restricts entry to items of the specified type(s"
+msgid ""
+"Restricts entry to items of the specified type(s). Leave all unchecked for no "
+"restriction."
 msgstr ""
 
-msgid "Restricts entry to items related using the specified relationship type(s"
+msgid ""
+"Restricts entry to items related using the specified relationship type(s). Leave all "
+"unchecked for no restriction."
 msgstr ""
 
 msgid "data dictionary entry name"
@@ -8335,7 +8710,7 @@ msgstr ""
 msgid "Rule display label"
 msgstr ""
 
-msgid "Short label for this rule"
+msgid "Short label for this rule, used for display in issue lists."
 msgstr ""
 
 msgid "Show as prompt"
@@ -8353,7 +8728,7 @@ msgstr ""
 msgid "Rule description"
 msgstr ""
 
-msgid "Long form description of rule"
+msgid "Long form description of rule, used for display to user when presenting issues."
 msgstr ""
 
 msgid "metadata element name"
@@ -8396,7 +8771,7 @@ msgstr ""
 msgid "Data type of metadata element."
 msgstr ""
 
-msgid "Use list (for list elements only"
+msgid "Use list (for list elements only)"
 msgstr ""
 
 msgid ""
@@ -8439,7 +8814,9 @@ msgstr ""
 msgid ""
 "If set to 0 a delete button will allow a cataloguer to quickly clear the data "
 "contents of the element by collapsing the placement on the user interface screen.  If "
-"set to 1"
+"set to 1, the element will be fixed in place and data will need to be deleted "
+"manually.  If set to more than 1, the element placement will be duplicated (up to the "
+"number entered here) when a new record or screen is opened."
 msgstr ""
 
 msgid "Maximum number of attributes of this kind that can be associated with an item"
@@ -8454,7 +8831,12 @@ msgstr ""
 msgid "Minimum number of attribute bundles to show in an editing form."
 msgstr ""
 
-msgid "If 0 is entered here"
+msgid ""
+"If 0 is entered here, sets an element to the collapsed position when a new record or "
+"screen is opened.  This is useful for list elements in lieu of a null value, because "
+"no data selection will be saved when the element is collapsed.  Note: \"Minimum "
+"number of attributes of this kind that must be associated with an item\" must also be "
+"saved as 0 to set the element to the collapsed position."
 msgstr ""
 
 msgid "movement title"
@@ -8477,7 +8859,7 @@ msgstr ""
 msgid "Movement type"
 msgstr ""
 
-msgid "The type of the movement. eg. administrative"
+msgid "The type of the movement. eg. administrative, exhibition, etc."
 msgstr ""
 
 msgid "Movement identifier"
@@ -8488,7 +8870,8 @@ msgstr ""
 
 msgid ""
 "Administrative source of movement. This value is often used to indicate the "
-"administrative sub-division or legacy database from which the object originates"
+"administrative sub-division or legacy database from which the object originates, but "
+"can also be re-tasked for use as a simple classification tool if needed."
 msgstr ""
 
 msgid ""
@@ -8787,10 +9170,18 @@ msgid ""
 "Unique numeric identifier used by CollectiveAccess internally to identify this lot"
 msgstr ""
 
+msgid ""
+"The type of the object lot. In CollectiveAccess every lot has a single \"instrinsic\" "
+"type that determines the set of descriptive and administrative metadata that can be "
+"applied to it."
+msgstr ""
+
 msgid "Accession status"
 msgstr ""
 
-msgid "Indicates accession/collection status of lot. (eg. accessioned"
+msgid ""
+"Indicates accession/collection status of lot. (eg. accessioned, pending accession, "
+"loan, non-accessioned item, etc.)"
 msgstr ""
 
 msgid "Lot identifier"
@@ -8804,13 +9195,13 @@ msgstr ""
 
 msgid ""
 "The extent of the object lot. This is typically the number of discrete items that "
-"compose the lot by this record. It is stored as a whole number (eg. 1"
+"compose the lot by this record. It is stored as a whole number (eg. 1, 2, 3...)."
 msgstr ""
 
 msgid "Extent units"
 msgstr ""
 
-msgid "Units of extent value. (eg. pieces"
+msgid "Units of extent value. (eg. pieces, items, components, reels, etc.)"
 msgstr ""
 
 msgid "The customary storage location for this lot."
@@ -8833,7 +9224,8 @@ msgstr ""
 
 msgid ""
 "Administrative source of lot. This value is often used to indicate the administrative "
-"sub-division or legacy database from which the object originates"
+"sub-division or legacy database from which the object originates, but can also be re-"
+"tasked for use as a simple classification tool if needed."
 msgstr ""
 
 msgid "Indicates if the object lot is deleted or not."
@@ -8975,6 +9367,9 @@ msgstr ""
 msgid "A unique alphanumeric identifier for this representation."
 msgstr ""
 
+msgid "MD5-generated \"fingerprint\" for this media."
+msgstr ""
+
 msgid "Original filename"
 msgstr ""
 
@@ -8990,7 +9385,7 @@ msgstr ""
 msgid "Media class"
 msgstr ""
 
-msgid "The type of media uploaded (image"
+msgid "The type of media uploaded (image, video, audio, document)."
 msgstr ""
 
 msgid "Transcribe?"
@@ -9013,7 +9408,8 @@ msgstr ""
 
 msgid ""
 "Administrative source of object representation. This value is often used to indicate "
-"the administrative sub-division or legacy database from which the object originates"
+"the administrative sub-division or legacy database from which the object originates, "
+"but can also be re-tasked for use as a simple classification tool if needed."
 msgstr ""
 
 msgid "User submitting this object representation"
@@ -9118,7 +9514,7 @@ msgstr ""
 msgid "Could not update representation type using media-based default"
 msgstr ""
 
-msgid "Using embedded media mapping %1 with path %3 (format %2"
+msgid "Using embedded media mapping %1 with path %3 (format %2)"
 msgstr ""
 
 msgid "Could not find embedded metadata importer with code %1"
@@ -9154,7 +9550,7 @@ msgstr ""
 msgid "Created %1 by %2"
 msgstr ""
 
-msgid "Completed on %1 (%2"
+msgid "Completed on %1 (%2)"
 msgstr ""
 
 msgid "Completed on %1"
@@ -9171,7 +9567,7 @@ msgstr ""
 
 msgid ""
 "Indicates that the representation should be used to depict the collection is "
-"situations where only a single representation can be displayed (eg. search results"
+"situations where only a single representation can be displayed (eg. search results)."
 msgstr ""
 
 msgid "object representation ⇔ entity relationship"
@@ -9194,7 +9590,7 @@ msgstr ""
 
 msgid ""
 "Indicates that the representation should be used to depict the occurrence is "
-"situations where only a single representation can be displayed (eg. search results"
+"situations where only a single representation can be displayed (eg. search results)."
 msgstr ""
 
 msgid "object representation ⇔ place relationship"
@@ -9205,7 +9601,7 @@ msgstr ""
 
 msgid ""
 "Indicates that the representation should be used to depict the place is situations "
-"where only a single representation can be displayed (eg. search results"
+"where only a single representation can be displayed (eg. search results)."
 msgstr ""
 
 msgid "object representation ⇔ storage location relationship"
@@ -9216,7 +9612,7 @@ msgstr ""
 
 msgid ""
 "Indicates that the representation should be used to depict the storage location is "
-"situations where only a single representation can be displayed (eg. search results"
+"situations where only a single representation can be displayed (eg. search results)."
 msgstr ""
 
 msgid "object representations ⇔ vocabulary term relationship"
@@ -9227,7 +9623,7 @@ msgstr ""
 
 msgid ""
 "Indicates that the representation should be used to depict the list item is "
-"situations where only a single representation can be displayed (eg. search results"
+"situations where only a single representation can be displayed (eg. search results)."
 msgstr ""
 
 msgid "object"
@@ -9245,10 +9641,23 @@ msgstr ""
 
 msgid ""
 "Administrative source of object. This value is often used to indicate the "
-"administrative sub-division or legacy database from which the object originates"
+"administrative sub-division or legacy database from which the object originates, but "
+"can also be re-tasked for use as a simple classification tool if needed."
+msgstr ""
+
+msgid ""
+"The type of the object. In CollectiveAccess every object has a single \"instrinsic\" "
+"type that determines the set of descriptive, technical and administrative metadata "
+"that can be applied to it. As such this type is \"low-level\" and directly tied to "
+"the form of the object - eg. photograph, book, analog video recording, etc."
 msgstr ""
 
 msgid "Object identifier"
+msgstr ""
+
+msgid ""
+"A unique alphanumeric identifier for this object. This is usually equivalent to the "
+"\"accession number\" in museum settings."
 msgstr ""
 
 msgid "Home location ID"
@@ -9266,7 +9675,9 @@ msgstr ""
 msgid "Enter the date the deaccessioned object was disposed of."
 msgstr ""
 
-msgid "Indicates accession/collection status of object. (eg. accessioned"
+msgid ""
+"Indicates accession/collection status of object. (eg. accessioned, pending accession, "
+"loan, non-accessioned item, etc.)"
 msgstr ""
 
 msgid "Acquisition method"
@@ -9277,7 +9688,8 @@ msgstr ""
 
 msgid ""
 "The extent of the object. This is typically the number of discrete items that compose "
-"the object represented by this record. It is stored as a whole number (eg. 1"
+"the object represented by this record. It is stored as a whole number (eg. 1, 2, "
+"3...)."
 msgstr ""
 
 msgid "Indicates if object is accessible to the public or not."
@@ -9377,7 +9789,7 @@ msgstr ""
 
 msgid ""
 "Indicates that the representation should be used to depict the object is situations "
-"where only a single representation can be displayed (eg. search results"
+"where only a single representation can be displayed (eg. search results)."
 msgstr ""
 
 msgid ""
@@ -9435,12 +9847,19 @@ msgstr ""
 msgid "The locale from which the item originates."
 msgstr ""
 
+msgid ""
+"The type of the occurrence. In CollectiveAccess every occurrence has a single "
+"\"instrinsic\" type that determines the set of descriptive and administrative "
+"metadata that can be applied to it."
+msgstr ""
+
 msgid "A unique alphanumeric identifier for this entry."
 msgstr ""
 
 msgid ""
 "Administrative source. This value is often used to indicate the administrative sub-"
-"division or legacy database from which the information originates"
+"division or legacy database from which the information originates, but can also be re-"
+"tasked for use as a simple classification tool if needed."
 msgstr ""
 
 msgid "Indicates if object is accessible to the public or not. "
@@ -9505,9 +9924,16 @@ msgid "The primary locale associated with the place."
 msgstr ""
 
 msgid ""
+"The type of the place. In CollectiveAccess every place has a single \"instrinsic\" "
+"type that determines the set of descriptive and administrative metadata that can be "
+"applied to it."
+msgstr ""
+
+msgid ""
 "Administrative source of the place. This value is often used to indicate the "
 "administrative sub-division or legacy database from which the place information "
-"originates"
+"originates, but can also be re-tasked for use as a simple classification tool if "
+"needed."
 msgstr ""
 
 msgid "Place identifier"
@@ -9519,7 +9945,7 @@ msgstr ""
 msgid "Lifespan"
 msgstr ""
 
-msgid "Lifespan of place (range of dates"
+msgid "Lifespan of place (range of dates)"
 msgstr ""
 
 msgid "Indicates if place information is accessible to the public or not. "
@@ -9588,25 +10014,25 @@ msgstr ""
 msgid "relationship type names"
 msgstr ""
 
-msgid "Typename (forward sense"
+msgid "Typename (forward sense)"
 msgstr ""
 
 msgid "Relationship type used when relation is read left-to-right."
 msgstr ""
 
-msgid "Typename (reverse sense"
+msgid "Typename (reverse sense)"
 msgstr ""
 
 msgid "Relationship type used when relation is read right-to-left."
 msgstr ""
 
-msgid "Description (forward sense"
+msgid "Description (forward sense)"
 msgstr ""
 
 msgid "Description for relationship type when relation is read left-to-right."
 msgstr ""
 
-msgid "Description (reverse sense"
+msgid "Description (reverse sense)"
 msgstr ""
 
 msgid "Description for relationship type when relation is read right-to-left."
@@ -9618,7 +10044,31 @@ msgstr ""
 msgid "relationship type restrictions"
 msgstr ""
 
+msgid "Type restriction for \"left\" side of relationship"
+msgstr ""
+
+msgid ""
+"Type restriction for \"left\" side of relationship (eg. if relationship is object-"
+"entity, then the restriction controls for which types of objects this relationship "
+"type is valid."
+msgstr ""
+
+msgid "Include subtypes in \"left\" side restriction?"
+msgstr ""
+
 msgid "Automatically include subtypes of selected left-side restriction."
+msgstr ""
+
+msgid "Type restriction for \"right\" side of relationship"
+msgstr ""
+
+msgid ""
+"Type restriction for \"right\" side of relationship (eg. if relationship is object-"
+"entity, then the restriction controls for which types of entities this relationship "
+"type is valid."
+msgstr ""
+
+msgid "Include subtypes in \"right\" side restriction?"
 msgstr ""
 
 msgid "relationship type"
@@ -9811,20 +10261,27 @@ msgstr ""
 msgid "Form code"
 msgstr ""
 
-msgid "Unique code for form"
+msgid ""
+"Unique code for form, used to identify the form for configuration purposes. You will "
+"need to specify this if you are using this form in a special context (on a web front-"
+"end, for example) in which the form must be unambiguously identified."
 msgstr ""
 
 msgid "Is system form"
 msgstr ""
 
 msgid ""
-"Set this if the form is a form used by the system (as opposed to a user defined form"
+"Set this if the form is a form used by the system (as opposed to a user defined "
+"form). In general, system forms are defined by the system installer - you should not "
+"have to create system forms on your own."
 msgstr ""
 
 msgid "Search type"
 msgstr ""
 
-msgid "Determines what type of search (objects"
+msgid ""
+"Determines what type of search (objects, entities, places, etc.) the form will "
+"conduct."
 msgstr ""
 
 msgid "Search form settings."
@@ -9840,6 +10297,9 @@ msgid "Search form contents"
 msgstr ""
 
 msgid "Search form settings"
+msgstr ""
+
+msgid "Width, in characters, of search form elements."
 msgstr ""
 
 msgid "Full text"
@@ -9916,7 +10376,8 @@ msgstr ""
 msgid "Set content"
 msgstr ""
 
-msgid "Determines what kind of items (objects"
+msgid ""
+"Determines what kind of items (objects, entities, places, etc.) are stored by the set."
 msgstr ""
 
 msgid ""
@@ -9953,7 +10414,8 @@ msgstr ""
 
 msgid ""
 "A unique alphanumeric code for this set. You will need to specify this if you are "
-"using this set in a special context (on a web front-end"
+"using this set in a special context (on a web front-end, for example) in which the "
+"set must be unambiguously identified."
 msgstr ""
 
 msgid "Set code sortable value"
@@ -9967,7 +10429,8 @@ msgstr ""
 
 msgid ""
 "Administrative source of set. This value is often used to indicate the administrative "
-"sub-division or legacy database from which the set originates"
+"sub-division or legacy database from which the set originates, but can also be re-"
+"tasked for use as a simple classification tool if needed."
 msgstr ""
 
 msgid "Last used on"
@@ -10018,16 +10481,16 @@ msgstr ""
 msgid "Set will be autodeleted"
 msgstr ""
 
-msgid "Set will be autodeleted in %1"
+msgid "Set will be autodeleted in %1, on %2"
 msgstr ""
 
-msgid "Found set to auto-delete in dryrun mode. Set is %1 (%2"
+msgid "Found set to auto-delete in dryrun mode. Set is %1 (%2) [Set id %3]"
 msgstr ""
 
-msgid "Auto-deleted set %1 (%2"
+msgid "Auto-deleted set %1 (%2) [Set id %3]"
 msgstr ""
 
-msgid "Could not auto-delete set %1 (%2"
+msgid "Could not auto-delete set %1 (%2) [Set id %3]: %4"
 msgstr ""
 
 msgid "anonymous access token"
@@ -10137,13 +10600,15 @@ msgstr ""
 msgid "Page metadata: title"
 msgstr ""
 
-msgid "A short descriptive title for page"
+msgid "A short descriptive title for page, used to distinguish the page from others."
 msgstr ""
 
 msgid "Page metadata: description"
 msgstr ""
 
-msgid "Text describing the intended content and purpose of the page"
+msgid ""
+"Text describing the intended content and purpose of the page, to aid in "
+"distinguishing it from other pages."
 msgstr ""
 
 msgid "Page metadata: template"
@@ -10156,7 +10621,9 @@ msgid "Page metadata: URL path"
 msgstr ""
 
 msgid ""
-"The unique root-relative URL path used by the public to access this page. For example"
+"The unique root-relative URL path used by the public to access this page. For "
+"example, if set to <em>/pages/staff</em> this page would be accessible to the public "
+"using a URL similiar to this: <em>%1</em>."
 msgstr ""
 
 msgid "Locale of page"
@@ -10164,7 +10631,8 @@ msgstr ""
 
 msgid ""
 "Controls whether the page is available publicly. Set to <em>accessible to public</em> "
-"to make it available to the public"
+"to make it available to the public, or <em>not accessible to public</em> to prevent "
+"access to all but content editors."
 msgstr ""
 
 msgid "Page content"
@@ -10247,6 +10715,12 @@ msgid ""
 "storage location"
 msgstr ""
 
+msgid ""
+"The type of the storage location. In CollectiveAccess every storage location has a "
+"single \"instrinsic\" type that determines the set of descriptive and administrative "
+"metadata that can be applied to it."
+msgstr ""
+
 msgid "Location identifier"
 msgstr ""
 
@@ -10258,7 +10732,8 @@ msgstr ""
 
 msgid ""
 "Administrative source of storage location. This value is often used to indicate the "
-"administrative sub-division or legacy database from which the object originates"
+"administrative sub-division or legacy database from which the object originates, but "
+"can also be re-tasked for use as a simple classification tool if needed."
 msgstr ""
 
 msgid "Indicates if location information is accessible to the public or not. "
@@ -10459,7 +10934,8 @@ msgstr ""
 
 msgid ""
 "Administrative source of tour. This value is often used to indicate the "
-"administrative sub-division or legacy database from which the object originates"
+"administrative sub-division or legacy database from which the object originates, but "
+"can also be re-tasked for use as a simple classification tool if needed."
 msgstr ""
 
 msgid "Could not reorder stop %1: %2"
@@ -10477,7 +10953,8 @@ msgstr ""
 msgid "Available for download"
 msgstr ""
 
-msgid "Status of export. Possible states: QUEUED"
+msgid ""
+"Status of export. Possible states: QUEUED, PROCESSING, COMPLETE, DOWNLOADED, ERROR."
 msgstr ""
 
 msgid "Summary"
@@ -10486,7 +10963,7 @@ msgstr ""
 msgid "Download type"
 msgstr ""
 
-msgid "Type of export download. Possible values are: SUMMARY"
+msgid "Type of export download. Possible values are: SUMMARY, RESULTS, LABELS, SET"
 msgstr ""
 
 msgid "The date and time the export was requested."
@@ -10534,6 +11011,9 @@ msgstr ""
 msgid ""
 "Description of group. This text will be displayed to system administrators only and "
 "should clearly document the purpose of the group."
+msgstr ""
+
+msgid "If set, public users will be able to join this group using the group code."
 msgstr ""
 
 msgid "Group administrator"
@@ -10640,10 +11120,10 @@ msgstr ""
 msgid "Unique identifier for role"
 msgstr ""
 
-msgid "Name of role (must be unique"
+msgid "Name of role (must be unique)"
 msgstr ""
 
-msgid "Short code (up to 20 characters"
+msgid "Short code (up to 20 characters) for role (must be unique)"
 msgstr ""
 
 msgid ""
@@ -10740,6 +11220,10 @@ msgstr ""
 msgid "Sort subject"
 msgstr ""
 
+msgid ""
+"Determines what kind of items (objects, entities, places, etc.) are being sorted."
+msgstr ""
+
 msgid "The user who created the sort."
 msgstr ""
 
@@ -10781,6 +11265,12 @@ msgstr ""
 msgid "User class"
 msgstr ""
 
+msgid ""
+"\"Full\" user accounts may log into all CollectiveAccess interfaces. \"Public\" user "
+"accounts may only log into the publicly accessible front-end system (if one exists). "
+"\"Deleted\" users may not log into any interface – the account is considered removed."
+msgstr ""
+
 msgid "full-access"
 msgstr ""
 
@@ -10818,10 +11308,12 @@ msgstr ""
 msgid "SMS number"
 msgstr ""
 
-msgid "Phone number for contact by SMS (text message"
+msgid ""
+"Phone number for contact by SMS (text message). The number will be used for all SMS-"
+"based system notifications and alerts to this user."
 msgstr ""
 
-msgid "Related entity (optional"
+msgid "Related entity (optional)"
 msgstr ""
 
 msgid "The entity this user login is associated with."
@@ -11050,7 +11542,7 @@ msgstr ""
 msgid "Set %1 to %2"
 msgstr ""
 
-msgid "Related to %1 (%2"
+msgid "Related to %1 (%2)"
 msgstr ""
 
 msgid "Include source information?"
@@ -11058,7 +11550,7 @@ msgstr ""
 
 msgid ""
 "Check this option if source information can be specified for this attribute. (The "
-"default is no."
+"default is no.)"
 msgstr ""
 
 msgid "Value %1 was not set for %2 because it does not refer to an existing %3"
@@ -11095,12 +11587,10 @@ msgstr ""
 msgid "Width of field in user interface"
 msgstr ""
 
-msgid "Does not use locale setting"
+msgid "Width, in characters, of the field when displayed in a user interface."
 msgstr ""
 
-msgid ""
-"Check this option if you don't want your collection values to be locale-specific. "
-"(The default is to not be."
+msgid "Does not use locale setting"
 msgstr ""
 
 msgid "Allow single value per locale"
@@ -11114,7 +11604,7 @@ msgstr ""
 
 msgid ""
 "Check this option if this attribute value can be used for sorting of search results. "
-"(The default is to be."
+"(The default is to be.)"
 msgstr ""
 
 msgid "Can be used in search form"
@@ -11122,7 +11612,7 @@ msgstr ""
 
 msgid ""
 "Check this option if this attribute value can be used in search forms. (The default "
-"is to be."
+"is to be.)"
 msgstr ""
 
 msgid "Can be used in display"
@@ -11130,7 +11620,7 @@ msgstr ""
 
 msgid ""
 "Check this option if this attribute value can be used for display in search results. "
-"(The default is to be."
+"(The default is to be.)"
 msgstr ""
 
 msgid "Allow PDF output?"
@@ -11138,7 +11628,7 @@ msgstr ""
 
 msgid ""
 "Check this option if this metadata element can be output as a printable PDF. (The "
-"default is not to be."
+"default is not to be.)"
 msgstr ""
 
 msgid "Allow PDF output for individual values?"
@@ -11146,7 +11636,7 @@ msgstr ""
 
 msgid ""
 "Check this option if individual values for this metadata element can be output as a "
-"printable PDF. (The default is not to be."
+"printable PDF. (The default is not to be.)"
 msgstr ""
 
 msgid "Value delimiter"
@@ -11159,6 +11649,9 @@ msgid "Width of data entry field in user interface"
 msgstr ""
 
 msgid "Height of data entry field in user interface"
+msgstr ""
+
+msgid "Height, in characters, of the field when displayed in a user interface."
 msgstr ""
 
 msgid "Default color"
@@ -11182,11 +11675,6 @@ msgid "Color is invalid"
 msgstr ""
 
 msgid ""
-"Check this option if you don't want your compound attributes to be locale-specific. "
-"(The default is to be."
-msgstr ""
-
-msgid ""
 "Check this option if you want to allow duplicate values to be set when element is "
 "repeating."
 msgstr ""
@@ -11196,7 +11684,7 @@ msgstr ""
 
 msgid ""
 "Insert number of metadata elements after which a line break should be inserted here. "
-"(Default is 0 - i.e. no line breaks"
+"(Default is 0 - i.e. no line breaks)"
 msgstr ""
 
 msgid "Delimiter to use between multiple values."
@@ -11205,7 +11693,10 @@ msgstr ""
 msgid "Display template for read-only mode"
 msgstr ""
 
-msgid "Layout used when a container value is in read-only mode. If this template is set"
+msgid ""
+"Layout used when a container value is in read-only mode. If this template is set, "
+"existing values are always displayed in read-only mode until you click to edit. This "
+"can be used to preserve screen space for large containers."
 msgstr ""
 
 msgid "Minimum value"
@@ -11224,18 +11715,19 @@ msgstr ""
 msgid "System default"
 msgstr ""
 
-msgid "US Dollar (USD"
+msgid "US Dollar (USD)"
 msgstr ""
 
-msgid "Canadian Dollar (CDN"
+msgid "Canadian Dollar (CDN)"
 msgstr ""
 
-msgid "Australian Dollar (AUD"
+msgid "Australian Dollar (AUD)"
 msgstr ""
 
-msgid ""
-"Check this option if you don't want your currency values to be locale-specific. (The "
-"default is to not be."
+msgid "Use currency for \"$\""
+msgstr ""
+
+msgid "Currency indicated for values using the \"$\" character."
 msgstr ""
 
 msgid "Must not be blank"
@@ -11243,7 +11735,7 @@ msgstr ""
 
 msgid ""
 "Check this option if this attribute value must be set to some value - it must not be "
-"blank in other words. (The default is not to be."
+"blank in other words. (The default is not to be.)"
 msgstr ""
 
 msgid "~%1"
@@ -11273,19 +11765,19 @@ msgstr ""
 msgid "Date display format"
 msgstr ""
 
-msgid "Formatted as text (ex. July 20"
+msgid "Formatted as text (ex. July 20, 1969)"
 msgstr ""
 
-msgid "Formatted as delimited (ex. 7/20/1969"
+msgid "Formatted as delimited (ex. 7/20/1969)"
 msgstr ""
 
-msgid "ISO-8601 (ex. 1969-07-20"
+msgid "ISO-8601 (ex. 1969-07-20)"
 msgstr ""
 
 msgid "As entered by user"
 msgstr ""
 
-msgid "Format to use for display of dates"
+msgid "Format to use for display of dates, if different from system default."
 msgstr ""
 
 msgid "Date range boundaries"
@@ -11296,49 +11788,44 @@ msgid ""
 "Leave blank if you do not require restrictions."
 msgstr ""
 
-msgid ""
-"Check this option if you don't want your date ranges to be locale-specific. (The "
-"default is to not be."
-msgstr ""
-
 msgid "Include date picker"
 msgstr ""
 
 msgid ""
 "Check this option if you want a calendar-based date picker to be available for date "
-"entry. (The default is to not include a picker."
+"entry. (The default is to not include a picker.)"
 msgstr ""
 
 msgid "Date picker date format"
 msgstr ""
 
-msgid "ISO-8601 (ex. 2012-07-16"
+msgid "ISO-8601 (ex. 2012-07-16)"
 msgstr ""
 
-msgid "US Delimited (ex. 07/16/2012"
+msgid "US Delimited (ex. 07/16/2012)"
 msgstr ""
 
-msgid "European Delimited (ex. 16/07/2012"
+msgid "European Delimited (ex. 16/07/2012)"
 msgstr ""
 
-msgid "Month Day"
+msgid "Month Day, Year (ex. July 16, 2012)"
 msgstr ""
 
-msgid "Month Day Year (ex. July 16 2012"
+msgid "Month Day Year (ex. July 16 2012)"
 msgstr ""
 
-msgid "Day Month Year (ex. 16 July 2012"
+msgid "Day Month Year (ex. 16 July 2012)"
 msgstr ""
 
-msgid "Short month Day Year (ex. Jul 16 2012"
+msgid "Short month Day Year (ex. Jul 16 2012)"
 msgstr ""
 
-msgid "Day Short month Year (ex. 16 July 2012"
+msgid "Day Short month Year (ex. 16 July 2012)"
 msgstr ""
 
 msgid ""
 "Format to use for dates selected from the date picker. (The default is YY-MM-DD "
-"format."
+"format.)"
 msgstr ""
 
 msgid "Is a lifespan"
@@ -11347,7 +11834,7 @@ msgstr ""
 msgid ""
 "Check this option if this attribute value represents a persons lifespan. Lifespans "
 "are displayed in a slightly different format in many languages than standard dates. "
-"(The default is not to be."
+"(The default is not to be.)"
 msgstr ""
 
 msgid "Value to pre-populate a newly created attribute with"
@@ -11397,16 +11884,6 @@ msgstr ""
 msgid "Check this option if you want to require that an entity be selected."
 msgstr ""
 
-msgid ""
-"Check this option if you don't want your entity values to be locale-specific. (The "
-"default is to not be."
-msgstr ""
-
-msgid ""
-"Check this option if you don't want your media to be locale-specific. (The default is "
-"not to be."
-msgstr ""
-
 msgid "Default width of media display in user interface"
 msgstr ""
 
@@ -11440,11 +11917,6 @@ msgstr ""
 msgid "More &rsaquo;"
 msgstr ""
 
-msgid ""
-"Check this option if you don't want your file to be locale-specific. (The default is "
-"to not be."
-msgstr ""
-
 msgid "Uploaded file"
 msgstr ""
 
@@ -11455,11 +11927,6 @@ msgid "Set file"
 msgstr ""
 
 msgid ""
-"Check this option if you don't want your measurements to be locale-specific. (The "
-"default is not to be."
-msgstr ""
-
-msgid ""
 "Check this option if you want an error to be thrown if this measurement is left blank."
 msgstr ""
 
@@ -11467,13 +11934,8 @@ msgid "%1 is not a valid file size"
 msgstr ""
 
 msgid ""
-"Check this option if you don't want your FloorPlan values to be locale-specific. (The "
-"default is to not be."
-msgstr ""
-
-msgid ""
 "Check this option if this attribute value can be used for sorting of search results. "
-"(The default is not to be."
+"(The default is not to be.)"
 msgstr ""
 
 msgid "Can be empty"
@@ -11538,11 +12000,6 @@ msgstr ""
 msgid "Default zoom level for newly opened maps."
 msgstr ""
 
-msgid ""
-"Check this option if you don't want your GeoNames values to be locale-specific. (The "
-"default is to not be."
-msgstr ""
-
 msgid "Disable map"
 msgstr ""
 
@@ -11568,7 +12025,9 @@ msgstr ""
 
 msgid ""
 "Comma-separated list of GeoNames attributes to be pulled from the service to build "
-"the text representation for the selected location. See %1 for further reference"
+"the text representation for the selected location. See %1 for further reference, "
+"including the available element names. Note that latitude and longitude are always "
+"added to the text value to enable map display."
 msgstr ""
 
 msgid "GeoNames element delimiter"
@@ -11599,34 +12058,40 @@ msgid ""
 "codes separated by semicolons."
 msgstr ""
 
-msgid "Top-level administrative (Country"
+msgid "Top-level administrative (Country, state, region) (A)"
 msgstr ""
 
-msgid "Bodies of water (H"
+msgid "Bodies of water (H)"
 msgstr ""
 
-msgid "Areas (parks"
+msgid "Areas (parks, localities) (L)"
 msgstr ""
 
-msgid "Populated places (Cities"
+msgid "Populated places (Cities, villages) (P)"
 msgstr ""
 
-msgid "Rights of way (Roads"
+msgid "Rights of way (Roads, railroads (R)"
 msgstr ""
 
-msgid "Spot locations (Buildings"
+msgid "Spot locations (Buildings, farms, monuments) (S)"
 msgstr ""
 
-msgid "Undersea (U"
+msgid "Undersea (U)"
 msgstr ""
 
-msgid "Open land (Forest"
+msgid "Open land (Forest, heath, fields) (V)"
 msgstr ""
 
 msgid "Feature class"
 msgstr ""
 
 msgid "Limit the GeoNames search to specific types of map features."
+msgstr ""
+
+msgid ""
+"Connection to GeoNames with username \"%1\" was rejected with the message \"%2\". "
+"Check your configuration and make sure your GeoNames.org account is enabled for web "
+"services."
 msgstr ""
 
 msgid "Could not connect to GeoNames"
@@ -11637,7 +12102,7 @@ msgstr ""
 
 msgid ""
 "Check this option to enable setting of directions for point locations. (The default "
-"is not to be."
+"is not to be.)"
 msgstr ""
 
 msgid "Drop pin at search site?"
@@ -11647,23 +12112,21 @@ msgid ""
 "Check this option if you want a pin to be placed at the location of geo-searches."
 msgstr ""
 
-msgid "Default map location (enter as decimal &lt;latitude&gt;"
+msgid "Default map location (enter as decimal &lt;latitude&gt;,&lt;longitude&gt;)"
 msgstr ""
 
 msgid ""
 "Default center location for newly opened maps. Set as decimal latitude and longitude "
-"values"
-msgstr ""
-
-msgid ""
-"Check this option if you don't want your georeferences to be locale-specific. (The "
-"default is to not be."
+"values, separated by a comma."
 msgstr ""
 
 msgid "Tile server URL"
 msgstr ""
 
-msgid "URL for tileserver to load custom tiles from"
+msgid ""
+"URL for tileserver to load custom tiles from, with placeholders for X, Y and Z values "
+"in the format <em>${x}</em>. Ex. %1. Leave blank if you do not wish to use custom map "
+"tiles."
 msgstr ""
 
 msgid "Tile layer name"
@@ -11683,15 +12146,13 @@ msgstr ""
 msgid "Address or georeference was blank."
 msgstr ""
 
+msgid "Could not geocode address \"%1\""
+msgstr ""
+
 msgid "Service"
 msgstr ""
 
 msgid "The type of information service to be accessed."
-msgstr ""
-
-msgid ""
-"Check this option if you don't want your values to be locale-specific. (The default "
-"is to not be."
 msgstr ""
 
 msgid "Sort using list"
@@ -11736,11 +12197,6 @@ msgstr ""
 msgid "Regular expression to validate input with"
 msgstr ""
 
-msgid ""
-"Check this option if you don't want your integer values to be locale-specific. (The "
-"default is to be."
-msgstr ""
-
 msgid "Must be unique"
 msgstr ""
 
@@ -11772,11 +12228,6 @@ msgid "%1 is not an integer value"
 msgstr ""
 
 msgid "%1 must be unique across all values. The value you entered already exists."
-msgstr ""
-
-msgid ""
-"Check this option if you don't want your LCSH values to be locale-specific. (The "
-"default is to not be."
 msgstr ""
 
 msgid "Vocabulary"
@@ -11851,12 +12302,17 @@ msgstr ""
 msgid "Width of list in user interface"
 msgstr ""
 
-msgid "Height of list in user interface (hierarchy browser only"
+msgid ""
+"Width, in characters or pixels, of the list when displayed in a user interface. When "
+"list is rendered as a hierarchy browser width must be in pixels."
+msgstr ""
+
+msgid "Height of list in user interface (hierarchy browser only)"
 msgstr ""
 
 msgid ""
-"Check this option if you don't want your list values to be locale-specific. (The "
-"default is to not be."
+"Height, in pixels, of the list when displayed in a user interface as a hierarchy "
+"browser."
 msgstr ""
 
 msgid "Check this option if you want to require that a list item be selected."
@@ -11871,18 +12327,23 @@ msgstr ""
 msgid "No value text"
 msgstr ""
 
+msgid "Text to use as label for the \"no value\" option when a value is not required."
+msgstr ""
+
 msgid "Use list default when value is null?"
 msgstr ""
 
 msgid ""
 "Check this option if the list default value should be used when the item value is "
-"null. (The default is to disregard the default value and show the null value."
+"null. (The default is to disregard the default value and show the null value.)"
 msgstr ""
 
 msgid "Render list in editor as"
 msgstr ""
 
-msgid "Set the presentation of the list when editing to select"
+msgid ""
+"Set the presentation of the list when editing to select, checkboxes, radio buttons, "
+"type-ahead lookup or browser."
 msgstr ""
 
 msgid "Drop-down list"
@@ -11906,10 +12367,10 @@ msgstr ""
 msgid "Horizontal hierarchy browser with search"
 msgstr ""
 
-msgid "Vertical hierarchy browser (upward"
+msgid "Vertical hierarchy browser (upward)"
 msgstr ""
 
-msgid "Vertical hierarchy browser (downward"
+msgid "Vertical hierarchy browser (downward)"
 msgstr ""
 
 msgid "Render list in search builder as"
@@ -11955,13 +12416,16 @@ msgstr ""
 
 msgid ""
 "Template formatting current selection text. You may use the following tags: ^current "
-"(the currently selected list item"
+"(the currently selected list item), ^parent (the parent of the currently selected "
+"list item), ^hierarchy (the full hierarchal path to the list item)."
 msgstr ""
 
 msgid "Minimize existing values?"
 msgstr ""
 
-msgid "Check this option if existing values should displayed in a minimized"
+msgid ""
+"Check this option if existing values should displayed in a minimized, non-editable "
+"format."
 msgstr ""
 
 msgid "Defer loading of hierarchy browser?"
@@ -12000,6 +12464,9 @@ msgid ""
 "Select bundles from the list below to be hidden when no value is set for this element."
 msgstr ""
 
+msgid "Hide bundles if \"%1\" is selected"
+msgstr ""
+
 msgid "Select bundles from the list below."
 msgstr ""
 
@@ -12010,20 +12477,11 @@ msgid "Sub-elements may not be used as checklists"
 msgstr ""
 
 msgid ""
-"Dependent field visibility is only supported for radio buttons and drop-down (select"
+"Dependent field visibility is only supported for radio buttons and drop-down (select) "
+"menus"
 msgstr ""
 
 msgid "Check this option if you want to require that a loan be selected."
-msgstr ""
-
-msgid ""
-"Check this option if you don't want your loan values to be locale-specific. (The "
-"default is to not be."
-msgstr ""
-
-msgid ""
-"Check this option if you don't want your media to be locale-specific. (The default is "
-"to not be."
 msgstr ""
 
 msgid "Media details"
@@ -12046,11 +12504,6 @@ msgstr ""
 msgid ""
 "The maximum numeric value to allow. Values larger than required will be rejected. "
 "Leave blank to indicate no upper limit."
-msgstr ""
-
-msgid ""
-"Check this option if you don't want your numeric values to be locale-specific. (The "
-"default is to be."
 msgstr ""
 
 msgid "%1 is not a numeric value"
@@ -12076,11 +12529,6 @@ msgid "Check this option if you want to require that a location be selected."
 msgstr ""
 
 msgid ""
-"Check this option if you don't want your text to be locale-specific. (The default is "
-"to be."
-msgstr ""
-
-msgid ""
 "Check this option if you want this attribute to suggest previously saved values as "
 "text is entered. This option is only effective if the display height of the text "
 "entry is equal to 1."
@@ -12098,7 +12546,15 @@ msgstr ""
 msgid ""
 "Text to pre-populate a newly created attribute with. You may use the following tags "
 "to include information about the currently logged in user: <em>^currentuser.fname</"
-"em> (user first name"
+"em> (user first name), <em>^currentuser.lname</em> (user last name), "
+"<em>^currentuser.email</em> (user email address) and  <em>^currentuser.user_name</em> "
+"(login name),  "
+msgstr ""
+
+msgid ""
+"Layout for value when used in a display (can include HTML). Element code tags "
+"prefixed with the ^ character can be used to represent the value in the template. For "
+"example: <em>^my_element_code</em>."
 msgstr ""
 
 msgid "Is dependent value?"
@@ -12114,7 +12570,8 @@ msgstr ""
 
 msgid ""
 "Template to be used to format content for dependent values. Template should reference "
-"container values using their bare element code prefixed with a caret (^"
+"container values using their bare element code prefixed with a caret (^). Do not "
+"include the table or container codes."
 msgstr ""
 
 msgid "Reference media in"
@@ -12149,11 +12606,6 @@ msgstr ""
 msgid "This field value already exists!"
 msgstr ""
 
-msgid ""
-"Check this option if you don't want your time code values to be locale-specific. (The "
-"default is to not be."
-msgstr ""
-
 msgid "Time code format"
 msgstr ""
 
@@ -12163,7 +12615,7 @@ msgstr ""
 msgid "Hours/minutes/seconds"
 msgstr ""
 
-msgid "Hours/minute/second (long suffixes"
+msgid "Hours/minute/second (long suffixes)"
 msgstr ""
 
 msgid "Colon delimited"
@@ -12188,11 +12640,6 @@ msgid "Check this option to omit display of seconds in timecode values."
 msgstr ""
 
 msgid "%1 is invalid"
-msgstr ""
-
-msgid ""
-"Check this option if you don't want your urls to be locale-specific. (The default is "
-"to not be."
 msgstr ""
 
 msgid "Check this option if you want an error to be thrown if the URL is left blank."
@@ -12442,6 +12889,9 @@ msgstr ""
 msgid "CSRF check failed"
 msgstr ""
 
+msgid "Duplicated %1 \"%2\" (%3)"
+msgstr ""
+
 msgid "Could not duplicate %1: %2"
 msgstr ""
 
@@ -12552,9 +13002,6 @@ msgstr ""
 msgid "Invalid id"
 msgstr ""
 
-msgid "Invalid viewer for '.$vs_mimetype"
-msgstr ""
-
 msgid "Invalid object/representation"
 msgstr ""
 
@@ -12648,10 +13095,10 @@ msgstr ""
 msgid "Could not set access for %1: %2"
 msgstr ""
 
-msgid "Spreadsheet (XLSX"
+msgid "Spreadsheet (XLSX)"
 msgstr ""
 
-msgid "Word processing (DOCX"
+msgid "Word processing (DOCX)"
 msgstr ""
 
 msgid "Label export is too large for immediate download."
@@ -12729,16 +13176,22 @@ msgstr ""
 msgid "Invalid table %1"
 msgstr ""
 
-msgid "<em>%1</em> doesn't exist with this filter but %2 record(s"
+msgid ""
+"<em>%1</em> doesn't exist with this filter but %2 record(s) match overall. Create "
+"<em>%1</em>?"
 msgstr ""
 
-msgid "<em>%1</em> matches %2 more record(s"
+msgid ""
+"<em>%1</em> matches %2 more record(s) without the current filter. Create <em>%1</em>?"
 msgstr ""
 
 msgid "<em>%1</em> does not exist. Create?"
 msgstr ""
 
 msgid "Create <em>%1</em>?"
+msgstr ""
+
+msgid "No matches found for \"%1\""
 msgstr ""
 
 msgid "You do not have access to search %1"
@@ -12856,7 +13309,7 @@ msgstr ""
 msgid "Timecode is invalid"
 msgstr ""
 
-msgid "Can't do update("
+msgid "Can't do update() on new record; use insert() instead"
 msgstr ""
 
 msgid ""
@@ -12901,16 +13354,16 @@ msgstr ""
 msgid "Can't delete item because it has sub-records"
 msgstr ""
 
-msgid "Can't delete item because items related to it have sub-records (%1"
+msgid "Can't delete item because items related to it have sub-records (%1)"
 msgstr ""
 
-msgid "Can't delete item because it is in use (%1"
+msgid "Can't delete item because it is in use (%1)"
 msgstr ""
 
 msgid "Could not cancel pending tasks: %1"
 msgstr ""
 
-msgid "Couldn't queue mirror using '%1' for version '%2' (handler '%3"
+msgid "Couldn't queue mirror using '%1' for version '%2' (handler '%3')"
 msgstr ""
 
 msgid ""
@@ -13042,7 +13495,10 @@ msgstr ""
 msgid "Maximum upload size is %1"
 msgstr ""
 
-msgid "$vs_option"
+msgid "Related table specification \"%1\" is not valid"
+msgstr ""
+
+msgid "Type id \"%1\" is not valid"
 msgstr ""
 
 msgid "Could not find relationship table"
@@ -13115,9 +13571,6 @@ msgid "Value already exists"
 msgstr ""
 
 msgid "Value <code>%1</code> already exists"
-msgstr ""
-
-msgid "Can't edit invalid attribute"
 msgstr ""
 
 msgid "Cannot remove value; at least %1 value is required"
@@ -13219,9 +13672,6 @@ msgstr ""
 msgid "%1 is not a valid directory"
 msgstr ""
 
-msgid "Found %1 files in directory '%2'"
-msgstr ""
-
 msgid "Create set %1"
 msgstr ""
 
@@ -13240,7 +13690,7 @@ msgstr ""
 msgid "Cannot add to set %1 because you do not have edit access"
 msgstr ""
 
-msgid "[%3/%4] Processing %1 (%3"
+msgid "[%3/%4] Processing %1 (%3)"
 msgstr ""
 
 msgid "Skipped file %1 because it was on the skipped files list"
@@ -13249,7 +13699,7 @@ msgstr ""
 msgid "Skipped %1 from %2 because it already exists %3"
 msgstr ""
 
-msgid "(view"
+msgid "(view)"
 msgstr ""
 
 msgid "Processing mediaFilenameToObjectIdnoRegexes entry %1"
@@ -13278,6 +13728,9 @@ msgstr ""
 msgid "Matched name %1 on regex %2"
 msgstr ""
 
+msgid "Matched media %1 from %2 to %3 using expression \"%4\""
+msgstr ""
+
 msgid "Couldn't match name %1 on regex %2"
 msgstr ""
 
@@ -13287,7 +13740,7 @@ msgstr ""
 msgid "Error importing %1 from %2: %3"
 msgstr ""
 
-msgid "Using embedded media mapping %1 (format %2"
+msgid "Using embedded media mapping %1 (format %2)"
 msgstr ""
 
 msgid "Imported %1 as %2"
@@ -13451,10 +13904,10 @@ msgstr ""
 msgid "alternates"
 msgstr ""
 
-msgid "Object media representation (%1"
+msgid "Object media representation (%1)"
 msgstr ""
 
-msgid "Object media representation (default"
+msgid "Object media representation (default)"
 msgstr ""
 
 msgid "A list of related %1"
@@ -13464,6 +13917,9 @@ msgid "A list of %1 %2"
 msgstr ""
 
 msgid "A list of alternate %1 %2"
+msgstr ""
+
+msgid "A list of related media representations using version \"%1\""
 msgstr ""
 
 msgid "A list of related media representations using the default version"
@@ -13523,9 +13979,6 @@ msgstr ""
 msgid "There must be no more than %1 relationships for %2"
 msgstr ""
 
-msgid "caGetOption('effectiveDateDefault"
-msgstr ""
-
 msgid "Identifier <em>%1</em> already exists and duplicates are not permitted"
 msgstr ""
 
@@ -13544,7 +13997,7 @@ msgstr ""
 msgid "Could not set ACL inheritance settings: %1"
 msgstr ""
 
-msgid "Inherited from %1 (%2"
+msgid "Inherited from %1 (%2)"
 msgstr ""
 
 msgid "Must specify at least two ids"
@@ -13553,10 +14006,10 @@ msgstr ""
 msgid "Must specify at least two valid ids"
 msgstr ""
 
-msgid "Could not load base record (id=%1"
+msgid "Could not load base record (id=%1) for merge"
 msgstr ""
 
-msgid "Merged metadata from %1 %2 to <em>%3</em> (%3"
+msgid "Merged metadata from %1 %2 to <em>%3</em> (%3)"
 msgstr ""
 
 msgid "Could not delete old record: %1"
@@ -13574,10 +14027,10 @@ msgstr ""
 msgid "Could not set merged attribute values for %1: %2"
 msgstr ""
 
-msgid "Transferred %1 relationship to <em>%2</em> (%3"
+msgid "Transferred %1 relationship to <em>%2</em> (%3)"
 msgstr ""
 
-msgid "Transferred %1 relationships to <em>%2</em> (%3"
+msgid "Transferred %1 relationships to <em>%2</em> (%3)"
 msgstr ""
 
 msgid "Could not move references to other items in metadata before delete: %1"
@@ -13586,7 +14039,7 @@ msgstr ""
 msgid "Could not move references to other items in metadata: %1"
 msgstr ""
 
-msgid "Transferred %1 children to <em>%2</em> (%3"
+msgid "Transferred %1 children to <em>%2</em> (%3)"
 msgstr ""
 
 msgid "Invalid FotoWare base url"
@@ -13604,25 +14057,27 @@ msgstr ""
 msgid "Invalid Legistar client value"
 msgstr ""
 
-msgid "translate me"
-msgstr ""
-
-msgid "$match"
-msgstr ""
-
 msgid ""
 "The CollectiveAccess <i>tmp</i> directory is NOT writeable by the installer. This may "
 "result in installation errors. It is recommended that you change permissions on this "
-"directory (<i>%1</i>"
+"directory (<i>%1</i>) to allow write access prior to installation. You can reload the "
+"installer to verify that the changed permissions are correct."
 msgstr ""
 
-msgid "The CollectiveAccess log directory (default <i>app/log</i>"
+msgid ""
+"The CollectiveAccess log directory (default <i>app/log</i>) is NOT writeable by the "
+"installer. This may result in installation errors. It is recommended that you change "
+"permissions on this directory (<i>%1</i>) to allow write access prior to "
+"installation. You can reload the installer to verify that the changed permissions are "
+"correct."
 msgstr ""
 
 msgid ""
 "The CollectiveAccess media directory is NOT writeable by the installer. This will "
 "prevent proper creation of the media directory structure and result in installation "
-"errors. It is recommended that you change permissions on this directory (<i>%1</i>"
+"errors. It is recommended that you change permissions on this directory (<i>%1</i>) "
+"to allow write access prior to installation. You can reload the installer to verify "
+"that the changed permissions are correct."
 msgstr ""
 
 msgid ""
@@ -13689,22 +14144,26 @@ msgstr ""
 
 msgid ""
 "It looks like the log directory is not writable by the webserver. Please change the "
-"permissions of %1 (or create it if it doesn't exist already"
+"permissions of %1 (or create it if it doesn't exist already) and enable the user "
+"which runs the webserver to write to this directory."
 msgstr ""
 
 msgid ""
 "It looks like the media directory is not writable by the webserver. Please change the "
-"permissions of %1 (or create it if it doesn't exist already"
+"permissions of %1 (or create it if it doesn't exist already) and enable the user "
+"which runs the webserver to write to this directory."
 msgstr ""
 
 msgid ""
 "It looks like the font directory is not writable by the webserver. Please change the "
-"permissions of %1 (or create it if it doesn't exist already"
+"permissions of %1 (or create it if it doesn't exist already) and enable the user "
+"which runs the webserver to write to this directory."
 msgstr ""
 
 msgid ""
 "It looks like the user media upload directory is not writable by the webserver. "
-"Please change the permissions of %1 (or create it if it doesn't exist already"
+"Please change the permissions of %1 (or create it if it doesn't exist already) and "
+"enable the user which runs the webserver to write to this directory."
 msgstr ""
 
 msgid ""
@@ -13752,15 +14211,19 @@ msgstr ""
 msgid "PHP PCRE module is required for CollectiveAccess to run. Please install it."
 msgstr ""
 
-msgid "PHP Document Object Model (DOM"
+msgid ""
+"PHP Document Object Model (DOM) module is required for CollectiveAccess to run. "
+"Please install it."
 msgstr ""
 
 msgid ""
 "Either the mcrypt or openssl module are required for CollectiveAccess to run. Please "
-"install one of them (or both"
+"install one of them (or both)."
 msgstr ""
 
-msgid "The PHP Message Digest (hash"
+msgid ""
+"The PHP Message Digest (hash) engine is required for CollectiveAccess to run. Please "
+"install it."
 msgstr ""
 
 msgid ""
@@ -13785,7 +14248,7 @@ msgstr ""
 
 msgid ""
 "It looks like the __CA_APP_NAME__ setting in your setup.php is invalid. It may only "
-"consist of alphanumeric ASCII characters and underscores (&quot;_&quot;"
+"consist of alphanumeric ASCII characters and underscores (&quot;_&quot;)"
 msgstr ""
 
 msgid ""
@@ -13799,7 +14262,28 @@ msgid ""
 "default constraints than can prevent CA from saving information entered into forms."
 msgstr ""
 
-msgid "In particular"
+msgid ""
+"In particular, you have to set the configuration value "
+"\"suhosin.post.max_name_length\" to 256 or higher to ensure that CA works correctly. "
+"Your value is %1"
+msgstr ""
+
+msgid ""
+"In particular, you have to set the configuration value "
+"\"suhosin.request.max_varname_length\" to 256 or higher to ensure that CA works "
+"correctly. Your value is %1"
+msgstr ""
+
+msgid ""
+"In particular, you have to set the configuration value "
+"\"suhosin.post.max_totalname_length\" to 5012 or higher to ensure that CA works "
+"correctly. Your value is %1"
+msgstr ""
+
+msgid ""
+"In particular, you have to set the configuration value "
+"\"suhosin.request.max_totalname_length\" to 5012 or higher to ensure that CA works "
+"correctly. Your value is %1"
 msgstr ""
 
 msgid "Exporting changes for locale %1"
@@ -13883,10 +14367,10 @@ msgstr ""
 msgid "Query is empty"
 msgstr ""
 
-msgid "Number of values passed (%1"
+msgid "Number of values passed (%1) does not equal number of values required (%2)"
 msgstr ""
 
-msgid "seek(%1"
+msgid "seek(%1) failed: result has %2 rows"
 msgstr ""
 
 msgid "Your PHP installation lacks PDO MySQL support. Please add it and retry..."
@@ -13916,7 +14400,7 @@ msgstr ""
 msgid "Not connected to database"
 msgstr ""
 
-msgid "Driver does not support affectedRows("
+msgid "Driver does not support affectedRows() call"
 msgstr ""
 
 msgid "Transactions are not supported"
@@ -13934,7 +14418,7 @@ msgstr ""
 msgid "%1 cannot be found"
 msgstr ""
 
-msgid "Values are column numbers (indexing starts at 1"
+msgid "Values are column numbers (indexing starts at 1)."
 msgstr ""
 
 msgid "Element %1 is not numeric"
@@ -13946,7 +14430,8 @@ msgstr ""
 msgid "CSV exports can't be hierarchical"
 msgstr ""
 
-msgid "Character used to separate values. Typical values include commas"
+msgid ""
+"Character used to separate values. Typical values include commas, semicolons or tabs."
 msgstr ""
 
 msgid "Enclosure"
@@ -13989,6 +14474,12 @@ msgstr ""
 msgid "Values are field names."
 msgstr ""
 
+msgid ""
+"Values reference a combination of MARC 21 field tags and associated indicators "
+"separated by a forward slash (\"/\"), e.g. \"300/##\". For further information on how "
+"to create a MARC mapping, please refer to the CollectiveAccess online documentation."
+msgstr ""
+
 msgid "Invalid MARC element definition %1"
 msgstr ""
 
@@ -14013,7 +14504,9 @@ msgstr ""
 msgid "MARC export output format"
 msgstr ""
 
-msgid "Set output format. Currently supported: human-readable MARC21"
+msgid ""
+"Set output format. Currently supported: human-readable MARC21, raw MARC for saving "
+"into MARC files and MARCXML."
 msgstr ""
 
 msgid ""
@@ -14048,7 +14541,8 @@ msgstr ""
 msgid ""
 "By default the exporter wraps field content that contains invalid XML in CDATA "
 "sections to make sure the XML is valid regardless of the field content. If this "
-"option is set"
+"option is set, the exporter explicitly strips the CDATA tags before returning the XML "
+"text. Use only if you know what you're doing!"
 msgstr ""
 
 msgid "Remove duplicated tags?"
@@ -14064,6 +14558,9 @@ msgid "Invalid external export target %1"
 msgstr ""
 
 msgid "Invalid external export table"
+msgstr ""
+
+msgid "Skipping transport for %1:%2 because \"skipTransport\" runtime option was set"
 msgstr ""
 
 msgid "Skipping target %1 because no output format is set"
@@ -14091,6 +14588,19 @@ msgid "[ExternalExportManager] Found %1 targets to process"
 msgstr ""
 
 msgid "[ExternalExportManager] Processing trigger %1 for target %2"
+msgstr ""
+
+msgid ""
+"[ExternalExportManager] Found %1 new log entries with %4 unique ids for target %2 "
+"using \"get from\" value %3"
+msgstr ""
+
+msgid ""
+"[ExternalExportManager] Found %1 unique ids for target %2 using \"query\" value %3"
+msgstr ""
+
+msgid ""
+"[ExternalExportManager] Found %1 unique ids for target %2 using \"access\" value %3"
 msgstr ""
 
 msgid "[ExternalExportManager] Processing %1 unique ids for target %2"
@@ -14183,7 +14693,7 @@ msgstr ""
 msgid "Show lots"
 msgstr ""
 
-msgid "Lot (%1"
+msgid "Lot (%1) date"
 msgstr ""
 
 msgid "Color for %1"
@@ -14192,16 +14702,31 @@ msgstr ""
 msgid "Color to use as highlight %1."
 msgstr ""
 
-msgid "Layout for lot when displayed in history list (can include HTML"
+msgid "Lot (%1) display template"
 msgstr ""
 
-msgid "Include history from lots (%1"
+msgid ""
+"Layout for lot when displayed in history list (can include HTML). The template is "
+"evaluated relative to the lot. Element code tags prefixed with the ^ character can be "
+"used to represent the value in the template. For example: "
+"<i>^ca_object_lots.idno_stub</i>."
 msgstr ""
 
-msgid "If checked history from lots that are related to sub-objects (children"
+msgid "Include history from lots (%1) related to child objects"
 msgstr ""
 
-msgid "Layout for lot related to child objects"
+msgid ""
+"If checked history from lots that are related to sub-objects (children) is included."
+msgstr ""
+
+msgid "Lot (%1) display template when related to child objects"
+msgstr ""
+
+msgid ""
+"Layout for lot related to child objects, when displayed in history list (can include "
+"HTML). The template is evaluated relative to the lot. Element code tags prefixed with "
+"the ^ character can be used to represent the value in the template. For example: "
+"<i>^ca_object_lots.idno_stub</i>."
 msgstr ""
 
 msgid "Show occurrences"
@@ -14216,34 +14741,72 @@ msgstr ""
 msgid "%1 display template"
 msgstr ""
 
-msgid "Layout for %1 when displayed in history list (can include HTML"
+msgid ""
+"Layout for %1 when displayed in history list (can include HTML). The template is "
+"evaluated relative to the %1. Element code tags prefixed with the ^ character can be "
+"used to represent the value in the template. For example: <i>^ca_occurrences.idno</i>."
 msgstr ""
 
 msgid "Include history from %1 related to child objects"
 msgstr ""
 
-msgid "If checked history from %1 that are related to sub-objects (children"
+msgid ""
+"If checked history from %1 that are related to sub-objects (children) is included."
 msgstr ""
 
 msgid "Display template for %1 when related to child objects"
 msgstr ""
 
-msgid "Layout for %1 related to child objects"
+msgid ""
+"Layout for %1 related to child objects, when displayed in history list (can include "
+"HTML). The template is evaluated relative to the lot. Element code tags prefixed with "
+"the ^ character can be used to represent the value in the template. For example: "
+"<i>^ca_object_lots.idno_stub</i>."
 msgstr ""
 
 msgid "Show collections"
 msgstr ""
 
+msgid ""
+"Layout for %1 when displayed in history list (can include HTML). The template is "
+"evaluated relative to the %1. Element code tags prefixed with the ^ character can be "
+"used to represent the value in the template. For example: <i>^ca_collections.idno</i>."
+msgstr ""
+
 msgid "Show entities"
+msgstr ""
+
+msgid ""
+"Layout for %1 when displayed in history list (can include HTML). The template is "
+"evaluated relative to the %1. Element code tags prefixed with the ^ character can be "
+"used to represent the value in the template. For example: <i>^ca_entities.idno</i>."
 msgstr ""
 
 msgid "Show movements"
 msgstr ""
 
+msgid ""
+"Layout for %1 when displayed in history list (can include HTML). The template is "
+"evaluated relative to the %1. Element code tags prefixed with the ^ character can be "
+"used to represent the value in the template. For example: <i>^ca_movements.idno</i>."
+msgstr ""
+
 msgid "Show loans"
 msgstr ""
 
+msgid ""
+"Layout for %1 when displayed in history list (can include HTML). The template is "
+"evaluated relative to the %1. Element code tags prefixed with the ^ character can be "
+"used to represent the value in the template. For example: <i>^ca_loans.idno</i>."
+msgstr ""
+
 msgid "Show objects"
+msgstr ""
+
+msgid ""
+"Layout for %1 when displayed in history list (can include HTML). The template is "
+"evaluated relative to the %1. Element code tags prefixed with the ^ character can be "
+"used to represent the value in the template. For example: <i>^ca_objects.idno</i>."
 msgstr ""
 
 msgid "Show storage locations"
@@ -14264,20 +14827,29 @@ msgstr ""
 msgid "Storage location display template"
 msgstr ""
 
-msgid "Layout for storage location when displayed in history list (can include HTML"
+msgid ""
+"Layout for storage location when displayed in history list (can include HTML). The "
+"template is evaluated relative to the object-storage location relationship. Element "
+"code tags prefixed with the ^ character can be used to represent the value in the "
+"template. For example: <i>^ca_object_lots.idno_stub</i>."
 msgstr ""
 
 msgid "Include history from storage locations related to child objects"
 msgstr ""
 
 msgid ""
-"If checked history from storage locations that are related to sub-objects (children"
+"If checked history from storage locations that are related to sub-objects (children) "
+"is included."
 msgstr ""
 
 msgid "Display template for storage locations when related to child objects"
 msgstr ""
 
-msgid "Layout for storage location related to child objects"
+msgid ""
+"Layout for storage location related to child objects, when displayed in history list "
+"(can include HTML). The template is evaluated relative to the object-storage location "
+"relationship. Element code tags prefixed with the ^ character can be used to "
+"represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>."
 msgstr ""
 
 msgid "Show deaccession information"
@@ -14296,7 +14868,10 @@ msgid "Deaccession display template"
 msgstr ""
 
 msgid ""
-"Layout for deaccession information when displayed in history list (can include HTML"
+"Layout for deaccession information when displayed in history list (can include HTML). "
+"The template is evaluated relative to the object. Element code tags prefixed with the "
+"^ character can be used to represent the value in the template. For example: "
+"<i>^ca_objects.deaccession_notes</i>."
 msgstr ""
 
 msgid "Include history from deaccession information related to child objects"
@@ -14304,7 +14879,7 @@ msgstr ""
 
 msgid ""
 "If checked history from deaccession information that are related to sub-objects "
-"(children"
+"(children) is included."
 msgstr ""
 
 msgid "Display template for deaccessions related to child objects"
@@ -14312,7 +14887,9 @@ msgstr ""
 
 msgid ""
 "Layout for deaccession information related to child objects when displayed in history "
-"list (can include HTML"
+"list (can include HTML). The template is evaluated relative to the object. Element "
+"code tags prefixed with the ^ character can be used to represent the value in the "
+"template. For example: <i>^ca_objects.deaccession_notes</i>."
 msgstr ""
 
 msgid "'%1' is not valid for %2"
@@ -14351,19 +14928,22 @@ msgstr ""
 msgid "%1 must be a valid year"
 msgstr ""
 
-msgid "%1 must be a valid numeric month (between 1 and 12"
+msgid "%1 must be a valid numeric month (between 1 and 12)"
 msgstr ""
 
-msgid "%1 must be a valid numeric day (between 1 and 31"
+msgid "%1 must be a valid numeric day (between 1 and 31)"
 msgstr ""
 
 msgid "%1 on save"
 msgstr ""
 
+msgid "%1"
+msgstr ""
+
 msgid "%1 is not a valid UUID"
 msgstr ""
 
-msgid "A list (array"
+msgid "A list (array) of relationships related to the %1."
 msgstr ""
 
 msgid "Apply import item settings to refinery values"
@@ -14389,10 +14969,13 @@ msgstr ""
 msgid "Provides basic XML functions for all XML-format data readers"
 msgstr ""
 
-msgid "Comma Delimited (CSV"
+msgid "Comma Delimited (CSV) Data Reader"
 msgstr ""
 
-msgid "Reads comma delimited (CSV"
+msgid "Comma Delimited (CSV)"
+msgstr ""
+
+msgid "Reads comma delimited (CSV) text files"
 msgstr ""
 
 msgid "CollectiveAccess data reader"
@@ -14413,10 +14996,13 @@ msgstr ""
 msgid "Reads DublinCore XML files"
 msgstr ""
 
-msgid "Encoded Archival Description Schema (EAD"
+msgid "Encoded Archival Description Schema (EAD) XML Reader"
 msgstr ""
 
-msgid "Reads Encoded Archival Description Schema (EAD"
+msgid "Encoded Archival Description Schema (EAD) XML"
+msgstr ""
+
+msgid "Reads Encoded Archival Description Schema (EAD) XML files"
 msgstr ""
 
 msgid "eHive XML Reader"
@@ -14437,7 +15023,7 @@ msgstr ""
 msgid "Reads Microsoft Excel XLSX files"
 msgstr ""
 
-msgid "[ExcelDataReader] Invalid Excel (XLSX"
+msgid "[ExcelDataReader] Invalid Excel (XLSX) column specified '%1' in file '%2'"
 msgstr ""
 
 msgid "EXIF data reader"
@@ -14485,7 +15071,7 @@ msgstr ""
 msgid "Reads data from the Legistar data service"
 msgstr ""
 
-msgid "Invalid _getVote("
+msgid "Invalid _getVote() mode: %1"
 msgstr ""
 
 msgid "MARC data reader"
@@ -14515,10 +15101,13 @@ msgstr ""
 msgid "Reads METS XML files"
 msgstr ""
 
-msgid "Metadata Object Description Schema (MODS"
+msgid "Metadata Object Description Schema (MODS) XML Reader"
 msgstr ""
 
-msgid "Reads Metadata Object Description Schema (MODS"
+msgid "Metadata Object Description Schema (MODS) XML"
+msgstr ""
+
+msgid "Reads Metadata Object Description Schema (MODS) XML files"
 msgstr ""
 
 msgid "MediaBin XML Reader"
@@ -14602,7 +15191,7 @@ msgstr ""
 msgid "Reads Extensis Portfolio XML files"
 msgstr ""
 
-msgid "RDF (Resource Description Framework / DublinCore"
+msgid "RDF (Resource Description Framework / DublinCore) XML Reader"
 msgstr ""
 
 msgid "RDF XML"
@@ -14648,10 +15237,13 @@ msgstr ""
 msgid "Sqlite error on initial query for table %1"
 msgstr ""
 
-msgid "Text Encoding Initiative (TEI"
+msgid "Text Encoding Initiative (TEI) XML Reader"
 msgstr ""
 
-msgid "Reads Text Encoding Initiative (TEI"
+msgid "Text Encoding Initiative (TEI) XML"
+msgstr ""
+
+msgid "Reads Text Encoding Initiative (TEI) XML files"
 msgstr ""
 
 msgid "Tab delimited Data Reader"
@@ -14684,7 +15276,7 @@ msgstr ""
 msgid "Wordpress RSS"
 msgstr ""
 
-msgid "Reads Wordpress RSS (XML"
+msgid "Reads Wordpress RSS (XML) files"
 msgstr ""
 
 msgid "WorldCat data reader"
@@ -14702,7 +15294,7 @@ msgstr ""
 msgid "iDigBio"
 msgstr ""
 
-msgid "Reads data from the iDigBio data service (%1"
+msgid "Reads data from the iDigBio data service (%1) using the version 2 API"
 msgstr ""
 
 msgid "Label must not be blank"
@@ -14753,19 +15345,10 @@ msgstr ""
 msgid "Invalid field %2 for table %1"
 msgstr ""
 
-msgid "Could not create media upload session: '.join('; "
-msgstr ""
-
 msgid "Empty session"
 msgstr ""
 
 msgid "Session not found"
-msgstr ""
-
-msgid "Could not complete media upload session: '.join('; "
-msgstr ""
-
-msgid "Could not cancel media upload session: '.join('; "
 msgstr ""
 
 msgid "[EMPTY]"
@@ -14823,7 +15406,8 @@ msgstr ""
 
 msgid ""
 "Set an interval before or after an event in which to trigger a notification. Note "
-"that if the event is a date range"
+"that if the event is a date range, the trigger will fire before the beginning of the "
+"range or after the end of the range."
 msgstr ""
 
 msgid "Date part"
@@ -14852,7 +15436,7 @@ msgstr ""
 msgid "Invalid expression specified for alert: %1"
 msgstr ""
 
-msgid "Identifer (idno"
+msgid "Identifer (idno)"
 msgstr ""
 
 msgid "Media representation chooser"
@@ -14871,9 +15455,6 @@ msgid "Not an Excel file"
 msgstr ""
 
 msgid "Worksheets are not available for text files"
-msgstr ""
-
-msgid "$o_node->getInnerText("
 msgstr ""
 
 msgid "Cannot find path between %1 and %2"
@@ -14960,10 +15541,10 @@ msgstr ""
 msgid "Parser error"
 msgstr ""
 
-msgid "[BanHammer::ExportFrequency] Export freq %1 (%2"
+msgid "[BanHammer::ExportFrequency] Export freq %1 (%2) > threshold %3"
 msgstr ""
 
-msgid "Export freq %1 (%2"
+msgid "Export freq %1 (%2) > threshold %3"
 msgstr ""
 
 msgid "[BanHammer::ExportFrequency] Export count %1 > count limit %2"
@@ -14978,10 +15559,19 @@ msgstr ""
 msgid "%1 is on ban list"
 msgstr ""
 
-msgid "[BanHammer::RequestFrequency] Request freq %1 (%2"
+msgid "[BanHammer::IPAddress] Could not load ip ban list from URL \"%1\""
 msgstr ""
 
-msgid "Request freq %1 (%2"
+msgid "[BanHammer::IPAddress] Loaded IP ban list from URL \"%1\"; got %2 ip addresses"
+msgstr ""
+
+msgid "[BanHammer::IPAddress] Could not write ip ban list to \"%1\""
+msgstr ""
+
+msgid "[BanHammer::RequestFrequency] Request freq %1 (%2) > threshold %3"
+msgstr ""
+
+msgid "Request freq %1 (%2) > threshold %3"
 msgstr ""
 
 msgid "[BanHammer::UserAgent] Banned ip %1 because user agent changed from %2 to %3"
@@ -15001,6 +15591,16 @@ msgid ""
 msgstr ""
 
 msgid "User agent %1 is on CrawlerDetect list"
+msgstr ""
+
+msgid "[BanHammer::UserAgent] Could not load user agent list from URL \"%1\""
+msgstr ""
+
+msgid ""
+"[BanHammer::UserAgent] Loaded user agent list from URL \"%1\"; got %2 user agents"
+msgstr ""
+
+msgid "[BanHammer::UserAgent] Could not write user agent list to \"%1\""
 msgstr ""
 
 msgid "Converts currency using European bank rates available at %1"
@@ -15139,13 +15739,25 @@ msgstr ""
 
 msgid ""
 "Limit results to one or more AAT sub-hierarchies. Enter numeric AAT identifiers (Eg. "
-"300111079"
+"300111079) for the root of the sub-hierarchy. Separate multiple AAT identifiers with "
+"semicolons or commas. Only terms under the specified root AAT terms will be returned."
 msgstr ""
 
 msgid "Additional search filter"
 msgstr ""
 
+msgid ""
+"Additional search filter. For example to limit to children of a particular term enter "
+"\"gvp:broaderExtended aat:300312238\""
+msgstr ""
+
 msgid "Additional sparql suffix"
+msgstr ""
+
+msgid ""
+"Applied after the initial search. Useful to combine filters. For example to limit to "
+"children of particular terms enter \"?ID gvp:broaderPreferredExtended ?Extended "
+"FILTER (?Extended IN (aat:300261086, aat:300264550))\""
 msgstr ""
 
 msgid "Order by"
@@ -15161,9 +15773,6 @@ msgstr ""
 
 msgid ""
 "Language to use for returned AAT terms. The language must be supported by the AAT."
-msgstr ""
-
-msgid " 'Provides access to Getty Linked Open Data AAT service' "
 msgstr ""
 
 msgid "APC - Australian Plant Census"
@@ -15229,7 +15838,7 @@ msgstr ""
 msgid "EOLkey code. See %1 for details."
 msgstr ""
 
-msgid "Provides access to Encyclopedia of Life (EOL"
+msgid "Provides access to Encyclopedia of Life (EOL) service"
 msgstr ""
 
 msgid "EOL Error: %1"
@@ -15244,7 +15853,7 @@ msgstr ""
 msgid "EOL Identifier"
 msgstr ""
 
-msgid "%1 [%3] (source: %2"
+msgid "%1 [%3] (source: %2)"
 msgstr ""
 
 msgid "Taxonomy"
@@ -15289,7 +15898,7 @@ msgstr ""
 msgid "LC Source headings"
 msgstr ""
 
-msgid "FAST Authority Record Number (ARN"
+msgid "FAST Authority Record Number (ARN)"
 msgstr ""
 
 msgid "Record status"
@@ -15298,7 +15907,7 @@ msgstr ""
 msgid "Level of establishment"
 msgstr ""
 
-msgid "Geographic area code (GAC"
+msgid "Geographic area code (GAC)"
 msgstr ""
 
 msgid "Geographic Feature"
@@ -15346,10 +15955,13 @@ msgstr ""
 msgid "World Register of Marine Species"
 msgstr ""
 
-msgid "Integrated Taxonomic Information System (ITIS"
+msgid "Integrated Taxonomic Information System (ITIS)"
 msgstr ""
 
 msgid "Data set key"
+msgstr ""
+
+msgid "GBIF data set key for data set to query. Overrides \"data set\" option."
 msgstr ""
 
 msgid "Name types"
@@ -15367,7 +15979,7 @@ msgstr ""
 msgid "Name status"
 msgstr ""
 
-msgid "Limit to names with specific status (species only"
+msgid "Limit to names with specific status (species only)"
 msgstr ""
 
 msgid "Doubtful"
@@ -15379,7 +15991,7 @@ msgstr ""
 msgid "Habitat"
 msgstr ""
 
-msgid "Limit to continents (occurrences only"
+msgid "Limit to continents (occurrences only)"
 msgstr ""
 
 msgid "Africa"
@@ -15403,7 +16015,7 @@ msgstr ""
 msgid "South America"
 msgstr ""
 
-msgid "Limit to specific habitats (species only"
+msgid "Limit to specific habitats (species only)"
 msgstr ""
 
 msgid "Marine"
@@ -15418,31 +16030,31 @@ msgstr ""
 msgid "Taxonomic ranks"
 msgstr ""
 
-msgid "Limit to taxonomic ranks (species only"
+msgid "Limit to taxonomic ranks (species only)"
 msgstr ""
 
 msgid "Mark extinct taxa"
 msgstr ""
 
-msgid "Mark extinct taxa with † symbol? (species only"
+msgid "Mark extinct taxa with † symbol? (species only)"
 msgstr ""
 
 msgid "Show occurrence date?"
 msgstr ""
 
-msgid "Show occurrence date? (occurrences only"
+msgid "Show occurrence date? (occurrences only)"
 msgstr ""
 
 msgid "Show occurrence location?"
 msgstr ""
 
-msgid "Show occurrence location? (occurrences only"
+msgid "Show occurrence location? (occurrences only)"
 msgstr ""
 
 msgid "Show vernacular names"
 msgstr ""
 
-msgid "Display vernacular names? (species only"
+msgid "Display vernacular names? (species only)"
 msgstr ""
 
 msgid "Show GBIF key"
@@ -15559,7 +16171,7 @@ msgstr ""
 msgid "Nomenclature language"
 msgstr ""
 
-msgid "Provides access to Nomenclature for Museum Cataloguing (%1"
+msgid "Provides access to Nomenclature for Museum Cataloguing (%1)"
 msgstr ""
 
 msgid "Mints"
@@ -15595,10 +16207,10 @@ msgstr ""
 msgid "Invalid service: %1"
 msgstr ""
 
-msgid "Provides access to PELLA numismatic data service (%1"
+msgid "Provides access to PELLA numismatic data service (%1)"
 msgstr ""
 
-msgid "Provides access to Ptolemaic Coins Online numismatic data service (%1"
+msgid "Provides access to Ptolemaic Coins Online numismatic data service (%1)"
 msgstr ""
 
 msgid "ResourceSpace user name"
@@ -15614,7 +16226,7 @@ msgstr ""
 msgid "Provides access to ResourceSpace data and media"
 msgstr ""
 
-msgid "Provides access to Seleucid Coins Online numismatic data service (%1"
+msgid "Provides access to Seleucid Coins Online numismatic data service (%1)"
 msgstr ""
 
 msgid "SPARQL query"
@@ -15627,28 +16239,29 @@ msgstr ""
 msgid "SPARQL endpoint"
 msgstr ""
 
+msgid "SPARQL endpoint, default Wikidata."
+msgstr ""
+
 msgid "Result list keys"
 msgstr ""
 
-msgid "Where is the results list? Keys hierarchy"
+msgid "Where is the results list? Keys hierarchy, separated by >"
 msgstr ""
 
 msgid "Keys hierarchy to get element URL"
 msgstr ""
 
-msgid "Keys hierarchy"
+msgid "Keys hierarchy, separated by >"
 msgstr ""
 
-msgid "Keys hierarchy to get element Label"
+msgid ""
+"Keys hierarchy to get element Label, used for autocomplete search and dropdown label"
 msgstr ""
 
 msgid "An error occurred while querying an external webservice"
 msgstr ""
 
 msgid "Provides access to Wikidata service and other SPARQL endpoints."
-msgstr ""
-
-msgid " 'Provides access to Getty Linked Open Data TGN service' "
 msgstr ""
 
 msgid "Provides access to Getty Linked Open Data ULAN service"
@@ -15661,6 +16274,9 @@ msgid "Provides access to VIAF service"
 msgstr ""
 
 msgid "Wikipedia language"
+msgstr ""
+
+msgid "2- or 3-letter language code for Wikipedia to use. Defaults to \"en\". See %1"
 msgstr ""
 
 msgid "Provides access to Wikipedia service"
@@ -15698,7 +16314,8 @@ msgstr ""
 
 msgid ""
 "Sets the style of the detail view. Use <em>Labeled MARC fields</em> to display MARC "
-"fields with english labels"
+"fields with english labels, <em>MARC codes</em> to display with numeric MARC codes, "
+"and <em>template</em> to use the XSL template specified below."
 msgstr ""
 
 msgid "Detail XSL template"
@@ -15791,7 +16408,7 @@ msgstr ""
 msgid "Didn't load because Imagick/ImageMagick is available and preferred"
 msgstr ""
 
-msgid "Didn't load because ImageMagick (command-line"
+msgid "Didn't load because ImageMagick (command-line) is available and preferred"
 msgstr ""
 
 msgid "Didn't load because Gmagick is available and preferred"
@@ -15855,7 +16472,7 @@ msgstr ""
 
 msgid ""
 "HEIC support is not available because ImageMagick cannot be found<br/"
-">n(GraphicsMagick does not provide support for HEIC"
+">n(GraphicsMagick does not provide support for HEIC)"
 msgstr ""
 
 msgid "Couldn't set font to %1. Gmagick error message: %2"
@@ -15891,7 +16508,7 @@ msgstr ""
 msgid "Gmagick exception"
 msgstr ""
 
-msgid "Filenames with colons (:"
+msgid "Filenames with colons (:) are not allowed"
 msgstr ""
 
 msgid "Error writing file"
@@ -15900,7 +16517,9 @@ msgstr ""
 msgid "Error writing file: %1"
 msgstr ""
 
-msgid "Could not convert Camera RAW format file because conversion tool (dcraw"
+msgid ""
+"Could not convert Camera RAW format file because conversion tool (dcraw) is not "
+"installed"
 msgstr ""
 
 msgid "Could not copy Camera RAW file to temporary directory"
@@ -15912,7 +16531,9 @@ msgstr ""
 msgid "Translation from Camera RAW to TIFF failed"
 msgstr ""
 
-msgid "Could not convert HEIC format file because conversion tool (ImageMagick"
+msgid ""
+"Could not convert HEIC format file because conversion tool (ImageMagick) is not "
+"installed"
 msgstr ""
 
 msgid "HEIC file conversion failed: %1"
@@ -15924,7 +16545,9 @@ msgstr ""
 msgid "Error during RGB colorspace transformation operation"
 msgstr ""
 
-msgid "Provides image processing and conversion services using GraphicsMagick via exec("
+msgid ""
+"Provides image processing and conversion services using GraphicsMagick via exec() "
+"calls"
 msgstr ""
 
 msgid "Didn't load because Imagick is available and preferred"
@@ -15936,7 +16559,9 @@ msgstr ""
 msgid "Could not write file %1"
 msgstr ""
 
-msgid "Provides image processing and conversion services using ImageMagick via exec("
+msgid ""
+"Provides image processing and conversion services using ImageMagick via exec() calls "
+"to ImageMagick binaries"
 msgstr ""
 
 msgid "Didn't load because ImageMagick executables cannot be found"
@@ -15988,7 +16613,7 @@ msgstr ""
 msgid "Couldn't convert ply model to stl"
 msgstr ""
 
-msgid "Accepts and processes Microsoft Word"
+msgid "Accepts and processes Microsoft Word, Excel and PowerPoint format documents"
 msgstr ""
 
 msgid ""
@@ -15999,7 +16624,7 @@ msgstr ""
 msgid "Unsupported mimetype %1"
 msgstr ""
 
-msgid "File %1 is not a Microsoft Word"
+msgid "File %1 is not a Microsoft Word, Excel or PowerPoint document"
 msgstr ""
 
 msgid "Click to view Microsoft Word document"
@@ -16033,7 +16658,7 @@ msgstr ""
 msgid "File %1 is not a PDF"
 msgstr ""
 
-msgid "Couldn't not write document preview frames to tmp directory (%1"
+msgid "Couldn't not write document preview frames to tmp directory (%1)"
 msgstr ""
 
 msgid ""
@@ -16056,7 +16681,7 @@ msgstr ""
 msgid "Cannot write converted Orbitvu image as %1 to %2"
 msgstr ""
 
-msgid "Cannot convert Orbitvu to specified type (%1"
+msgid "Cannot convert Orbitvu to specified type (%1)"
 msgstr ""
 
 msgid "Cannot write: invalid panorama type"
@@ -16076,16 +16701,16 @@ msgstr ""
 
 msgid ""
 "Couldn't convert file to MPEG4 format [%1]; does the ffmpeg preset '%2' exist? "
-"(command was %3"
+"(command was %3)"
 msgstr ""
 
-msgid "Couldn't convert file to MPEG4 format [%1] (command was %2"
+msgid "Couldn't convert file to MPEG4 format [%1] (command was %2)"
 msgstr ""
 
 msgid "Can't convert '%1' to %2"
 msgstr ""
 
-msgid "Couldn't not write video preview frames to tmp directory (%1"
+msgid "Couldn't not write video preview frames to tmp directory (%1)"
 msgstr ""
 
 msgid "Parses AmericanArchive URLs"
@@ -16094,7 +16719,7 @@ msgstr ""
 msgid "American Archive of Public Broadcasting"
 msgstr ""
 
-msgid "Parses Elevator URLs (%1"
+msgid "Parses Elevator URLs (%1)"
 msgstr ""
 
 msgid "University of Minnesota Elevator Repository"
@@ -16115,7 +16740,7 @@ msgstr ""
 msgid "Internet Archive"
 msgstr ""
 
-msgid "Processes audio/video URLs (YouTube"
+msgid "Processes audio/video URLs (YouTube, Vimeo and Soundcloud) using YouTube-dl"
 msgstr ""
 
 msgid "Parses file URLs"
@@ -16177,12 +16802,15 @@ msgid ""
 "index can be set in the CollectiveAccess configuration."
 msgstr ""
 
-msgid "Install and start the ElasticSearch service. If it is already running"
+msgid ""
+"Install and start the ElasticSearch service. If it is already running, check your "
+"CollectiveAccess configuration (the ElasticSearch URL and index name in particular)."
 msgstr ""
 
 msgid ""
 "If the service is running and can be accessed by CollectiveAccess but the index is "
-"missing"
+"missing, let CollectiveAccess generate a fresh index and create the related indexing "
+"mappings. There is a tool in support/utils."
 msgstr ""
 
 msgid "Invalid query type: %1"
@@ -16237,10 +16865,13 @@ msgstr ""
 
 msgid ""
 "The SqlSearch2 search engine requires that certain tables be present in your "
-"database. They are installed by default and should be present"
+"database. They are installed by default and should be present, but if they are not "
+"SqlSearch2 will not be able to operate."
 msgstr ""
 
-msgid "To fully index Chinese-language content the Jieba PHP word segmenter (%1"
+msgid ""
+"To fully index Chinese-language content the Jieba PHP word segmenter (%1) should be "
+"installed."
 msgstr ""
 
 msgid ""
@@ -16248,7 +16879,9 @@ msgid ""
 "search engine."
 msgstr ""
 
-msgid "Try reloading the definitions for these tables: ca_sql_search_words"
+msgid ""
+"Try reloading the definitions for these tables: ca_sql_search_words, "
+"ca_sql_search_word_index"
 msgstr ""
 
 msgid "Try installing Jieba PHP. See See %1"
@@ -16401,10 +17034,10 @@ msgstr ""
 msgid "Input format"
 msgstr ""
 
-msgid "[TaskQueue::mediaTranscription::process] Whisper is not installed (see %1"
+msgid "[TaskQueue::mediaTranscription::process] Whisper is not installed (see %1)"
 msgstr ""
 
-msgid "Whisper is not installed (see %1"
+msgid "Whisper is not installed (see %1)"
 msgstr ""
 
 msgid ""
@@ -16625,7 +17258,10 @@ msgstr ""
 msgid "nnnDone! [Indexing for %1 took %2]n"
 msgstr ""
 
-msgid "Note that if you're using an external search service like ElasticSearch"
+msgid ""
+"Note that if you're using an external search service like ElasticSearch, the data may "
+"only now be sent to the actual service because it was buffered until now. So you "
+"still might have to wait a while for the script to finish.n"
 msgstr ""
 
 msgid "Elapsed time: %1"
@@ -16794,7 +17430,7 @@ msgstr ""
 
 msgid ""
 "Could not upload file [%1] to target [%2]. HTTP response code was %3. Retrying (%4 "
-"remaining"
+"remaining)"
 msgstr ""
 
 msgid "Could not set last log_id: %1"
@@ -16860,10 +17496,10 @@ msgstr ""
 msgid "Invalid list item label %1 for attribute value log entry."
 msgstr ""
 
-msgid "Referenced element is not of type List"
+msgid "Referenced element is not of type List, but item_id is set in the snapshot"
 msgstr ""
 
-msgid "Could not load GUID %1 (referenced in HIERARCHY_PARENT_ID_FLD"
+msgid "Could not load GUID %1 (referenced in HIERARCHY_PARENT_ID_FLD)"
 msgstr ""
 
 msgid "No parent_guid for %1 field found: %2"
@@ -16907,7 +17543,7 @@ msgstr ""
 msgid "Could not find media for checksum"
 msgstr ""
 
-msgid "[%1] Data replication report (%2"
+msgid "[%1] Data replication report (%2)"
 msgstr ""
 
 msgid "[%1] Set single log mode."
@@ -16922,7 +17558,7 @@ msgid ""
 "[%1] There were errors getting last replicated log id for source %1 and target %2: %3."
 msgstr ""
 
-msgid "[%1] Set log id to forced value (%2"
+msgid "[%1] Set log id to forced value (%2)."
 msgstr ""
 
 msgid ""
@@ -16930,10 +17566,10 @@ msgid ""
 "beginning."
 msgstr ""
 
-msgid "[%1] Set log id to minimum (%2"
+msgid "[%1] Set log id to minimum (%2)."
 msgstr ""
 
-msgid "[%1] Starting replication for source %1 and target %2"
+msgid "[%1] Starting replication for source %1 and target %2, log id is %3."
 msgstr ""
 
 msgid ""
@@ -16954,7 +17590,7 @@ msgstr ""
 msgid "[%1] Skipping log_id %2 because is marked as SKIP"
 msgstr ""
 
-msgid "[%1] Nothing to push. Incrementing log index to %2 (%3"
+msgid "[%1] Nothing to push. Incrementing log index to %2 (%3)"
 msgstr ""
 
 msgid ""
@@ -16968,7 +17604,7 @@ msgstr ""
 msgid "[%1] Pushed %2 primary entries: %3"
 msgstr ""
 
-msgid "[%1] Nothing to send (all filtered"
+msgid "[%1] Nothing to send (all filtered) so incrementing to last log_id (%2)"
 msgstr ""
 
 msgid "[%1] There were errors while processing sync for source %1 and target %2: %3"
@@ -16977,13 +17613,15 @@ msgstr ""
 msgid "[%1] Chunk sync for source %1 and target %2 successful."
 msgstr ""
 
-msgid "[%1] Pushed %2 log entries. Incrementing log index to %3 (%4"
+msgid "[%1] Pushed %2 log entries. Incrementing log index to %3 (%4)."
 msgstr ""
 
-msgid "[%1] Last replicated log ID is: %2 (%3"
+msgid "[%1] Last replicated log ID is: %2 (%3)."
 msgstr ""
 
-msgid "[%1] There were warnings while processing sync for source %1"
+msgid ""
+"[%1] There were warnings while processing sync for source %1, target %2, log id %3: "
+"%4."
 msgstr ""
 
 msgid "[%1] Sync for source %1 and target %2 successful."
@@ -16998,7 +17636,7 @@ msgstr ""
 msgid "[%1] De-duped %2 records for %3."
 msgstr ""
 
-msgid "[%1] Sync for source %1 and target %2 finished"
+msgid "[%1] Sync for source %1 and target %2 finished, but there were errors."
 msgstr ""
 
 msgid "[%1] Sync for source %1 and target %2 took %3."
@@ -17085,7 +17723,7 @@ msgstr ""
 msgid "[%1] Skipped entry because it lacks a log_id."
 msgstr ""
 
-msgid "[%1] Skipped entry (%2"
+msgid "[%1] Skipped entry (%2) because it's in the future."
 msgstr ""
 
 msgid ""
@@ -17153,6 +17791,12 @@ msgstr ""
 msgid "Applied migration %1"
 msgstr ""
 
+msgid "Could not create tmp directory for handler \"%1\""
+msgstr ""
+
+msgid "Could not copy \"%1\""
+msgstr ""
+
 msgid "No tmp directory configured!"
 msgstr ""
 
@@ -17172,6 +17816,14 @@ msgid "No handler directories are configured!"
 msgstr ""
 
 msgid ""
+"[TaskQueue] Queue processing failed because of invalid task queue handler \"%1\"; "
+"queue was halted"
+msgstr ""
+
+msgid "Invalid task queue handler \"%1\""
+msgstr ""
+
+msgid ""
 "[TaskQueue] Queue processing failed using handler %1: %2 [%3]; queue was NOT halted"
 msgstr ""
 
@@ -17185,6 +17837,11 @@ msgstr ""
 
 msgid ""
 "[TaskQueue] Cancelling of task failed because no handler directories are configured"
+msgstr ""
+
+msgid ""
+"[TaskQueue] Cancelling of task failed because of invalid task queue handler \"%1\"; "
+"plugin directories were %2"
 msgstr ""
 
 msgid ""
@@ -17248,26 +17905,16 @@ msgid ""
 "labels."
 msgstr ""
 
-msgid "Zero-based index of worksheet to use. If omitted first worksheet (0"
+msgid "Zero-based index of worksheet to use. If omitted first worksheet (0) is used."
 msgstr ""
 
 msgid "Profile development tools"
-msgstr ""
-
-msgid ""
-"Create a profile <list> element from an Excel spreadsheet. Your list should have one "
-"list item per row"
 msgstr ""
 
 msgid "Create a profile <list> element from an Excel spreadsheet. "
 msgstr ""
 
 msgid "Excel file to convert to profile <relationshipTable> element."
-msgstr ""
-
-msgid ""
-"Create a profile <relationshipTable> element from an Excel spreadsheet. Your "
-"relationship type list should have one type per row"
 msgstr ""
 
 msgid "Create a profile <relationshipTable> element from an Excel spreadsheet. "
@@ -17323,13 +17970,18 @@ msgstr ""
 msgid "File to write delimited output to."
 msgstr ""
 
-msgid "Format of output (CSV or tab-delimited"
+msgid ""
+"XML format of input file. Valid options are \"PastPerfect\" (PastPerfect XML export "
+"files), \"FMPXML\" (FileMaker Pro XML Result format)."
+msgstr ""
+
+msgid "Format of output (CSV or tab-delimited). Default is CSV."
 msgstr ""
 
 msgid "Data conversion tools"
 msgstr ""
 
-msgid "Convert selected tags in an XML file to delimited text (CSV or tab-delimited"
+msgid "Convert selected tags in an XML file to delimited text (CSV or tab-delimited)."
 msgstr ""
 
 msgid "Could not open input file %1"
@@ -17380,12 +18032,6 @@ msgstr ""
 msgid "Access control"
 msgstr ""
 
-msgid "Reset a user's password"
-msgstr ""
-
-msgid "Reset a user's password."
-msgstr ""
-
 msgid "You must specify a user name"
 msgstr ""
 
@@ -17404,7 +18050,7 @@ msgstr ""
 msgid "You must specify at least one valid role for the user"
 msgstr ""
 
-msgid "You must specify at least one valid group for the user"
+msgid "You must specify at least one valid group for the user, or omit the group option"
 msgstr ""
 
 msgid "Account creation for user %1 failed: %2"
@@ -17481,25 +18127,25 @@ msgstr ""
 msgid "Importing %1"
 msgstr ""
 
-msgid "Could not reset password for  user %1 %2 (%3"
+msgid "Could not reset password for  user %1 %2 (%3): %4"
 msgstr ""
 
-msgid "Reset password for user %1 %2 (%3"
+msgid "Reset password for user %1 %2 (%3)"
 msgstr ""
 
-msgid "Could not create user %1 %2 (%3"
+msgid "Could not create user %1 %2 (%3): %4"
 msgstr ""
 
-msgid "Created user %1 %2 (%3"
+msgid "Created user %1 %2 (%3)"
 msgstr ""
 
-msgid "Could not delete user %1 %2 (%3"
+msgid "Could not delete user %1 %2 (%3): %4"
 msgstr ""
 
-msgid "Deleted user %1 %2 (%3"
+msgid "Deleted user %1 %2 (%3)"
 msgstr ""
 
-msgid "Could not find user %1 %2 (%3"
+msgid "Could not find user %1 %2 (%3) to delete"
 msgstr ""
 
 msgid "Added %1; updated %2; removed %3"
@@ -17514,11 +18160,6 @@ msgid ""
 msgstr ""
 
 msgid "Import logins from spreadsheet."
-msgstr ""
-
-msgid ""
-"Batch import logins from a spreadsheet. Sheet should be CSV or XLSX format and "
-"include the following columns in the prescribed order: first name"
 msgstr ""
 
 msgid "Invalid reasons specified"
@@ -17643,19 +18284,31 @@ msgstr ""
 msgid "Update of installation profile successful"
 msgstr ""
 
-msgid "Name of the profile to install (filename in profiles directory"
+msgid ""
+"Name of the profile to install (filename in profiles directory, minus the .xml "
+"extension)."
 msgstr ""
 
-msgid "Email address of the system administrator (%1"
+msgid ""
+"Directory to get profile. Default is: \"%1\". This directory must contain the "
+"profile.xsd schema so that the installer can validate the installation profile."
 msgstr ""
 
-msgid "Flag must be set in order to overwrite an existing installation.  Also"
+msgid "Email address of the system administrator (%1)."
+msgstr ""
+
+msgid ""
+"Flag must be set in order to overwrite an existing installation.  Also, the "
+"__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ global must be set to a true "
+"value."
 msgstr ""
 
 msgid "Debug flag for installer."
 msgstr ""
 
-msgid "Skip Roles. Default is false"
+msgid ""
+"Skip Roles. Default is false, but if you have many roles and access control enabled "
+"then install may take some time"
 msgstr ""
 
 msgid "Configuration"
@@ -17692,23 +18345,24 @@ msgstr ""
 
 msgid ""
 "File name of profile to use as base profile. Omit if you do not want to use a base "
-"profile. (Optional"
+"profile. (Optional)"
 msgstr ""
 
-msgid "Name of the profile"
+msgid "Name of the profile, used for \"profileName\" element."
 msgstr ""
 
-msgid "URL pointing to more information about the profile. (Optional"
+msgid "URL pointing to more information about the profile. (Optional)"
 msgstr ""
 
-msgid "Description of the profile"
+msgid "Description of the profile, used for \"profileDescription\" element. (Optional)"
 msgstr ""
 
 msgid ""
-"File to output profile to. If omitted profile is printed to standard output. (Optional"
+"File to output profile to. If omitted profile is printed to standard output. "
+"(Optional)"
 msgstr ""
 
-msgid "Limit output to configuration changes made after this UNIX timestamp. (Optional"
+msgid "Limit output to configuration changes made after this UNIX timestamp. (Optional)"
 msgstr ""
 
 msgid "Export current system configuration as an XML installation profile."
@@ -17799,10 +18453,19 @@ msgid ""
 msgstr ""
 
 msgid ""
+"Timestamp to use to filter the configuration changes that should be exported/pushed. "
+"Optional. The timestamp is only used for the very first push to that system. After "
+"that the master system will store the last push timestamp and use that instead. This "
+"parameter is a fixed offset/\"starting point\" of sorts."
+msgstr ""
+
+msgid ""
 "Path to directory in which to log import details. If not set no logs will be recorded."
 msgstr ""
 
-msgid "Logging threshold. Possible values are"
+msgid ""
+"Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, "
+"NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO."
 msgstr ""
 
 msgid "Pushes configuration changes from this system out to other systems."
@@ -17830,16 +18493,18 @@ msgstr ""
 
 msgid ""
 "Restart/reset unfinished tasks before queue processing. This option can be useful "
-"when the task queue script (or the whole machine"
+"when the task queue script (or the whole machine) crashed and you have 'zombie' "
+"entries in your task queue. This option shouldn't interfere with any existing task "
+"queue processes that are actually running."
 msgstr ""
 
 msgid "Skip running of recurring tasks and run only queued tasks."
 msgstr ""
 
-msgid "Only run recurring tasks"
+msgid "Only run recurring tasks, ignoring queued tasks."
 msgstr ""
 
-msgid "Only process specified tasks (eg. mediaproc."
+msgid "Only process specified tasks (eg. mediaproc.)"
 msgstr ""
 
 msgid "Cron"
@@ -17863,6 +18528,11 @@ msgstr ""
 msgid "A valid row id must be specified"
 msgstr ""
 
+msgid ""
+"Data to return from log. Possible values are \"tables\" (return all tables referenced "
+"in the log and \"log\" (return log data). Default is \"log\"."
+msgstr ""
+
 msgid "Table to return log for."
 msgstr ""
 
@@ -17880,7 +18550,7 @@ msgstr ""
 msgid "Dump change log for a record."
 msgstr ""
 
-msgid "Dumps change log data for a row (specified by row ID"
+msgid "Dumps change log data for a row (specified by row ID) in a table."
 msgstr ""
 
 msgid "GUID: %1"
@@ -17913,7 +18583,9 @@ msgstr ""
 msgid "Returns table and row ID for a GUID."
 msgstr ""
 
-msgid "The media directory is not writeable by the current user. Try again"
+msgid ""
+"The media directory is not writeable by the current user. Try again, running the "
+"import as the web server user."
 msgstr ""
 
 msgid "You must specify a directory to import media from"
@@ -17994,7 +18666,9 @@ msgstr ""
 msgid "Imported media from source %1"
 msgstr ""
 
-msgid "Data to import. For files provide the path; for database"
+msgid ""
+"Data to import. For files provide the path; for database, OAI and other non-file "
+"sources provide a URL."
 msgstr ""
 
 msgid "User name of user to log import against."
@@ -18014,12 +18688,15 @@ msgstr ""
 
 msgid ""
 "Sets how match between media and target record identifier is made. Valid values are: "
-"STARTS"
+"STARTS, ENDS, CONTAINS, EXACT. Default is EXACT."
 msgstr ""
 
 msgid ""
 "Determines how matches are made between media and records. Valid values are "
-"DIRECTORY_NAME"
+"DIRECTORY_NAME, FILE_AND_DIRECTORY_NAMES, FILE_NAME. Set to DIRECTORY_NAME to match "
+"media directory names to target record identifiers; to FILE_AND_DIRECTORY_NAMES to "
+"match on both file and directory names; to FILE_NAME to match only on file names. "
+"Default is FILE_NAME."
 msgstr ""
 
 msgid ""
@@ -18040,19 +18717,20 @@ msgstr ""
 
 msgid ""
 "Table name of record to import media into. Should be a valid representation-taking "
-"table such as ca_objects"
-msgstr ""
-
-msgid ""
-"Type to use for all newly created target records. Default is the first type in the "
-"target's type list."
+"table such as ca_objects, ca_entities, ca_occurrences, ca_places, etc. Default is "
+"ca_objects."
 msgstr ""
 
 msgid "Identifier to use for all newly created target records."
 msgstr ""
 
 msgid ""
-"Sets how identifiers of newly created target records are set. Valid values are AUTO"
+"Sets how identifiers of newly created target records are set. Valid values are AUTO, "
+"FILENAME, FILENAME_NO_EXT, DIRECTORY_AND_FILENAME. Set to AUTO to use an identifier "
+"calculated according to system numbering settings; set to FILENAME to use the file "
+"name as identifier; set to FILENAME_NO_EXT to use the file name stripped of extension "
+"as the identifier; use DIRECTORY_AND_FILENAME to set the identifer to the directory "
+"name and file name with extension. Default is AUTO."
 msgstr ""
 
 msgid ""
@@ -18072,7 +18750,12 @@ msgid "Identifier to use for all newly created representation records."
 msgstr ""
 
 msgid ""
-"Sets how identifiers of newly created representations are set. Valid values are AUTO"
+"Sets how identifiers of newly created representations are set. Valid values are AUTO, "
+"FILENAME, FILENAME_NO_EXT, DIRECTORY_AND_FILENAME. Set to AUTO to use an identifier "
+"calculated according to system numbering settings; set to FILENAME to use the file "
+"name as identifier; set to FILENAME_NO_EXT to use the file name stripped of extension "
+"as the identifier; use DIRECTORY_AND_FILENAME to set the identifer to the directory "
+"name and file name with extension. Default is AUTO."
 msgstr ""
 
 msgid ""
@@ -18142,21 +18825,35 @@ msgstr ""
 
 msgid ""
 "Dataset to import. For XLSX files this is equivalent to worksheets. Dataset indexes "
-"are zero-based. For example"
+"are zero-based. For example, in Excel to import the first worksheet set this option "
+"to zero (or omit it, as the default is zero)."
 msgstr ""
 
 msgid "Mapping to import data with."
 msgstr ""
 
-msgid "The format of the data to import. (Ex. XLSX"
+msgid ""
+"The format of the data to import. (Ex. XLSX, tab, CSV, mysql, OAI, Filemaker XML, "
+"ExcelXML, MARC). If omitted an attempt will be made to automatically identify the "
+"data format."
+msgstr ""
+
+msgid ""
+"Logging threshold. Possible values are, in ascending order of importance: DEBUG, "
+"INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO."
 msgstr ""
 
 msgid ""
 "Limit logging to specific event types when log level is set to INFO. Valid values "
-"are: GENERAL (general status messages"
+"are: GENERAL (general status messages), EXISTING_RECORD_POLICY (messages relating to "
+"merging of existing records), SKIP (messages relating to conditional skipping of "
+"mappings, groups or records), RELATIONSHIPS (messages relating to creating of "
+"relationships). Separate multiple types with commas or semicolumns."
 msgstr ""
 
-msgid "When importing an Excel .xslx file"
+msgid ""
+"When importing an Excel .xslx file, if set import will be performed on all worksheets "
+"in the file. By default, only the first worksheet is imported."
 msgstr ""
 
 msgid "JSON-encoded key value pairs to add to import environment values."
@@ -18169,12 +18866,14 @@ msgstr ""
 
 msgid ""
 "If set import is performed without a transaction. This allows viewing of imported "
-"data during the import"
+"data during the import, which may be useful during debugging/development. It may also "
+"lead to data corruption and should only be used for testing."
 msgstr ""
 
 msgid ""
 "If set indexing of changes made during import is not done. This may significantly "
-"reduce import time"
+"reduce import time, but will neccessitate a reindex of the entire database after the "
+"import."
 msgstr ""
 
 msgid ""
@@ -18192,7 +18891,8 @@ msgid "Import data from many types of data sources."
 msgstr ""
 
 msgid ""
-"Import data from many types of data sources including other CollectiveAccess systems"
+"Import data from many types of data sources including other CollectiveAccess systems, "
+"MySQL databases and Excel, delimited text, XML and MARC files."
 msgstr ""
 
 msgid "You must specify a file!"
@@ -18260,18 +18960,22 @@ msgid ""
 "Path to directory in which to log export details. If not set no logs will be recorded."
 msgstr ""
 
-msgid "Optional logging threshold. Possible values are"
+msgid ""
+"Optional logging threshold. Possible values are, in ascending order of important: "
+"DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO."
 msgstr ""
 
 msgid ""
 "Switches to RDF export mode. You can use this to assemble record-level exports across "
-"authorities with multiple mappings in a single export (usually an RDF graph"
+"authorities with multiple mappings in a single export (usually an RDF graph). -s, -i "
+"and -m are ignored and -c is required."
 msgstr ""
 
 msgid "Configuration file for RDF export mode."
 msgstr ""
 
-msgid "Output non-CSV exports as individual files"
+msgid ""
+"Output non-CSV exports as individual files, rather than a single concatenated file."
 msgstr ""
 
 msgid "Include deleted records."
@@ -18283,13 +18987,13 @@ msgid ""
 "uses the identifier of the exported records."
 msgstr ""
 
-msgid "Export data to a CSV"
+msgid "Export data to a CSV, MARC or XML file."
 msgstr ""
 
 msgid "Path to AAT XML file."
 msgstr ""
 
-msgid "Load Getty Art & Architecture Thesaurus (AAT"
+msgid "Load Getty Art & Architecture Thesaurus (AAT) into CollectiveAccess."
 msgstr ""
 
 msgid "Loads the AAT from a Getty-provided XML file."
@@ -18307,7 +19011,7 @@ msgstr ""
 msgid "Path to ULAN import configuration file."
 msgstr ""
 
-msgid "Load Getty Union List of Artist Names (ULAN"
+msgid "Load Getty Union List of Artist Names (ULAN) into CollectiveAccess."
 msgstr ""
 
 msgid "Loads the ULAN from a Getty-provided XML file."
@@ -18337,9 +19041,6 @@ msgid ""
 msgstr ""
 
 msgid "Loading non-preferred terms"
-msgstr ""
-
-msgid "$is_existing_item ? 'Updated preferred term %1' : 'Added preferred term %1"
 msgstr ""
 
 msgid "Could not update term %1: %2"
@@ -18454,13 +19155,13 @@ msgstr ""
 msgid "Required. File to save output to."
 msgstr ""
 
-msgid "Format to output in. Supported values as XLSX"
+msgid "Format to output in. Supported values as XLSX, DOCX, TAB and CSV."
 msgstr ""
 
 msgid "Code of display to format data with."
 msgstr ""
 
-msgid "Write search to XLSX"
+msgid "Write search to XLSX, Docx or PDF file using display."
 msgstr ""
 
 msgid "An import mapping must be specified"
@@ -18583,7 +19284,10 @@ msgstr ""
 msgid "Translate system into the specified language."
 msgstr ""
 
-msgid "Translate list items"
+msgid ""
+"Translate list items, metadata elements, relationship types, user interfaces, "
+"displays and search forms into selected languages. By default translation will be to "
+"all languages enabled for cataloguing."
 msgstr ""
 
 msgid "[Sort: %1][Mem: %2]"
@@ -18601,12 +19305,7 @@ msgstr ""
 msgid "Maintenance"
 msgstr ""
 
-msgid ""
-"CollectiveAccess relies upon sort values when sorting values that should not sort "
-"alphabetically"
-msgstr ""
-
-msgid "Rebuilds values use to sort by title"
+msgid "Rebuilds values use to sort by title, name and identifier."
 msgstr ""
 
 msgid "Loading valid file paths from database"
@@ -18621,16 +19320,24 @@ msgstr ""
 msgid "There are %1 files total"
 msgstr ""
 
-msgid "%1 file (%2"
+msgid "%1 file (%2) was deleted"
 msgstr ""
 
-msgid "%1 files (%2"
+msgid "%1 file (%2) is unused"
+msgstr ""
+
+msgid "%1 files (%2) were deleted"
+msgstr ""
+
+msgid "%1 files (%2) are unused"
 msgstr ""
 
 msgid "Delete unused files. Default is false."
 msgstr ""
 
-msgid "Detects and"
+msgid ""
+"Detects and, optionally, removes media present in the media directories but not "
+"referenced in the database."
 msgstr ""
 
 msgid "Help text to come"
@@ -18650,7 +19357,8 @@ msgstr ""
 
 msgid ""
 "%1 files are referenced by %2 deleted records. Both the records and the files will be "
-"deleted if you re-run the script with the -d (--delete"
+"deleted if you re-run the script with the -d (--delete) option and the correct "
+"permissions."
 msgstr ""
 
 msgid "It is highly recommended to create a full backup before you do this!"
@@ -18663,8 +19371,20 @@ msgid ""
 msgstr ""
 
 msgid ""
+"Detects and, optionally, completely removes object representations marked as deleted "
+"in the database. Files referenced by these records are also removed."
+msgstr ""
+
+msgid ""
+"Detects and, optionally, completely removes object representations marked as deleted "
+"in the database. Files referenced by these records are also removed. This can be "
+"useful if there has been a lot of fluctuation in your representation stock and you "
+"want to free up disk space."
+msgstr ""
+
+msgid ""
 "Are you sure you want to PERMANENTLY remove all deleted records? This cannot be "
-"undone.nnType 'y' to proceed or 'N' to cancel"
+"undone.nnType 'y' to proceed or 'N' to cancel, then hit return "
 msgstr ""
 
 msgid "Removing deleted %1 from database"
@@ -18703,7 +19423,15 @@ msgstr ""
 msgid "Remove search indexing queue lock file if present."
 msgstr ""
 
-msgid "The search indexing queue is a task run periodically"
+msgid ""
+"The search indexing queue is a task run periodically, usually via cron, to process "
+"pending indexing tasks. Simultaneous instances of the queue processor are prevented "
+"by means of a lock file. The lock file is created when the queue starts and deleted "
+"when it completed. While it is present new queue processing instances will refuse to "
+"start. In some cases, when a queue processing instance is killed or crashes, the lock "
+"file may not be removed and the queue will refuse to re-start. Lingering lock files "
+"may be removed using this command. Note that you must run caUtils under a user with "
+"privileges to delete the lock file."
 msgstr ""
 
 msgid "Cannot determine web server user. Using %1 instead."
@@ -18715,26 +19443,32 @@ msgstr ""
 msgid "Cannot determine the group. Please specify one with the --group option."
 msgstr ""
 
-msgid "Fixing permissions for the media directory (media/appname"
+msgid ""
+"Set ownership of directories to specifed user. If not set, an attempt will be made to "
+"determine the name of the web server user automatically. If the web server user "
+"cannot be determined the current user will be used."
 msgstr ""
 
-msgid "Fixing permissions for the user media upload directory (uploads"
-msgstr ""
-
-msgid "Set ownership of directories to specifed user. If not set"
-msgstr ""
-
-msgid "Set ownership of directories to specifed group. If not set"
+msgid ""
+"Set ownership of directories to specifed group. If not set, the current group will be "
+"used."
 msgstr ""
 
 msgid ""
 "Fix folder permissions. MUST BE RUN WHILE LOGGED IN WITH ADMINSTRATIVE/ROOT "
-"PERMISSIONS. You are currently logged in as %1 (uid %2"
+"PERMISSIONS. You are currently logged in as %1 (uid %2)"
 msgstr ""
 
 msgid ""
 "CollectiveAccess must have both read and write access to the temporary storage "
-"directory (%3"
+"directory (%3), media directory (media) and HTMLPurifier definition cache (app/lib/"
+"Parsers/htmlpurifier/standalone/HTMLPurifier/DefinitionCache). A run-time error will "
+"be displayed if any of these locations is not accessible to the application. To "
+"change these permissions to allow CollectiveAccess to run normally run this command "
+"while logged in with administrative/root privileges. You are currently logged in as "
+"%1 (uid %2). You can specify which user will be given ownership of the directories "
+"using the --user option. If you do not specify a user, the web server user for your "
+"server will be automatically determined and used."
 msgstr ""
 
 msgid "Evaluating"
@@ -18797,10 +19531,10 @@ msgstr ""
 msgid "[Media attribute][MD5 mismatch] %1; value_id=%2; version %3 [%4]"
 msgstr ""
 
-msgid "Media attribute"
+msgid "MD5 mismatch"
 msgstr ""
 
-msgid "MD5 mismatch"
+msgid "Media attribute"
 msgstr ""
 
 msgid "%1 media in %2 metadata elements"
@@ -18844,7 +19578,7 @@ msgid ""
 "the report."
 msgstr ""
 
-msgid "Output format. (text|tab|csv"
+msgid "Output format. (text|tab|csv)"
 msgstr ""
 
 msgid "Email address to send report to."
@@ -18867,7 +19601,9 @@ msgstr ""
 
 msgid ""
 "Comma separated list of kind of media to check. Valid kinds are "
-"ca_object_representations (object representations"
+"ca_object_representations (object representations), and ca_attributes (metadata "
+"elements). You may also specify \"all\" to check both kinds of media. Default is "
+"\"all\""
 msgstr ""
 
 msgid "Verify media fixity using database file signatures"
@@ -18898,10 +19634,19 @@ msgid ""
 "exist"
 msgstr ""
 
+msgid ""
+"Which cache to clear. Use \"app\" for the application cache (include all user "
+"sessions); use \"userMedia\" for user-uploaded media; use \"all\" for all cached. "
+"Default is all."
+msgstr ""
+
 msgid "Clear application caches and tmp directories."
 msgstr ""
 
-msgid "CollectiveAccess stores often used values"
+msgid ""
+"CollectiveAccess stores often used values, processed configuration files, user-"
+"uploaded media and other types of data in application caches. You can clear these "
+"caches using this command."
 msgstr ""
 
 msgid "Performing garbage collection on application caches and temporary directories..."
@@ -18914,6 +19659,14 @@ msgid ""
 msgstr ""
 
 msgid "Remove stale files from application caches and temporary file locations."
+msgstr ""
+
+msgid ""
+"CollectiveAccess stores often used values, processed configuration files, user-"
+"uploaded media and other types of data in application caches. You can clean out old "
+"expired data from these locations using this command. If you want to completely clear "
+"the application caches of all data regardless of expiration date use the \"clear-"
+"caches\" command."
 msgstr ""
 
 msgid "Checking media processing plugins..."
@@ -18956,7 +19709,9 @@ msgstr ""
 msgid "There were errors updating an attribute row: "
 msgstr ""
 
-msgid "Element id(s"
+msgid ""
+"Element id(s) to reload. Multiple entries are delimited by comma or semicolon. "
+"[Optional]"
 msgstr ""
 
 msgid "Reload InformationService attribute values from referenced URLs."
@@ -19016,7 +19771,7 @@ msgstr ""
 msgid "Preloading from %1 is not supported"
 msgstr ""
 
-msgid "Preloading from %1::%2 (%3"
+msgid "Preloading from %1::%2 (%3)"
 msgstr ""
 
 msgid "Preloading from %1::%2 failed because there is no detail configured for %2"
@@ -19037,12 +19792,6 @@ msgid "Generating/verifying GUIDs for table %1"
 msgstr ""
 
 msgid "Generate missing guids"
-msgstr ""
-
-msgid ""
-"Generates guids for all records that don't have one yet. This can be useful if you "
-"plan on using the data synchronization/replication feature in the future. For more "
-"info see here: %1"
 msgstr ""
 
 msgid "Removing unused GUIDs"
@@ -19072,13 +19821,13 @@ msgstr ""
 msgid "Table %1 does not seem to have any duplicates!"
 msgstr ""
 
-msgid "Specific tables to deduplicate"
+msgid "Specific tables to deduplicate, separated by commas or semicolons. Mandatory."
 msgstr ""
 
 msgid "Delete duplicate records. Default is false."
 msgstr ""
 
-msgid "Show and"
+msgid "Show and, optionally, remove duplicate records"
 msgstr ""
 
 msgid ""
@@ -19087,11 +19836,6 @@ msgid ""
 msgstr ""
 
 msgid "New system GUID is %1"
-msgstr ""
-
-msgid ""
-"Generates a new system GUID for this setup. Useful if you're using the sync/"
-"replication feature."
 msgstr ""
 
 msgid ""
@@ -19104,12 +19848,6 @@ msgstr ""
 msgid ""
 "User names to notify if there are errors. Multiple entries are delimited by comma or "
 "semicolon. Invalid or non-existing user names will be ignored. [Optional]"
-msgstr ""
-
-msgid ""
-"Groups to notify if there are errors. They're identified by group code. Multiple "
-"entries are delimited by comma or semicolon. Invalid or non-existing groups will be "
-"ignored. [Optional]"
 msgstr ""
 
 msgid "Checks integrity for all URL references in the database."
@@ -19125,7 +19863,8 @@ msgid "Checks periodic metadata alert triggers"
 msgstr ""
 
 msgid ""
-"This utility checks all periodic metadatadata alert triggers users have set up and"
+"This utility checks all periodic metadatadata alert triggers users have set up and, "
+"if they triggered, sends notifications to the recipients of these rules."
 msgstr ""
 
 msgid "Processing %1.%2"
@@ -19145,7 +19884,10 @@ msgstr ""
 
 msgid ""
 "Text fields that are dependent upon other fields are only refreshed on save and "
-"import. For dependent display templates using dimensions (length"
+"import. For dependent display templates using dimensions (length, width) formatting, "
+"changes in the dimensions.conf configuration files are not automatically applied to "
+"existing values. This utility will batch update all dependent values using the "
+"current system configuration."
 msgstr ""
 
 msgid "Could not create root for relationship %1: %2"
@@ -19168,7 +19910,10 @@ msgstr ""
 
 msgid ""
 "Each relationship has a hierarchy of relationship types defined. Each type hierarchy "
-"must have a root record. Root records are normally created during system installation"
+"must have a root record. Root records are normally created during system "
+"installation, but may be missing due to accidental deletion or failure to create "
+"during system updates. This command will check for presence of require root records "
+"and recreate missing roots as required."
 msgstr ""
 
 msgid "Starting..."
@@ -19201,7 +19946,11 @@ msgstr ""
 msgid ""
 "CollectiveAccess supports tracking of location and use histories through history "
 "tracking policies. Current values for each record for each policy are cached to speed "
-"browses and display. For records with values having future dates"
+"browses and display. For records with values having future dates, current values will "
+"change as those future dates become present dates. This command will update the "
+"cached current values to reflect the transition from future to current. It should be "
+"run periodically (at least once a day) to ensure the accuracy of the current value "
+"cache."
 msgstr ""
 
 msgid "Regenerate date/time stamps for movement and object-based location tracking."
@@ -19230,7 +19979,9 @@ msgstr ""
 
 msgid ""
 "To improve sorting performance an abbreviated sortable value is stored for all text-"
-"based metadata attributes (Ex. text"
+"based metadata attributes (Ex. text, URL, LCSH and InformationService elements). This "
+"command regenerates and reloads sortable values from current data, which systems "
+"created prior to version 1.7.9 will lack."
 msgstr ""
 
 msgid "[%1]"
@@ -19253,10 +20004,21 @@ msgid ""
 "primary."
 msgstr ""
 
+msgid ""
+"Every record with related representations must have at least one of those "
+"representation relationships marked as the primary relationship. The primary "
+"representation will be used as the default media for the record. In some situations "
+"it is possible that one or more representations can be related to a record without "
+"any having the \"is primary\" designation. Records without primary representations "
+"may display oddly, or not at all. This command will check all representations "
+"relationships and ensure that all records with related representations have at least "
+"one marked as primary."
+msgstr ""
+
 msgid "%1 %2 has invalid hierarchy_id %3; root id was %4 "
 msgstr ""
 
-msgid "Fixed hierarchy_id (%1"
+msgid "Fixed hierarchy_id (%1) root value"
 msgstr ""
 
 msgid "Found %1 invalid hierarchy ids"
@@ -19271,7 +20033,9 @@ msgstr ""
 msgid ""
 "Each record includes a field containing the id of the root record of the hierarchy to "
 "which is belongs. In some situations these values may not accurately reflect the "
-"current root of the hierarchy"
+"current root of the hierarchy, potentially causing issues with hierarchy display and "
+"navigation. This command will check all hierarchy values and, if the \"repair\" "
+"option is set, correct incorrectly stored values."
 msgstr ""
 
 msgid "[reprocess-media] Start preparing to reprocess media"
@@ -19292,10 +20056,14 @@ msgstr ""
 msgid "Re-processing icons"
 msgstr ""
 
-msgid "Limit re-processing to specified mimetype(s"
+msgid ""
+"Limit re-processing to specified mimetype(s) or mimetype stubs. Separate multiple "
+"mimetypes with commas."
 msgstr ""
 
-msgid "Do not reprocess specified mimetype(s"
+msgid ""
+"Do not reprocess specified mimetype(s) or mimetype stubs. Separate multiple mimetypes "
+"with commas."
 msgstr ""
 
 msgid ""
@@ -19319,7 +20087,10 @@ msgstr ""
 
 msgid ""
 "Comma separated list of kind of media to reprocess. Valid kinds are "
-"ca_object_representations (object representations"
+"ca_object_representations (object representations), ca_attributes (metadata elements) "
+"and icons (icon graphics on list items, storage locations, editors, editor screens, "
+"tours and tour stops). You may also specify \"all\" to reprocess all kinds of media. "
+"Default is \"all\""
 msgstr ""
 
 msgid "Reprocess all unprocessed media"
@@ -19372,7 +20143,9 @@ msgstr ""
 
 msgid ""
 "Comma separated list of kind of media to reindex. Valid kinds are "
-"ca_object_representations (object representations"
+"ca_object_representations (object representations), and ca_attributes (metadata "
+"elements). You may also specify \"all\" to reindex both kinds of media. Default is "
+"\"all\""
 msgstr ""
 
 msgid "Reindex PDF media for in-viewer content search."
@@ -19381,7 +20154,9 @@ msgstr ""
 msgid ""
 "The CollectiveAccess document viewer can search text within PDFs and highlight "
 "matches. To enable this feature PDF content must be analyzed and indexed. If your "
-"database predates the introduction of in-viewer PDF search in CollectiveAccess 1.4"
+"database predates the introduction of in-viewer PDF search in CollectiveAccess 1.4, "
+"or search is otherwise failing to work properly, you can use this command to analyze "
+"and index PDFs in the database."
 msgstr ""
 
 msgid "Finding annotations"
@@ -19436,7 +20211,10 @@ msgstr ""
 
 msgid ""
 "Sets media class values for object representations. A media class indicates the "
-"general type of media (image"
+"general type of media (image, video, audio, etc.) and should be set for each uploaded "
+"representation on upload. When migrating from an older system these values may not be "
+"set. This command will ensure all representations with associated media are assigned "
+"a media class."
 msgstr ""
 
 msgid "No media found"
@@ -19454,13 +20232,16 @@ msgstr ""
 msgid "Force Whisper-based transcription of audio/visual media."
 msgstr ""
 
-msgid "Database already at current revision (%1"
+msgid "Database already at current revision (%1). No update is required."
 msgstr ""
 
 msgid "Pre-flight checks failed:n %1"
 msgstr ""
 
-msgid "Are you sure you want to update your version 1.7 system (database revision %1"
+msgid ""
+"Are you sure you want to update your version 1.7 system (database revision %1)?nNOTE: "
+"you MUST backup your database before applying this update!nnType 'y' to proceed or "
+"'n' to cancel, then hit return"
 msgstr ""
 
 msgid "nn------------------------------------------------------------------------------"
@@ -19498,13 +20279,17 @@ msgstr ""
 
 msgid ""
 "Performs a multi-step process to update a 1.7.x database for use with "
-"CollectiveAccess version 2.0"
+"CollectiveAccess version 2.0, including update of database schema, regeneration of "
+"sortable values and full rebuild of the search index. For larger systems this process "
+"may take significant time, up to several hours. The migration process is generally "
+"safe, and will not damage systems that are already updated. However it is strongly "
+"recommended that a full backup of the database be made before running this update."
 msgstr ""
 
 msgid ""
 "Are you sure you want to update your CollectiveAccess database from revision %1 to %2?"
 "nNOTE: you MUST backup your database before applying updates!nnType 'y' to proceed or "
-"'n' to cancel"
+"'n' to cancel, then hit return "
 msgstr ""
 
 msgid "Updating database"
@@ -19551,7 +20336,7 @@ msgstr ""
 msgid "Caching detail exports"
 msgstr ""
 
-msgid "Caching for detail %1 (%2/%3"
+msgid "Caching for detail %1 (%2/%3): %4"
 msgstr ""
 
 msgid "Cached %1 detail exports"
@@ -19568,7 +20353,8 @@ msgid "Replicate data from one CollectiveAccess system to another."
 msgstr ""
 
 msgid ""
-"Replicates data in one CollectiveAccess instance based upon data in another instance"
+"Replicates data in one CollectiveAccess instance based upon data in another instance, "
+"subject to configuration in replication.conf."
 msgstr ""
 
 msgid "Source system"
@@ -19613,14 +20399,9 @@ msgstr ""
 msgid "Add missing change log subject records for set items"
 msgstr ""
 
-msgid "Specific tables to reindex"
-msgstr ""
-
 msgid ""
-"CollectiveAccess relies upon indices when searching your data. Indices are simply "
-"summaries of your data designed to speed query processing. The precise form and "
-"characteristics of the indices used will vary with the type of search engine you are "
-"using. They may be stored on disk"
+"Specific tables to reindex, separated by commas or semicolons. If omitted all tables "
+"will be reindexed."
 msgstr ""
 
 msgid ""
@@ -19678,6 +20459,9 @@ msgid "Target"
 msgstr ""
 
 msgid "Num hits"
+msgstr ""
+
+msgid "Time"
 msgstr ""
 
 msgid "Exporting search log"
@@ -19749,7 +20533,9 @@ msgstr ""
 
 msgid ""
 "In order to send email notifications to users an outgoing email server must be "
-"configured in the setup.php file (see %1 for details on configuring a server"
+"configured in the setup.php file (see %1 for details on configuring a server). Use "
+"this utility to test your configuration by sending a test email to the specified "
+"address."
 msgstr ""
 
 msgid "Test outgoing email configuration."
@@ -19781,7 +20567,9 @@ msgstr ""
 msgid "[%1] "
 msgstr ""
 
-msgid "%3Found existing list item %1 (member of list %2"
+msgid ""
+"%3Found existing list item %1 (member of list %2) in "
+"DataMigrationUtils::getListItemID() using idno"
 msgstr ""
 
 msgid "Could not find list with list code %1"
@@ -19790,7 +20578,19 @@ msgstr ""
 msgid "%2Could not find list with list code %1"
 msgstr ""
 
-msgid "%4Found existing list item %1 (member of list %2"
+msgid ""
+"%4Found existing list item %1 (member of list %2) in "
+"DataMigrationUtils::getListItemID() using singular label %3"
+msgstr ""
+
+msgid ""
+"%4Found existing list item %1 (member of list %2) in "
+"DataMigrationUtils::getListItemID() using plural label %3"
+msgstr ""
+
+msgid ""
+"%4Found existing list item %1 (member of list %2) in "
+"DataMigrationUtils::getListItemID() using idno with %3"
 msgstr ""
 
 msgid "Errors setting field values: %1"
@@ -19844,13 +20644,16 @@ msgstr ""
 msgid "%3Created new %1 %2"
 msgstr ""
 
-msgid "%3Found existing %1 %2 in DataMigrationUtils::_getID("
+msgid "%3Found existing %1 %2 in DataMigrationUtils::_getID()"
 msgstr ""
 
-msgid "%4Could not load existing %1 with id %2 (%3"
+msgid ""
+"%4Could not load existing %1 with id %2 (%3) in DataMigrationUtils::_getID() [THIS "
+"SHOULD NOT HAPPEN]"
 msgstr ""
 
-msgid "%5Could not set attributes for %1 with id %2 (%3"
+msgid ""
+"%5Could not set attributes for %1 with id %2 (%3) in DataMigrationUtils::_getID(): %4"
 msgstr ""
 
 msgid "View %1 was not found"
@@ -19919,16 +20722,22 @@ msgstr ""
 msgid "Cannot create user upload directory"
 msgstr ""
 
-msgid "Import all media"
+msgid "Import all media, matching with existing records where possible"
 msgstr ""
 
 msgid "Import only media that can be matched with existing records"
 msgstr ""
 
+msgid "Import all media, creating new records for each"
+msgstr ""
+
 msgid "Import media directories as hierarchies"
 msgstr ""
 
-msgid "%1 (in %2"
+msgid "%1 (in %2)"
+msgstr ""
+
+msgid "Really delete \"%1\"?"
 msgstr ""
 
 msgid "Really delete %1?"
@@ -19947,9 +20756,6 @@ msgid "Is referenced %1 time"
 msgstr ""
 
 msgid "Is referenced %1 times"
-msgstr ""
-
-msgid "($va_ref['count'] == 1"
 msgstr ""
 
 msgid "Has %1 child"
@@ -20135,16 +20941,16 @@ msgstr ""
 msgid "Last changed on %1"
 msgstr ""
 
-msgid "(on this tab"
+msgid "(on this tab)"
 msgstr ""
 
-msgid "(on tab <em>%1</em>"
+msgid "(on tab <em>%1</em>)"
 msgstr ""
 
-msgid "%1 problems on this tab require attention (of %2 total"
+msgid "%1 problems on this tab require attention (of %2 total)"
 msgstr ""
 
-msgid "%1 problem on this tab requires attention (of %2 total"
+msgid "%1 problem on this tab requires attention (of %2 total)"
 msgstr ""
 
 msgid "%1 problems on this tab require attention"
@@ -20306,10 +21112,10 @@ msgstr ""
 msgid "Batch import media"
 msgstr ""
 
-msgid "<strong>Directory (all users"
+msgid "<strong>Directory (all users):</strong> %1"
 msgstr ""
 
-msgid "<strong>Directory (user"
+msgid "<strong>Directory (user):</strong> %1"
 msgstr ""
 
 msgid "Batch export metadata"
@@ -20337,12 +21143,6 @@ msgid "Invalid viewer: %1/%2"
 msgstr ""
 
 msgid "Invalid viewer %1/%2"
-msgstr ""
-
-msgid "$label_text"
-msgstr ""
-
-msgid "$default"
 msgstr ""
 
 msgid "Invalid filename"
@@ -20531,7 +21331,7 @@ msgstr ""
 msgid "Christmas Island"
 msgstr ""
 
-msgid "Cocos (Keeling"
+msgid "Cocos (Keeling) Islands"
 msgstr ""
 
 msgid "Colombia"
@@ -20543,6 +21343,9 @@ msgstr ""
 msgid "Congo"
 msgstr ""
 
+msgid "Congo, The Democratic Republic O"
+msgstr ""
+
 msgid "Cook Islands"
 msgstr ""
 
@@ -20552,7 +21355,7 @@ msgstr ""
 msgid "Costa Rica"
 msgstr ""
 
-msgid "Cote d` Ivoire (Ivory Coast"
+msgid "Cote d` Ivoire (Ivory Coast)"
 msgstr ""
 
 msgid "Croatia"
@@ -20603,7 +21406,7 @@ msgstr ""
 msgid "Ethiopia"
 msgstr ""
 
-msgid "Falkland Islands (Malvinas"
+msgid "Falkland Islands (Malvinas)"
 msgstr ""
 
 msgid "Faroe Islands"
@@ -20615,10 +21418,10 @@ msgstr ""
 msgid "Finland"
 msgstr ""
 
-msgid "France (Includes Monaco"
+msgid "France (Includes Monaco)"
 msgstr ""
 
-msgid "France"
+msgid "France, Metropolitan"
 msgstr ""
 
 msgid "French Guiana"
@@ -20627,7 +21430,7 @@ msgstr ""
 msgid "French Polynesia"
 msgstr ""
 
-msgid "French Polynesia (Tahiti"
+msgid "French Polynesia (Tahiti)"
 msgstr ""
 
 msgid "French Southern Territories"
@@ -20684,7 +21487,7 @@ msgstr ""
 msgid "Heard And Mc Donald Islands"
 msgstr ""
 
-msgid "Holy See (Vatican City State"
+msgid "Holy See (Vatican City State)"
 msgstr ""
 
 msgid "Honduras"
@@ -20714,7 +21517,7 @@ msgstr ""
 msgid "Ireland"
 msgstr ""
 
-msgid "Ireland (Eire"
+msgid "Ireland (Eire)"
 msgstr ""
 
 msgid "Israel"
@@ -20739,9 +21542,6 @@ msgid "Kenya"
 msgstr ""
 
 msgid "Kiribati"
-msgstr ""
-
-msgid "Korea"
 msgstr ""
 
 msgid "Kuwait"
@@ -20822,10 +21622,10 @@ msgstr ""
 msgid "Mexico"
 msgstr ""
 
-msgid "Micronesia"
+msgid "Micronesia, Federated States Of"
 msgstr ""
 
-msgid "Moldova"
+msgid "Moldova, Republic Of"
 msgstr ""
 
 msgid "Monaco"
@@ -20843,7 +21643,7 @@ msgstr ""
 msgid "Mozambique"
 msgstr ""
 
-msgid "Myanmar (Burma"
+msgid "Myanmar (Burma)"
 msgstr ""
 
 msgid "Namibia"
@@ -20897,7 +21697,7 @@ msgstr ""
 msgid "Palau"
 msgstr ""
 
-msgid "Palestinian Territory"
+msgid "Palestinian Territory, Occupied"
 msgstr ""
 
 msgid "Panama"
@@ -21110,7 +21910,7 @@ msgstr ""
 msgid "Vietnam"
 msgstr ""
 
-msgid "Virgin Islands (U.S."
+msgid "Virgin Islands (U.S.)"
 msgstr ""
 
 msgid "Wallis and Furuna Islands"
@@ -21158,13 +21958,16 @@ msgstr ""
 msgid "Connecticut"
 msgstr ""
 
-msgid "Washington"
+msgid "Washington, DC"
 msgstr ""
 
 msgid "Delaware"
 msgstr ""
 
 msgid "Florida"
+msgstr ""
+
+msgid "Micronesia"
 msgstr ""
 
 msgid "Hawaii"
@@ -21281,6 +22084,9 @@ msgstr ""
 msgid "Virgin Islands"
 msgstr ""
 
+msgid "Washington"
+msgstr ""
+
 msgid "Wisconsin"
 msgstr ""
 
@@ -21373,13 +22179,24 @@ msgid ""
 "%1"
 msgstr ""
 
+msgid ""
+"[%3] Parent was skipped using rule \"%1\" with default action because an invalid "
+"action (\"%2\") was specified"
+msgstr ""
+
+msgid "[%3] Parent was skipped using rule \"%1\" with action \"%2\""
+msgstr ""
+
+msgid "[%3] Error processing rule \"%1\" as an error occurred. Error number was \"%2\""
+msgstr ""
+
 msgid "[importHelpers:caProcessRefineryParents] List was not specified"
 msgstr ""
 
 msgid "[importHelpers:caProcessRefineryParents] Invalid table %1"
 msgstr ""
 
-msgid "[%6] Got parent %1 (%2"
+msgid "[%6] Got parent %1 (%2) with id %3 and type %4 for %5"
 msgstr ""
 
 msgid ""
@@ -21455,12 +22272,6 @@ msgid ""
 "and retry."
 msgstr ""
 
-msgid "caGetOption('successMessage"
-msgstr ""
-
-msgid "caGetOption('failureMessage"
-msgstr ""
-
 msgid ""
 "[mediaPluginHelpers::caWhisperInstalled] Added python venv path %1 to environment "
 "PATH variable. Full path is now %2"
@@ -21480,7 +22291,7 @@ msgstr ""
 msgid "Please complete the captcha"
 msgstr ""
 
-msgid "Your Captcha was rejected"
+msgid "Your Captcha was rejected, please try again"
 msgstr ""
 
 msgid "%1 to %2"
@@ -21495,10 +22306,13 @@ msgstr ""
 msgid "type"
 msgstr ""
 
+msgid "Surname, forename"
+msgstr ""
+
 msgid "Interstitial"
 msgstr ""
 
-msgid " (all contents"
+msgid " (all contents)"
 msgstr ""
 
 msgid "Frequently Used"
@@ -21537,7 +22351,7 @@ msgstr ""
 msgid "OR"
 msgstr ""
 
-msgid "Analytics code (&lt;head&gt;"
+msgid "Analytics code (&lt;head&gt;)"
 msgstr ""
 
 msgid ""
@@ -21545,7 +22359,7 @@ msgid ""
 "analytics provider should have provided this content."
 msgstr ""
 
-msgid "Analytics code (start of &lt;body&gt;"
+msgid "Analytics code (start of &lt;body&gt;)"
 msgstr ""
 
 msgid ""
@@ -21553,15 +22367,12 @@ msgid ""
 "Your analytics provider should have provided this content."
 msgstr ""
 
-msgid "Analytics code (end of &lt;body&gt;"
+msgid "Analytics code (end of &lt;body&gt;)"
 msgstr ""
 
 msgid ""
 "Content to be added to the end of the &lt;body&gt; section on all Pawtucket pages. "
 "Your analytics provider should have provided this content."
-msgstr ""
-
-msgid "$ps_key"
 msgstr ""
 
 msgid "year"
@@ -21592,9 +22403,6 @@ msgid "second"
 msgstr ""
 
 msgid "seconds"
-msgstr ""
-
-msgid "$vm_val"
 msgstr ""
 
 msgid " at %1 [HTTP code was %2]"
