@@ -88,16 +88,17 @@ trait CLIUtilsLocalization {
 					foreach($regexes as $rx) {
 						$strings = preg_match_all($rx, $line, $m);
 	
-						$extracted_strings = array_merge($extracted_strings, array_filter($m[1], function($v) {
+						$extracted_strings = array_merge($extracted_strings, array_map(function($x) { 
+							return str_replace('"', "\\\"", $x);
+						}, array_filter($m[1], function($v) {
 							return preg_match("![A-Za-z0-9]+!s", $v);
-						}));
+						})));
 					}
 				}
 			}
 			print CLIProgressBar::finish();
 		}
 		$extracted_strings = array_unique($extracted_strings);
-
 
 		$out = fopen($file, "w");
 		
@@ -125,7 +126,6 @@ trait CLIUtilsLocalization {
 		fputs($out, "\n");
 
 		foreach($extracted_strings as $s) {
-			$s = stripslashes($s);
 			fputs($out, "msgid \"{$s}\"\n");
 			fputs($out, "msgstr \"\"\n\n");
 		}
