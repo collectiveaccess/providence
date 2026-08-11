@@ -94,7 +94,7 @@ msgstr ""
 msgid "Source"
 msgstr ""
 
-msgid "Access values are used to control if and to whom a record should be displayed in a public-facing Pawtucket-based interface. Users logged into the Pawtucket interface will be given the levels of access specified here. If you wish to use the default Pawtucket access policy for an access value set the level to "Use Pawtucket default.""
+msgid "Access values are used to control if and to whom a record should be displayed in a public-facing Pawtucket-based interface. Users logged into the Pawtucket interface will be given the levels of access specified here. If you wish to use the default Pawtucket access policy for an access value set the level to \"Use Pawtucket default.\""
 msgstr ""
 
 msgid "Access status"
@@ -130,7 +130,7 @@ msgstr ""
 msgid "User profile"
 msgstr ""
 
-msgid "Password must not include the phrase "%value""
+msgid "Password must not include the phrase \"%value\""
 msgstr ""
 
 msgid "Password must include at least %value special character"
@@ -772,7 +772,7 @@ msgstr ""
 msgid "Execute batch edit"
 msgstr ""
 
-msgid "Really delete ALL records in "%1"?"
+msgid "Really delete ALL records in \"%1\"?"
 msgstr ""
 
 msgid "Leave batch editor and delete this set"
@@ -964,7 +964,7 @@ msgstr ""
 msgid "Skip files"
 msgstr ""
 
-msgid "List names of files you wish to skip during import below, one per line. You may use asterisks ("*") as wildcards to make partial matches. Values enclosed in "/" characters will be treated as <a href="%1" target="_new">Perl-compatible regular expressions</a>."
+msgid "List names of files you wish to skip during import below, one per line. You may use asterisks (\"*\") as wildcards to make partial matches. Values enclosed in \"/\" characters will be treated as <a href=\"%1\" target=\"_new\">Perl-compatible regular expressions</a>."
 msgstr ""
 
 msgid "Miscellaneous"
@@ -1873,7 +1873,7 @@ msgstr ""
 msgid "Home location is <em>%</em>"
 msgstr ""
 
-msgid "Home location will be set to <em><ifdef code="parent">^parent ➜ </ifdef>^current</em> on save."
+msgid "Home location will be set to <em><ifdef code=\"parent\">^parent ➜ </ifdef>^current</em> on save."
 msgstr ""
 
 msgid "Home location is not set"
@@ -1903,7 +1903,7 @@ msgstr ""
 msgid "Add widget"
 msgstr ""
 
-msgid "Use the button above to add a widget to your dashboard.  You can drag and drop the widgets in the left or right columns in the order you would like them to appear.  To customize the information in each widget, click the <i>"i"</i> button in the upper right corner of the widget.  To remove the widget from your dashboard click the "X" button in the upper right corner of the widget.  Click the "Clear dashboard" button above to remove all widgets from your dashboard.  When you are finished editing your dashboard, click the "Done" button above."
+msgid "Use the button above to add a widget to your dashboard.  You can drag and drop the widgets in the left or right columns in the order you would like them to appear.  To customize the information in each widget, click the <i>\"i\"</i> button in the upper right corner of the widget.  To remove the widget from your dashboard click the \"X\" button in the upper right corner of the widget.  Click the \"Clear dashboard\" button above to remove all widgets from your dashboard.  When you are finished editing your dashboard, click the \"Done\" button above."
 msgstr ""
 
 msgid "To place a dashboard widget in this column drag it here"
@@ -2002,7 +2002,7 @@ msgstr ""
 msgid "%1 to toggle visibility of the image overview"
 msgstr ""
 
-msgid "%1 to return the image to the centered, zoomed out "home" position"
+msgid "%1 to return the image to the centered, zoomed out \"home\" position"
 msgstr ""
 
 msgid "%1 to toggle visibility of viewer controls"
@@ -3910,7 +3910,7 @@ msgstr ""
 msgid "The locale from which the collection originates."
 msgstr ""
 
-msgid "The type of the collection. In CollectiveAccess every collection has a single "instrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it."
+msgid "The type of the collection. In CollectiveAccess every collection has a single \"instrinsic\" type that determines the set of descriptive and administrative metadata that can be applied to it."
 msgstr ""
 
 msgid "Collection identifier"
@@ -4399,7 +4399,7 @@ msgstr ""
 msgid "Apply one or more regular expression-based substitutions to a source value prior to import."
 msgstr ""
 
-msgid "A list of Perl-compatible regular expressions. Each expression has two parts, a matching expression and a substitution expression, and is expressed as a JSON object with <em>match</em> and <em>replaceWith</em> keys. Ex. [{"match": "([\d]+)\.([\d]+)", "replaceWith": "\1:\2"}, {"match": "[^\d:]+", "replaceWith": ""}] "
+msgid "A list of Perl-compatible regular expressions. Each expression has two parts, a matching expression and a substitution expression, and is expressed as a JSON object with <em>match</em> and <em>replaceWith</em> keys. Ex. [{\"match\": \"([\\d]+)\\.([\\d]+)\", \"replaceWith\": \"\\1:\\2\"}, {\"match\": \"[^\\d:]+\", \"replaceWith\": \"\"}] "
 msgstr ""
 
 msgid "Include deleted records"
@@ -5002,13 +5002,13 @@ msgstr ""
 msgid "Restrict relationship removal to types"
 msgstr ""
 
-msgid "Restricts the mapping to remove only relationships linking to an record with one of the specified types. Used when the "replace" option is set for a relationship mapping."
+msgid "Restricts the mapping to remove only relationships linking to an record with one of the specified types. Used when the \"replace\" option is set for a relationship mapping."
 msgstr ""
 
 msgid "Restrict relationship removal to relationship types"
 msgstr ""
 
-msgid "Restricts the mapping to remove only relationships with the specified relationship types. Used when the "replace" option is set for a relationship mapping."
+msgid "Restricts the mapping to remove only relationships with the specified relationship types. Used when the \"replace\" option is set for a relationship mapping."
 msgstr ""
 
 msgid "Hierarchical delimiter for input data"
@@ -5092,7 +5092,7 @@ msgstr ""
 msgid "Match on"
 msgstr ""
 
-msgid "List indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails."
+msgid "List indicating sequence of checks for an existing record; values of array can be \"label\" and \"idno\". Ex. array(\"idno\", \"label\") will first try to match on idno and then label if the first match fails."
 msgstr ""
 
 msgid "Truncate long labels?"
@@ -5374,7 +5374,7 @@ msgstr ""
 msgid "For XML data formats, an XPath expression selecting nodes to be treated as individual records. If left blank, each XML document will be treated as a single record."
 msgstr ""
 
-msgid "Set the locale used for all imported data. Leave on "DEFAULT" to use the system default locale. Otherwise set it to a valid locale code (Ex. en_US, es_MX, fr_CA)."
+msgid "Set the locale used for all imported data. Leave on \"DEFAULT\" to use the system default locale. Otherwise set it to a valid locale code (Ex. en_US, es_MX, fr_CA)."
 msgstr ""
 
 msgid "Source URL"
@@ -5440,10 +5440,10 @@ msgstr ""
 msgid "[loadImporterFromFile:%1] It looks like this is a mapping for the data export framework and you're trying to add it as import mapping!"
 msgstr ""
 
-msgid "Mapping target table %1 is invalidn"
+msgid "Mapping target table %1 is invalid\n"
 msgstr ""
 
-msgid "[loadImporterFromFile:%1] Mapping target table %2 is invalidn"
+msgid "[loadImporterFromFile:%1] Mapping target table %2 is invalid\n"
 msgstr ""
 
 msgid "[loadImporterFromFile:%1] Could not delete existing mapping for %2: %3"
@@ -5530,10 +5530,10 @@ msgstr ""
 msgid "Invalid transform rule: %1"
 msgstr ""
 
-msgid "Row was skipped using rule "%1" with default action because an invalid action ("%2") was specified"
+msgid "Row was skipped using rule \"%1\" with default action because an invalid action (\"%2\") was specified"
 msgstr ""
 
-msgid "Row was skipped using rule "%1" with action "%2""
+msgid "Row was skipped using rule \"%1\" with action \"%2\""
 msgstr ""
 
 msgid "Expression trigger could not be parsed. Please double-check the syntax! Expression was: %1 [%2]"
@@ -5623,7 +5623,7 @@ msgstr ""
 msgid "Finished building content tree for %1 at %2 seconds [%3]"
 msgstr ""
 
-msgid "Content tree isn%1"
+msgid "Content tree is\n%1"
 msgstr ""
 
 msgid "Skipped import of row because dontDoImport was set"
@@ -5776,7 +5776,7 @@ msgstr ""
 msgid "Import completed"
 msgstr ""
 
-msgid "Rollback successful import run in "dry run" mode"
+msgid "Rollback successful import run in \"dry run\" mode"
 msgstr ""
 
 msgid "Could not create object-collection hierarchy child record relationship because no relationship type was configured"
@@ -5788,7 +5788,7 @@ msgstr ""
 msgid "Could not create hierarchy child record for %1"
 msgstr ""
 
-msgid "Replaced value "%1" (%2) with "%3" (%4) for %5 using replacement values"
+msgid "Replaced value \"%1\" (%2) with \"%3\" (%4) for %5 using replacement values"
 msgstr ""
 
 msgid "Importer mapping %1 does not exist"
@@ -6499,16 +6499,16 @@ msgstr ""
 msgid "Always expand/collapse"
 msgstr ""
 
-msgid "Hide "Include child history" controls"
+msgid "Hide \"Include child history\" controls"
 msgstr ""
 
-msgid "Check this option if you want to hide the "Include child history" controls in this bundle placement."
+msgid "Check this option if you want to hide the \"Include child history\" controls in this bundle placement."
 msgstr ""
 
-msgid "Hide "Add to loan" controls"
+msgid "Hide \"Add to loan\" controls"
 msgstr ""
 
-msgid "Check this option if you want to hide the "Add to loan" controls in this bundle placement."
+msgid "Check this option if you want to hide the \"Add to loan\" controls in this bundle placement."
 msgstr ""
 
 msgid "Always create new loan?"
@@ -6517,16 +6517,16 @@ msgstr ""
 msgid "Check this option if you want to only create new loans when recording location. When this option is set linking to existing loans is not possible."
 msgstr ""
 
-msgid ""Add to loan" control label text"
+msgid "\"Add to loan\" control label text"
 msgstr ""
 
-msgid "Text to label "Add to loan" control with. If omitted a default label will be used."
+msgid "Text to label \"Add to loan\" control with. If omitted a default label will be used."
 msgstr ""
 
-msgid "Hide "Add to movement" controls"
+msgid "Hide \"Add to movement\" controls"
 msgstr ""
 
-msgid "Check this option if you want to hide the "Add to movement" controls in this bundle placement."
+msgid "Check this option if you want to hide the \"Add to movement\" controls in this bundle placement."
 msgstr ""
 
 msgid "Always create new movement?"
@@ -6535,40 +6535,40 @@ msgstr ""
 msgid "Check this option if you want to only create new movements when recording location. When this option is set linking to existing movements is not possible."
 msgstr ""
 
-msgid ""Add to movement" control label text"
+msgid "\"Add to movement\" control label text"
 msgstr ""
 
-msgid "Text to label "Add to movement" control with. If omitted a default label will be used."
+msgid "Text to label \"Add to movement\" control with. If omitted a default label will be used."
 msgstr ""
 
-msgid "Hide "Update Location" controls"
+msgid "Hide \"Update Location\" controls"
 msgstr ""
 
-msgid "Check this option if you want to hide the "Update Location" controls in this bundle placement."
+msgid "Check this option if you want to hide the \"Update Location\" controls in this bundle placement."
 msgstr ""
 
-msgid ""Update location" control label text"
+msgid "\"Update location\" control label text"
 msgstr ""
 
-msgid "Text to label "Update location" control with. If omitted a default label will be used."
+msgid "Text to label \"Update location\" control with. If omitted a default label will be used."
 msgstr ""
 
-msgid "Hide "Return to Home Location" controls"
+msgid "Hide \"Return to Home Location\" controls"
 msgstr ""
 
-msgid "Check this option if you want to hide the "Return to Home Location" controls in this bundle placement."
+msgid "Check this option if you want to hide the \"Return to Home Location\" controls in this bundle placement."
 msgstr ""
 
-msgid ""Return to home location" control label text"
+msgid "\"Return to home location\" control label text"
 msgstr ""
 
-msgid "Text to label "Return to home location" control with. If omitted a default label will be used."
+msgid "Text to label \"Return to home location\" control with. If omitted a default label will be used."
 msgstr ""
 
-msgid "Hide "Add to occurrence" controls"
+msgid "Hide \"Add to occurrence\" controls"
 msgstr ""
 
-msgid "Check this option if you want to hide the "Add to occurrence" controls in this bundle placement."
+msgid "Check this option if you want to hide the \"Add to occurrence\" controls in this bundle placement."
 msgstr ""
 
 msgid "Always create new occurrence?"
@@ -6577,67 +6577,67 @@ msgstr ""
 msgid "Check this option if you want to only create new occurrences when recording location. When this option is set linking to existing occurrences is not possible."
 msgstr ""
 
-msgid "Show "Add to occurrence" controls for"
+msgid "Show \"Add to occurrence\" controls for"
 msgstr ""
 
-msgid ""Add to occurrence" control label text"
+msgid "\"Add to occurrence\" control label text"
 msgstr ""
 
-msgid "Text to label "Add to occurrence" control with. If omitted a default label will be used."
+msgid "Text to label \"Add to occurrence\" control with. If omitted a default label will be used."
 msgstr ""
 
-msgid "Hide "Add to collection" controls"
+msgid "Hide \"Add to collection\" controls"
 msgstr ""
 
-msgid "Check this option if you want to hide the "Add to collection" controls in this bundle placement."
+msgid "Check this option if you want to hide the \"Add to collection\" controls in this bundle placement."
 msgstr ""
 
-msgid "Show "Add to" collection controls for"
+msgid "Show \"Add to\" collection controls for"
 msgstr ""
 
-msgid ""Add to collection" control label text"
+msgid "\"Add to collection\" control label text"
 msgstr ""
 
-msgid "Text to label "Add to collection" control with. If omitted a default label will be used."
+msgid "Text to label \"Add to collection\" control with. If omitted a default label will be used."
 msgstr ""
 
-msgid "Hide "Add to entity" controls"
+msgid "Hide \"Add to entity\" controls"
 msgstr ""
 
-msgid "Check this option if you want to hide the "Add to entity" controls in this bundle placement."
+msgid "Check this option if you want to hide the \"Add to entity\" controls in this bundle placement."
 msgstr ""
 
-msgid "Show "Add to entity" controls for"
+msgid "Show \"Add to entity\" controls for"
 msgstr ""
 
-msgid ""Add to entity" control label text"
+msgid "\"Add to entity\" control label text"
 msgstr ""
 
-msgid "Text to label "Add to entity" control with. If omitted a default label will be used."
+msgid "Text to label \"Add to entity\" control with. If omitted a default label will be used."
 msgstr ""
 
-msgid "Hide "Update Place" controls"
+msgid "Hide \"Update Place\" controls"
 msgstr ""
 
-msgid "Check this option if you want to hide the "Update Place" controls in this bundle placement."
+msgid "Check this option if you want to hide the \"Update Place\" controls in this bundle placement."
 msgstr ""
 
-msgid ""Update place" control label text"
+msgid "\"Update place\" control label text"
 msgstr ""
 
-msgid "Text to label "Update place" control with. If omitted a default label will be used."
+msgid "Text to label \"Update place\" control with. If omitted a default label will be used."
 msgstr ""
 
-msgid "Hide "Add to object" controls"
+msgid "Hide \"Add to object\" controls"
 msgstr ""
 
-msgid "Check this option if you want to hide the "Add to object" controls in this bundle placement."
+msgid "Check this option if you want to hide the \"Add to object\" controls in this bundle placement."
 msgstr ""
 
-msgid ""Add to object" control label text"
+msgid "\"Add to object\" control label text"
 msgstr ""
 
-msgid "Text to label "Add to object" control with. If omitted a default label will be used."
+msgid "Text to label \"Add to object\" control with. If omitted a default label will be used."
 msgstr ""
 
 msgid "Use hierarchy browser for storage locations?"
@@ -6646,16 +6646,16 @@ msgstr ""
 msgid "If checked a hierarchical browser will be used to select storage location items rather than an auto-complete lookup."
 msgstr ""
 
-msgid "Hide "edit" control for individual history values?"
+msgid "Hide \"edit\" control for individual history values?"
 msgstr ""
 
-msgid "Check this option if you want to hide "edit" controls for each history value in this bundle placement."
+msgid "Check this option if you want to hide \"edit\" controls for each history value in this bundle placement."
 msgstr ""
 
-msgid "Hide "delete" control for individual history values?"
+msgid "Hide \"delete\" control for individual history values?"
 msgstr ""
 
-msgid "Check this option if you want to hide "delete" controls for each history value in this bundle placement."
+msgid "Check this option if you want to hide \"delete\" controls for each history value in this bundle placement."
 msgstr ""
 
 msgid "Format of contents list"
@@ -7222,13 +7222,13 @@ msgstr ""
 msgid "Item name (singular)"
 msgstr ""
 
-msgid "The name of this list item in the singular form (eg. "disk", "lobster")."
+msgid "The name of this list item in the singular form (eg. \"disk\", \"lobster\")."
 msgstr ""
 
 msgid "Item name (plural)"
 msgstr ""
 
-msgid "The name of this list item in the plural form (eg. "disks", "lobsters")."
+msgid "The name of this list item in the plural form (eg. \"disks\", \"lobsters\")."
 msgstr ""
 
 msgid "A description of the list item, including suggested use notes or definitions."
@@ -7354,13 +7354,13 @@ msgstr ""
 msgid "Include checked indicator for preferred labels?"
 msgstr ""
 
-msgid "Include "checked" checkbox for preferred labels"
+msgid "Include \"checked\" checkbox for preferred labels"
 msgstr ""
 
 msgid "Include checked indicator for non-preferred labels?"
 msgstr ""
 
-msgid "Include "checked" checkbox for non-preferred labels"
+msgid "Include \"checked\" checkbox for non-preferred labels"
 msgstr ""
 
 msgid "Render in new menu"
@@ -7426,7 +7426,7 @@ msgstr ""
 msgid "Is hierarchical"
 msgstr ""
 
-msgid "Set this if the list is hierarchically structured; leave unset if you are creating a simple "flat" list."
+msgid "Set this if the list is hierarchically structured; leave unset if you are creating a simple \"flat\" list."
 msgstr ""
 
 msgid "Use as vocabulary"
@@ -8089,7 +8089,7 @@ msgstr ""
 msgid "Minimum number of attribute bundles to show in an editing form."
 msgstr ""
 
-msgid "If 0 is entered here, sets an element to the collapsed position when a new record or screen is opened.  This is useful for list elements in lieu of a null value, because no data selection will be saved when the element is collapsed.  Note: "Minimum number of attributes of this kind that must be associated with an item" must also be saved as 0 to set the element to the collapsed position."
+msgid "If 0 is entered here, sets an element to the collapsed position when a new record or screen is opened.  This is useful for list elements in lieu of a null value, because no data selection will be saved when the element is collapsed.  Note: \"Minimum number of attributes of this kind that must be associated with an item\" must also be saved as 0 to set the element to the collapsed position."
 msgstr ""
 
 msgid "movement title"
@@ -8410,7 +8410,7 @@ msgstr ""
 msgid "Unique numeric identifier used by CollectiveAccess internally to identify this lot"
 msgstr ""
 
-msgid "The type of the object lot. In CollectiveAccess every lot has a single "instrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it."
+msgid "The type of the object lot. In CollectiveAccess every lot has a single \"instrinsic\" type that determines the set of descriptive and administrative metadata that can be applied to it."
 msgstr ""
 
 msgid "Accession status"
@@ -8593,7 +8593,7 @@ msgstr ""
 msgid "A unique alphanumeric identifier for this representation."
 msgstr ""
 
-msgid "MD5-generated "fingerprint" for this media."
+msgid "MD5-generated \"fingerprint\" for this media."
 msgstr ""
 
 msgid "Original filename"
@@ -8854,13 +8854,13 @@ msgstr ""
 msgid "Administrative source of object. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed."
 msgstr ""
 
-msgid "The type of the object. In CollectiveAccess every object has a single "instrinsic" type that determines the set of descriptive, technical and administrative metadata that can be applied to it. As such this type is "low-level" and directly tied to the form of the object - eg. photograph, book, analog video recording, etc."
+msgid "The type of the object. In CollectiveAccess every object has a single \"instrinsic\" type that determines the set of descriptive, technical and administrative metadata that can be applied to it. As such this type is \"low-level\" and directly tied to the form of the object - eg. photograph, book, analog video recording, etc."
 msgstr ""
 
 msgid "Object identifier"
 msgstr ""
 
-msgid "A unique alphanumeric identifier for this object. This is usually equivalent to the "accession number" in museum settings."
+msgid "A unique alphanumeric identifier for this object. This is usually equivalent to the \"accession number\" in museum settings."
 msgstr ""
 
 msgid "Home location ID"
@@ -9037,7 +9037,7 @@ msgstr ""
 msgid "The locale from which the item originates."
 msgstr ""
 
-msgid "The type of the occurrence. In CollectiveAccess every occurrence has a single "instrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it."
+msgid "The type of the occurrence. In CollectiveAccess every occurrence has a single \"instrinsic\" type that determines the set of descriptive and administrative metadata that can be applied to it."
 msgstr ""
 
 msgid "A unique alphanumeric identifier for this entry."
@@ -9106,7 +9106,7 @@ msgstr ""
 msgid "The primary locale associated with the place."
 msgstr ""
 
-msgid "The type of the place. In CollectiveAccess every place has a single "instrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it."
+msgid "The type of the place. In CollectiveAccess every place has a single \"instrinsic\" type that determines the set of descriptive and administrative metadata that can be applied to it."
 msgstr ""
 
 msgid "Administrative source of the place. This value is often used to indicate the administrative sub-division or legacy database from which the place information originates, but can also be re-tasked for use as a simple classification tool if needed."
@@ -9220,25 +9220,25 @@ msgstr ""
 msgid "relationship type restrictions"
 msgstr ""
 
-msgid "Type restriction for "left" side of relationship"
+msgid "Type restriction for \"left\" side of relationship"
 msgstr ""
 
-msgid "Type restriction for "left" side of relationship (eg. if relationship is object-entity, then the restriction controls for which types of objects this relationship type is valid."
+msgid "Type restriction for \"left\" side of relationship (eg. if relationship is object-entity, then the restriction controls for which types of objects this relationship type is valid."
 msgstr ""
 
-msgid "Include subtypes in "left" side restriction?"
+msgid "Include subtypes in \"left\" side restriction?"
 msgstr ""
 
 msgid "Automatically include subtypes of selected left-side restriction."
 msgstr ""
 
-msgid "Type restriction for "right" side of relationship"
+msgid "Type restriction for \"right\" side of relationship"
 msgstr ""
 
-msgid "Type restriction for "right" side of relationship (eg. if relationship is object-entity, then the restriction controls for which types of entities this relationship type is valid."
+msgid "Type restriction for \"right\" side of relationship (eg. if relationship is object-entity, then the restriction controls for which types of entities this relationship type is valid."
 msgstr ""
 
-msgid "Include subtypes in "right" side restriction?"
+msgid "Include subtypes in \"right\" side restriction?"
 msgstr ""
 
 msgid "relationship type"
@@ -9829,7 +9829,7 @@ msgstr ""
 msgid "Unique numeric identifier used by CollectiveAccess internally to identify this storage location"
 msgstr ""
 
-msgid "The type of the storage location. In CollectiveAccess every storage location has a single "instrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it."
+msgid "The type of the storage location. In CollectiveAccess every storage location has a single \"instrinsic\" type that determines the set of descriptive and administrative metadata that can be applied to it."
 msgstr ""
 
 msgid "Location identifier"
@@ -10336,7 +10336,7 @@ msgstr ""
 msgid "User class"
 msgstr ""
 
-msgid ""Full" user accounts may log into all CollectiveAccess interfaces. "Public" user accounts may only log into the publicly accessible front-end system (if one exists). "Deleted" users may not log into any interface – the account is considered removed."
+msgid "\"Full\" user accounts may log into all CollectiveAccess interfaces. \"Public\" user accounts may only log into the publicly accessible front-end system (if one exists). \"Deleted\" users may not log into any interface – the account is considered removed."
 msgstr ""
 
 msgid "full-access"
@@ -10747,10 +10747,10 @@ msgstr ""
 msgid "Australian Dollar (AUD)"
 msgstr ""
 
-msgid "Use currency for "$""
+msgid "Use currency for \"$\""
 msgstr ""
 
-msgid "Currency indicated for values using the "$" character."
+msgid "Currency indicated for values using the \"$\" character."
 msgstr ""
 
 msgid "Must not be blank"
@@ -11080,7 +11080,7 @@ msgstr ""
 msgid "Limit the GeoNames search to specific types of map features."
 msgstr ""
 
-msgid "Connection to GeoNames with username "%1" was rejected with the message "%2". Check your configuration and make sure your GeoNames.org account is enabled for web services."
+msgid "Connection to GeoNames with username \"%1\" was rejected with the message \"%2\". Check your configuration and make sure your GeoNames.org account is enabled for web services."
 msgstr ""
 
 msgid "Could not connect to GeoNames"
@@ -11125,7 +11125,7 @@ msgstr ""
 msgid "Address or georeference was blank."
 msgstr ""
 
-msgid "Could not geocode address "%1""
+msgid "Could not geocode address \"%1\""
 msgstr ""
 
 msgid "Service"
@@ -11290,7 +11290,7 @@ msgstr ""
 msgid "No value text"
 msgstr ""
 
-msgid "Text to use as label for the "no value" option when a value is not required."
+msgid "Text to use as label for the \"no value\" option when a value is not required."
 msgstr ""
 
 msgid "Use list default when value is null?"
@@ -11410,7 +11410,7 @@ msgstr ""
 msgid "Select bundles from the list below to be hidden when no value is set for this element."
 msgstr ""
 
-msgid "Hide bundles if "%1" is selected"
+msgid "Hide bundles if \"%1\" is selected"
 msgstr ""
 
 msgid "Select bundles from the list below."
@@ -11779,7 +11779,7 @@ msgstr ""
 msgid "CSRF check failed"
 msgstr ""
 
-msgid "Duplicated %1 "%2" (%3)"
+msgid "Duplicated %1 \"%2\" (%3)"
 msgstr ""
 
 msgid "Could not duplicate %1: %2"
@@ -12076,7 +12076,7 @@ msgstr ""
 msgid "Create <em>%1</em>?"
 msgstr ""
 
-msgid "No matches found for "%1""
+msgid "No matches found for \"%1\""
 msgstr ""
 
 msgid "You do not have access to search %1"
@@ -12364,10 +12364,10 @@ msgstr ""
 msgid "Maximum upload size is %1"
 msgstr ""
 
-msgid "Related table specification "%1" is not valid"
+msgid "Related table specification \"%1\" is not valid"
 msgstr ""
 
-msgid "Type id "%1" is not valid"
+msgid "Type id \"%1\" is not valid"
 msgstr ""
 
 msgid "Could not find relationship table"
@@ -12595,7 +12595,7 @@ msgstr ""
 msgid "Matched name %1 on regex %2"
 msgstr ""
 
-msgid "Matched media %1 from %2 to %3 using expression "%4""
+msgid "Matched media %1 from %2 to %3 using expression \"%4\""
 msgstr ""
 
 msgid "Couldn't match name %1 on regex %2"
@@ -12784,7 +12784,7 @@ msgstr ""
 msgid "A list of alternate %1 %2"
 msgstr ""
 
-msgid "A list of related media representations using version "%1""
+msgid "A list of related media representations using version \"%1\""
 msgstr ""
 
 msgid "A list of related media representations using the default version"
@@ -13042,16 +13042,16 @@ msgstr ""
 msgid "It looks like you have the PHP Suhoshin extension installed which introduces some default constraints than can prevent CA from saving information entered into forms."
 msgstr ""
 
-msgid "In particular, you have to set the configuration value "suhosin.post.max_name_length" to 256 or higher to ensure that CA works correctly. Your value is %1"
+msgid "In particular, you have to set the configuration value \"suhosin.post.max_name_length\" to 256 or higher to ensure that CA works correctly. Your value is %1"
 msgstr ""
 
-msgid "In particular, you have to set the configuration value "suhosin.request.max_varname_length" to 256 or higher to ensure that CA works correctly. Your value is %1"
+msgid "In particular, you have to set the configuration value \"suhosin.request.max_varname_length\" to 256 or higher to ensure that CA works correctly. Your value is %1"
 msgstr ""
 
-msgid "In particular, you have to set the configuration value "suhosin.post.max_totalname_length" to 5012 or higher to ensure that CA works correctly. Your value is %1"
+msgid "In particular, you have to set the configuration value \"suhosin.post.max_totalname_length\" to 5012 or higher to ensure that CA works correctly. Your value is %1"
 msgstr ""
 
-msgid "In particular, you have to set the configuration value "suhosin.request.max_totalname_length" to 5012 or higher to ensure that CA works correctly. Your value is %1"
+msgid "In particular, you have to set the configuration value \"suhosin.request.max_totalname_length\" to 5012 or higher to ensure that CA works correctly. Your value is %1"
 msgstr ""
 
 msgid "Exporting changes for locale %1"
@@ -13237,7 +13237,7 @@ msgstr ""
 msgid "Values are field names."
 msgstr ""
 
-msgid "Values reference a combination of MARC 21 field tags and associated indicators separated by a forward slash ("/"), e.g. "300/##". For further information on how to create a MARC mapping, please refer to the CollectiveAccess online documentation."
+msgid "Values reference a combination of MARC 21 field tags and associated indicators separated by a forward slash (\"/\"), e.g. \"300/##\". For further information on how to create a MARC mapping, please refer to the CollectiveAccess online documentation."
 msgstr ""
 
 msgid "Invalid MARC element definition %1"
@@ -13309,7 +13309,7 @@ msgstr ""
 msgid "Invalid external export table"
 msgstr ""
 
-msgid "Skipping transport for %1:%2 because "skipTransport" runtime option was set"
+msgid "Skipping transport for %1:%2 because \"skipTransport\" runtime option was set"
 msgstr ""
 
 msgid "Skipping target %1 because no output format is set"
@@ -13339,13 +13339,13 @@ msgstr ""
 msgid "[ExternalExportManager] Processing trigger %1 for target %2"
 msgstr ""
 
-msgid "[ExternalExportManager] Found %1 new log entries with %4 unique ids for target %2 using "get from" value %3"
+msgid "[ExternalExportManager] Found %1 new log entries with %4 unique ids for target %2 using \"get from\" value %3"
 msgstr ""
 
-msgid "[ExternalExportManager] Found %1 unique ids for target %2 using "query" value %3"
+msgid "[ExternalExportManager] Found %1 unique ids for target %2 using \"query\" value %3"
 msgstr ""
 
-msgid "[ExternalExportManager] Found %1 unique ids for target %2 using "access" value %3"
+msgid "[ExternalExportManager] Found %1 unique ids for target %2 using \"access\" value %3"
 msgstr ""
 
 msgid "[ExternalExportManager] Processing %1 unique ids for target %2"
@@ -14239,13 +14239,13 @@ msgstr ""
 msgid "%1 is on ban list"
 msgstr ""
 
-msgid "[BanHammer::IPAddress] Could not load ip ban list from URL "%1""
+msgid "[BanHammer::IPAddress] Could not load ip ban list from URL \"%1\""
 msgstr ""
 
-msgid "[BanHammer::IPAddress] Loaded IP ban list from URL "%1"; got %2 ip addresses"
+msgid "[BanHammer::IPAddress] Loaded IP ban list from URL \"%1\"; got %2 ip addresses"
 msgstr ""
 
-msgid "[BanHammer::IPAddress] Could not write ip ban list to "%1""
+msgid "[BanHammer::IPAddress] Could not write ip ban list to \"%1\""
 msgstr ""
 
 msgid "[BanHammer::RequestFrequency] Request freq %1 (%2) > threshold %3"
@@ -14272,13 +14272,13 @@ msgstr ""
 msgid "User agent %1 is on CrawlerDetect list"
 msgstr ""
 
-msgid "[BanHammer::UserAgent] Could not load user agent list from URL "%1""
+msgid "[BanHammer::UserAgent] Could not load user agent list from URL \"%1\""
 msgstr ""
 
-msgid "[BanHammer::UserAgent] Loaded user agent list from URL "%1"; got %2 user agents"
+msgid "[BanHammer::UserAgent] Loaded user agent list from URL \"%1\"; got %2 user agents"
 msgstr ""
 
-msgid "[BanHammer::UserAgent] Could not write user agent list to "%1""
+msgid "[BanHammer::UserAgent] Could not write user agent list to \"%1\""
 msgstr ""
 
 msgid "Converts currency using European bank rates available at %1"
@@ -14410,13 +14410,13 @@ msgstr ""
 msgid "Additional search filter"
 msgstr ""
 
-msgid "Additional search filter. For example to limit to children of a particular term enter "gvp:broaderExtended aat:300312238""
+msgid "Additional search filter. For example to limit to children of a particular term enter \"gvp:broaderExtended aat:300312238\""
 msgstr ""
 
 msgid "Additional sparql suffix"
 msgstr ""
 
-msgid "Applied after the initial search. Useful to combine filters. For example to limit to children of particular terms enter "?ID gvp:broaderPreferredExtended ?Extended FILTER (?Extended IN (aat:300261086, aat:300264550))""
+msgid "Applied after the initial search. Useful to combine filters. For example to limit to children of particular terms enter \"?ID gvp:broaderPreferredExtended ?Extended FILTER (?Extended IN (aat:300261086, aat:300264550))\""
 msgstr ""
 
 msgid "Order by"
@@ -14617,7 +14617,7 @@ msgstr ""
 msgid "Data set key"
 msgstr ""
 
-msgid "GBIF data set key for data set to query. Overrides "data set" option."
+msgid "GBIF data set key for data set to query. Overrides \"data set\" option."
 msgstr ""
 
 msgid "Name types"
@@ -14929,7 +14929,7 @@ msgstr ""
 msgid "Wikipedia language"
 msgstr ""
 
-msgid "2- or 3-letter language code for Wikipedia to use. Defaults to "en". See %1"
+msgid "2- or 3-letter language code for Wikipedia to use. Defaults to \"en\". See %1"
 msgstr ""
 
 msgid "Provides access to Wikipedia service"
@@ -15109,7 +15109,7 @@ msgstr ""
 msgid "RAW support is not available because DCRAW cannot be found"
 msgstr ""
 
-msgid "HEIC support is not available because ImageMagick cannot be found<br/>n(GraphicsMagick does not provide support for HEIC)"
+msgid "HEIC support is not available because ImageMagick cannot be found<br/>\n(GraphicsMagick does not provide support for HEIC)"
 msgstr ""
 
 msgid "Couldn't set font to %1. Gmagick error message: %2"
@@ -15829,10 +15829,10 @@ msgstr ""
 msgid "%1 [as %2]"
 msgstr ""
 
-msgid "nTRUNCATING INDEX FOR %1nn"
+msgid "\nTRUNCATING INDEX FOR %1\n\n"
 msgstr ""
 
-msgid "nWILL INDEX [%1]nn"
+msgid "\nWILL INDEX [%1]\n\n"
 msgstr ""
 
 msgid "Indexing %1"
@@ -15841,10 +15841,10 @@ msgstr ""
 msgid "[Index: %1][Mem: %2]"
 msgstr ""
 
-msgid "nnnDone! [Indexing for %1 took %2]n"
+msgid "\n\n\nDone! [Indexing for %1 took %2]\n"
 msgstr ""
 
-msgid "Note that if you're using an external search service like ElasticSearch, the data may only now be sent to the actual service because it was buffered until now. So you still might have to wait a while for the script to finish.n"
+msgid "Note that if you're using an external search service like ElasticSearch, the data may only now be sent to the actual service because it was buffered until now. So you still might have to wait a while for the script to finish.\n"
 msgstr ""
 
 msgid "Elapsed time: %1"
@@ -16351,10 +16351,10 @@ msgstr ""
 msgid "Applied migration %1"
 msgstr ""
 
-msgid "Could not create tmp directory for handler "%1""
+msgid "Could not create tmp directory for handler \"%1\""
 msgstr ""
 
-msgid "Could not copy "%1""
+msgid "Could not copy \"%1\""
 msgstr ""
 
 msgid "No tmp directory configured!"
@@ -16372,10 +16372,10 @@ msgstr ""
 msgid "No handler directories are configured!"
 msgstr ""
 
-msgid "[TaskQueue] Queue processing failed because of invalid task queue handler "%1"; queue was halted"
+msgid "[TaskQueue] Queue processing failed because of invalid task queue handler \"%1\"; queue was halted"
 msgstr ""
 
-msgid "Invalid task queue handler "%1""
+msgid "Invalid task queue handler \"%1\""
 msgstr ""
 
 msgid "[TaskQueue] Queue processing failed using handler %1: %2 [%3]; queue was NOT halted"
@@ -16390,7 +16390,7 @@ msgstr ""
 msgid "[TaskQueue] Cancelling of task failed because no handler directories are configured"
 msgstr ""
 
-msgid "[TaskQueue] Cancelling of task failed because of invalid task queue handler "%1"; plugin directories were %2"
+msgid "[TaskQueue] Cancelling of task failed because of invalid task queue handler \"%1\"; plugin directories were %2"
 msgstr ""
 
 msgid "[TaskQueue] Queue processing failed because no handler directories are configured; queue was halted"
@@ -16513,7 +16513,7 @@ msgstr ""
 msgid "File to write delimited output to."
 msgstr ""
 
-msgid "XML format of input file. Valid options are "PastPerfect" (PastPerfect XML export files), "FMPXML" (FileMaker Pro XML Result format)."
+msgid "XML format of input file. Valid options are \"PastPerfect\" (PastPerfect XML export files), \"FMPXML\" (FileMaker Pro XML Result format)."
 msgstr ""
 
 msgid "Format of output (CSV or tab-delimited). Default is CSV."
@@ -16816,7 +16816,7 @@ msgstr ""
 msgid "Name of the profile to install (filename in profiles directory, minus the .xml extension)."
 msgstr ""
 
-msgid "Directory to get profile. Default is: "%1". This directory must contain the profile.xsd schema so that the installer can validate the installation profile."
+msgid "Directory to get profile. Default is: \"%1\". This directory must contain the profile.xsd schema so that the installer can validate the installation profile."
 msgstr ""
 
 msgid "Email address of the system administrator (%1)."
@@ -16858,13 +16858,13 @@ msgstr ""
 msgid "File name of profile to use as base profile. Omit if you do not want to use a base profile. (Optional)"
 msgstr ""
 
-msgid "Name of the profile, used for "profileName" element."
+msgid "Name of the profile, used for \"profileName\" element."
 msgstr ""
 
 msgid "URL pointing to more information about the profile. (Optional)"
 msgstr ""
 
-msgid "Description of the profile, used for "profileDescription" element. (Optional)"
+msgid "Description of the profile, used for \"profileDescription\" element. (Optional)"
 msgstr ""
 
 msgid "File to output profile to. If omitted profile is printed to standard output. (Optional)"
@@ -16906,7 +16906,7 @@ msgstr ""
 msgid "Finished partial configuration export for target %1"
 msgstr ""
 
-msgid "[push-config-changes] Configuration fragment for target '%1' is n %2"
+msgid "[push-config-changes] Configuration fragment for target '%1' is \n %2"
 msgstr ""
 
 msgid "Pushing to target '%1' seems to have failed. HTTP response code was %2."
@@ -16948,7 +16948,7 @@ msgstr ""
 msgid "Password to use to log into the targets. We assume the same credentials can be used to log into all target systems."
 msgstr ""
 
-msgid "Timestamp to use to filter the configuration changes that should be exported/pushed. Optional. The timestamp is only used for the very first push to that system. After that the master system will store the last push timestamp and use that instead. This parameter is a fixed offset/"starting point" of sorts."
+msgid "Timestamp to use to filter the configuration changes that should be exported/pushed. Optional. The timestamp is only used for the very first push to that system. After that the master system will store the last push timestamp and use that instead. This parameter is a fixed offset/\"starting point\" of sorts."
 msgstr ""
 
 msgid "Path to directory in which to log import details. If not set no logs will be recorded."
@@ -17011,7 +17011,7 @@ msgstr ""
 msgid "A valid row id must be specified"
 msgstr ""
 
-msgid "Data to return from log. Possible values are "tables" (return all tables referenced in the log and "log" (return log data). Default is "log"."
+msgid "Data to return from log. Possible values are \"tables\" (return all tables referenced in the log and \"log\" (return log data). Default is \"log\"."
 msgstr ""
 
 msgid "Table to return log for."
@@ -17749,7 +17749,7 @@ msgstr ""
 msgid "Detects and, optionally, completely removes object representations marked as deleted in the database. Files referenced by these records are also removed. This can be useful if there has been a lot of fluctuation in your representation stock and you want to free up disk space."
 msgstr ""
 
-msgid "Are you sure you want to PERMANENTLY remove all deleted records? This cannot be undone.nnType 'y' to proceed or 'N' to cancel, then hit return "
+msgid "Are you sure you want to PERMANENTLY remove all deleted records? This cannot be undone.\n\nType 'y' to proceed or 'N' to cancel, then hit return "
 msgstr ""
 
 msgid "Removing deleted %1 from database"
@@ -17932,7 +17932,7 @@ msgstr ""
 msgid "Comma separated list of object ids to check"
 msgstr ""
 
-msgid "Comma separated list of kind of media to check. Valid kinds are ca_object_representations (object representations), and ca_attributes (metadata elements). You may also specify "all" to check both kinds of media. Default is "all""
+msgid "Comma separated list of kind of media to check. Valid kinds are ca_object_representations (object representations), and ca_attributes (metadata elements). You may also specify \"all\" to check both kinds of media. Default is \"all\""
 msgstr ""
 
 msgid "Verify media fixity using database file signatures"
@@ -17959,7 +17959,7 @@ msgstr ""
 msgid "Skipping clearing of user media cache because the configured directory at %1 does not exist"
 msgstr ""
 
-msgid "Which cache to clear. Use "app" for the application cache (include all user sessions); use "userMedia" for user-uploaded media; use "all" for all cached. Default is all."
+msgid "Which cache to clear. Use \"app\" for the application cache (include all user sessions); use \"userMedia\" for user-uploaded media; use \"all\" for all cached. Default is all."
 msgstr ""
 
 msgid "Clear application caches and tmp directories."
@@ -17977,7 +17977,7 @@ msgstr ""
 msgid "Remove stale files from application caches and temporary file locations."
 msgstr ""
 
-msgid "CollectiveAccess stores often used values, processed configuration files, user-uploaded media and other types of data in application caches. You can clean out old expired data from these locations using this command. If you want to completely clear the application caches of all data regardless of expiration date use the "clear-caches" command."
+msgid "CollectiveAccess stores often used values, processed configuration files, user-uploaded media and other types of data in application caches. You can clean out old expired data from these locations using this command. If you want to completely clear the application caches of all data regardless of expiration date use the \"clear-caches\" command."
 msgstr ""
 
 msgid "Checking media processing plugins..."
@@ -18250,7 +18250,7 @@ msgstr ""
 msgid "Verify that all records with related representations has at least one set to be primary."
 msgstr ""
 
-msgid "Every record with related representations must have at least one of those representation relationships marked as the primary relationship. The primary representation will be used as the default media for the record. In some situations it is possible that one or more representations can be related to a record without any having the "is primary" designation. Records without primary representations may display oddly, or not at all. This command will check all representations relationships and ensure that all records with related representations have at least one marked as primary."
+msgid "Every record with related representations must have at least one of those representation relationships marked as the primary relationship. The primary representation will be used as the default media for the record. In some situations it is possible that one or more representations can be related to a record without any having the \"is primary\" designation. Records without primary representations may display oddly, or not at all. This command will check all representations relationships and ensure that all records with related representations have at least one marked as primary."
 msgstr ""
 
 msgid "%1 %2 has invalid hierarchy_id %3; root id was %4 "
@@ -18268,7 +18268,7 @@ msgstr ""
 msgid "Check hierarchy id field values."
 msgstr ""
 
-msgid "Each record includes a field containing the id of the root record of the hierarchy to which is belongs. In some situations these values may not accurately reflect the current root of the hierarchy, potentially causing issues with hierarchy display and navigation. This command will check all hierarchy values and, if the "repair" option is set, correct incorrectly stored values."
+msgid "Each record includes a field containing the id of the root record of the hierarchy to which is belongs. In some situations these values may not accurately reflect the current root of the hierarchy, potentially causing issues with hierarchy display and navigation. This command will check all hierarchy values and, if the \"repair\" option is set, correct incorrectly stored values."
 msgstr ""
 
 msgid "[reprocess-media] Start preparing to reprocess media"
@@ -18313,7 +18313,7 @@ msgstr ""
 msgid "Comma separated list of object ids to reload"
 msgstr ""
 
-msgid "Comma separated list of kind of media to reprocess. Valid kinds are ca_object_representations (object representations), ca_attributes (metadata elements) and icons (icon graphics on list items, storage locations, editors, editor screens, tours and tour stops). You may also specify "all" to reprocess all kinds of media. Default is "all""
+msgid "Comma separated list of kind of media to reprocess. Valid kinds are ca_object_representations (object representations), ca_attributes (metadata elements) and icons (icon graphics on list items, storage locations, editors, editor screens, tours and tour stops). You may also specify \"all\" to reprocess all kinds of media. Default is \"all\""
 msgstr ""
 
 msgid "Reprocess all unprocessed media"
@@ -18364,7 +18364,7 @@ msgstr ""
 msgid "Comma separated list of representation ids to reindex"
 msgstr ""
 
-msgid "Comma separated list of kind of media to reindex. Valid kinds are ca_object_representations (object representations), and ca_attributes (metadata elements). You may also specify "all" to reindex both kinds of media. Default is "all""
+msgid "Comma separated list of kind of media to reindex. Valid kinds are ca_object_representations (object representations), and ca_attributes (metadata elements). You may also specify \"all\" to reindex both kinds of media. Default is \"all\""
 msgstr ""
 
 msgid "Reindex PDF media for in-viewer content search."
@@ -18442,13 +18442,13 @@ msgstr ""
 msgid "Database already at current revision (%1). No update is required."
 msgstr ""
 
-msgid "Pre-flight checks failed:n %1"
+msgid "Pre-flight checks failed:\n %1"
 msgstr ""
 
-msgid "Are you sure you want to update your version 1.7 system (database revision %1)?nNOTE: you MUST backup your database before applying this update!nnType 'y' to proceed or 'n' to cancel, then hit return"
+msgid "Are you sure you want to update your version 1.7 system (database revision %1)?\nNOTE: you MUST backup your database before applying this update!\n\nType 'y' to proceed or 'n' to cancel, then hit return"
 msgstr ""
 
-msgid "nn------------------------------------------------------------------------------"
+msgid "\n\n------------------------------------------------------------------------------"
 msgstr ""
 
 msgid "[Step %1/%2] Clearing caches"
@@ -18484,7 +18484,7 @@ msgstr ""
 msgid "Performs a multi-step process to update a 1.7.x database for use with CollectiveAccess version 2.0, including update of database schema, regeneration of sortable values and full rebuild of the search index. For larger systems this process may take significant time, up to several hours. The migration process is generally safe, and will not damage systems that are already updated. However it is strongly recommended that a full backup of the database be made before running this update."
 msgstr ""
 
-msgid "Are you sure you want to update your CollectiveAccess database from revision %1 to %2?nNOTE: you MUST backup your database before applying updates!nnType 'y' to proceed or 'n' to cancel, then hit return "
+msgid "Are you sure you want to update your CollectiveAccess database from revision %1 to %2?\nNOTE: you MUST backup your database before applying updates!\n\nType 'y' to proceed or 'n' to cancel, then hit return "
 msgstr ""
 
 msgid "Updating database"
@@ -18895,7 +18895,7 @@ msgstr ""
 msgid "%1 (in %2)"
 msgstr ""
 
-msgid "Really delete "%1"?"
+msgid "Really delete \"%1\"?"
 msgstr ""
 
 msgid "Really delete %1?"
@@ -20335,13 +20335,13 @@ msgstr ""
 msgid "[%2] Parents options invalid. Did you forget to pass a list? Parents list passed was: %1"
 msgstr ""
 
-msgid "[%3] Parent was skipped using rule "%1" with default action because an invalid action ("%2") was specified"
+msgid "[%3] Parent was skipped using rule \"%1\" with default action because an invalid action (\"%2\") was specified"
 msgstr ""
 
-msgid "[%3] Parent was skipped using rule "%1" with action "%2""
+msgid "[%3] Parent was skipped using rule \"%1\" with action \"%2\""
 msgstr ""
 
-msgid "[%3] Error processing rule "%1" as an error occurred. Error number was "%2""
+msgid "[%3] Error processing rule \"%1\" as an error occurred. Error number was \"%2\""
 msgstr ""
 
 msgid "[importHelpers:caProcessRefineryParents] List was not specified"
