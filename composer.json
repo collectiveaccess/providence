@@ -10,7 +10,7 @@
   "require": {
     "caseyamcl/phpoaipmh": "^3.0",
     "collectiveaccess/service-wrapper": "dev-dev/2.0",
-    "dompdf/dompdf": "~2.0.2",
+    "dompdf/dompdf": "^3.1",
     "easyrdf/easyrdf": "1.1.1",
     "elasticsearch/elasticsearch": "~7.0",
     "ezyang/htmlpurifier": "~4.9",

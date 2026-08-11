@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2024 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,7 +30,7 @@ var caUI = caUI || {};
 	caUI.initQuickAddFormHandler = function(options) {
 		// --------------------------------------------------------------------------------
 		// setup options
-		var that = jQuery.extend({
+		let that = jQuery.extend({
 			formID: null,
 			formErrorsPanelID: null,
 			formTypeSelectID: null,
@@ -39,6 +39,10 @@ var caUI = caUI || {};
 			fileUploadUrl: null,
 			saveUrl: null,
 			csrfToken: null,
+			
+			placement_id: null,
+			source: null,
+			source_id: null,
 			
 			headerText: "QuickAdd",
 			saveText: "Saved record: %1",
@@ -65,7 +69,7 @@ var caUI = caUI || {};
 			};
 		}
 		
-		var formData;
+		let formData;
 		// --------------------------------------------------------------------------------
 		// Define methods
 		// --------------------------------------------------------------------------------
@@ -83,16 +87,20 @@ var caUI = caUI || {};
 			formData['csrfToken'] = that.csrfToken;
 			
 			// Added "forced relationship" settings if available
-			var relatedID = jQuery("#" + that.formID).parent().data('relatedID');
-			var relatedTable = jQuery("#" + that.formID).parent().data('relatedTable');
-			var relationshipType = jQuery("#" + that.formID).parent().data('relationshipType');
+			const relatedID = jQuery("#" + that.formID).parent().data('relatedid');
+			const relatedTable = jQuery("#" + that.formID).parent().data('relatedtable');
+			let relationshipType = jQuery("#" + that.formID).parent().data('relationshiptype');
+			const createdRelationshipOnSave = jQuery("#" + that.formID).parent().data('createrelationshiponsave') ? true : false;
+			
+			if(!relationshipType) { relationshipType = formData.relationship_type_id; }
+			
 			jQuery.extend(formData, {relatedID: relatedID, relatedTable: relatedTable, relationshipType: relationshipType });
 			
 			if(Object.keys(that._files).length > 0) {
 				jQuery("#" + that.formID).find("." + that.progressClassName).html((that.busyIndicator ? that.busyIndicator + ' ' : '') + that.sendingFilesText.replace("%1", "0%"));
 				
 				// Copy files in form into a FormData instance
-				var fileData = new FormData();
+				let fileData = new FormData();
 				jQuery.each(that._files, function(k, v) {
 					fileData.append(k, v[0]); // only grab the first file out of each file <input>; assume no multiples
 				});
@@ -105,10 +113,10 @@ var caUI = caUI || {};
 					processData: false, // don't let jQuery try to process the files
 					contentType: false, // set content type to false as jQuery will tell the server its a query string request
 					xhr: function() {
-						var jqXHR = new window.XMLHttpRequest();
+						let jqXHR = new window.XMLHttpRequest();
 						jqXHR.upload.addEventListener("progress", function(e){
 							if (e.lengthComputable) {  
-								var percentComplete = Math.round((e.loaded / e.total) * 100);
+								let percentComplete = Math.round((e.loaded / e.total) * 100);
 								jQuery("#" + that.formID).find("." + that.progressClassName).html((that.busyIndicator ? that.busyIndicator + ' ' : '') + that.sendingFilesText.replace("%1", percentComplete + "%"));
 							}
 						}, false); 
@@ -149,26 +157,38 @@ var caUI = caUI || {};
 		// Default handler to call on save for quickadd
 		that.defaultOnSaveHandler = function(resp, textStatus) {
 			if (resp.status == 0) {
-				var rawID = jQuery("#" + that.formID).parent().data('autocompleteRawID');
-				var inputID = jQuery("#" + that.formID).parent().data('autocompleteInputID');
-				var itemIDID = jQuery("#" + that.formID).parent().data('autocompleteItemIDID');
-				var typeIDID = jQuery("#" + that.formID).parent().data('autocompleteTypeIDID');
-				var relationbundle = jQuery("#" + that.formID).parent().data('relationbundle');
+				const rawID = jQuery("#" + that.formID).parent().data('autocompleteRawID');
+				const inputID = jQuery("#" + that.formID).parent().data('autocompleteInputID');
+				const itemIDID = jQuery("#" + that.formID).parent().data('autocompleteItemIDID');
+				const typeIDID = jQuery("#" + that.formID).parent().data('autocompleteTypeIDID');
+				const relationbundle = jQuery("#" + that.formID).parent().data('relationbundle');
+			    const createdRelationshipOnSave = jQuery("#" + that.formID).parent().data('createrelationshiponsave') ? true : false;
 			
 				jQuery('#' + inputID).val(resp.display);
 				jQuery('#' + itemIDID).val(resp.id);
 				jQuery('#' + typeIDID).val(resp.type_id);
 				
-				if(relationbundle) { relationbundle.select(rawID, resp); }
+				if(relationbundle) { 
+				    if(createdRelationshipOnSave) {
+				        relationbundle.deleteFromBundle(rawID);
+				    } else {
+				        relationbundle.select(rawID, resp); 
+				    }
+				}
 				jQuery.jGrowl(that.saveText.replace('%1', resp.display), { header: that.headerText }); 
 				jQuery("#" + that.formID).parent().data('panel').hidePanel();
 				
-				if(formData['relatedID'] && caBundleUpdateManager) { 
-					caBundleUpdateManager.reloadBundle('ca_objects_location'); 
-					caBundleUpdateManager.reloadBundle('ca_objects_history'); 
-					caBundleUpdateManager.reloadBundle('history_tracking_chronology'); 
-					caBundleUpdateManager.reloadInspector(); 
-				}
+				if(caBundleUpdateManager && (that.source_id > 0)) {
+				    if(that.placement_id && createdRelationshipOnSave) {
+				        caBundleUpdateManager.reloadBundleByPlacementID(that.placement_id, {'reloadItemListOnly': 1});
+				    }
+                    if(formData['relatedID']) { 
+                        caBundleUpdateManager.reloadBundle('ca_objects_location'); 
+                        caBundleUpdateManager.reloadBundle('ca_objects_history'); 
+                        caBundleUpdateManager.reloadBundle('history_tracking_chronology'); 
+                        caBundleUpdateManager.reloadInspector(); 
+                    }
+                }
 			} else {
 				// error
 				that.setErrors(resp.errors);
@@ -178,15 +198,15 @@ var caUI = caUI || {};
 		if (!that.onSave) { that.onSave = that.defaultOnSaveHandler; }	// set default for quickadd
 		
 		that.setErrors = function(errors) {
-			var content = '<div class="notification-error-box rounded"><ul class="notification-error-box">';
-			for(var e in errors) {
+			let content = '<div class="notification-error-box rounded"><ul class="notification-error-box">';
+			for(let e in errors) {
 				content += '<li class="notification-error-box">' + e + '</li>';
 			}
 			content += '</ul></div>';
 			
 			jQuery("#" + that.formErrorsPanelID).html(content).slideDown(200);
 			
-			var quickAddClearErrorInterval = setInterval(function() {
+			let quickAddClearErrorInterval = setInterval(function() {
 				jQuery("#" + that.formErrorsPanelID).slideUp(500);
 				clearInterval(quickAddClearErrorInterval);
 			}, 3000);
@@ -199,7 +219,7 @@ var caUI = caUI || {};
 			    });
 			}
 			jQuery("#" + that.formID + " input[name=type_id]").val(jQuery("#" + that.formTypeSelectID).val());
-			var formData = jQuery("#" + that.formID).serializeObject();
+			const formData = jQuery("#" + that.formID).serializeObject();
 			jQuery("#" + that.formID).parent().load(that.formUrl, formData);
 			
 		};
@@ -210,8 +230,9 @@ var caUI = caUI || {};
 		};
 		
 		that.cleanupOnCancel = function(e) {
-			var relationbundle = jQuery("#" + that.formID).parent().data('relationbundle');
-			if(relationbundle) { relationbundle.deleteNewFromBundle(); }
+			const relationbundle = jQuery("#" + that.formID).parent().data('relationbundle');
+			const rawID = jQuery("#" + that.formID).parent().data('autocompleteRawID');
+			if(relationbundle) { relationbundle.deleteFromBundle(rawID); }
 		}
 		
 		// --------------------------------------------------------------------------------

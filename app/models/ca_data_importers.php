@@ -2023,10 +2023,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					case 'merge_on_id':
 					case 'merge_on_id_with_replace':
 					case 'merge_on_id_with_skip':
-						$ids = call_user_func_array($t_subject->tableName()."::find", 
-							[[$t_subject->primaryKey() => ['IN', $va_ids_for_row]],
-							['returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans]]
-						);
+						if(!is_array($va_ids_for_row) || !sizeof($va_ids_for_row)) { 
+							$ids = null;
+						} else {
+							$ids = call_user_func_array($t_subject->tableName()."::find", 
+								[[$t_subject->primaryKey() => ['IN', $va_ids_for_row]],
+								['returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans]]
+							);
+						}
 						if (is_array($ids) && (sizeof($ids) > 0)) {
 							if ($log_erp) { $o_log->logInfo(_t('[%1] Merged with existing record matched on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy)); }
 							break;

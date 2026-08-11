@@ -451,7 +451,7 @@ trait CLIUtilsImportExport {
 			return false;
 		}
 		if ($t_set && ((int)$t_set->get('table_num') !== (int)$t_mapping->get('table_num'))) {
-			CLIUtils::addError(_t('Set %1 does take items imported by mapping', $vs_add_to_set));
+			CLIUtils::addError(_t('Set %1 does not take items imported by mapping', $vs_add_to_set));
 			return false;
 		}
 		if ($start = (int)$po_opts->getOption('start')) {
@@ -511,12 +511,12 @@ trait CLIUtilsImportExport {
 	public static function import_dataParamList() {
 		return array(
 			"source|s=s" => _t('Data to import. For files provide the path; for database, OAI and other non-file sources provide a URL.'),
-			"dataset|w=s" => _t('Dataset to import. For XLSX files this is equivalent to worksheets. Dataset indexes are zero-based. For example, in Excel to import the first worksheet set this option to zero (or omit it, as the defalt is zero).'),
+			"dataset|w=s" => _t('Dataset to import. For XLSX files this is equivalent to worksheets. Dataset indexes are zero-based. For example, in Excel to import the first worksheet set this option to zero (or omit it, as the default is zero).'),
 			"mapping|m=s" => _t('Mapping to import data with.'),
 			"format|f-s" => _t('The format of the data to import. (Ex. XLSX, tab, CSV, mysql, OAI, Filemaker XML, ExcelXML, MARC). If omitted an attempt will be made to automatically identify the data format.'),
 			"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
 			"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of importance: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
-			"limit-log-to|g-s" => _t('Limit logging to specific event types when log level is set to INFO. Limit logging to specific event types for log level INFO. Valid values are: GENERAL (general status messages), EXISTING_RECORD_POLICY (messages relating to merging of existing records, SKIP (messages relating to conditional skipping of mappings, groups or records), RELATIONSHIPS (messages relating to creating of relationships. Seprate multiple types with commas or semicolors.'),
+			"limit-log-to|g-s" => _t('Limit logging to specific event types when log level is set to INFO. Valid values are: GENERAL (general status messages), EXISTING_RECORD_POLICY (messages relating to merging of existing records), SKIP (messages relating to conditional skipping of mappings, groups or records), RELATIONSHIPS (messages relating to creating of relationships). Separate multiple types with commas or semicolumns.'),
 			"import-all-datasets" => _t('When importing an Excel .xslx file, if set import will be performed on all worksheets in the file. By default, only the first worksheet is imported.'),
 			"add-to-set|t-s" => _t('Optional identifier of set to add all imported items to.'),
 			"environment|e-s" => _t('JSON-encoded key value pairs to add to import environment values.'),
@@ -1028,7 +1028,7 @@ trait CLIUtilsImportExport {
 	 */
 	public static function load_chenhall_nomenclatureParamList() {
 		return array(
-			"file|f=s" => _t('Excel XLSX-format https://nomemclature.info Chenhall Nomenclature file to load.'),
+			"file|f=s" => _t('Excel XLSX-format %1 Chenhall Nomenclature file to load.', 'https://nomemclature.info'),
 			"list|l=s" => _t('Code for list to load Chenhall Nomenclature into. If list with code does not exist it will be created.'),
 			"update|u=s" => _t('Update an existing Chenhall installation.')
 		);
@@ -1052,7 +1052,7 @@ trait CLIUtilsImportExport {
 	 *
 	 */
 	public static function load_chenhall_nomenclatureHelp() {
-		return _t('Loads Chenhall Nomenclature from Excel XLSX format file into the specified list. You can obtain a copy of the Nomenclature from https://nomenclature.info.');
+		return _t('Loads Chenhall Nomenclature from Excel XLSX format file into the specified list. You can obtain a copy of the Nomenclature from %1', 'https://nomenclature.info.');
 	}
 	# -------------------------------------------------------
 	/**
@@ -1411,7 +1411,7 @@ trait CLIUtilsImportExport {
 	# -------------------------------------------------------
 	public static function write_importer_to_fileParamList() {
 		return [
-			"mapping|m=s" => _t('Required. importer mapping to write to file.'),
+			"mapping|m=s" => _t('Required. Importer mapping to write to file.'),
 			"file|f=s" => _t('Required. File to save importer to.')
 		];
 	}

@@ -1697,44 +1697,44 @@ class TimeExpressionParser {
 	 * Parses provided token and returns elements of decade expression if present
 	 * Advances to just beyond end of decade expression 
 	 */
-	private function _parseDecade($va_token, $vb_circa_is_set=false) {
+	private function _parseDecade($token, $circa_is_set=false) {
 		#
 		# is this a decade expression?
 		#
-		$va_decade_indicators = $this->opo_language_settings->getList("decadeIndicator");
+		$decade_indicators = $this->opo_language_settings->getList("decadeIndicator");
 	
-		$vb_was_peeked = false;
-		if ($va_token['type'] == TEP_TOKEN_CIRCA) {
-			$vb_circa_is_set = true;
-			$va_token = $this->peekToken(2);
-			$vb_was_peeked = true;
+		$was_peeked = false;
+		if ($token['type'] == TEP_TOKEN_CIRCA) {
+			$circa_is_set = true;
+			$token = $this->peekToken(2);
+			$was_peeked = true;
 		}
 	
-		$va_dates = array();
-		if (sizeof($va_decade_indicators)) {
+		$dates = array();
+		if (sizeof($decade_indicators)) {
 			if (
-				(preg_match("/^([\d]{2,4})[\'’’]{0,1}(".join("|", $va_decade_indicators)."){1}$/iu", $va_token['value'], $va_matches))
+				(preg_match("/^([\d]{2,4})[\'’’]{0,1}(".join("|", $decade_indicators)."){1}$/iu", $token['value'], $matches))
 				||
-				(preg_match("/^([\d]{3})(\_)$/u", $va_token['value'], $va_matches))
+				(preg_match("/^([\d]{3})(\_)$/u", $token['value'], $matches))
 				||
-				(preg_match("/^([\d]{2,4})#([\d]{2,4})(".join("|", $va_decade_indicators)."{1})$/iu", $va_token['value'], $va_matches))
+				(preg_match("/^([\d]{2,4})#([\d]{2,4})(".join("|", $decade_indicators)."{1})$/iu", $token['value'], $matches))
 			) {
-				$vn_is_circa = $vb_circa_is_set ? 1 : 0;
+				$is_circa = $circa_is_set ? 1 : 0;
 				
-				if ($vb_was_peeked) { $this->skipToken(); }
+				if ($was_peeked) { $this->skipToken(); }
 				$this->skipToken();
 			
-			    $vb_is_bc = false;
-				while($va_modfier_token = $this->peekToken()) {
-					switch($va_modfier_token['type']) {
+			    $is_bc = false;
+				while($modfier_token = $this->peekToken()) {
+					switch($modfier_token['type']) {
 						case TEP_TOKEN_ERA:
-							if($va_modfier_token['era'] == TEP_ERA_BC) {
-								$vb_is_bc = true;
+							if($modfier_token['era'] == TEP_ERA_BC) {
+								$is_bc = true;
 							}
 							$this->skipToken();
 							break;
 						case TEP_TOKEN_QUESTION_MARK_UNCERTAINTY:
-							$vn_is_circa = 1;
+							$is_circa = 1;
 							$this->skipToken();
 							break;
 						default:
@@ -1742,30 +1742,34 @@ class TimeExpressionParser {
 					}
 				}
 
-				if(sizeof($va_matches) === 4) {	// is range of decades with truncated end date
-					if($va_matches[2] <= 99) { $va_matches[2] += ((int)substr($va_matches[1], 0, 2) * 100); }
-					$vn_end_year = (int) ($va_matches[2] - ($va_matches[2] % 10));
+				if(sizeof($matches) === 4) {	// is range of decades with truncated end date
+					if($matches[2] <= 99) { $matches[2] += ((int)substr($matches[1], 0, 2) * 100); }
+					$end_year = (int) ($matches[2] - ($matches[2] % 10));
 				} else {
 					// decade expression with trailing underscore: 191_
-					if (isset($va_matches[2]) && ($va_matches[2] == '_') && (strlen($va_matches[1]) == 3)) {
-						$va_matches[1].='0';
+					if (isset($matches[2]) && ($matches[2] == '_') && (strlen($matches[1]) == 3)) {
+						$matches[1].='0';
 					}
-					$vn_end_year = (int) ($va_matches[1] - ($va_matches[1] % 10));
+					$end_year = (int) ($matches[1] - ($matches[1] % 10));
 				}
 			
-				$vn_start_year = (int) ($va_matches[1] - ($va_matches[1] % 10));
-				if ($vb_is_bc) { $vn_start_year *= -1; }
-				$va_dates['start'] = array(
-					'month' => 1, 'day' => 1, 'year' => $vn_start_year,
-					'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa, 'is_probably' => false, 'is_decade' => true
+				$start_year = (int) ($matches[1] - ($matches[1] % 10));
+				$end_year = $is_bc ? ($end_year - 9) : ($end_year + 9);
+				if ($is_bc) { 
+					$start_year *= -1; 
+					$end_year *= -1; 
+				}
+				$dates['start'] = array(
+					'month' => 1, 'day' => 1, 'year' => $start_year,
+					'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $is_circa, 'is_probably' => false, 'is_decade' => true
 				);
-				$va_dates['end'] = array(
-					'month' => 12, 'day' => 31, 'year' => $vb_is_bc ? ($vn_end_year - 9) : ($vn_end_year + 9),
-					'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa, 'is_probably' => false, 'is_decade' => true
+				$dates['end'] = array(
+					'month' => 12, 'day' => 31, 'year' => $end_year,
+					'uncertainty' => false, 'uncertainty_units' => '', 'is_circa' => $is_circa, 'is_probably' => false, 'is_decade' => true
 				);
 			}
 		}
-		return $va_dates;
+		return $dates;
 	}
 	# -------------------------------------------------------------------
 	/**
@@ -3334,7 +3338,8 @@ class TimeExpressionParser {
 					// catch decade dates
 					$vs_start_year = $this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
 					$vs_end_year = $this->_dateToText(array('year' => $va_end_pieces['year'], 'era' => $va_end_pieces['era'], 'uncertainty' => $va_end_pieces['uncertainty'], 'uncertainty_units' => $va_end_pieces['uncertainty_units']), $pa_options);
-					if ((((int)$vs_start_year % 10) == 0) && ((int)$vs_end_year == ((int)$vs_start_year + 9))) {
+					
+					if (is_numeric($va_start_pieces['year']) && is_numeric($va_end_pieces['year'] ) && (($va_start_pieces['year'] % 10) == 0) && ($va_end_pieces['year'] == ($va_start_pieces['year'] + 9))) {
 						return $this->makeDecadeString(['start' => $va_start_pieces, 'end' => $va_end_pieces], $pa_options);
 					} else {
 						// catch century dates
@@ -4490,6 +4495,10 @@ class TimeExpressionParser {
 			$decade_indicator = array_shift($decade_indicators);
 		} else {
 			$decade_indicator = "s";
+		}
+		
+		if($dates['start']['year'] < 0) {
+			return $dates['start']['abs_year'].$decade_indicator.' '.$dates['start']['era'];
 		}
 		return ($dates['start']['year'] - ($dates['start']['year'] % 10)).$decade_indicator;
  	}

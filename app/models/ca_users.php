@@ -3702,7 +3702,7 @@ class ca_users extends BaseModel {
 			}
 		}
 		
-		return ca_users::$s_user_action_access_cache[$cache_key] = null;
+		return ca_users::$s_user_action_access_cache[$cache_key] = false;
 	}
 	# ----------------------------------------
 	/**

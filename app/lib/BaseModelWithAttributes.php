@@ -1669,6 +1669,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	public function getTypeList($pa_options=null) {
 		if(!is_array($pa_options)) { $pa_options = []; }
 		$ids_only = $pa_options['idsOnly'] ?? false;
+		$idnos_only = $pa_options['idnosOnly'] ?? false;
 		if (isset($pa_options['childrenOfCurrentTypeOnly']) && $pa_options['childrenOfCurrentTypeOnly']) {
 			$pa_options['item_id'] = $this->get('type_id');
 		}
@@ -1681,7 +1682,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		$t_list = new ca_lists();
 		
 		$va_list = $t_list->getItemsForList($type_list_code, $pa_options);
-		if ($ids_only) { 
+		if ($ids_only || $idnos_only) { 
 			CompositeCache::save($key, $va_list, 'typeListCodes');
 			return $va_list; 
 		}
@@ -2082,7 +2083,14 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		$user_values = [];
 		if($user = $po_request->getUser()) {
 			foreach(['fname', 'lname', 'email', 'user_name'] as $uf) {
-				$user_values["currentuser.{$uf}"] = $user->get($uf);
+				$user_values["currentuser.{$uf}"] = $user_values["_user.{$uf}"] = $user->get($uf);
+			}
+			if(is_array($profile_prefs = $user->getValidPreferences('profile'))) {
+				foreach($profile_prefs as $p) {
+					$pv = $user->getPreference($p);
+					$p = str_replace("user_profile_", "", $p);
+					$user_values["_user.{$p}"] = $pv;
+				}
 			}
 		}
 		
@@ -2091,7 +2099,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		$element_id = $t_element->get('element_id');
 		$table_name = $this->tableName();
 		
-		$show_bundle_codes = $po_request->user->getPreference('show_bundle_codes_in_editor');
+		$show_bundle_codes = $user ? $user->getPreference('show_bundle_codes_in_editor') : false;
 		
 		$root_element_id = $group_key = $t_element->getPrimaryKey();
 		$group_keys = [];
@@ -2973,7 +2981,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 			$bundle_code = "{$vs_table}.{$vs_element_code}";
 			$dt = ca_metadata_elements::getDataTypeForElementCode($vs_element_code);
 			if($dt === __CA_ATTRIBUTE_VALUE_MEDIA__) { $bundle_code .= '.path'; }
-			$va_vals = $this->get($bundle_code, array("output" => "idno", "returnAsArray" => true, "returnWithStructure" => true, "returnAllLocales" => true, 'forDuplication' => true));
+			$va_vals = $this->get($bundle_code, array("output" => "id", "returnAsArray" => true, "returnWithStructure" => true, "returnAllLocales" => true, 'forDuplication' => true));
 			if (!is_array($va_vals)) { continue; }
 
 			foreach($va_vals as $vn_id => $va_vals_by_locale) {

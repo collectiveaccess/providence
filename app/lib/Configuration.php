@@ -94,13 +94,15 @@ class Configuration {
 	 * @param bool $dont_cache Don't use config file cached. [Default is false]
 	 * @param bool $dont_cache_instance Don't attempt to cache config file Configuration instance. [Default is false]
 	 * @param bool $dont_load_from_default_path Don't attempt to load additional configuration files from default paths (defined by __CA_LOCAL_CONFIG_DIRECTORY__ and __CA_LOCAL_CONFIG_DIRECTORY__). [Default is false]
+	 * @param bool $dont_load_appname_specific_conf_file Don't attempt to load appname-specific configuratiion files. [Default is false]
+	 * 
 	 * @return Configuration
 	 */
-	static function load($file_path=__CA_APP_CONFIG__, $dont_cache=false, $dont_cache_instance=false, $dont_load_from_default_path=false) {
+	static function load($file_path=__CA_APP_CONFIG__, $dont_cache=false, $dont_cache_instance=false, $dont_load_from_default_path=false, $dont_load_appname_specific_conf_file=false) {
 		if(!$file_path) { $file_path = __CA_APP_CONFIG__; }
 
 		if(!MemoryCache::contains($file_path, 'ConfigurationInstances') || $dont_cache || $dont_cache_instance) {
-			MemoryCache::save($file_path, new Configuration($file_path, true, $dont_cache, $dont_load_from_default_path), 'ConfigurationInstances');
+			MemoryCache::save($file_path, new Configuration($file_path, true, $dont_cache, $dont_load_from_default_path, $dont_load_appname_specific_conf_file), 'ConfigurationInstances');
 		}
 
 		return MemoryCache::fetch($file_path, 'ConfigurationInstances');
@@ -116,10 +118,10 @@ class Configuration {
 	 * @param bool $die_on_error If true, request processing will halt with call to die() on error in parsing config file. [Default is false]
 	 * @param bool $dont_cache If true, file will be parsed even if it's already cached. [Default is false]
 	 * @param bool $dont_load_from_default_path Don't attempt to load additional configuration files from default paths (defined by __CA_LOCAL_CONFIG_DIRECTORY__ and __CA_LOCAL_CONFIG_DIRECTORY__). [Default is false]
-	 *
+	 * @param bool $dont_load_appname_specific_conf_file Don't attempt to load appname-specific configuratiion files. [Default is false]
 	 *
 	 */
-	public function __construct($file_path=__CA_APP_CONFIG__, $die_on_error=false, $dont_cache=false, $dont_load_from_default_path=false) {
+	public function __construct($file_path=__CA_APP_CONFIG__, $die_on_error=false, $dont_cache=false, $dont_load_from_default_path=false, $dont_load_appname_specific_conf_file=false) {
 		global $g_ui_locale, $g_configuration_cache_suffix;
 
 		$this->ops_config_file_path = $file_path ? $file_path : __CA_APP_CONFIG__;	# path to configuration file
@@ -146,10 +148,12 @@ class Configuration {
 				$config_file_list[] = $top_level_config_path = __CA_DEFAULT_THEME_CONFIG_DIRECTORY__.'/'.$config_filename;
 			}
 			
-			// Appname-specific config overrides local config
-			$appname_specific_path = __CA_LOCAL_CONFIG_DIRECTORY__.'/'.pathinfo($config_filename, PATHINFO_FILENAME).'_'.__CA_APP_NAME__.'.'.pathinfo($config_filename, PATHINFO_EXTENSION);
-			if (defined('__CA_LOCAL_CONFIG_DIRECTORY__') && !in_array($appname_specific_path, $config_file_list, true) && file_exists($appname_specific_path)) {
-				$config_file_list[] = $top_level_config_path = $appname_specific_path;
+			if(!$dont_load_appname_specific_conf_file) {
+				// Appname-specific config overrides local config
+				$appname_specific_path = __CA_LOCAL_CONFIG_DIRECTORY__.'/'.pathinfo($config_filename, PATHINFO_FILENAME).'_'.__CA_APP_NAME__.'.'.pathinfo($config_filename, PATHINFO_EXTENSION);
+				if (defined('__CA_LOCAL_CONFIG_DIRECTORY__') && !in_array($appname_specific_path, $config_file_list, true) && file_exists($appname_specific_path)) {
+					$config_file_list[] = $top_level_config_path = $appname_specific_path;
+				}
 			}
 		}
 		if(defined('__CA_CONF_DIR__') && !in_array($p = __CA_CONF_DIR__.'/'.$config_filename, $config_file_list, true) && file_exists($p)) { 
@@ -159,7 +163,7 @@ class Configuration {
 
 		$filename = pathinfo($file_path, PATHINFO_BASENAME);
 		
-		$app_config = ($filename !== 'app.conf') ? Configuration::load(__CA_APP_CONFIG__) : $o_config;
+		$app_config = ($filename !== 'app.conf') ? Configuration::load(__CA_APP_CONFIG__, false, false, false, true) : $o_config;
 		if (($inherit_config = $app_config->get(['allowThemeInheritance', 'allow_theme_inheritance'])) && !$dont_load_from_default_path) {
 		    $i=0;
             while($inherit_from_theme = trim(trim($app_config->get(['inheritFrom', 'inherit_from'])), "/")) {

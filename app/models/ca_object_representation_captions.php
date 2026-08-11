@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2025 Whirl-i-Gig
+ * Copyright 2013-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -70,6 +70,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representation_captions'] = array
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
+				'TRANSCRIBED_CONTENT' => true,
 				'LABEL' => _t('Caption content'), 'DESCRIPTION' => _t('Caption content')
 		)
  	)
@@ -188,7 +189,9 @@ class ca_object_representation_captions extends BaseModel {
 		if(!is_array($options)) { $options = []; }
 		$rc =  parent::insert($options);
 		if($rc && ($path = $this->getFilePath('caption_file'))) {
-			$this->set('caption_content', file_get_contents($path));
+			$content = caGetOption('content', $options, file_get_contents($path));
+			if(is_array($content)) { $content = json_encode($content); }
+			$this->set('caption_content', $content);
 			$rc = $this->update();
 		}
 		return $rc;
@@ -201,7 +204,9 @@ class ca_object_representation_captions extends BaseModel {
 		$media_path = null;
 		if(!is_array($options)) { $options = []; }
 		if($this->changed('caption_file') && ($path = $this->getFilePath('caption_file'))) {
-			$this->set('caption_content', file_get_contents($path));
+			$content = caGetOption('content', $options, file_get_contents($path));
+			if(is_array($content)) { $content = json_encode($content); }
+			$this->set('caption_content', $content);
 		}
 		return parent::update($options);
 	}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -276,7 +276,7 @@ $_ca_attribute_settings['GeocodeAttributeValue'] = array(		// global
 		'width' => 90, 'height' => 1,
 		'label' => _t('Tile server URL'),
 		'validForRootOnly' => 0,
-		'description' => _t('URL for tileserver to load custom tiles from, with placeholders for X, Y and Z values in the format <em>${x}</em>. Ex. http://tileserver.net/maps/${z}/${x}/${y}.png. Leave blank if you do not wish to use custom map tiles.')
+		'description' => _t('URL for tileserver to load custom tiles from, with placeholders for X, Y and Z values in the format <em>${x}</em>. Ex. %1. Leave blank if you do not wish to use custom map tiles.', 'http://tileserver.net/maps/${z}/${x}/${y}.png')
 	),
 	'tileLayerName' => array(
 		'formatType' => FT_TEXT,

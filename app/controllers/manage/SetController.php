@@ -151,11 +151,16 @@ class SetController extends ActionController {
 				$va_set_list[$id]['can_delete'] = $this->UserCanDeleteSet($va_set['user_id']);
 			
 				# --- order the set
-				if(!in_array($vs_sort, array("status", "access"))){
-					$va_set_list_sorted[$va_set[$vs_sort]." ".$id] = $va_set;
-				}else{
-					$va_set_list_sorted[$t_set->getChoiceListValue($vs_sort, $va_set[$vs_sort])." ".$id] = $va_set;
+				if ($vs_sort === 'item_count') {
+					// Pad numeric values so string-key sorting preserves numeric order.
+					$vs_sort_key = sprintf('%010d %d', (int)$va_set[$vs_sort], $id);
+				} elseif (!in_array($vs_sort, array("status", "access"))) {
+					$vs_sort_key = $va_set[$vs_sort]." ".$id;
+				} else {
+					$vs_sort_key = $t_set->getChoiceListValue($vs_sort, $va_set[$vs_sort])." ".$id;
 				}
+
+				$va_set_list_sorted[$vs_sort_key] = $va_set;
 				$va_set_ids[] = $id;
 			}
 		}

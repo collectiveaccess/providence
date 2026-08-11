@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * themes/default/views/system/configuration_error_intstall_html.php : 
+ * app/lib/VersionUpdate212.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2026 Whirl-i-Gig
+ * Copyright 2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,25 +24,41 @@
  * http://www.CollectiveAccess.org
  *
  * @package CollectiveAccess
- * @subpackage Configuration
+ * @subpackage Installer
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
-?>
-<?= _t("<div class='error'>There are issues with your configuration</div>
-	    <div class='errorDescription'>General installation instructions can be found
-	    <a href='%1' target='_blank' rel='noopener noreferrer'>here</a>.
-	    For more specific information on detected issues review the messages below:</div>", 'https://docs.collectiveaccess.org'); ?>
-	<br/><br/>
-<?php
-foreach (self::$opa_error_messages as $vs_message) {
-?>
-	<div class="permissionError">
-		<?= caNavIcon(__CA_NAV_ICON_ALERT__ , 2, ['class' => 'permissionErrorIcon']); ?>
-		<?= $vs_message; ?>
-		<div style='clear:both; height:1px;'><!-- empty --></div>
-	</div>
-	<br/>
-<?php
+require_once(__CA_LIB_DIR__ . '/BaseVersionUpdater.php');
+
+class VersionUpdate212 extends BaseVersionUpdater {
+	# -------------------------------------------------------
+	protected $opn_schema_update_to_version_number = 212;
+	protected $messages = [];
+	# -------------------------------------------------------
+
+	/**
+	 * @inheritDoc
+	 *
+	 * @return void
+	 */
+	public function applyDatabaseUpdate($options = null) {
+		$db	 = new Db();
+		$db->query("TRUNCATE TABLE ca_sql_search_word_index");
+		$db->query("TRUNCATE TABLE ca_sql_search_words");
+		
+		$ret = parent::applyDatabaseUpdate($options);
+		
+		return $ret;
+	}
+	# -------------------------------------------------------
+
+	/**
+	 *
+	 * @return string HTML to display after update
+	 */
+	public function getPostupdateMessage() {
+		return _t("The search indexing format has changed. You must reindex your system now.");
+	}
+	# -------------------------------------------------------
 }
