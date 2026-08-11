@@ -138,25 +138,17 @@ function caExtractValuesByLocale($pa_locale_rules, $pa_values, $pa_options=null)
 			$va_values[$vm_id] = array_pop($va_value_list_by_locale);
 			continue;
 		}
-		foreach($va_value_list_by_locale as $pm_locale => $vm_value) {
-			// convert locale_id to locale string
-			if (is_numeric($pm_locale)) {
-				if (!$va_locales[$pm_locale]) { continue; }	// invalid locale_id?
-				$vs_locale = $va_locales[$pm_locale]['language'].'_'.$va_locales[$pm_locale]['country'];
-			} else {
-				$vs_locale = $pm_locale;
-			}
+		
+		$locales_to_try = [$pa_locale_rules['preferred']];
+		if(!$no_fallback) { $locales_to_try[] = $pa_locale_rules['fallback']; }
 
-			// try to find values for preferred locale
-			if (isset($pa_locale_rules['preferred'][$vs_locale]) && $pa_locale_rules['preferred'][$vs_locale]) {
-				$va_values[$vm_id] = $vm_value;
-				break;
-			}
-
-			if(!$no_fallback) {
-				// try fallback locales
-				if (isset($pa_locale_rules['fallback'][$vs_locale]) && $pa_locale_rules['fallback'][$vs_locale]) {
-					$va_values[$vm_id] = $vm_value;
+		foreach($locales_to_try as $try_set) {
+			foreach($try_set as $locale_to_try => $n) {
+				if(!($locale_to_try = ca_locales::codeToID($locale_to_try))) { continue; } // invalid locale_id
+				
+				if($va_value_list_by_locale[$locale_to_try]) {
+					$va_values[$vm_id] = $va_value_list_by_locale[$locale_to_try];
+					continue(3);
 				}
 			}
 		}

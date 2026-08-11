@@ -4077,8 +4077,6 @@ class BrowseEngine extends BaseFindEngine {
 							if ($vn_parent_id) { $va_child_counts[$vn_parent_id]++; }
 						}
 
-						
-						
 						//if (isset($va_unique_values[$vs_label])) { continue; }
 						$va_unique_values[$vs_label] = true;
 						$vs_label_key = strtolower($vs_label);
@@ -7396,7 +7394,11 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 						} else {
 							$acc = [];
 							foreach($va_facet as $k => $x) {
-								$acc = array_merge($acc, $x);
+								foreach($x as $xx => $vv) {
+									foreach($vv as $locale_id => $vvv) {
+										$acc[$xx][$locale_id] = $vvv;
+									}
+								}
 							}
 							$va_facet = $acc;
 						}
@@ -7433,9 +7435,9 @@ if (!($va_facet_info['show_all_when_first_facet'] ?? null) || ($this->numCriteri
 					}
 					
 					if ($natural_sort) {
-						return caSortArrayByKeyInValue(caExtractValuesByUserLocale($va_facet), ['label']);
+						return caSortArrayByKeyInValue(caExtractValuesByUserLocale($va_facet, null, caGetOption('locales', $va_facet_info, null)), ['label']);
 					}
-					return caExtractValuesByUserLocale($va_facet);
+					return caExtractValuesByUserLocale($va_facet, null, caGetOption('locales', $va_facet_info, null));
 				}
 				break;
 			# -----------------------------------------------------
