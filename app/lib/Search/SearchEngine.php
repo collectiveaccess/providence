@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2025 Whirl-i-Gig
+ * Copyright 2007-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -314,6 +314,9 @@ class SearchEngine extends SearchBase {
 			
 				if (is_array($va_restrict_to_fields = caGetOption('restrictSearchToFields', $options, null)) && $this->opo_engine->can('restrict_to_fields')) {
 					$this->opo_engine->setOption('restrictSearchToFields', $va_restrict_to_fields);
+				}
+				if (caGetOption('omitSelfRelationships', $options, null) && $this->opo_engine->can('omit_self_relationships')) {
+					$this->opo_engine->setOption('omitSelfRelationships', true);
 				}
 				$excluded_fields_config = $this->opo_search_config->get('exclude_fields_froms_search') ?? [];
 				if (is_array($va_exclude_fields_from_search = caGetOption('excludeFieldsFromSearch', $options, $excluded_fields_config[$this->ops_tablename] ?? null)) && $this->opo_engine->can('restrict_to_fields')) {
