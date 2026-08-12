@@ -762,8 +762,6 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 
 			// Other lines
 			while($result->nextHit()) {
-				if(!is_array($media_versions = $result->getMediaVersions('ca_object_representations.media'))) { $media_versions = []; }
-		
 				$column = reset($a_to_z);
 		
 				$supercol_a_to_z = range('A', 'Z');

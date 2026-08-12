@@ -111,10 +111,18 @@ define('__CA_NAV_ICON_TOGGLE__', 73);
 define('__CA_NAV_ICON_CHECKBOX__', 74);
 define('__CA_NAV_ICON_TRASH__', 75);
 define('__CA_NAV_ICON_AUTO_DELETE__', 76);
-define('__CA_NAV_ICON_NO_AUTO_DELETE__', 77);
-define('__CA_NAV_ICON_SET_ACCESS__', 78);
-define('__CA_NAV_ICON_PACK__', 79);
-define('__CA_NAV_ICON_UNPACK__', 80);
+define('__CA_NAV_ICON_FOUND__', 77);
+define('__CA_NAV_ICON_NOT_FOUND__', 78);
+define('__CA_NAV_ICON_NOT_CHECKED__', 79); 	
+define('__CA_NAV_ICON_CIRCLE_DOT__', 80);
+define('__CA_NAV_ICON_INVENTORY__', 81);
+define('__CA_NAV_ICON_LIST__', 82);
+define('__CA_NAV_ICON_NO_AUTO_DELETE__', 83);
+define('__CA_NAV_ICON_UNSAVED_CHANGES__', 84);
+define('__CA_NAV_ICON_RANDOM__', 85);
+define('__CA_NAV_ICON_SET_ACCESS__', 86);
+define('__CA_NAV_ICON_PACK__', 89);
+define('__CA_NAV_ICON_UNPACK__', 90);
 
 /**
  * Icon position constants
@@ -914,6 +922,9 @@ function _caNavIconTypeToName($pn_type) {
 			break;	
 		case __CA_NAV_ICON_COPY__:
 			$vs_fa_class = 'fa fa-clipboard';
+			break;							
+		case __CA_NAV_ICON_RANDOM__:
+			$vs_fa_class = 'fa fa-random';
 			break;	
 		case __CA_NAV_ICON_MERGE__:
 			$vs_fa_class = 'fa fa-object-group';
@@ -929,13 +940,34 @@ function _caNavIconTypeToName($pn_type) {
 			break;				
 		case __CA_NAV_ICON_TRASH__:
 			$vs_fa_class = 'fas fa-trash';
+			break;	
+		case __CA_NAV_ICON_FOUND__:
+			$vs_fa_class = 'fas fa-check-circle';
+			break;				
+		case __CA_NAV_ICON_NOT_FOUND__:
+			$vs_fa_class = 'fas fa-exclamation-circle';
+			break;				
+		case __CA_NAV_ICON_NOT_CHECKED__:
+			$vs_fa_class = 'fas fa-question-circle';
+			break;		
+		case __CA_NAV_ICON_CIRCLE_DOT__:
+			$vs_fa_class = 'fas fa-dot-circle';
+			break;		
+		case __CA_NAV_ICON_INVENTORY__:
+			$vs_fa_class = 'fas fa-warehouse';
+			break;						
+		case __CA_NAV_ICON_LIST__:
+			$vs_fa_class = 'fas fa-list';
 			break;				
 		case __CA_NAV_ICON_AUTO_DELETE__:
 			$vs_fa_class = 'fas fa-recycle caIconRed';
 			break;				
 		case __CA_NAV_ICON_NO_AUTO_DELETE__:
 			$vs_fa_class = 'fas fa-recycle';
-			break;				
+			break;		
+		case __CA_NAV_ICON_UNSAVED_CHANGES__:
+			$vs_fa_class = 'far fa-clipboard caIconRed';
+			break;
 		case __CA_NAV_ICON_SET_ACCESS__:
 			$vs_fa_class = 'fas fa-broadcast-tower';
 			break;				
@@ -944,9 +976,9 @@ function _caNavIconTypeToName($pn_type) {
 			break;				
 		case __CA_NAV_ICON_UNPACK__:
 			$vs_fa_class = 'fas fa-box';
-			break;												
+			break;		
 		default:
-			print "INVALID CONSTANT $pn_type<br>\n";
+			print "INVALID CONSTANT {$pn_type}<br>\n";
 			return null;
 			break;
 	}

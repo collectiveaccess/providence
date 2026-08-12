@@ -328,6 +328,21 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Return list of additional values for display
+	 * to support additional interface elements on-screen for a value.
+	 *
+	 * Returns an empty array for attribute services that don't support additional values.
+	 *
+	 * @return array
+	 */
+	public function getAdditionalDisplayValues() : array {
+		return [
+			'display' => $this->getDisplayValue(['output' => 'text']),
+			'id' => $this->getDisplayValue(['output' => 'idsOnly'])
+		];
+	}
+	# ------------------------------------------------------------------
+	/**
 	 * Intercept calls to get*ID, where * = the singular name of the authority attribute (Eg. "Entity")
 	 * and reroute to getID(). The provides support for legacy table-specific getID() calls.
 	 */

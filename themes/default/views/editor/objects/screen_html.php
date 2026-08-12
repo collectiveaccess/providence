@@ -45,6 +45,7 @@ print $control_box;
 <?php
 		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/object_id/'.$object_id, 'ObjectEditorForm', null, 'POST', 'multipart/form-data');
 	
+
 		$bundle_list = array();
 		$form_elements = $t_object->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 								'request' => $this->request, 

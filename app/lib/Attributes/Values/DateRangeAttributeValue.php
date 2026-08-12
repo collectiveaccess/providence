@@ -452,6 +452,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 	public function htmlFormElement($pa_element_info, $pa_options=null) {
 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'suggestExistingValues', 'useDatePicker', 'datePickerDateFormat'));
 		$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : 'dateBg');
+		$id = $pa_options['id'] ?? "{fieldNamePrefix}".$pa_element_info['element_id']."_{n}";
 		
 		if (isset($pa_options['useDatePicker'])) {
 			$va_settings['useDatePicker'] = $pa_options['useDatePicker'];
@@ -462,7 +463,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 		$vs_element = caHTMLTextInput(
 			'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
 			array_merge($attributes ?? [], [
-				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
+				'id' => $id,
 				'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
 				'value' => '{{'.$pa_element_info['element_id'].'}}',
 				'maxlength' => $vn_max_length,
@@ -482,7 +483,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 		
 		if ((bool)$va_settings['suggestExistingValues'] && $vs_lookup_url && $vs_bundle_name) { 
 			$vs_element .= "<script type='text/javascript'>
-				jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').autocomplete( 
+				jQuery('#{$id}_{n}').autocomplete( 
 					{ source: '{$vs_lookup_url}', minLength: 3, delay: 800}
 				);
 			</script>\n";
@@ -611,6 +612,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 			$dates = DateRangeAttributeValue::$o_tep->getHistoricTimestamps();
 			if(!($dates[0] ?? null)) { $dates[0] = ($sort_undated_at === 'start') ? "-9999999999.999999999999" : "9999999999.999999999999"; }
 			if(!($dates[1] ?? null)) { $dates[1] = ($sort_undated_at === 'start') ? "-9999999999.999999999999" : "9999999999.999999999999"; }
+
 			$sdate_bits = explode('.', $dates[0] ?? '.');
 			$edate_bits = explode('.', $dates[1] ?? '.');
 			

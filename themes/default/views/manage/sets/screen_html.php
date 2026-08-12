@@ -72,3 +72,5 @@ print $control_box;
 </div>
 
 <div class="editorBottomPadding"><!-- empty --></div>
+
+<?= caSetupEditorScreenOverlays($this->request, $t_set, $bundle_list); ?>

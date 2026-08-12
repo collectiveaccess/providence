@@ -45,7 +45,8 @@ print caHTMLTextInput(
 	array(
 		'size' => (isset($options['width']) && $options['width'] > 0) ? $options['width'] : $settings['fieldWidth'],
 		'height' => (isset($options['height']) && $options['height'] > 0) ? $options['height'] : 1,
-		'value' => '{{'.$element_info['element_id'].'}}',
+		'value' => '{{'.$element_info['element_id'].'_display}}',
+
 		'maxlength' => 512,
 		'id' => "{$field_name_prefix}_autocomplete{n}",
 		'class' => $class
@@ -54,7 +55,7 @@ print caHTMLTextInput(
 print caHTMLHiddenInput(
 	"{$field_name_prefix}_{n}",
 	array(
-		'value' => '{{'.$element_info['element_id'].'}}',
+		'value' => '{{'.$element_info['element_id'].'_id}}',
 		'id' => "{$field_name_prefix}_{n}"
 	)
 );
@@ -137,7 +138,7 @@ print ' '.caNavIcon(__CA_NAV_ICON_DELETE__, 12, ['id' => "{$field_name_prefix}_c
 						return;
 					}
 				}
-				
+			
 				jQuery('#<?= $field_name_prefix; ?>_{n}').val(ui.item.id);
 				jQuery('#<?= $field_name_prefix; ?>_autocomplete{n}').val(jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, '')));
 <?php } else { ?>		
@@ -148,7 +149,7 @@ print ' '.caNavIcon(__CA_NAV_ICON_DELETE__, 12, ['id' => "{$field_name_prefix}_c
 				event.preventDefault();
 			},
 			change: function( event, ui ) {
-				// If nothing has been selected remove all content from  text input
+				// If nothing has been selected remove all content from text input
 				if(!jQuery('#<?= $field_name_prefix; ?>_{n}').val()) {
 					jQuery('#<?= $field_name_prefix; ?>_autocomplete{n}').val('');
 				}

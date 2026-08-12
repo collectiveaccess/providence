@@ -2344,6 +2344,45 @@ class ca_users extends BaseModel {
 								$output .= "</table>";
 							}
 							break;
+						case 'FT_INVENTORY_BUNDLE_LIST':
+							if(caInventoryIsEnabled()) {
+								$config = Configuration::load();
+								$inventory_container_element_code = $config->get('inventory_container_element_code');
+								$inventory_found_element_code = $config->get('inventory_found_element_code');
+								if(is_array($md = ca_metadata_elements::getElementsForSet($inventory_container_element_code))) {
+									if(!is_array($vs_current_value)) { $vs_current_value = []; }
+									foreach($md as $e) {
+										if($e['datatype'] == __CA_ATTRIBUTE_VALUE_CONTAINER__) { continue; }
+										if($e['element_code'] === $inventory_found_element_code) { continue; }
+										
+										$opts = ['value' => $e['element_code']];
+										if(in_array($e['element_code'], $vs_current_value, true)) { $opts['CHECKED'] = 1; }
+										$output .= "<div>".caHTMLCheckboxInput("pref_{$ps_pref}[]", $opts, [])." ".$e['display_label']."</div>\n";
+									}
+								}
+							}
+							break;
+						case 'FT_INVENTORY_TYPE_LIST':
+							if(caInventoryIsEnabled()) {
+								$config = Configuration::load();
+								$inventory_type_by_table = $config->get('inventory_types') ?? [];
+								
+								if(!is_array($vs_current_value)) { $vs_current_value = []; }
+								$vs_current_value = array_map('intval', $vs_current_value);
+								foreach($inventory_type_by_table as $t => $types) {
+									if(!($t_instance = Datamodel::getInstance($t))) { continue; }
+									$table_name = Datamodel::getTableProperty($t, 'NAME_PLURAL');
+									$output .= "<div>"._t('<em>For %1:</em>', $table_name)."</div>\n";
+									foreach($types as $type) {
+										$typename = $t_instance->getTypeName($type);
+										
+										$opts['value'] = $type_id = $t_instance->getTypeIDForCode($type);
+										if(in_array((int)$type_id, $vs_current_value, true)) { $opts['CHECKED'] = 1; }
+										$output .= "<div style='margin-left: 5px;'>".caHTMLCheckboxInput("pref_{$ps_pref}[]", $opts, [])." ".$typename."</div>\n";
+									}
+								}
+							}
+							break;
 						default:
 							if ($vb_use_table = (isset($pa_options['useTable']) && (bool)$pa_options['useTable'])) {
 								$output .= "<table width='100%'>";

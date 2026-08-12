@@ -356,6 +356,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$this->BUNDLES['ca_user_groups'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Group access'));
 		$this->BUNDLES['anonymous_access'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Anonymous access'));
 		$this->BUNDLES['ca_set_items'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Set items'));
+		$this->BUNDLES['inventory_list'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Inventory contents'));
 		
 		$this->BUNDLES['_itemCount'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of items in set'));
 		
@@ -592,6 +593,9 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *          codes = 
 	 *          includeItems = 
 	 *          item_id = Get set that contains specified item_id
+	 *			restrictToTypes = 
+	 *			inventoriesOnly = 
+	 *			excludeInventories = 
 	 *
 	 * @return array A list of sets keyed by set_id and then locale_id. Keys for the per-locale value array include: set_id, set_code, status, public access, owner user_id, content table_num, set type_id, set name, number of items in the set (item_count), set type name for display and set content type name for display. If setIDsOnly option is set then a simple array of set_id values is returned instead.
 	 */
@@ -610,6 +614,17 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$include_items = caGetOption('includeItems', $pa_options, false);
 		
+		if($this->getAppConfig()->get('enable_inventories') && ($inventory_set_type = $this->getAppConfig()->get('inventory_set_type'))) {
+			if(caGetOption('inventoriesOnly', $pa_options, false)) {
+				$pa_options['restrictToTypes'] = [$inventory_set_type];
+				unset($pa_options['restrict_to_types']);
+			} elseif(caGetOption('excludeInventories', $pa_options, false)) {
+				$pa_options['excludeTypes'] = [$inventory_set_type];
+				unset($pa_options['exclude_types']);
+			}
+		}
+		
+		
 		$pb_by_user = caGetOption('byUser', $pa_options, null);
 		
 		$pn_row_id = (isset($pa_options['row_id']) && ((int)$pa_options['row_id'])) ? (int)$pa_options['row_id'] : null;
@@ -627,11 +642,12 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$vn_table_num = null;
 		if ($pm_table_name_or_num && !($vn_table_num = $this->_getTableNum($pm_table_name_or_num))) { return null; }
 		
-		$va_extra_joins = array();
+		$va_extra_joins = [];
 		$o_db = $this->getDb();
 		
-		$va_sql_wheres = array("(cs.deleted = 0)");
-		$va_sql_params = array();
+		$va_sql_wheres = ["(cs.deleted = 0)", "(csi.deleted = 0 OR csi.deleted IS NULL)"];
+		$va_sql_params = [];
+		
 		if ($vn_table_num) {
 			$va_sql_wheres[] = "(cs.table_num = ?)";
 			$va_sql_params[] = (int)$vn_table_num;
@@ -715,7 +731,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		}
 		
 		if (isset($pn_item_id) && ($pn_item_id > 0)) {
-			$va_extra_joins[] = "INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id";
 		    $va_sql_wheres[] = "(csi.item_id IN (?))";
 			$va_sql_params[] = is_array($pn_item_id) ? $pn_item_id : [$pn_item_id];
 		}
@@ -755,10 +770,29 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$va_sql_params[] = $va_restrict_to_type_ids;
 			}
 		}
+		if($exclude_types = caGetOption(['exclude_types', 'excludeTypes'], $pa_options, false)) {
+			if(!is_array($exclude_types)) { $exclude_types = [$exclude_types]; }
+			$exclude_type_ids = [];
+			foreach($exclude_types as $vm_type) {
+				if(is_numeric($vm_type)){
+					$exclude_type_ids[] = (int)$vm_type;
+				} else {
+					# --- look up code of set type
+					$vn_type_id = caGetListItemID('set_types', $vm_type);
+					if($vn_type_id){
+						$exclude_type_ids[] = (int) $vn_type_id;
+					}
+				}
+			}
+
+			if(sizeof($exclude_type_ids)) {
+				$va_sql_wheres[] = "(cs.type_id NOT IN (?))";
+				$va_sql_params[] = $exclude_type_ids;
+			}
+		}
 		
 		if ($pn_row_id > 0) {
 			$va_sql_wheres[] = "((csi.row_id = ?) AND (csi.table_num = ?))";
-			$va_extra_joins[] = "INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id";
 			$va_sql_selects[] = 'csi.item_id';
 			$va_sql_params[] = (int)$pn_row_id;
 			$va_sql_params[] = (int)$vn_table_num;
@@ -798,7 +832,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$qr_res = $o_db->query("
 					SELECT cs.set_id, count(distinct row_id) item_count
 					FROM ca_sets cs
-					INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
+					LEFT JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
 					INNER JOIN ".$t_instance->tableName()." AS t ON t.".$t_instance->primaryKey()." = csi.row_id
 					".(sizeof($va_item_wheres) ? 'WHERE ' : '')."
 					".join(' AND ', $va_item_wheres)."
@@ -815,12 +849,14 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				FROM ca_sets cs
 				LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
 				LEFT JOIN ca_locales AS l ON csl.locale_id = l.locale_id
+				LEFT JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
 				LEFT JOIN ca_users AS u ON cs.user_id = u.user_id
 				".join("\n", $va_extra_joins)."
 				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 				".join(' AND ', $va_sql_wheres)."
 				ORDER BY csl.name
 			", $va_sql_params);
+			
 			$va_sets = array();
 			$va_type_name_cache = array();
 
@@ -831,6 +867,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 			$qr_res->seek(0);
 			$t_list = new ca_lists();
+			
+			
+			$editable_bundle_info = $this->getInventoryEditableBundleInfo($pa_options);
+			
 			while($qr_res->nextRow()) {
 				$set_id = $qr_res->get('set_id');
 				$vn_table_num = $qr_res->get('table_num');
@@ -852,6 +892,16 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				}
 				
 				$va_sets[$set_id][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), $extras);
+					
+				if(isset($pa_options['inventoriesOnly'])) {
+					$i = ca_set_items::findAsInstance($qr_res->get('item_id'));	
+					$found_idno = $i->get("ca_set_items.{$editable_bundle_info['containerElementCode']}.{$editable_bundle_info['foundElementCode']}", ['convertCodesToIdno' => true]) ?? 'NOT_CHECKED';
+			
+					$found_options = is_array($editable_bundle_info['foundOptions']) ? $editable_bundle_info['foundOptions'] : [];
+					$found_status = $found_options[$found_idno] ?? 'NOT CHECKED';
+					
+					$va_sets[$set_id][$qr_res->get('locale_id')]['inventory_status'] = $found_status;
+				}
 			}
 			
 			if ($pb_by_user) {
@@ -888,6 +938,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				FROM ca_sets cs
 				INNER JOIN ca_users AS u ON cs.user_id = u.user_id
 				LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
+				INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
 				".join("\n", $va_extra_joins)."
 				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 				".join(' AND ', $va_sql_wheres)."
@@ -901,6 +952,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				INNER JOIN ca_users AS u ON cs.user_id = u.user_id
 				LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
 				LEFT JOIN ca_locales AS l ON csl.locale_id = l.locale_id
+				INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
 				".join("\n", $va_extra_joins)."
 				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 				".join(' AND ', $va_sql_wheres)."
@@ -1094,7 +1146,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 		}
 		
-		$ret = array_flip($set_ids);
+		$ret = array_map(function($v) { return null; }, array_flip($set_ids));
 		
 		$shares_only = caGetOption('sharesOnly', $options, false);
 		$dont_check_access_value = caGetOption('dontCheckAccessValue', $options, false);
@@ -1104,7 +1156,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			!$shares_only && (
 			$this->getAppConfig()->get('dont_enforce_access_control_for_ca_sets')
 			||
-			($t_user->load($user_id) && ($t_user->canDoAction('is_administrator') || $t_user->canDoAction('can_administrate_sets')))	
+			($t_user->load($user_id) && ($t_user->canDoAction('is_administrator')))
 		)) { 
 			foreach($set_ids as $set_id) {
 				$ret[$set_id] = true;
@@ -1113,21 +1165,32 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		}
 
 		$o_db =  $this->getDb();
+		if(!$t_user->isLoaded()) { $t_user->load($user_id); }
 		
 		if(!$shares_only) {
+			$inventory_type_ids = $this->getAppConfig()->get('enable_inventories') ? caMakeTypeIDList('ca_sets', $this->getAppConfig()->get('inventory_set_type')) : null;
+		
 			$qr_res = $o_db->query("
-				SELECT s.set_id, s.user_id, s.access
+				SELECT s.set_id, s.user_id, s.access, s.type_id
 				FROM ca_sets s 
 				WHERE 
 					s.set_id IN (?) AND s.deleted = 0
 			", [$set_ids]);
 			while($qr_res->nextRow()) {
 				$set_id = $qr_res->get('set_id');
+				if(in_array($qr_res->get('type_id'), $inventory_type_ids ?? [])) {
+					if($t_user->canDoAction('can_administrate_inventories')) { 
+						$ret[$set_id] = true;
+						continue;
+					}
+				} elseif($t_user->canDoAction('can_administrate_sets')) { 
+					$ret[$set_id] = true;
+					continue;
+				}
 				if((int)$qr_res->get('user_id') === $user_id) {
 					$ret[$set_id] = true;
 					continue;
 				}
-				
 				if(!$dont_check_access_value) {
 					if((int)$qr_res->get('access') >= $access) {
 						$ret[$set_id] = true;
@@ -1175,7 +1238,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$set_id = $qr_res->get('set_id');
 			$ret[$set_id] = true;
 		}
-		
 		return $ret;
 	}
 	# ------------------------------------------------------
@@ -1580,7 +1642,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 */
 	public function removeItemByItemID($pn_item_id, $pn_user_id=null) {
 		if(!($vn_set_id = $this->getPrimaryKey())) { return null; }
-		if (!$this->haveAccessToSet($pn_user_id, __CA_SET_EDIT_ACCESS__)) { return false; }
+		if ($pn_user_id && !$this->haveAccessToSet($pn_user_id, __CA_SET_EDIT_ACCESS__)) { return false; }
 		
 		$t_item = new ca_set_items();
 		if ($t_item->load($pn_item_id)) {
@@ -1659,7 +1721,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		if (!$this->haveAccessToSet($pa_options['user_id'], __CA_SET_READ_ACCESS__)) { return false; }
 		
 		$vb_treat_row_ids_as_rids = caGetOption('treatRowIDsAsRIDs', $pa_options, false);
-		
 		$va_items = caExtractValuesByUserLocale($this->getItems($pa_options));
 		$va_ranks = array();
 		foreach($va_items as $vn_item_id => $va_item) {
@@ -1700,24 +1761,39 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * @param array $pa_options An optional array of options. Supported options include:
 	 *			user_id = the user_id of the current user; used to determine which sets the user has access to
 	 *			treatRowIDsAsRIDs = assume combination row_id/item_id indices in $pa_row_ids array instead of solely row_ids. Since a set can potentially contain multiple instances of the same row_id, only "rIDs" – a combination of the row_id and the set item_id (row_id + "_" + item_id) – are guaranteed to be unique. [Default=false]
-	 * 			deleteExcludedItems = should the set items not passed in pa_row_ids be deleted?  default is false
+	 * 			deleteExcludedItems = should the set items not passed in pa_row_ids be deleted?  [Default is false]
+	 *			checked = array key'ed with rIDs; values indicate whether set item is checked. [Default is null]
 	 * @return array An array of errors. If the array is empty then no errors occurred
 	 */
-	public function reorderItems($pa_row_ids, $pa_options=null) {
+	public function reorderItems($pa_row_ids, $options=null) {
 		if (!($vn_set_id = $this->getPrimaryKey())) {	
 			return null;
 		}
 		
-		$pn_user_id = isset($pa_options['user_id']) ? (int)$pa_options['user_id'] : null; 
-		$vb_treat_row_ids_as_rids = caGetOption('treatRowIDsAsRIDs', $pa_options, false); 
-		$vb_delete_excluded_items = caGetOption('deleteExcludedItems', $pa_options, false);
+		$pn_user_id = isset($options['user_id']) ? (int)$options['user_id'] : null; 
+		$vb_treat_row_ids_as_rids = caGetOption('treatRowIDsAsRIDs', $options, false); 
+		$vb_delete_excluded_items = caGetOption('deleteExcludedItems', $options, false);
+		$checked = caGetOption('checked', $options, null);
 		
+		// Determine which items have changes to "checked"
+		$check_map = null;
+		if(is_array($checked)) {
+			$m = ca_set_items::find(['set_id' => $this->getPrimaryKey()], ['returnAs' => 'arrays']);
+			foreach($m as $n) {
+				$k = $vb_treat_row_ids_as_rids ? $n['row_id'].'_'.$n['item_id'] : $n['row_id'];
+				$is_checked = isset($checked[$k]) ? (bool)$checked[$k] : false;
+				
+				if($is_checked !== (bool)($n['checked'] ?? false)) {
+					$check_map[$k] = $is_checked;
+				}
+			}
+		}
 		// does user have edit access to set?
 		if ($pn_user_id && !$this->haveAccessToSet($pn_user_id, __CA_SET_EDIT_ACCESS__)) {
 			return false;
 		}
 	
-		$va_row_ranks = $this->getRowIDRanks($pa_options);	// get current ranks
+		$va_row_ranks = $this->getRowIDRanks($options);	// get current ranks
 		$vn_i = 0;
 		
 		$vb_we_set_transaction = false;
@@ -1730,11 +1806,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$t_set_item = new ca_set_items();
 		$t_set_item->setTransaction($o_trans);
-		$va_errors = array();
-		
+		$va_errors = [];
 		
 		// delete rows not present in $pa_row_ids
-		$va_excluded_item_ids = array();
+		$va_excluded_item_ids = [];
 		foreach($va_row_ranks as $vn_row_id => $va_rank) {
 			if (!in_array($vn_row_id, $pa_row_ids)) {
 				
@@ -1766,7 +1841,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$va_existing_ranks = array_values($va_row_ranks);
 		$vn_rank_acc = end(array_values($va_row_ranks));
 		
-		$va_rank_updates = array();
+		$va_rank_updates = [];
 		
 		$rows_in_set = $this->getItemRowIDs();
 		$allow_dupes_in_set = (bool)$this->getAppConfig()->get('allow_duplicate_items_in_sets');
@@ -1777,25 +1852,25 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$vn_rank_acc++;
 				$vn_rank_inc = $vn_rank_acc;
 			}
-			
 			if ($vb_treat_row_ids_as_rids) { $va_tmp = explode("_", $vn_row_id); }
 			if (isset($va_row_ranks[$vn_row_id]) && $t_set_item->load($vb_treat_row_ids_as_rids ? array('set_id' => $vn_set_id, 'row_id' => $va_tmp[0], 'item_id' => $va_tmp[1]) : array('set_id' => $vn_set_id, 'row_id' => $vn_row_id))) {
-				if ($va_row_ranks[$vn_row_id] != $vn_rank_inc) {
+				if (($va_row_ranks[$vn_row_id] != $vn_rank_inc) || isset($check_map[$vn_row_id])){
 					$va_rank_updates[$vn_row_id] = $vn_rank_inc;
 				}
 			} elseif($allow_dupes_in_set || (!$rows_in_set[(int)($vb_treat_row_ids_as_rids ? $va_tmp[0] : $vn_row_id)])) {
 				$this->addItem($vb_treat_row_ids_as_rids ? $va_tmp[0] : $vn_row_id, null, $pn_user_id, $vn_rank_inc);
-			}
+			} 
 		}
 		
 		$va_updated_item_ids = [];
 		foreach($va_rank_updates as $vn_row_id => $vn_new_rank) {
+			$is_checked = $checked[$vn_row_id] ?? 0;
 			if($vb_treat_row_ids_as_rids) {
 				$va_tmp = explode("_", $vn_row_id);
-				$this->getDb()->query("UPDATE ca_set_items SET `rank` = ? WHERE set_id = ? AND row_id = ? AND item_id = ?", array($vn_new_rank, $vn_set_id, $va_tmp[0], $va_tmp[1]));
+				$this->getDb()->query("UPDATE ca_set_items SET `rank` = ?, checked = ? WHERE set_id = ? AND row_id = ? AND item_id = ?", [$vn_new_rank, $is_checked ? 1 : 0, $vn_set_id, $va_tmp[0], $va_tmp[1]]);
 				$va_updated_item_ids[$va_tmp[1]] = 1;
 			} else {
-				$this->getDb()->query("UPDATE ca_set_items SET `rank` = ? WHERE set_id = ? AND row_id = ?", array($vn_set_id, $vn_new_rank));
+				$this->getDb()->query("UPDATE ca_set_items SET `rank` = ?, checked = ? WHERE set_id = ? AND row_id = ?", [$vn_new_rank, $is_checked, $vn_set_id]);
 			}
 		}
 		
@@ -1891,6 +1966,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * @seealso caMakeSearchResult()
 	 */
 	public function getItemsAsSearchResult($options=null) {
+		if(!is_array($options)) { $options = []; }
 		if(!$this->isLoaded()) { return null; }
 		$ids = $this->getItems(array_merge($options, ['sort' => null, 'sortDirection' => null, 'idsOnly' => true, 'start' => 0, 'limit' => null]));
 
@@ -1912,7 +1988,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	/**
 	 * Returns information on items in current set
 	 *
-	 * @param array $pa_options Optional array of options. Supported options are:
+	 * @param array $options Optional array of options. Supported options are:
 	 *			user_id = user_id of the current user; used to determine what may be shown
 	 *			thumbnailVersions = A list of of a media versions to return with each item. Only used if the set content type is ca_objects.
 	 *			thumbnailVersion = Same as 'thumbnailVersions' except it is a single value. (Maintained for compatibility with older code.)
@@ -1927,6 +2003,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *			templateDescription = 
 	 *			item_ids = array of set item_ids to limit results to -> used by getPrimaryItemsFromSets so don't have to replicate all the functionality in this function
 	 *			class = CSS class to apply to representation tags. [Default is null]
+	 *			simple = [Default is false]
 	 *
 	 * @return array An array of items. The format varies depending upon the options set. If returnRowIdsOnly or returnItemIdsOnly are set then the returned array is a 
 	 *			simple list of ids. The full return array is key'ed on ca_set_items.item_id and then on locale_id. The values are arrays with keys set to a number of fields including:
@@ -1939,58 +2016,59 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *			If 'returnItemAttributes' is set then there will be an additional key for each element_code prefixed with 'ca_attribute_' to ensure it doesn't conflict with any other key in the array.		
 	 *			
 	 */
-	public function getItems($pa_options=null) {
-		if(!($vn_set_id = $this->getPrimaryKey())) { return null; }
-		if (!is_array($pa_options)) { $pa_options = array(); }
-		if (($pa_options['user_id'] ?? null) && !$this->haveAccessToSet($pa_options['user_id'], __CA_SET_READ_ACCESS__)) { return false; }
+	public function getItems(?array $options=null) {
+		if(!($set_id = $this->getPrimaryKey())) { return null; }
+		if (!is_array($options)) { $options = array(); }
+		if (($options['user_id'] ?? null) && !$this->haveAccessToSet($options['user_id'], __CA_SET_READ_ACCESS__)) { return false; }
 		
 		$o_db = $this->getDb();
 		
-		$sort = caGetOption('sort', $pa_options, null);
-		$class = caGetOption('class', $pa_options, null);
+		$sort = caGetOption('sort', $options, null);
+		$sort_direction = caGetOption('sortDirection', $options, null);
+		$class = caGetOption('class', $options, null);
+		$ids_only = caGetOption('idsOnly', $options, null);
+		$simple_data_only = caGetOption('simple', $options, null);
+		
+		$start = caGetOption('start', $options, 0);
+		$limit = caGetOption('limit', $options, null);
 		
 		$t_rel_label_table = null;
 		if (!($t_rel_table = Datamodel::getInstanceByTableNum($this->get('table_num'), true))) { return null; }
 		if (method_exists($t_rel_table, 'getLabelTableName')) {
-			if ($vs_label_table_name = $t_rel_table->getLabelTableName()) {
-				$t_rel_label_table = Datamodel::getInstanceByTableName($vs_label_table_name, true);
+			if ($label_table_name = $t_rel_table->getLabelTableName()) {
+				$t_rel_label_table = Datamodel::getInstanceByTableName($label_table_name, true);
 			}
 		}
 		
 		$label_join_sql = '';
 		if ($t_rel_label_table) {
-			if ($t_rel_label_table->hasField("is_preferred")) { $vs_preferred_sql = " AND rel_label.is_preferred = 1 "; }
-			$label_join_sql = "LEFT JOIN ".$t_rel_label_table->tableName()." AS rel_label ON rel.".$t_rel_table->primaryKey()." = rel_label.".$t_rel_table->primaryKey()." {$vs_preferred_sql}\n";
+			if ($t_rel_label_table->hasField("is_preferred")) { $preferred_sql = " AND rel_label.is_preferred = 1 "; }
+			$label_join_sql = "LEFT JOIN ".$t_rel_label_table->tableName()." AS rel_label ON rel.".$t_rel_table->primaryKey()." = rel_label.".$t_rel_table->primaryKey()." {$preferred_sql}\n";
 		}
 		
-		
-		$vs_limit_sql = '';
-		if (isset($pa_options['limit']) && ($pa_options['limit'] > 0)) {
-			if (isset($pa_options['start']) && ($pa_options['start'] > 0)) {
-				$vs_limit_sql = "LIMIT ".$pa_options['start'].", ".$pa_options['limit'];
+		$limit_sql = '';
+		if ($limit > 0) {
+			if ($start > 0) {
+				$limit_sql = "LIMIT {$start}, {$limit}";
 			} else {
-				$vs_limit_sql = "LIMIT ".$pa_options['limit'];
+				$limit_sql = "LIMIT {$limit}";
 			}
 		}
-		$vs_item_ids_sql = '';
-		if (isset($pa_options['item_ids']) && (is_array($pa_options['item_ids'])) && (sizeof($pa_options['item_ids']) > 0)) {
-			$vs_item_ids_sql = " AND casi.item_id IN (".join(", ", $pa_options['item_ids']).") ";
-		}
-		$vs_row_ids_sql = '';
-		if (isset($pa_options['row_ids']) && (is_array($pa_options['row_ids'])) && (sizeof($pa_options['row_ids']) > 0)) {
-			$vs_row_ids_sql = " AND casi.row_id IN (".join(", ", $pa_options['row_ids']).") ";
+		$item_ids_sql = '';
+		if (isset($options['item_ids']) && (is_array($options['item_ids'])) && (sizeof($options['item_ids']) > 0)) {
+			$item_ids_sql = " AND casi.item_id IN (".join(", ", $options['item_ids']).") ";
 		}
 		// get set items
-		$vs_access_sql = '';
-		if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_table->hasField('access')) {
-			$vs_access_sql = ' AND rel.access IN ('.join(',', $pa_options['checkAccess']).')';
+		$access_sql = '';
+		if (isset($options['checkAccess']) && is_array($options['checkAccess']) && sizeof($options['checkAccess']) && $t_rel_table->hasField('access')) {
+			$access_sql = ' AND rel.access IN ('.join(',', $options['checkAccess']).')';
 		}
 		
-		$vs_deleted_sql = '';
+		$deleted_sql = '';
 		if ($t_rel_table->hasField('deleted')) {
-			$vs_deleted_sql = ' AND rel.deleted = 0';
+			$deleted_sql = ' AND rel.deleted = 0';
 		}
-		
+
 		$va_representation_counts = array();
 		
 		$vs_rep_join_sql = $vs_rep_where_sql = $vs_rep_select = '';
@@ -2050,194 +2128,308 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$va_labels = caExtractValuesByUserLocale($va_labels);
 		
 		// get set items
-		$vs_access_sql = '';
-		if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_table->hasField('access')) {
-			$vs_access_sql = ' AND rel.access IN ('.join(',', $pa_options['checkAccess']).')';
+		$access_sql = '';
+		if (isset($options['checkAccess']) && is_array($options['checkAccess']) && sizeof($options['checkAccess']) && $t_rel_table->hasField('access')) {
+			$access_sql = ' AND rel.access IN ('.join(',', $options['checkAccess']).')';
 		}
 
 		// list items happen to have the same primary key name as set items, which leads to weird side-effects
 		// in the code below. so instead of getting rel.* we explicitly list the fields for ca_list_items and
 		// rename cli.item_id to list_item_id so that any get('item_id') calls below refer to the set item id
-		if (($t_rel_table->tableName() === 'ca_list_items')) {
-			$va_rel_field_list = array();
-			foreach($t_rel_table->getFields() as $vs_rel_field) {
-				if($vs_rel_field == $t_rel_table->primaryKey()) {
-					$va_rel_field_list[] = "rel.{$vs_rel_field} list_{$vs_rel_field}";
+		$rel_table = $t_rel_table->tableName();
+		if (($rel_table === 'ca_list_items')) {
+			$rel_field_list = array();
+			foreach($t_rel_table->getFields() as $rel_field) {
+				if($rel_field == $t_rel_table->primaryKey()) {
+					$rel_field_list[] = "rel.{$rel_field} list_{$rel_field}";
 				} else {
-					$va_rel_field_list[] = "rel.{$vs_rel_field}";
+					$rel_field_list[] = "rel.{$rel_field}";
 				}
 			}
-			$vs_rel_field_list_sql = join(', ', $va_rel_field_list);
+			$rel_field_list_sql = join(', ', $rel_field_list);
 		} else {
-			$vs_rel_field_list_sql = 'rel.*';
+			$rel_field_list_sql = 'rel.*';
+		}
+		
+		$sorted_row_ids = $row_ids_to_item_ids = null;
+		if($sort) {
+			$qr_res = $o_db->query("
+				SELECT 
+					casi.item_id, casi.row_id
+				FROM ca_set_items casi
+				INNER JOIN {$rel_table} AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
+				WHERE
+					casi.set_id = ? {$access_sql} {$deleted_sql} {$item_ids_sql} {$row_ids_sql} AND casi.deleted = 0
+			", [(int)$set_id]);
+			
+			if($qr_sort = caMakeSearchResult($rel_table, $qr_res->getAllFieldValues('row_id'), ['sort' => $sort, 'sortDirection' => $sort_direction])) {
+				$sorted_row_ids = $qr_sort->getAllFieldValues($t_rel_table->primaryKey());
+				if(($start > 0) || ($limit > 0)) {
+					$sorted_row_ids = array_slice($sorted_row_ids, $start, $limit);
+				}
+				$qr_res->seek(0);
+				
+				$row_ids_to_item_ids = [];
+				while($qr_res->nextRow()) {
+					$row_id = $qr_res->get('row_id');
+					$row_ids_to_item_ids[$row_id][] = $qr_res->get('item_id');
+				}
+			}	
+			$options['row_ids'] = $sorted_row_ids;
+			$limit = null; $start = 0; $limit_sql = '';
+		}
+		
+		$row_ids_sql = '';
+		if (isset($options['row_ids']) && (is_array($options['row_ids'])) && (sizeof($options['row_ids']) > 0)) {
+			$row_ids_sql = " AND casi.row_id IN (".join(", ", $options['row_ids']).") ";
+		}
+		
+		$representation_counts = [];
+		$rep_join_sql = $rep_where_sql = $rep_select = '';
+		
+		if(!$simple_data_only) {
+			if(is_a($t_rel_table, 'RepresentableBaseModel') && (isset($options['thumbnailVersion']) || isset($options['thumbnailVersions']))) {
+				if(is_array($path = Datamodel::getPath($rel_table, 'ca_object_representations')) && (sizeof($path) === 3)) {
+					$path = array_keys($path);
+					$rel_pk = $t_rel_table->primaryKey();
+					
+					$rep_join_sql = "LEFT JOIN {$path[1]} AS coxor ON rel.{$rel_pk} = coxor.{$rel_pk}
+		LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.representation_id\n";
+					$rep_where_sql = " AND (coxor.is_primary = 1 OR coxor.is_primary IS NULL)";
+				
+					$rep_select = ', coxor.*, cor.media, cor.access rep_access';
+				
+					// get representation counts
+					$qr_rep_counts = $o_db->query("
+						SELECT 
+							rel.{$rel_pk}, count(*) c
+						FROM ca_set_items casi
+						INNER JOIN {$rel_table} AS rel ON rel.{$rel_pk} = casi.row_id
+						INNER JOIN {$path[1]} AS coxor ON coxor.{$rel_pk} = rel.{$rel_pk}
+						WHERE
+							casi.set_id = ? {$access_sql} {$deleted_sql} {$item_ids_sql} {$row_ids_sql} AND casi.deleted = 0
+						GROUP BY
+							rel.{$rel_pk}
+						{$limit_sql}
+					", [(int)$set_id]);
+				
+					while($qr_rep_counts->nextRow()) {
+						$representation_counts[(int)$qr_rep_counts->get($rel_pk)] = (int)$qr_rep_counts->get('c');
+					}
+				}
+			}
+			
+			// get row labels
+			$qr_res = $o_db->query("
+				SELECT 
+					casi.set_id, casi.item_id, casi.row_id, casi.`rank`, casi.checked,
+					rel_label.".$t_rel_label_table->getDisplayField().", rel_label.locale_id
+				FROM ca_set_items casi
+				INNER JOIN {$rel_table} AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
+				{$label_join_sql}
+				WHERE
+					casi.set_id = ? {$access_sql} {$deleted_sql} {$item_ids_sql} {$row_ids_sql} AND casi.deleted = 0
+				ORDER BY 
+					casi.`rank` ASC
+				{$limit_sql}
+			", [(int)$set_id]);
+			
+			$labels = array();
+			while($qr_res->nextRow()) {
+				$labels[$qr_res->get('item_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
+			}
+			
+			$labels = caExtractValuesByUserLocale($labels);
 		}
 		
 		$qr_res = $o_db->query("
 			SELECT 
 				casi.set_id, casi.item_id set_item_id, casi.row_id, casi.`rank`, casi.vars, casi.representation_id, casi.annotation_id,
 				casil.label_id, casil.caption, casil.locale_id set_item_label_locale_id,
-				{$vs_rel_field_list_sql}, rel_label.".$t_rel_label_table->getDisplayField()." set_item_label, rel_label.locale_id rel_locale_id
-				{$vs_rep_select}
+				{$rel_field_list_sql}, rel_label.".$t_rel_label_table->getDisplayField()." set_item_label, rel_label.locale_id rel_locale_id
+				{$rep_select}
 			FROM ca_set_items casi
 			LEFT JOIN ca_set_item_labels AS casil ON casi.item_id = casil.item_id
-			INNER JOIN ".$t_rel_table->tableName()." AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
+			INNER JOIN {$rel_table} AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
 			{$label_join_sql}
-			{$vs_rep_join_sql}
+			{$rep_join_sql}
 			WHERE
-				casi.set_id = ? {$vs_rep_where_sql} {$vs_access_sql} {$vs_deleted_sql} {$vs_item_ids_sql} {$vs_row_ids_sql} AND casi.deleted = 0
+				casi.set_id = ? {$rep_where_sql} {$access_sql} {$deleted_sql} {$item_ids_sql} {$row_ids_sql} AND casi.deleted = 0
 			ORDER BY 
 				casi.`rank` ASC
-			{$vs_limit_sql}
-		", (int)$vn_set_id);
-
-		$set_processed_templates = $va_processed_templates = null;
-		if($ps_template = caGetOption('template', $pa_options, null)) {
-			$va_processed_templates = caProcessTemplateForIDs($ps_template, $t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), array('returnAsArray' => true));
-			$qr_res->seek(0);
-		}
-		if($set_item_template = caGetOption('setItemTemplate', $pa_options, null)) {
-			$set_processed_templates = caProcessTemplateForIDs($set_item_template, 'ca_set_items', $qr_res->getAllFieldValues('set_item_id'), array('returnAsArray' => true));
-			$qr_res->seek(0);
-		}
-
-		if($ps_templateDescription = caGetOption('templateDescription', $pa_options, null)) {
-			$va_processed_templates_description = caProcessTemplateForIDs($ps_templateDescription, $t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), array('returnAsArray' => true));
-			$qr_res->seek(0);
-		}
+			{$limit_sql}
+		", [(int)$set_id]);
 		
-		if ($vs_rep_join_sql) {
-			$alt_text_template = Configuration::load()->get($t_rel_table->tableName()."_alt_text_template");
-			$va_alt_tags = caProcessTemplateForIDs(($alt_text_template) ? $alt_text_template : "^".$t_rel_table->tableName().".preferred_labels", $t_rel_table->tableName(), $qr_res->getAllFieldValues('row_id'), array('returnAsArray' => true));
-			$qr_res->seek(0);
-		}
-		$va_items = array();
-		$row_ids = [];
+		$set_processed_templates = $processed_templates = $violations = $row_ids = null;
 
-		while($qr_res->nextRow()) {
-			$va_row = $qr_res->getRow();
-			$row_ids[] = $va_row['row_id'];
+		if(!$ids_only && !($options['returnItemIdsOnly'] ?? null) && !($options['returnRowIdsOnly'] ?? null) && !$simple_data_only) {
+			$row_ids = $qr_res->getAllFieldValues('row_id');
+			$qr_res->seek(0);
+			if($ps_template = caGetOption('template', $options, null)) {
+				$processed_templates = caProcessTemplateForIDs($ps_template, $rel_table, $row_ids, array('returnAsArray' => true));
+				$qr_res->seek(0);
+			}
+			if($set_item_template = caGetOption('setItemTemplate', $options, null)) {
+				$set_item_ids = $qr_res->getAllFieldValues('set_item_id');
+				$set_processed_templates = caProcessTemplateForIDs($set_item_template, 'ca_set_items', $set_item_ids, array('returnAsArray' => true));
+				$qr_res->seek(0);
+			}
+	
+			if($ps_templateDescription = caGetOption('templateDescription', $options, null)) {
+				$set_item_ids = $qr_res->getAllFieldValues('set_item_id');
+				$processed_templates_description = caProcessTemplateForIDs($ps_templateDescription, 'ca_set_items', ($set_item_ids), array('returnAsArray' => true));
+				$qr_res->seek(0);
+			}
 			
-			unset($va_row['media']);
+			$violations = (method_exists($rel_table, 'getMetadataDictionaryRuleViolationsForIds')) ? $rel_table::getMetadataDictionaryRuleViolationsForIds($row_ids) : []; 
+		
+			if ($rep_join_sql) {
+				$alt_text_template = Configuration::load()->get("{$rel_table}_alt_text_template");
+				$alt_tags = caProcessTemplateForIDs(($alt_text_template) ? $alt_text_template : "^{$rel_table}.preferred_labels", $rel_table, $row_ids, array('returnAsArray' => true));
+				$qr_res->seek(0);
+			}	
+		} 
+		$items = $row_ids = [];
+		while($qr_res->nextRow()) {
+			$row = $qr_res->getRow();
+			$row_ids[] = $row['row_id'];
+			
+			unset($row['media']);
 			
 			if (
-				!$sort 
-				&&
-				((isset($pa_options['returnRowIdsOnly']) && ($pa_options['returnRowIdsOnly']))
+				((isset($options['returnRowIdsOnly']) && ($options['returnRowIdsOnly']))
 				||
-				(isset($pa_options['idsOnly']) && ($pa_options['idsOnly'])))
+				($ids_only))
 			) {
-				$va_items[$qr_res->get('row_id')] = true;
+				$items[$qr_res->get('row_id')] = true;
 				continue;
 			}
-			if (!$sort && isset($pa_options['returnItemIdsOnly']) && ($pa_options['returnItemIdsOnly'])) {
-				$va_items[$qr_res->get('set_item_id')] = true;
+			if (isset($options['returnItemIdsOnly']) && ($options['returnItemIdsOnly'])) {
+				$items[$qr_res->get('set_item_id')] = true;
 				continue;
 			}
 			
-			$va_vars = caUnserializeForDatabase($va_row['vars']);
-			
-			$vb_has_access_to_media = true;
-			if ($vs_rep_join_sql && isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess'])) {
-				$vb_has_access_to_media = in_array($va_row['rep_access'], $pa_options['checkAccess']);
-			}
-			if ($vs_rep_join_sql && $vb_has_access_to_media) {
-				if(is_array($va_alt_tags) && sizeof($va_alt_tags)) {
-					$vs_alt_text = array_shift($va_alt_tags);
-				}
-				if (isset($pa_options['thumbnailVersion'])) {
-					$va_row['representation_tag'] = $qr_res->getMediaTag('media', $pa_options['thumbnailVersion'], ["class" => $class, "alt" => $vs_alt_text]);
-					$va_row['representation_url'] = $qr_res->getMediaUrl('media', $pa_options['thumbnailVersion']);
-					$va_row['representation_path'] = $qr_res->getMediaPath('media', $pa_options['thumbnailVersion']);
-					$va_row['representation_width'] = $qr_res->getMediaInfo('media',  $pa_options['thumbnailVersion'], 'WIDTH');
-					$va_row['representation_height'] = $qr_res->getMediaInfo('media',  $pa_options['thumbnailVersion'], 'HEIGHT');
-					$va_row['representation_mimetype'] = $qr_res->getMediaInfo('media',  $pa_options['thumbnailVersion'], 'MIMETYPE');
-				}
+			if(!$simple_data_only) {
+				$vars = caUnserializeForDatabase($row['vars']);
 				
-				if (isset($pa_options['thumbnailVersions']) && is_array($pa_options['thumbnailVersions'])) {
-					foreach($pa_options['thumbnailVersions'] as $vs_version) {
-						$va_row['representation_tag_'.$vs_version] = $qr_res->getMediaTag('media', $vs_version, ["class" => $class, "alt" => $vs_alt_text]);
-						if(!defined('__CA_IS_SERVICE_REQUEST__')) {
-							global $g_request;
-							$va_row['representation_tag_'.$vs_version.'_as_link'] = caDetailLink($g_request, $qr_res->getMediaTag('media', $vs_version, array("alt" => $vs_alt_text)), '', $t_rel_table->tableName(), $qr_res->get("ca_set_items.row_id"));
+				$vb_has_access_to_media = true;
+				if ($rep_join_sql && isset($options['checkAccess']) && is_array($options['checkAccess']) && sizeof($options['checkAccess'])) {
+					$vb_has_access_to_media = in_array($row['rep_access'], $options['checkAccess']);
+				}
+				if ($rep_join_sql && $vb_has_access_to_media) {
+					if(is_array($alt_tags) && sizeof($alt_tags)) {
+						$alt_text = array_shift($alt_tags);
+					}
+					if (isset($options['thumbnailVersion'])) {
+						$row['representation_tag'] = $qr_res->getMediaTag('media', $options['thumbnailVersion'], ["class" => $class, "alt" => $alt_text]);
+						$row['representation_url'] = $qr_res->getMediaUrl('media', $options['thumbnailVersion']);
+						$row['representation_path'] = $qr_res->getMediaPath('media', $options['thumbnailVersion']);
+						$row['representation_width'] = $qr_res->getMediaInfo('media',  $options['thumbnailVersion'], 'WIDTH');
+						$row['representation_height'] = $qr_res->getMediaInfo('media',  $options['thumbnailVersion'], 'HEIGHT');
+						$row['representation_mimetype'] = $qr_res->getMediaInfo('media',  $options['thumbnailVersion'], 'MIMETYPE');
+					}
+					
+					if (isset($options['thumbnailVersions']) && is_array($options['thumbnailVersions'])) {
+						foreach($options['thumbnailVersions'] as $version) {
+							$row['representation_tag_'.$version] = $qr_res->getMediaTag('media', $version, ["class" => $class, "alt" => $alt_text]);
+							if(!defined('__CA_IS_SERVICE_REQUEST__')) {
+								global $g_request;
+								$row['representation_tag_'.$version.'_as_link'] = caDetailLink($g_request, $qr_res->getMediaTag('media', $version, array("alt" => $alt_text)), '', $rel_table, $qr_res->get("ca_set_items.row_id"));
+							}
+							$row['representation_url_'.$version] = $qr_res->getMediaUrl('media', $version);
+							$row['representation_path_'.$version] = $qr_res->getMediaPath('media', $version);
+							$row['representation_width_'.$version] = $qr_res->getMediaInfo('media',  $version, 'WIDTH');
+							$row['representation_height_'.$version] = $qr_res->getMediaInfo('media',  $version, 'HEIGHT');
+							$row['representation_mimetype_'.$version] = $qr_res->getMediaInfo('media',  $version, 'MIMETYPE');
 						}
-						$va_row['representation_url_'.$vs_version] = $qr_res->getMediaUrl('media', $vs_version);
-						$va_row['representation_path_'.$vs_version] = $qr_res->getMediaPath('media', $vs_version);
-						$va_row['representation_width_'.$vs_version] = $qr_res->getMediaInfo('media',  $vs_version, 'WIDTH');
-						$va_row['representation_height_'.$vs_version] = $qr_res->getMediaInfo('media',  $vs_version, 'HEIGHT');
-						$va_row['representation_mimetype_'.$vs_version] = $qr_res->getMediaInfo('media',  $vs_version, 'MIMETYPE');
+					}				
+				}
+				
+				if (($rel_table === 'ca_objects')) {
+					if (isset($vars['selected_services'])) {
+						$row['selected_services'] = array_keys($vars['selected_services']);
+					} else {
+						$row['selected_services'] = array();
 					}
-				}				
+					
+					if (isset($vars['selected_representations'])) {
+						$row['selected_representations'] = array_keys($vars['selected_representations']);
+					} else {
+						$row['selected_representations'] = [];
+					}
+					
+					$row['representation_count'] = (int)($representation_counts[$qr_res->get('row_id')] ?? 0);
+				}	
+				
+				$row['violations'] = null;
+				if(isset($violations[$row['row_id']])) {
+					$acc = [];
+					foreach($violations[$row['row_id']] as $violation_id => $violation) {
+						$acc[$violation['bundle_name']][] =  $violation['violationMessage'];
+					}
+					
+					foreach($acc as $b => $msgs) {
+						$label = $t_rel_table->getDisplayLabel($b);
+						$acc[$b] = _t('For <u>%1</u>: %2', mb_strtolower($label), join('; ', $msgs));
+					}
+					$row['violations'] = $acc;
+				}
+				
+				if (is_array($labels[$item_id = $qr_res->get('set_item_id')])) {
+					$row = array_merge($row, $labels[$item_id]);
+				}
+				if (isset($options['returnItemAttributes']) && is_array($options['returnItemAttributes']) && sizeof($options['returnItemAttributes'])) {
+					// TODO: doing a load for each item is inefficient... must replace with a query
+					$t_item = new ca_set_items($row['set_item_id']);
+					
+					foreach($options['returnItemAttributes'] as $element_code) {
+						$row['ca_attribute_'.$element_code] = $t_item->getAttributesForDisplay($element_code);
+					}
+					
+					$row['set_item_label'] = $t_item->getLabelForDisplay(false);
+				}
+	
+				$row['displayTemplate'] = '';
+				if($ps_template) {
+					$row['displayTemplate'] = array_shift($processed_templates);
+				}
+				if($set_item_template) {
+					$row['displayTemplate'] .= array_shift($set_processed_templates);
+				}
+				$row['displayTemplateDescription'] = $ps_templateDescription ? array_shift($processed_templates_description) : '';
+			} else {
+				$row['displayTemplate'] = $row['displayTemplateDescription'] = $row['set_item_label'] = $row['representation_tag'] = $row['representation_count'] = null;
 			}
+			$row['item_id'] = $row['set_item_id'];
+			unset($row['set_item_id']);
 			
-			if (($t_rel_table->tableName() === 'ca_objects')) {
-				if (isset($va_vars['selected_services'])) {
-					$va_row['selected_services'] = array_keys($va_vars['selected_services']);
-				} else {
-					$va_row['selected_services'] = array();
-				}
-				
-				if (isset($va_vars['selected_representations'])) {
-					$va_row['selected_representations'] = array_keys($va_vars['selected_representations']);
-				} else {
-					$va_row['selected_representations'] = array();
-				}
-				
-				$va_row['representation_count'] = (int)($va_representation_counts[$qr_res->get('row_id')] ?? 0);
-			}	
-			
-			if (is_array($va_labels[$vn_item_id = $qr_res->get('set_item_id')])) {
-				$va_row = array_merge($va_row, $va_labels[$vn_item_id]);
-			}
-			if (isset($pa_options['returnItemAttributes']) && is_array($pa_options['returnItemAttributes']) && sizeof($pa_options['returnItemAttributes'])) {
-				// TODO: doing a load for each item is inefficient... must replace with a query
-				$t_item = new ca_set_items($va_row['set_item_id']);
-				
-				foreach($pa_options['returnItemAttributes'] as $vs_element_code) {
-					$va_row['ca_attribute_'.$vs_element_code] = $t_item->getAttributesForDisplay($vs_element_code);
-				}
-				
-				$va_row['set_item_label'] = $t_item->getLabelForDisplay(false);
-			}
-
-			$va_row['displayTemplate'] = '';
-			if($ps_template) {
-				$va_row['displayTemplate'] = array_shift($va_processed_templates);
-			}
-			if($set_item_template) {
-				$va_row['displayTemplate'] .= array_shift($set_processed_templates);
-			}
-			if($ps_templateDescription) {
-				$va_row['displayTemplateDescription'] = array_shift($va_processed_templates_description);
-			}
-		
-			$va_items[$qr_res->get('set_item_id')][($qr_res->get('rel_locale_id') ? $qr_res->get('rel_locale_id') : 0)] = $va_row;
+			$items[$qr_res->get('set_item_id')][($qr_res->get('rel_locale_id') ? $qr_res->get('rel_locale_id') : 0)] = $row;
 		}
-		
-		if ($sort) {
-			$qr_sort = caMakeSearchResult($t_rel_table->tableName(), $row_ids, ['sort' => $sort, 'sortDirection' => caGetOption('sortDirection', $pa_options, null)]);
-			$sorted_row_ids = $qr_sort->getAllFieldValues($t_rel_table->primaryKey());
+		if ($sort && is_array($sorted_row_ids) && sizeof($sorted_row_ids)) {
 			$sorted_items = [];
-			$pk = $t_rel_table->primaryKey();
 			foreach($sorted_row_ids as $r) {
-				foreach($va_items as $k => $v) {
-					$locale_id = array_shift(array_keys($v));
-					if ($v[$locale_id][$pk] == $r) {
-						$sorted_items[$k] = $v;
-						break;
+				$item_ids = $row_ids_to_item_ids[$r];
+				foreach($item_ids as $item_id) {
+					if(!isset($items[$item_id])) { continue; }
+					if($ids_only || ($options['returnRowIdsOnly'] ?? null)) {
+						$sorted_items[] = $r;
+					} elseif($options['returnItemIdsOnly'] ?? null) {
+						$sorted_items[] = $item_id;
+					} else {
+						$sorted_items[$item_id] = $items[$item_id];
 					}
 				}
 			}
-			$va_items = $sorted_items;
+			$items = $sorted_items;
+		}
+		if(caGetOption('shuffle', $options, false)) {
+			$items = caShuffleArray($items);
 		}
 		
-		if(caGetOption('shuffle', $pa_options, false)) {
-			$va_items = caShuffleArray($va_items);
+		if ($ids_only) {
+			return array_keys($items);
 		}
-		
-		if (caGetOption('idsOnly', $pa_options, false)) {
-			return array_keys($va_items);
-		}
-		return $va_items;
+		return $items;
 	}
 	# ------------------------------------------------------
 	/**
@@ -2351,6 +2543,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *		user_id = Restricts access to sets accessible by the current user. If omitted then all sets, regardless of access are returned.
 	 *		checkAccess = Restricts returned sets to those with an public access level with the specified values. If omitted sets are returned regardless of public access (ca_sets.access) value. Can be a single value or array if you wish to filter on multiple public access values.
 	 *		includeParents =  Include parent types in the returned type list. [Default is false]
+	 *		returnIdnos = Return idnos for types. [Default is false]
 	 * @return array List of types. Keys are integer type_ids, values are plural type names for the current locale
 	 */
 	public function getTypesForItems($pa_options=null) {
@@ -2362,6 +2555,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		if (!($t_rel_table = Datamodel::getInstanceByTableNum($this->get('table_num'), true))) { return null; }
 		if (!($vs_type_id_fld = $t_rel_table->getTypeFieldName())) { return array(); }
+		
+		$return_idnos = caGetOption('returnIdnos', $pa_options, false);
 		
 		// get set items
 		$vs_access_sql = '';
@@ -2386,7 +2581,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$va_type_ids = array();
 		while($qr_res->nextRow()) {
-			$va_type_ids[$vn_type_id = $qr_res->get($vs_type_id_fld)] = $va_type_list[$vn_type_id]['name_plural'];
+			$va_type_ids[$vn_type_id = $qr_res->get($vs_type_id_fld)] = $return_idnos ? caGetListItemIdno($vn_type_id) : $va_type_list[$vn_type_id]['name_plural'];
 		}
 		
 		if (caGetOption('includeParents', $pa_options, false)) {
@@ -2396,7 +2591,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			foreach($va_type_ids as $vn_type_id => $vs_type) {
 				if (is_array($va_parents = $t_item->getHierarchyAncestors($vn_type_id, array('idsOnly' => true)))) {
 					foreach($va_parents as $vn_parent_id) {
-						$va_expanded_types[$vn_parent_id] = $va_labels[$vn_parent_id] ?? null;
+						$va_expanded_types[$vn_parent_id] = $return_idnos ? caGetListItemIdno($vn_parent_id) : ($va_labels[$vn_parent_id] ?? null);
 					}
 				}
 			}
@@ -2460,6 +2655,313 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$o_view->setVar('lookup_urls', caJSONLookupServiceUrl($po_request, Datamodel::getTableName($this->get('table_num'))));
 		
 		return $o_view->render('ca_set_items.php');
+	}
+	# ------------------------------------------------------
+	/**
+	 * Renders and returns HTML form bundle for management of inventory items in the currently loaded set
+	 * 
+	 * @param array $options Options include:
+	 *		start =
+	 *		limit = 
+	 *		sort = 
+	 *		sortDirection =
+	 *		returnAll = 
+	 *		idsOnly = 
+	 *		thumbnailVersion = 
+	 *		displayTemplate =
+	 *		<table>_display_template =
+	 *		ca_set_items_display_template = 
+	 *
+	 * @return string Rendered HTML bundle for display
+	 */
+	public function getInventoryList(?array $options=[]) : array {
+		global $AUTH_CURRENT_USER_ID;
+		
+		$ids_only = caGetOption('idsOnly', $options, false);
+		$return_all = caGetOption('returnAll', $options, false);
+		$start = caGetOption('start', $options, null);
+		$limit = caGetOption('limit', $options, null);
+		
+		$items = [];
+		if ($this->getPrimaryKey()) {
+			$set_table_name = Datamodel::getTableName($this->get('table_num'));
+			if (!($template = caGetOption("{$set_table_name}_display_template", $options, null))) {		// display template by table
+				if (!($template = caGetOption(['display_template', 'displayTemplate'], $options, null))) {						// try the old non-table-specific template?
+					$template = $this->getAppConfig()->get("{$set_table_name}_set_item_display_template");			// use default in app.conf
+				}
+			} 
+			
+			if($ids_only) {
+				return $this->getItems([
+					'start' => $start, 'limit' => $limit,
+					'user_id' => $AUTH_CURRENT_USER_ID,
+					'sort' => caGetOption('sort', $options, null),
+					'sortDirection' => caGetOption('sortDirection', $options, 'ASC'),
+					'returnItemIdsOnly' => true
+				]);
+			}
+		
+			$items = [];
+			if($return_all) {
+				$items = $this->getItems([
+					'thumbnailVersion' => caGetOption('thumbnailVersion', $options, 'icon'),
+					'user_id' => $AUTH_CURRENT_USER_ID,
+					'template' => $template,
+					'templateDescription' => caGetOption("ca_set_items_display_template", $options, null),
+					'sort' => caGetOption('sort', $options, null),
+					'sortDirection' => caGetOption('sortDirection', $options, 'ASC'),
+					'simple' => true
+				]);
+			}
+			$initial_items = $this->getItems([
+				'start' => $start, 'limit' => $limit,
+				'thumbnailVersion' => caGetOption('thumbnailVersion', $options, 'icon'),
+				'user_id' => $AUTH_CURRENT_USER_ID,
+				'template' => $template,
+				'templateDescription' => caGetOption("ca_set_items_display_template", $options, null),
+				'sort' => caGetOption('sort', $options, null),
+				'sortDirection' => caGetOption('sortDirection', $options, 'ASC'),
+				'simple' => false
+			]);
+			foreach($initial_items as $k => $v) {
+				$items[$k] = $v;
+			}
+			
+			$items = caExtractValuesByUserLocale($items, null, null, []);
+			$items = array_map(function($v) { unset($v['media_metadata']); return $v; }, $items);
+		}
+		
+		// Filter values to include only what we actually need for inventory
+		$items = array_map(function($v) {
+			return array_filter($v, function($iv) {
+				return in_array($iv, [
+					'item_id', 'row_id', 'label', 'name', 'idno', 'displayTemplate', 'displayTemplateDescription', 'violations',
+					'representation_tag', 'representation_count', 'rank', 'access'
+					
+				]);
+			}, ARRAY_FILTER_USE_KEY);
+		}, $items);
+		
+		$editable_bundle_info = $this->getInventoryEditableBundleInfo($pa_options);
+		$found_options = is_array($editable_bundle_info['foundOptions']) ? $editable_bundle_info['foundOptions'] : [];
+		
+		$item_ids = array_map(function($v) {
+			return $v['item_id'];
+		}, $items);
+		if(sizeof($item_ids)) {
+			if($qr = caMakeSearchResult('ca_set_items', $item_ids)) {
+				while($qr->nextHit()) {
+					$item_id = $qr->get('ca_set_items.item_id');
+					$acc = [];
+					foreach($editable_bundle_info['bundles'] as $f) {
+						$sf = str_replace('.', '_', $f);
+						$tmp = explode('.', $f);
+						
+						$dt = ca_metadata_elements::getElementDatatype(array_pop($tmp));
+						switch($dt) {
+							case __CA_ATTRIBUTE_VALUE_MEDIA__:
+								// @TODO: make media version configurable?
+								$acc[$sf] = $qr->get("ca_set_items.{$f}.icon", []);
+								break;
+							case __CA_ATTRIBUTE_VALUE_FILE__:
+								$acc[$sf] = $qr->get("ca_set_items.{$f}", []);
+								break;
+							default:
+								if(($dt !== __CA_ATTRIBUTE_VALUE_LIST__) && ca_metadata_elements::isAuthorityDatatype($dt)) {
+									$acc[$sf] = $qr->get("ca_set_items.{$f}", ['convertCodesToIdno' => true, 'output' => 'text', 'includeID' => false]);
+								} else {
+									$acc[$sf] = $qr->get("ca_set_items.{$f}", []);
+								}
+								break;
+						}
+						$acc["{$sf}_value_id"] = $qr->get("ca_set_items.{$f}.value_id", []);
+						$acc["{$sf}_display"] = $qr->get("ca_set_items.{$f}.display", []);
+						$acc["{$sf}_id"] = $qr->get("ca_set_items.{$f}.id", []);
+						
+					}
+					$found_idno = $acc["{$editable_bundle_info['containerElementCode']}.{$editable_bundle_info['foundElementCode']}_idno"] = $qr->get("ca_set_items.{$editable_bundle_info['containerElementCode']}.{$editable_bundle_info['foundElementCode']}", ['convertCodesToIdno' => true]);
+					$acc["_INVENTORY_STATUS_"] = $found_options[$found_idno] ?? 'NOT_CHECKED';
+					$acc["_INVENTORY_STATUS_DISPLAY_"] = $qr->get("ca_set_items.{$editable_bundle_info['containerElementCode']}.{$editable_bundle_info['foundElementCode']}", ['convertCodesToDisplayText' => true]);
+					
+					switch($acc["_INVENTORY_STATUS_"]) {
+						case 'FOUND':
+							$acc["_INVENTORY_STATUS_ICON_"] = caNavIcon(__CA_NAV_ICON_FOUND__, "20px");
+							break;
+						case 'NOT_FOUND':
+							$acc["_INVENTORY_STATUS_ICON_"] = caNavIcon(__CA_NAV_ICON_NOT_FOUND__, "20px");
+							break;
+						default:
+							$acc["_INVENTORY_STATUS_ICON_"] = caNavIcon(__CA_NAV_ICON_NOT_CHECKED__, "20px");
+							break;
+					}
+					$items[$item_id] = array_merge($items[$item_id], $acc);
+					
+					// rewrite violations
+					if(isset($items[$item_id]['violations']) && sizeof($items[$item_id]['violations'])) {
+						$items[$item_id]['violations'] = "<div class='inventoryItemViolationList'><h4>"._t('Problems')."</h4><ul>".join("\n", array_map(function($v) {
+							return "<li>{$v}</li>";
+						}, $items[$item_id]['violations']))."</ul></div>";
+					} else {
+						$items[$item_id]['violations'] = null;
+					}
+				}
+			}
+		}
+		return $items;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getInventoryEditableBundleInfo(?array $options=null) {
+		$container_element_code = $this->getAppConfig()->get('inventory_container_element_code');
+		$bundles_to_edit = ["ca_set_items.{$container_element_code}"];
+		$found_bundle = $this->getAppConfig()->get('inventory_found_element_code');
+		$found_options = $this->getAppConfig()->get('inventory_found_options');
+		$found_icons = $this->getAppConfig()->get('inventory_found_icons');
+	
+		foreach($found_icons as $code => $icon) {
+			$found_icons[$code] = caNavIcon(constant($icon), '20px');
+		}
+		$sub_fields = [];
+		$bundles_to_edit_proc = [];
+		$t_item = new ca_set_items();
+		foreach($bundles_to_edit as $i => $f) {
+			$tmp = explode('.', $f);
+			$sf = array_pop($tmp);
+			if($t_item->hasElement($sf)) {
+				if(is_array($selist = ca_metadata_elements::getElementsForSet($sf))) {
+					foreach($selist as $se) {
+						if($se['datatype'] == 0) { continue; }
+						
+						if($se['element_code'] == $found_bundle) { continue; }
+						$sub_fields[] = "{$sf}.{$se['element_code']}";
+					}
+					if($found_bundle) {
+						array_unshift($sub_fields, "{$sf}.{$found_bundle}");
+					}
+					$bundles_to_edit_proc += $sub_fields;
+					continue;
+				} 
+			}
+			$bundles_to_edit_proc[] = $f;
+		}
+		
+		$found_option_display_text['NOT_CHECKED'] = _t('Not checked');
+		
+		if($list_code = caGetListCode(ca_metadata_elements::getElementListID("{$found_bundle}"))) {
+			foreach($found_options as $k => $v) {
+				if($kk = caGetListItemID($list_code, $k)) {
+					$found_options[$kk] = $v;
+					$found_option_display_text[$v] = caGetListItemByIDForDisplay($kk);
+				}
+			}
+		}
+		$found_option_display_text['ALL'] = _t("All");
+		
+		return [
+			'bundles' => $bundles_to_edit_proc,
+			'foundElementCode' => $found_bundle,
+			'containerElementCode' => $container_element_code,
+			'foundOptions' => $found_options,
+			'foundOptionDisplayText' => $found_option_display_text,
+			'foundIcons' => $found_icons
+		];
+	}
+	# ------------------------------------------------------
+	/**
+	 * Renders and returns HTML form bundle for management of inventory items in the currently loaded set
+	 * 
+	 * @param object $po_request The current request object
+	 * @param string $ps_form_name The name of the form in which the bundle will be rendered
+	 *
+	 * @return string Rendered HTML bundle for display
+	 */
+	public function getInventoryListHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null, $settings=null) {
+		AssetLoadManager::register('inventoryEditorUI');
+		
+		$is_inventory = caIsInventory($this);
+		
+		$thumbnail_version = "thumbnail";
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		$o_view->setVar('t_set', $this);	
+		$o_view->setVar('t_item', $t_item = new ca_set_items());		
+		$o_view->setVar('id_prefix', $ps_form_name);	
+		$o_view->setVar('placement_code', $ps_placement_code);		
+		$o_view->setVar('request', $po_request);
+
+		$sorts = [];
+		if ($t_row = $this->getItemTypeInstance()) {
+			$o_view->setVar('t_row', $t_row);
+			$o_view->setVar('type_singular', $t_row->getProperty('NAME_SINGULAR'));
+			$o_view->setVar('type_plural', $t_row->getProperty('NAME_PLURAL'));
+		
+			// Set up sort list
+			$sorts_config = $this->getAppConfig()->getAssoc('inventory_sorts');
+			if(is_array($sorts_config[$t_row->tableName()])) {
+				$sorts = array_flip($sorts_config[$t_row->tableName()]);
+			} else {
+				$sorts = caGetAvailableSortFields($t_row->tableName(), null, []);
+			}
+		}
+		$o_view->setVar('sorts', $sorts);
+		
+		$sort_flds = array_values($sorts);
+		$default_sort = array_shift($sort_flds);
+		if ($this->getPrimaryKey()) {
+			$unsaved_edits = ca_unsaved_edits::getForm($po_request, 'ca_sets', $this->getPrimaryKey());
+		
+			$o_view->setVar('unsavedEditData', $unsaved_edits['inventory_list'] ?? null);
+		
+			$items = $this->getInventoryList(array_merge($settings, [
+				'sort' => $default_sort, 'sortDirection' => 'ASC',
+				'thumbnailVersion' => $thumbnail_version,
+				'start' => 0, 'limit' => $settings['numPerPage'] ?? 10,
+				'returnAll' => true
+			]));
+			if(($unsaved_edits['inventory_list'] ?? null) && ($unsaved_edits['inventory_list']['changes'] ?? null)) {
+				foreach($unsaved_edits['inventory_list']['changes'] as $unsaved_edit) {
+					foreach($items as $index => $item) {
+						if($item['item_id'] == $unsaved_edit['item_id']) {
+							$items[$index] = array_merge($items[$index], $unsaved_edit);
+						}
+					}
+				}
+			}
+			$o_view->setVar('initialValues', $items);
+		} else {
+			$o_view->setVar('initialValues', []);
+		}
+		$o_view->setVar('itemCount', $this->getItemCount());
+		$o_view->setVar('currentSort', $default_sort);
+		$o_view->setVar('currentSortDirection', 'ASC');
+		
+		$editable_bundle_info = $this->getInventoryEditableBundleInfo($pa_options);
+		
+		$o_view->setVar('container_element_code', $editable_bundle_info['containerElementCode']);
+		$o_view->setVar('found_element_code', $editable_bundle_info['foundElementCode']);
+		$o_view->setVar('bundles_to_edit', $editable_bundle_info['bundles']);
+		$o_view->setVar('inventory_found_options', $editable_bundle_info['foundOptions']);
+		$o_view->setVar('inventory_found_icons', $editable_bundle_info['foundIcons']);
+		$o_view->setVar('inventory_found_option_display_text', $editable_bundle_info['foundOptionDisplayText']);
+	
+		$o_view->setVar('settings', $settings);
+		
+		$o_view->setVar('lookup_urls', caJSONLookupServiceUrl($po_request, Datamodel::getTableName($this->get('table_num'))));
+		
+		
+		if($is_inventory && $t_row && $this->getPrimaryKey()) {
+			$row_ids = array_values(array_map(function($v) { return $v['row_id']; }, $items));
+			$rc = new ResultContext($po_request, $t_row->tableName(), 'inventory');
+			$rc->setParameter('set_id', $this->getPrimaryKey());
+			$rc->setParameter('bundle', 'inventory_list');
+			$rc->setResultList($row_ids);
+			$rc->saveContext();
+			$rc->setAsLastFind();
+		}
+		
+		return $o_view->render('inventory_list.php');
 	}
 	# ------------------------------------------------------
 	/**
@@ -3151,7 +3653,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	}
 	# ---------------------------------------------------------------
 	/**
-	 * Check if currently loaded row is save-able
+	 * Check if currently loaded row is saveable
 	 *
 	 * @param RequestHTTP $po_request
 	 * @param string $ps_bundle_name Optional bundle name to test write-ability on. If omitted write-ability is considered for the item as a whole.
@@ -3183,10 +3685,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		}
 
 		// Check actions
-		if (!$this->getPrimaryKey() && !$po_request->user->canDoAction('can_create_sets')) {
+		$is_inventory = caIsInventory($this);
+		if (!$this->getPrimaryKey() && !$po_request->user->canDoAction($is_inventory ? 'can_create_inventories' : 'can_create_sets')) {
 			return false;
 		}
-		if ($this->getPrimaryKey() && !$po_request->user->canDoAction('can_edit_sets')) {
+		if ($this->getPrimaryKey() && !$po_request->user->canDoAction($is_inventory ? 'can_edit_inventories' : 'can_edit_sets')) {
 			return false;
 		}
 
@@ -3196,6 +3699,66 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 
 		return true;
 	}
+	# ------------------------------------------------------
+ 	/**
+ 	 * Check if currently loaded row is deletable
+ 	 *
+ 	 * @param RequestHTTP|ca_user $po_request
+ 	 * @return bool True if record can be deleted, false if not
+ 	 */
+ 	public function isDeletable($po_request) {
+ 		$t_user = null;
+ 		if(is_a($po_request, 'ca_users')) {
+ 			$t_user = $po_request;
+ 		} elseif($po_request && property_exists($po_request, 'user')) {
+ 			$t_user = $po_request->user;
+ 		}
+ 		if (!$t_user) { return false; }
+ 		
+ 		// Is row loaded?
+ 		if (!$this->getPrimaryKey()) { return false; }
+ 		
+ 		$table = $this->tableName();
+ 		$config = $this->getAppConfig();
+ 		
+ 		if($config->get("{$table}_disable_delete")) { return false; }
+ 		if($config->get("{$table}_".$this->getTypeCode()."_disable_delete")) { return false; }
+ 		
+ 		// Check type restrictions
+ 		if ((bool)$config->get('perform_type_access_checking')) {
+			$vn_type_access = $t_user->getTypeAccessLevel($table, $this->getTypeID());
+			if ($vn_type_access != __CA_BUNDLE_ACCESS_EDIT__) {
+				return false;
+			}
+		}
+		
+		// Check source restrictions
+ 		if (caSourceAccessControlIsEnabled($this)) {
+			$vn_source_access = $t_user->getSourceAccessLevel($table, $this->getSourceID());
+			if ($vn_source_access < __CA_BUNDLE_ACCESS_EDIT__) {
+				return false;
+			}
+		}
+		
+		// Check item level restrictions
+		if (caACLIsEnabled($this) && $this->getPrimaryKey()) {
+			$vn_item_access = $this->checkACLAccessForUser($t_user);
+			if ($vn_item_access < __CA_ACL_EDIT_DELETE_ACCESS__) {
+				return false;
+			}
+		}
+		
+ 		// Check actions
+		$is_inventory = caIsInventory($this);
+		if ($this->getPrimaryKey() && ($this->get('user_id') == $t_user->getPrimaryKey()) && $t_user->canDoAction($is_inventory ? 'can_delete_own_inventories' : 'can_delete_own_sets')) {
+ 			return true;
+ 		}
+ 		if (!$this->getPrimaryKey() || !$t_user->canDoAction($is_inventory ? 'can_delete_inventories': 'can_delete_sets')) {
+ 			return false;
+ 		}
+ 		
+ 		return true;
+ 	}
 	# ---------------------------------------------------------------
 	/**
 	 * Duplicate all items in this set
@@ -3210,6 +3773,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$t_user = new ca_users($pn_user_id);
 		if(!$t_user->getPrimaryKey()) { return false; } // we need a user for duplication
 		global $g_ui_locale_id;
+		
+		if(caIsInventory($this)) { return false; }
 
 		if(caGetOption('addToCurrentSet', $pa_options, false)) {
 			$t_set_to_add_dupes_to = $this;

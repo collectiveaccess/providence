@@ -112,6 +112,13 @@ BaseModel::$s_ca_models_definitions['ca_editor_ui_screens'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Hierarchical index - right bound', 'DESCRIPTION' => 'Right-side boundary for nested set-style hierarchical indexing; used to accelerate search and retrieval of hierarchical record sets.'
+		),
+		'settings' => array(
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Settings')
 		)
  	)
 );
@@ -2014,6 +2021,24 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('"Return to home location" control label text'),
 										'description' => _t('Text to label "Return to home location" control with. If omitted a default label will be used.')
 									),
+									'hide_inventory_controls' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => 10, 'height' => 1,
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Hide "Inventory" controls'),
+										'hideOnSelect' => ['inventory_control_label'],
+										'description' => _t('Check this option if you want to hide the "Inventory" controls in this bundle placement.')
+									),
+									'inventory_control_label' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('"Update location" control label text'),
+										'description' => _t('Text to label "Update location" control with. If omitted a default label will be used.')
+									),
 									'hide_add_to_occurrence_controls' => array(
 										'formatType' => FT_NUMBER,
 										'displayType' => DT_CHECKBOXES,
@@ -2326,14 +2351,22 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								if ($this->inTransaction()) { $t_set->setTransaction($this->getTransaction()); }
 								
 								$va_additional_settings = [
-										'ca_set_items_display_template' => [
-											'formatType' => FT_TEXT,
-											'displayType' => DT_FIELD,
-											'default' => '',
-											'width' => "475px", 'height' => "50px",
-											'label' => _t('Display template (%1)', _t('set items')),
-											'description' => _t('Layout for %1 set item information when used in a display list. For example: <i>^ca_set_items.preferred_labels</i>.', $vs_table_display_name)
-										]
+									'summaryTemplate' => [
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "475px", 'height' => "100px",
+										'label' => _t('Summary template'),
+										'description' => _t('Template for summary of set list.')
+									],
+									'ca_set_items_display_template' => [
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "475px", 'height' => "50px",
+										'label' => _t('Display template (%1)', _t('set items')),
+										'description' => _t('Layout for %1 set item information when used in a display list. For example: <i>^ca_set_items.preferred_labels</i>.', $vs_table_display_name)
+									]
 								];
 								foreach($t_set->getFieldInfo('table_num', 'BOUNDS_CHOICE_LIST') as $vs_table_display_name => $vn_table_num) {
 									$va_additional_settings[Datamodel::getTableName($vn_table_num).'_display_template'] = array(
@@ -2345,6 +2378,46 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 											'description' => _t('Layout for %1 set item information when used in a display list. For example: <i>^ca_objects.deaccession_notes</i>.', $vs_table_display_name)
 									);
 								}
+								break;
+							case 'inventory_list':
+								$t_set = new ca_sets();
+								if ($this->inTransaction()) { $t_set->setTransaction($this->getTransaction()); }
+								
+								$va_additional_settings = [
+									'numPerPage' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_FIELD,
+										'default' => 100,
+										'width' => "5", 'height' => 1,
+										'label' => _t('Number of items to load per page'),
+										'description' => _t('Maximum number of items to render on initial load.')
+									),
+									'displayTemplate' => [
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "475px", 'height' => "100px",
+										'label' => _t('Summary template'),
+										'description' => _t('Template for summary of inventory item.')
+									],
+									'ca_set_items_display_template' => [
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "475px", 'height' => "50px",
+										'label' => _t('Display template (%1)', _t('set items')),
+										'description' => _t('Layout for %1 inventory item information when used in a display list. For example: <i>^ca_set_items.preferred_labels</i>.', $vs_table_display_name)
+									],
+									'showExportOptions' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_CHECKBOXES,
+										'width' => 10, 'height' => 1,
+										'takesLocale' => false,
+										'default' => '1',
+										'label' => _t('Show export options'),
+										'description' => _t('If checked export options will be showm.')
+									)
+								];
 								break;
 							case 'ca_metadata_alert_rule_type_restrictions':
 								$va_additional_settings = [];

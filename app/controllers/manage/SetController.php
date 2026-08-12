@@ -47,7 +47,15 @@ class SetController extends ActionController {
 		$this->opn_items_per_page = ((int) $this->request->config->get('items_per_page_default_for_ca_sets_search') ?: 20);
 		$this->view->setVar('items_per_page', $this->opn_items_per_page);
 		
-		$this->opn_list_set_type_id = $this->request->getParameter('list_set_type_id', pInteger);
+		$this->_setType((int)$this->request->getParameter('list_set_type_id', pInteger));
+		
+		$this->opa_sorts = array("name", "set_content_type", "access", "lname", "item_count", "set_type", "access", "status", "rank", "created");
+	}
+	# -------------------------------------------------------
+	private function _setType(?int $type_id) {
+		$o_result_context = new ResultContext($this->request, 'ca_sets', 'basic_search');
+
+		$this->opn_list_set_type_id = $type_id;
 		if (strlen($this->opn_list_set_type_id) > 0) {
 			if((int)$o_result_context->getParameter('set_type_id') != (int)$this->opn_list_set_type_id){
 				$this->opb_criteria_has_changed = true;
@@ -73,124 +81,150 @@ class SetController extends ActionController {
 		$this->view->setVar('list_set_type_id', $this->opn_list_set_type_id);
 		$this->view->setVar('type_name_singular', $this->ops_set_type_singular);
 		$this->view->setVar('type_name_plural', $this->ops_set_type_plural);
-		$this->opa_sorts = array("name", "set_content_type", "access", "lname", "item_count", "set_type", "access", "status", "rank", "created");
 	}
 	# -------------------------------------------------------
 	public function ListSets() {
 		AssetLoadManager::register('tableList');
-		$o_result_context = new ResultContext($this->request, 'ca_sets', 'basic_search');
+		$config = Configuration::load();
 		
+		$is_inventory = (bool)$this->view->getVar('is_inventory');
+		
+		if($is_inventory && !$this->request->user->canDoAction('can_view_inventories')) {
+			throw new ApplicationException(_t('No access to inventories'));
+		} elseif(!$is_inventory && !$this->request->user->canDoAction('can_view_sets')) {
+			throw new ApplicationException(_t('No access to sets'));
+		}	
+		
+		$o_result_context = new ResultContext($this->request, 'ca_sets', $is_inventory ? 'inventory' : 'basic_search');
 		$t_set = new ca_sets();
+		
 		// get content types for sets
-		$raw = caFilterTableList(
-			$t_set->getFieldInfo('table_num', 'BOUNDS_CHOICE_LIST')
-		);
-
-		$table_list_i18n = [];
-
-		foreach ($raw as $ignored => $table_num) {
-			$msgid = Datamodel::getTableProperty($table_num, 'NAME_PLURAL');
-			$table_list_i18n[_t($msgid)] = $table_num;
+		if($is_inventory) {
+			$table_list = [];
+			if(is_array($ctables = $config->get('inventory_tables'))) {
+				foreach($ctables as $t) {
+					$table_list[Datamodel::getTableProperty($t, 'NAME_PLURAL')] = Datamodel::getTableNum($t);	
+				}
+			} 
+			$this->view->setVar('table_list', $table_list);
+		} else {
+			$raw = caFilterTableList(
+				$t_set->getFieldInfo('table_num', 'BOUNDS_CHOICE_LIST')
+			);
+	
+			$table_list_i18n = [];
+	
+			foreach ($raw as $ignored => $table_num) {
+				$msgid = Datamodel::getTableProperty($table_num, 'NAME_PLURAL');
+				$table_list_i18n[_t($msgid)] = $table_num;
+			}
+	
+			$this->view->setVar('table_list', $table_list_i18n);
 		}
-
-		$this->view->setVar('table_list', $table_list_i18n);
-
 		$this->view->setVar('t_set', $t_set);
 		
-		$vn_user_id = !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null;            
+		$user_id = !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null;            
    
 		$o_result_context->setItemsPerPage($this->opn_items_per_page);
-		$this->view->setVar('page', $vn_page_num = $o_result_context->getCurrentResultsPageNumber());
+		$this->view->setVar('page', $page_num = $o_result_context->getCurrentResultsPageNumber());
 	
-		if (!$vn_page_num || $this->opb_criteria_has_changed) {
-			$vn_page_num = 1;
-			$o_result_context->setCurrentResultsPageNumber($vn_page_num);
+		if (!$page_num || $this->opb_criteria_has_changed) {
+			$page_num = 1;
+			$o_result_context->setCurrentResultsPageNumber($page_num);
 		}
 	
-		if ($this->request->user->canDoAction('is_administrator') || $this->request->user->canDoAction('can_administrate_sets')) {
+		if ($this->request->user->canDoAction('is_administrator') || $this->request->user->canDoAction($is_inventory ? 'can_administrate_inventories' : 'can_administrate_sets')) {
 			$ps_mode = $this->request->getParameter('mode', pString);
 			if (strlen($ps_mode) > 0) {
-				$pn_mode = (int)$ps_mode;
-				$o_result_context->setParameter('set_display_mode', $pn_mode);
+				$mode = (int)$ps_mode;
+				$o_result_context->setParameter('set_display_mode', $mode);
 				$this->opb_criteria_has_changed = true;
 			} else {
-				$pn_mode = (int)$o_result_context->getParameter('set_display_mode');
+				$mode = (int)$o_result_context->getParameter('set_display_mode');
 			}
 		
-			switch($pn_mode) {
+			switch($mode) {
 				case 0:
 				default:
-					$va_set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $vn_user_id, 'access' => __CA_SET_EDIT_ACCESS__, 'setType' => $this->opn_list_set_type_id)), null, null, array());
+					$set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $user_id, 'access' => __CA_SET_EDIT_ACCESS__, 'setType' => $this->opn_list_set_type_id)), null, null, array());
 					break;
 				case 1:
-					$va_set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $vn_user_id, 'allUsers' => true, 'setType' => $this->opn_list_set_type_id)), null, null, array());
+					$set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $user_id, 'allUsers' => true, 'setType' => $this->opn_list_set_type_id)), null, null, array());
 					break;
 				case 2:
-					$va_set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $vn_user_id, 'publicUsers' => true, 'setType' => $this->opn_list_set_type_id)), null, null, array());
+					$set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $user_id, 'publicUsers' => true, 'setType' => $this->opn_list_set_type_id)), null, null, array());
 					break;
 			}
 		} else {
-			$va_set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $vn_user_id, 'access' => __CA_SET_EDIT_ACCESS__, 'setType' => $this->opn_list_set_type_id)), null, null, array());
+			$set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $user_id, 'access' => __CA_SET_EDIT_ACCESS__, 'setType' => $this->opn_list_set_type_id)), null, null, array());
 		}
-		if (!($vs_sort 	= $o_result_context->getCurrentSort()) || (!in_array($vs_sort, $this->opa_sorts))) { 
-			$vs_sort = 'created'; 
-			$vs_sort_direction = 'desc';
+		if (!($sort 	= $o_result_context->getCurrentSort()) || (!in_array($sort, $this->opa_sorts))) { 
+			$sort = 'created'; 
+			$sort_direction = 'desc';
 		} else {
-			$vs_sort_direction = $o_result_context->getCurrentSortDirection();
+			$sort_direction = $o_result_context->getCurrentSortDirection();
 		}
 		if($vb_sort_has_changed = $o_result_context->sortHasChanged()){
 			$this->opb_criteria_has_changed = true;
 		}
-		$this->view->setVar('current_sort', $vs_sort);
-		$this->view->setVar('current_sort_direction', $vs_sort_direction);	
+		$this->view->setVar('current_sort', $sort);
+		$this->view->setVar('current_sort_direction', $sort_direction);	
 	
-		$va_set_list_sorted = array();
-		$va_set_ids = array();
-		if ($va_set_list) {
-			foreach ($va_set_list as $id => $va_set) {
-				$va_set_list[$id]['can_delete'] = $this->UserCanDeleteSet($va_set['user_id']);
+		$set_list_sorted = array();
+		$set_ids = array();
+		if ($set_list) {
+			foreach ($set_list as $id => $set) {
+				$set_list[$id]['can_delete'] = $this->UserCanDeleteSet($set);
 			
 				# --- order the set
-				if ($vs_sort === 'item_count') {
-					// Pad numeric values so string-key sorting preserves numeric order.
-					$vs_sort_key = sprintf('%010d %d', (int)$va_set[$vs_sort], $id);
-				} elseif (!in_array($vs_sort, array("status", "access"))) {
-					$vs_sort_key = $va_set[$vs_sort]." ".$id;
-				} else {
-					$vs_sort_key = $t_set->getChoiceListValue($vs_sort, $va_set[$vs_sort])." ".$id;
+				if(!in_array($sort, array("status", "access"))){
+					$set_list_sorted[$set[$sort]." ".$id] = $set;
+				}else{
+					$set_list_sorted[$t_set->getChoiceListValue($sort, $set[$sort])." ".$id] = $set;
 				}
-
-				$va_set_list_sorted[$vs_sort_key] = $va_set;
-				$va_set_ids[] = $id;
+				$set_ids[] = $id;
 			}
 		}
-		if($vs_sort != "name"){
-			ksort($va_set_list_sorted);
+		if($sort != "name"){
+			ksort($set_list_sorted);
 		}
-		if($vs_sort_direction == "desc"){
-			$va_set_list_sorted = array_reverse($va_set_list_sorted, true);
+		if($sort_direction == "desc"){
+			$set_list_sorted = array_reverse($set_list_sorted, true);
 		}
-		$this->view->setVar('mode', $pn_mode);
+		$this->view->setVar('mode', $mode);
 	
-		$this->view->setVar('num_hits', $vn_num_hits = sizeof($va_set_list_sorted));
-		$this->view->setVar('num_pages', $vn_num_pages = ceil($vn_num_hits/$this->opn_items_per_page));
-		if ($vn_page_num > $vn_num_pages) {
-			$vn_page_num = 1;
-			$o_result_context->setCurrentResultsPageNumber($vn_page_num);
+		$this->view->setVar('num_hits', $num_hits = sizeof($set_list_sorted));
+		$this->view->setVar('num_pages', $num_pages = ceil($num_hits/$this->opn_items_per_page));
+		if ($page_num > $num_pages) {
+			$page_num = 1;
+			$o_result_context->setCurrentResultsPageNumber($page_num);
 		}
 	
 		# --- slice array to send current page
-		if($vn_num_pages > 1){
-			$vn_start = $this->opn_items_per_page * ($vn_page_num - 1);
-			$va_set_list_sorted = array_slice($va_set_list_sorted, $vn_start, $this->opn_items_per_page, true);
+		if($num_pages > 1){
+			$start = $this->opn_items_per_page * ($page_num - 1);
+			$set_list_sorted = array_slice($set_list_sorted, $start, $this->opn_items_per_page, true);
 		}
-		$this->view->setVar('set_list', $va_set_list_sorted);
+		$this->view->setVar('set_list', $set_list_sorted);
 		
 		$o_result_context->setAsLastFind();
-		$o_result_context->setResultList($va_set_ids);
+		$o_result_context->setResultList($set_ids);
 		$o_result_context->saveContext();
 		
 		$this->render('set_list_html.php');
+	}
+	# -------------------------------------------------------
+	public function ListInventories() {
+		if(!(bool)$this->request->config->get('enable_inventories')) {
+			throw new ApplicationException(_t('Inventories disabled'));
+		}
+		
+		$inventory_type_id = caGetListItemID('set_types', 'inventory');
+		
+		$this->view->setVar('is_inventory', true);
+		
+		$this->_setType($inventory_type_id);
+		return $this->ListSets();
 	}
 	# -------------------------------------------------------
 	public function ListSetsByUser() {
@@ -433,43 +467,67 @@ class SetController extends ActionController {
 		$this->ListSets();
 	}
 	# -------------------------------------------------------
-	private function UserCanDeleteSet($user_id) {
-		if ($this->request->user->canDoAction('is_administrator') || $this->request->user->canDoAction('can_administrate_sets')) {
+	/**
+	 *
+	 */
+	private function UserCanDeleteSet($set) {
+		if ($this->request->user->canDoAction('is_administrator') || $this->request->user->canDoAction($is_inventory ? 'can_administrate_inventories' : 'can_administrate_sets')) {
 			return true;
 		}
-		$vb_can_delete = false;
-		// If users can delete all sets, show Delete button
-		if ($this->request->user->canDoAction('can_delete_sets')) {
-			$vb_can_delete = true;
+		$is_inventory = ($this->request->getAction() == 'ListInventories');
+		$can_delete = false;
+		// If users can delete all sets, show delete button
+		if ($this->request->user->canDoAction($is_inventory ? 'can_delete_inventories' : 'can_delete_sets')) {
+			$can_delete = true;
 		}
 		
 		// If users can delete own sets, and this set belongs to them, show Delete button
-		if ($this->request->user->canDoAction('can_delete_own_sets')) {
-			if ($user_id == $this->request->getUserID()) {
-				$vb_can_delete = true;
+		if ($this->request->user->canDoAction($is_inventory ? 'can_delete_own_inventories' : 'can_delete_own_sets')) {
+			if (($set['user_id'] ?? null) == $this->request->getUserID()) {
+				$can_delete = true;
 			}
 		}
-		return $vb_can_delete;
+		return $can_delete;
 	}
 	# -------------------------------------------------------
 	/**
 	 * 
 	 */
 	public function Info() {
-		$t_set = new ca_sets($vn_set_id = $this->request->getParameter('set_id', pInteger));
+		$t_set = new ca_sets($set_id = $this->request->getParameter('set_id', pInteger));
 		
-		$vn_user_id = !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null;
+		$user_id = !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null;
 		
-		$va_set_stats = array('mine' => caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $this->request->getUserID(), 'access' => __CA_SET_EDIT_ACCESS__, 'setType' => $this->opn_list_set_type_id)), null, null, array()));
-		if ($this->request->user->canDoAction('is_administrator') || $this->request->user->canDoAction('can_administrate_sets')) {
-			$va_set_stats['user'] = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $vn_user_id, 'allUsers' => true, 'setType' => $this->opn_list_set_type_id)), null, null, array());
-			$va_set_stats['public'] = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $vn_user_id, 'publicUsers' => true, 'setType' => $this->opn_list_set_type_id)), null, null, array());
+		$is_inventory = ($this->request->getAction() == 'ListInventories');
+		$this->view->setVar('is_inventory', $is_inventory);$o_result_context = new ResultContext($this->request, 'ca_sets', $is_inventory ? 'inventory' : 'basic_search');
+		
+		if($is_inventory) {
+			$mode = '';
+			$set_stats = ['mine' => [], 'user' => [], 'public' => []];
+			$this->view->setVar('type_name_singular', _t('Inventory'));
+			$this->view->setVar('type_name_plural', _t('Inventories'));
+			
+			$this->view->setVar('display_modes', [
+				_t('Available to you') => 0,
+				_t('By other users') => 1
+			]);
+		} else {
+			$set_stats = array('mine' => caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $this->request->getUserID(), 'access' => __CA_SET_EDIT_ACCESS__, 'setType' => $this->opn_list_set_type_id)), null, null, array()));
+			if ($this->request->user->canDoAction('is_administrator') || $this->request->user->canDoAction('can_administrate_sets')) {
+				$set_stats['user'] = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $user_id, 'allUsers' => true, 'setType' => $this->opn_list_set_type_id)), null, null, array());
+				$set_stats['public'] = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $user_id, 'publicUsers' => true, 'setType' => $this->opn_list_set_type_id)), null, null, array());
+			}
+			
+			$this->view->setVar('display_modes', [
+				_t('Available to you') => 0,
+				_t('By other users') => 1,
+				_t('By the public') => 2
+			]);
 		}
+		$mode = (int)$o_result_context->getParameter('set_display_mode');
 		
-		$o_result_context = new ResultContext($this->request, 'ca_sets', 'basic_search');
-		$pn_mode = (int)$o_result_context->getParameter('set_display_mode');
-		$this->view->setVar('mode', $pn_mode);
-		$this->view->setVar('sets', $va_set_stats);
+		$this->view->setVar('mode', $mode);
+		$this->view->setVar('sets', $set_stats);
 		
 		return $this->render('widget_set_info_html.php', true);
 	}
@@ -520,6 +578,11 @@ class SetController extends ActionController {
 			foreach($va_hier as $vn_item_id => $va_item) {
 				if (is_array($va_restrict_to_types) && !in_array($vn_item_id, $va_restrict_to_types)) { continue; }
 				if ($va_item['parent_id'] != $vn_root_id) { continue; }
+				
+				if(isset($pa_params['options']['exclude']) && is_array($pa_params['options']['exclude']) && sizeof($pa_params['options']['exclude'])) {
+					if(in_array($va_item['idno'], $pa_params['options']['exclude'], true)) { continue; }
+				}
+				
 				// does this item have sub-items?
 				$va_subtypes = array();
 				if (
@@ -649,4 +712,5 @@ class SetController extends ActionController {
 
 		return $va_subtypes_proc;
 	}
+	# ------------------------------------------------------------------
 }

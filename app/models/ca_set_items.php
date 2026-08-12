@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-20245Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,84 +36,102 @@ BaseModel::$s_ca_models_definitions['ca_set_items'] = array(
  	'NAME_PLURAL' 		=> _t('set items'),
  	'FIELDS' 			=> array(
  		'item_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
-				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this set item')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+			'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this set item')
 		),
 		'set_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Set'), 'DESCRIPTION' => _t('Set item belongs to')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => _t('Set'), 'DESCRIPTION' => _t('Set item belongs to')
 		),
 		'table_num' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Set content'), 'DESCRIPTION' => _t('Determines what kind of items (objects, entities, places, etc.) are stored by the set.'),
-				'BOUNDS_CHOICE_LIST' => array(
-					_t('Objects') => 57,
-					_t('Object lots') => 51,
-					_t('Entities') => 20,
-					_t('Places') => 72,
-					_t('Occurrences') => 67,
-					_t('Collections') => 13,
-					_t('Storage locations') => 89,
-					_t('Object representations') => 56,
-					_t('Loans') => 133,
-					_t('Movements') => 137,
-					_t('List items') => 33,
-					_t('Tours') => 153,
-					_t('Tour stops') => 155
-				)
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => _t('Set content'), 'DESCRIPTION' => _t('Determines what kind of items (objects, entities, places, etc.) are stored by the set.'),
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Objects') => 57,
+				_t('Object lots') => 51,
+				_t('Entities') => 20,
+				_t('Places') => 72,
+				_t('Occurrences') => 67,
+				_t('Collections') => 13,
+				_t('Storage locations') => 89,
+				_t('Object representations') => 56,
+				_t('Loans') => 133,
+				_t('Movements') => 137,
+				_t('List items') => 33,
+				_t('Tours') => 153,
+				_t('Tour stops') => 155
+			)
 		),
 		'row_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Row_id', 'DESCRIPTION' => 'Primary key value of item in set. Table primary key is of is determined by the table_num field in ca_sets.'
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Row_id', 'DESCRIPTION' => 'Primary key value of item in set. Table primary key is of is determined by the table_num field in ca_sets.'
 		),
 		'representation_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => null,
-				'LABEL' => 'Representation ID', 'DESCRIPTION' => 'Optional representation to restrict set membership to.'
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
+			'LABEL' => 'Representation ID', 'DESCRIPTION' => 'Optional representation to restrict set membership to.'
 		),
 		'annotation_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => null,
-				'LABEL' => 'Annotation ID', 'DESCRIPTION' => 'Optional representation annotation to restrict set membership to.'
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true, 
+			'DEFAULT' => null,
+			'LABEL' => 'Annotation ID', 'DESCRIPTION' => 'Optional representation annotation to restrict set membership to.'
 		),
 		'type_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LIST_CODE' => 'set_types',
-				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the set determines what sorts of information the set and each item in the set can have associated with them.')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LIST_CODE' => 'set_types',
+			'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the set determines what sorts of information the set and each item in the set can have associated with them.')
 		),
 		'rank' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the set when displayed in a list with other sets. Lower numbers indicate higher priority.'),
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the set when displayed in a list with other sets. Lower numbers indicate higher priority.'),
 		),
 		'vars' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Set item variable storage', 'DESCRIPTION' => 'Storage area for set item variables'
-		)
+			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+			'IS_NULL' => false, 
+			'DEFAULT' => '',
+			'LABEL' => 'Set item variable storage', 'DESCRIPTION' => 'Storage area for set item variables'
+		),
+		'checked' => array(
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'LABEL' => _t('Is checked?'), 'DESCRIPTION' => _t('Indicates if the set item has been checked.'),
+			'BOUNDS_VALUE' => array(0,1),
+			'DONT_INCLUDE_IN_SEARCH_FORM' => true
+		),
+		'deleted' => array(
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if the set item is deleted.'),
+			'BOUNDS_VALUE' => array(0,1),
+			'DONT_INCLUDE_IN_SEARCH_FORM' => true
+		),
  	)
 );
 
@@ -419,7 +437,7 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 	 *		- URL_ENCODE_INPUT = Url encodes variable value; default is  false
 	 * @return bool Returns true on successful save, false if the variable name or value was invalid
 	 */	
-	public function setVar ($ps_key, $pm_val, $pa_options=null) {
+	public function setVar($ps_key, $pm_val, $pa_options=null) {
 		if (is_object($pm_val)) { return false; }
 		
 		if (!is_array($pa_options)) { $pa_options = array(); }
@@ -580,6 +598,177 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 		
 		$t_instance->load($this->get('row_id'));
 		return $t_instance;
+	}
+		# ------------------------------------------------------
+	# Relationship emulation methods
+	# ------------------------------------------------------
+	/**
+	 * Returns name of the "left" table (by convention the table mentioned first in the relationship table name)
+	 * (eg. if the table name is ca_objects_x_entities then the "left" name is ca_objects)
+	 *
+	 * @return string
+	 */
+	public function getLeftTableName() {
+		return 'ca_sets';
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns name of the "right" table (by convention the table mentioned second in the relationship table name)
+	 * (eg. if the table name is ca_objects_x_entities then the "right" name is ca_entities)
+	 *
+	 * @return string
+	 */
+	public function getRightTableName() {
+		return Datamodel::getTableName($this->get('table_num'));
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns name of the table in the relationship that is not the specified one.
+	 * (eg. if the table name passed is ca_objects and the relationship is ca_objects_x_entities then the "other" name is ca_entities)
+	 *
+	 * @param string $ps_tablename A table name that is part of the relationship the model represents
+	 * @return string The name of the table in the relationship that is not the specified table. If the specified table is not part of the relationship null is returned.
+	 */
+	public function getOtherTableName($ps_tablename) {
+		if (!in_array($ps_tablename, array($this->getLeftTableName(), $this->getRightTableName()))) { return null; }
+		return ($ps_tablename == $this->getLeftTableName()) ? $this->getRightTableName() : $this->getLeftTableName();
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns table number of the "left" table (by convention the table mentioned first in the relationship table name)
+	 * (eg. if the table name is ca_objects_x_entities then the "left" number corresponds to ca_objects)
+	 *
+	 * @return int
+	 */
+	public function getLeftTableNum() {
+		return Datamodel::getTableNum($this->getLeftTableName());
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns table number of the "right" table (by convention the table mentioned second in the relationship table name)
+	 * (eg. if the table name is ca_objects_x_entities then the "right" number corresponds to ca_entities)
+	 *
+	 * @return int
+	 */
+	public function getRightTableNum() {
+		return Datamodel::getTableNum($this->getRightTableName());
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns name of the "left" table (by convention the table mentioned first in the relationship table name) field name
+	 * (eg. if the table name is ca_objects_x_entities then the "left" name is ca_objects)
+	 *
+	 * @return string
+	 */
+	public function getLeftTableFieldName() {
+		return 'set_id';
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns name of the "right" table (by convention the table mentioned first in the relationship table name) field name
+	 * (eg. if the table name is ca_objects_x_entities then the "left" name is ca_objects)
+	 *
+	 * @return string
+	 */
+	public function getRightTableFieldName() {
+		return 'row_id';
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns name of the foreign key pointing to ca_relationship_types (typically = 'type_id')
+	 *
+	 * @return string
+	 */
+	public function getTypeFieldName() {
+		return 'type_id';
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns true if model is a relationship
+	 *
+	 * @return bool
+	 */
+	public function isRelationship() {
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getLeftTableInstance() {
+		$t_left = Datamodel::getInstanceByTableName($this->getLeftTableName(), false);
+		if ($t_left) {
+			$t_left->load($this->get($this->getLeftTableFieldName()));
+		}
+		return $t_left;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getRightTableInstance() {
+		$t_right = Datamodel::getInstanceByTableName($this->getRightTableName(). false);
+		if ($t_right) {
+			$t_right->load($this->get($this->getRightTableFieldName()));
+		}
+		return $t_right;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns relationship type name for the currently loaded row. Directionality of the type name can be controlled using the $ps_direction parameter.
+	 *
+	 * @param string $ps_direction Determines the reading direction of the relationship. Possible values are 'ltor' (left-to-right) and 'rtol' (right-to-left). Default value is ltor.
+	 * @return string Type name or null if no row is loaded.
+	 */
+	public function getRelationshipTypename($direction='ltor', $type_id=null) {
+		if (($type_id) || ($type_id = $this->getTypeID())) {
+			$t_item = new ca_list_items($type_id);
+			return $t_item->get('ca_list_item.preferred_labels.name_plural');
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns relationship type code for the currently loaded row.
+	 *
+	 * @return string The relationship type code
+	 */
+	public function getRelationshipTypeCode() {
+		if ($type_id = $this->get('type_id')) {
+			$t_rel_type = new ca_list_items($type_id);
+			return $t_rel_type->get('ca_list_items.idno');
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get name for related table opposite the one specified by $pm_tablename_or_num.
+	 * For example, if the relationship is ca_objects_x_entities, passing $pm_tablename_or_num = ca_objects will
+	 * result in "ca_entities" being returned. If $pm_tablename_or_num is not referenced by the relationship 
+	 * null is returned.
+	 *
+	 * @param mixed $pm_tablename_or_num Table name of number
+	 * @return string
+	 */
+	public function getOppositeTableName($pm_tablename_or_num) {
+		if ($t_one_side = Datamodel::getInstanceByTableName($pm_tablename_or_num, true)) {
+			if ($this->getLeftTableName() == $t_one_side->tableName()) {
+				// other side is right
+				return $this->getRightTableName();
+			} elseif ($this->getRightTableName() == $t_one_side->tableName()) {
+				// other side is left
+				return $this->getLeftTableName();
+			}
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getTypeID($id = NULL) {
+		$t_set = new ca_sets($id ? $id : $this->get('set_id'));
+		return $t_set->get('type_id');
 	}
 	# ----------------------------------------
 }
