@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2024 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,9 +46,13 @@ var caBundleUpdateManager = caBundleUpdateManager || null;
 		// --------------------------------------------------------------------------------
 		// Methods
 		// --------------------------------------------------------------------------------
-		that.registerBundle = function(id, bundle, placement_id) {
+		that.registerBundle = function(id, bundle, placement_id, type) {
 			that.byID[id] = that.byPlacementID[placement_id] = {
-				id: id, bundle: bundle, placement_id: placement_id
+				id: id, 
+				bundle: bundle, 
+				placement_id: placement_id, 
+				type: type, 
+				relBundleInstance: globalThis['caRelationBundle' + id]  // relationship bundle instance; only set for relationship bundles (Ex. ca_entities, ca_occurrences)
 			};
 			if(!that.byBundle[bundle]) { that.byBundle[bundle] = []; }
 			that.byBundle[bundle].push(that.byID[id]);
@@ -58,7 +62,7 @@ var caBundleUpdateManager = caBundleUpdateManager || null;
 		that.registerBundles = function(list) {
 			var l;
 			for(l in list) {
-				that.registerBundle(list[l].id, list[l].bundle, list[l].placement_id);
+				that.registerBundle(list[l].id, list[l].bundle, list[l].placement_id, list[l].type);
 			}
 		}
 		// --------------------------------------------------------------------------------
@@ -84,7 +88,20 @@ var caBundleUpdateManager = caBundleUpdateManager || null;
 							data[k] = options[k];
 						}
 					}
-					jQuery("#" + v['id']).load(loadURL, data);
+					if(options && options['reloadItemListOnly']) {
+					   if(v['relBundleInstance']) {
+					        jQuery.getJSON(loadURL, data, function(resp) {
+					            console.log('Got new item list', resp);
+					            v['relBundleInstance'].reloadItemList(resp);
+					        });
+					   } else {
+					        console.log('No related instance for', v);
+					   }
+					} else{
+                        jQuery("#" + v['id']).load(loadURL, data, function(e) {
+                            console.log("Load complete", v);
+                        });
+                    }
 				});
 			}
 		}

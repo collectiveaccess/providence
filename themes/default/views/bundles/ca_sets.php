@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2024 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,7 +35,7 @@ $t_subject 			= $this->getVar('t_subject');
 $settings 			= $this->getVar('settings');
 $add_label 			= $this->getVar('add_label');
 $placement_code 	= $this->getVar('placement_code');
-$vn_placement_id	= (int)$settings['placement_id'];
+$placement_id	= (int)$settings['placement_id'];
 $batch				= $this->getVar('batch');
 
 $sort				= ((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
@@ -73,7 +73,7 @@ print caEditorBundleMetadataDictionary($this->request, $id_prefix, $settings);
 
 print "<div class='bundleSubLabel'>";	
 if(sizeof($this->getVar('initialValues'))) {
-	print caGetPrintFormatsListAsHTMLForRelatedBundles($id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $vn_placement_id);
+	print caGetPrintFormatsListAsHTMLForRelatedBundles($id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $placement_id);
 }
 if(sizeof($this->getVar('initialValues')) && !$read_only && !$sort && ($settings['list_format'] != 'list')) {
 	print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), $t_item_rel->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
@@ -192,9 +192,8 @@ foreach($action_errors = $this->request->getActionErrors($placement_code) as $o_
 
 <?php if($quick_add_enabled) { ?>
 <div id="caRelationQuickAddPanel<?= $id_prefix; ?>" class="caRelationQuickAddPanel"> 
-	<div id="caRelationQuickAddPanel<?= $id_prefix; ?>ContentArea">
-	<div class='dialogHeader'><?= _t('Quick Add', $t_item->getProperty('NAME_SINGULAR')); ?></div>
-		
+	<div id="caRelationQuickAddPanel<?= $id_prefix; ?>ContentArea" data-relatedTable="<?= $t_subject->tableName(); ?>" data-relatedID="<?= $t_subject->getPrimaryKey(); ?>" data-relationshipType="" data-createRelationshipOnSave="<?= $this->getVar('quickadd_create_relationship_on_save'); ?>">
+		<div class='dialogHeader'><?= _t('Quick Add', $t_item->getProperty('NAME_SINGULAR')); ?></div>
 	</div>
 </div>
 <?php } ?>
@@ -277,7 +276,7 @@ foreach($action_errors = $this->request->getActionErrors($placement_code) as $o_
 			initialValues: <?= json_encode($this->getVar('initialValues')); ?>,
 			initialValueOrder: <?= json_encode(array_keys($this->getVar('initialValues'))); ?>,
 			itemID: '<?= $id_prefix; ?>Item_',
-			placementID: '<?= $vn_placement_id; ?>',
+			placementID: '<?= $placement_id; ?>',
 			templateClassName: 'caNewItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
@@ -310,13 +309,14 @@ foreach($action_errors = $this->request->getActionErrors($placement_code) as $o_
 			lastItemColor: '<?= $last_color; ?>',
 			
 			totalValueCount: <?= (int)$count; ?>,
-			partialLoadUrl: '<?= caNavUrl($this->request, '*', '*', 'loadBundleValues', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $vn_placement_id, 'bundle' => 'ca_sets')); ?>',
+			partialLoadUrl: '<?= caNavUrl($this->request, '*', '*', 'loadBundleValues', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $placement_id, 'bundle' => 'ca_sets')); ?>',
 			partialLoadIndicator: '<?= addslashes(caBusyIndicatorIcon($this->request)); ?>',
 			loadSize: <?= $num_per_page; ?>,
 
 <?php if($quick_add_enabled) { ?>		
 			quickaddPanel: caRelationQuickAddPanel<?= $id_prefix; ?>,
 			quickaddUrl: '<?= caNavUrl($this->request, 'manage/sets', 'SetQuickAdd', 'Form', array('set_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0), 'prepopulate_fields' => join(";", $settings['prepopulateQuickaddFields'] ?? []), 'table_num' => $t_subject->tableNum())); ?>',
+			alwaysQuickAdd: <?= json_encode((bool)($settings['alwaysQuickAdd'] ?? false)); ?>,
 <?php } ?>	
 
 			minRepeats: <?= caGetOption('minRelationshipsPerRow', $settings, 0); ?>,

@@ -2548,7 +2548,19 @@ class TimeExpressionParserTest extends TestCase {
 		$this->assertEquals($va_parse[0], "1887.010100000010");
 		$this->assertEquals($va_parse[1], "1918.123123595910");	
 		$this->assertEquals($o_tep->getText(), "circa 1887 – circa 1918");
- 		
- 
+	}
+	
+	public function testBCEDecades() {
+	 	$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('90s BCE');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "-90.010100000000");
+		$this->assertEquals($va_parse['end'], "-81.123123595900");
+		$this->assertEquals($va_parse[0], "-90.010100000000");
+		$this->assertEquals($va_parse[1], "-81.123123595900");	
+		$this->assertEquals($o_tep->getText(), "90s BCE");
 	}
 }

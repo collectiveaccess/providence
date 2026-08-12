@@ -128,7 +128,6 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 	'render' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_SELECT,
-		'default' => 1,
 		'width' => 40, 'height' => 1,
 		'label' => _t('Render list in editor as'),
 		'description' => _t('Set the presentation of the list when editing to select, checkboxes, radio buttons, type-ahead lookup or browser.'),
@@ -942,7 +941,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		if(preg_match("/^hideIfSelected/", $ps_setting_key)) {
 			if(isset($pa_element_info['settings']['render']) && !is_null($pa_element_info['settings']['render'])) {
 				if (!in_array($pa_element_info['settings']['render'], array('radio_buttons', 'select', 'yes_no_checkboxes'))) {
-					$ps_error = _t("dependent field visibility is only supported for radio buttons and drop-down (select) menus");
+					$ps_error = _t("Dependent field visibility is only supported for radio buttons and drop-down (select) menus");
 					return false;
 				}
 			}

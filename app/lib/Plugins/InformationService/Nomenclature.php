@@ -45,7 +45,7 @@ $g_information_service_settings_nomenclature = [
 		],
 		'default' => 'allLabels',
 		'width' => 90, 'height' => 1,
-		'label' => _t(''),
+		'label' => _t('Scope'),
 		'description' => _t('Scope')
 	],
 	'limit' => [
@@ -123,7 +123,7 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
         parent::__construct();
         $this->info['NAME'] = 'Nomenclature';
 
-        $this->description = _t('Provides access to Nomenclature for Museum Cataloguing (https://page.nomenclature.info)');
+        $this->description = _t('Provides access to Nomenclature for Museum Cataloguing (%1)', 'https://page.nomenclature.info');
     }
 	# ------------------------------------------------
 	/** 

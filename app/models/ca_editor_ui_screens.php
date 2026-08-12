@@ -1178,6 +1178,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Always open quickadd window when adding relationship?'),
 								'description' => _t('If checked a quickadd window will be opened each time a relationship is added.')
 							),
+							'createRelationshipOnQuickaddSave' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => '0',
+								'label' => _t('Immediately create relationship when quick add is saved?'),
+								'description' => _t('If checked saving a quick added record will immediately create a relationship to the primary record. By default the relationship is set in the primary editing form but not created until the primary record is saved.')
+							),
 							'sort' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_SELECT,

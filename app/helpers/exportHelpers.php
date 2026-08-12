@@ -773,6 +773,11 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 				foreach($display_list as $info) {
 					$placement_id = $info['placement_id'];
 					
+					if (is_array($info['settings']) && isset($info['settings']['format']) && ($tags = array_filter(caGetTemplateTags($info['settings']['format']), function($v) { return preg_match("!^ca_object_representations.media.!", $v); }))) {
+						// Transform bundle with template including media into a media bundle as that's the only way to show media within an XLSX
+						$info['bundle_name'] = $tags[0];
+					}
+					
 					if(!($info['template'] ?? null) && ($info['settings']['format'] ?? null)) {
 						$info['template'] = $info['settings']['format'];
 					}
@@ -796,7 +801,8 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 								$template = str_replace("^{$t}", '', $template);
 							}
 						}
-						$display_text = $result->getWithTemplate($template);
+
+						$display_text = $result->getWithTemplate($template, $info['settings'] ?? []);
 					} elseif (
 						(preg_match('!^ca_object_representations.media!', $info['bundle_name']))
 						&&
@@ -1043,24 +1049,20 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 						}
 
 					} elseif ($t_display && ($display_text = $t_display->getDisplayValue($result, $placement_id, array_merge(array('request' => $request, 'purify' => true), is_array($info['settings']) ? $info['settings'] : [])))) {
-						$textrun = $contentCell->createTextRun();
-			
 						if ($request && $config->get('report_include_labels_in_docx_output')) {
-							$textrun->addText(caEscapeForXML($info['display']).': ', $styleBundleNameFont);
+							$contentCell->addText(caEscapeForXML($info['display']).': ', $styleBundleNameFont);
 						}
-						$textrun->addText(
+						$contentCell->addText(
 							preg_replace("![\n\r]!", "<w:br/>", caEscapeForXML(html_entity_decode(strip_tags(br2nl($display_text)), ENT_QUOTES | ENT_HTML5))),
 							$styleContentFont
 						);
 
 					} else {
 						$display_text = $result->get($info['bundle_name']);
-						$textrun = $contentCell->createTextRun();
-			
 						if ($request && $config->get('report_include_labels_in_docx_output')) {
-							$textrun->addText(caEscapeForXML($info['display']).': ', $styleBundleNameFont);
+							$contentCell->addText(caEscapeForXML($info['display']).': ', $styleBundleNameFont);
 						}
-						$textrun->addText(
+						$contentCell->addText(
 							preg_replace("![\n\r]!", "<w:br/>", caEscapeForXML(html_entity_decode(strip_tags(br2nl($display_text)), ENT_QUOTES | ENT_HTML5))),
 							$styleContentFont
 						);

@@ -1,14 +1,19 @@
 /*
-	Date: 11 March 2026
+	Date: 11 May 2026
 	Migration: 212
-	Description: Support for settings on UI editors and screens
+	Description: 
 */
 
 /*==========================================================================*/
 
-alter table ca_editor_uis add column settings longtext not null;
-alter table ca_editor_ui_screens add column settings longtext not null;
-      
+
+ALTER TABLE ca_sql_search_word_index ADD COLUMN timecode_start decimal(10,3) not null default 0;
+ALTER TABLE ca_sql_search_word_index ADD COLUMN timecode_end decimal(10,3) not null default 0;
+CREATE INDEX i_timecode_start on ca_sql_search_word_index(timecode_start, timecode_end);
+CREATE INDEX i_timecode_end on ca_sql_search_word_index(timecode_end);
+
+ALTER TABLE ca_sql_search_word_index MODIFY COLUMN word_index mediumint unsigned not null default 0, MODIFY COLUMN word_count mediumint unsigned not null default 0, MODIFY COLUMN field_index mediumint unsigned not null default 0;
+
 /*==========================================================================*/
 
 /* Always add the update to ca_schema_updates at the end of the file */

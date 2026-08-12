@@ -55,7 +55,7 @@ trait CLIUtilsLocalization {
 		$team = $opts->getOption('team');
 		$extracted_strings = [];
 		
-		$directories = [__CA_THEMES_DIR__."/default", __CA_THEMES_DIR__."/{$theme}", __CA_BASE_DIR__."/app/models", __CA_BASE_DIR__."/app/lib", __CA_BASE_DIR__."/app/helpers", __CA_BASE_DIR__."/app/conf"];
+		$directories = [__CA_THEMES_DIR__."/default", __CA_THEMES_DIR__."/{$theme}", __CA_BASE_DIR__."/app/models", __CA_BASE_DIR__."/app/lib", __CA_BASE_DIR__."/app/helpers", __CA_BASE_DIR__."/app/conf", __CA_BASE_DIR__."/app/widgets", __CA_BASE_DIR__."/app/services", __CA_BASE_DIR__."/app/plugins", __CA_BASE_DIR__."/app/controllers", __CA_BASE_DIR__."/app/printTemplates", __CA_BASE_DIR__."/app/refineries"];
 		
 		$file_count = 0;
 		foreach($directories as $d) {
@@ -75,34 +75,30 @@ trait CLIUtilsLocalization {
 				$r = fopen($f, "r");
 
 				while($line = fgets($r)) {
-					// _() construction used in config files
 					if($is_conf) {
-						$strings = preg_match_all("!_\([\"\']{0,1}([^\"\)]+?)[\"\']{0,1}[,\)]+!s", $line, $m);
-	
-						$extracted_strings = array_merge($extracted_strings, array_filter($m[1], function($v) {
-							return preg_match("![A-Za-z0-9]+!s", $v);
-						}));
+						$regexes = ["!_\([\"\']{0,1}([^\"\)]+?)[\"\']{0,1}[,\)]+!s"];	// _() construction used in config files
+					} else {
+						$regexes = [
+							"!_t\([\"]{1}([^\"]+?)[\"]{1}[,\)]+!s",				// _t("") construction used in code
+							"!_t\([\']{1}([^\']+?)[\']{1}[,\)]+!s",				// _t('') construction used in code
+							"!<t>(.*?)</t>!s"									// <t>...</t> construction used in templates and view files
+						];
 					}
 					
-					// _t() construction used in code
-					$strings = preg_match_all("!_t\([\"\']{0,1}([^\"\)]+?)[\"\']{0,1}[,\)]+!s", $line, $m);
-
-					$extracted_strings = array_merge($extracted_strings, array_filter($m[1], function($v) {
-						return preg_match("![A-Za-z0-9]+!s", $v);
-					}));
+					foreach($regexes as $rx) {
+						$strings = preg_match_all($rx, $line, $m);
 	
-					// <t>...</t> construction used in templates and view files
-					$strings = preg_match_all("!<t>(.*?)</t>!s", $line, $m);
-	
-					$extracted_strings = array_merge($extracted_strings, array_filter($m[1], function($v) {
-						return preg_match("![A-Za-z0-9]+!s", $v);
-					}));
+						$extracted_strings = array_merge($extracted_strings, array_map(function($x) { 
+							return str_replace('"', "\\\"", $x);
+						}, array_filter($m[1], function($v) {
+							return preg_match("![A-Za-z0-9]+!s", $v);
+						})));
+					}
 				}
 			}
 			print CLIProgressBar::finish();
 		}
 		$extracted_strings = array_unique($extracted_strings);
-
 
 		$out = fopen($file, "w");
 		
@@ -130,7 +126,6 @@ trait CLIUtilsLocalization {
 		fputs($out, "\n");
 
 		foreach($extracted_strings as $s) {
-			$s = stripslashes($s);
 			fputs($out, "msgid \"{$s}\"\n");
 			fputs($out, "msgstr \"\"\n\n");
 		}

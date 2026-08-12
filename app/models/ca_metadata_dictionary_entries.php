@@ -199,24 +199,24 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	/**
 	 *
 	 * @param int $pn_id Optional entry_id to load
-	 * @param array $pa_additional_settings Optional array of additional entry-level settings to support.
-	 * @param array $pa_setting_values Optional array of setting values to set.
+	 * @param array $additional_settings Optional array of additional entry-level settings to support.
+	 * @param array $setting_values Optional array of setting values to set.
 	 */
-	function __construct($id=null, ?array $options=null, $pa_additional_settings=null, $pa_setting_values=null) {
+	function __construct($id=null, ?array $options=null, $additional_settings=null, $setting_values=null) {
 		parent::__construct($id, $options);
 		
 		//
-		if (!is_array($pa_additional_settings)) { $pa_additional_settings = array(); }
-		$this->additional_settings = $pa_additional_settings;
-		$this->setSettingDefinitionsForEntry($pa_additional_settings);
+		if (!is_array($additional_settings)) { $additional_settings = array(); }
+		$this->additional_settings = $additional_settings;
+		$this->setSettingDefinitionsForEntry($additional_settings);
 		
-		if (is_array($pa_setting_values)) {
-			$this->setSettings($pa_setting_values);
+		if (is_array($setting_values)) {
+			$this->setSettings($setting_values);
 		}
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions($pa_options=null) {
-		parent::initLabelDefinitions($pa_options);
+	protected function initLabelDefinitions($options=null) {
+		parent::initLabelDefinitions($options);
 
 		$this->BUNDLES['settings'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Data dictionary entry settings'));
 		
@@ -228,12 +228,11 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	  * you require via ca_metadata_dictionary_entries::getEntry() before use, unless you 
 	  * bypass the cache which will result in reduced performance.
 	  *
-	  * @param array $pa_bundles List of bundles to preload dictionary entries for
+	  * @param array $bundles List of bundles to preload dictionary entries for
 	  * @return int The number of dictionary entries that were preloaded
 	  */
-	static public function preloadDefinitions($pa_bundles) {
-		if(!is_array($pa_bundles) || !sizeof($pa_bundles)) { return null; }
-		
+	static public function preloadDefinitions($bundles) {
+		if(!is_array($bundles) || !sizeof($bundles)) { return null; }
 		
 		$o_db = new Db();
 		$qr_res = $o_db->query("
@@ -241,20 +240,24 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 			FROM ca_metadata_dictionary_entries
 			WHERE
 				bundle_name IN (?)
-		", array($pa_bundles));
+		", [$bundles]);
 		
-		$vn_c = 0;
+		$c = 0;
 		
-		$va_type_ids = array();
+		$idx = array_flip($bundles);
 		while($qr_res->nextRow()) {
-			$va_row = $qr_res->getRow();
-			$va_row['settings'] = caUnserializeForDatabase($va_row['settings']);
-			ca_metadata_dictionary_entries::$s_definition_cache[$va_row['entry_id']] = $va_row;
-			ca_metadata_dictionary_entries::$s_definition_cache_index[$va_row['bundle_name']][$va_row['entry_id']] = 1;
-			
-			$vn_c++;
+			$row = $qr_res->getRow();
+			$row['settings'] = caUnserializeForDatabase($row['settings']);
+			ca_metadata_dictionary_entries::$s_definition_cache[$row['entry_id']] = $row;
+			ca_metadata_dictionary_entries::$s_definition_cache_index[$row['bundle_name']][$row['entry_id']] = 1;
+			unset($idx[$row['bundle_name']]);
+			$c++;
 		}
-		return $vn_c;
+		
+		foreach($idx as $k => $d) {
+			ca_metadata_dictionary_entries::$s_definition_cache_index[$k] = null;
+		}
+		return $c;
 	}
 	# ------------------------------------------------------
 	/**
@@ -304,12 +307,12 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	  * Sets setting definitions for to use for the current entry. Note that these definitions persist no matter what row is loaded
 	  * (or even if no row is loaded). You can set the definitions once and reuse the instance for many entries. All will have the set definitions.
 	  *
-	  * @param $pa_additional_settings array Array of settings definitions
+	  * @param $additional_settings array Array of settings definitions
 	  *
 	  * @return bool Always returns true
 	  */
-	public function setSettingDefinitionsForEntry($pa_additional_settings) {
-		if (!is_array($pa_additional_settings)) { $pa_additional_settings = []; }
+	public function setSettingDefinitionsForEntry($additional_settings) {
+		if (!is_array($additional_settings)) { $additional_settings = []; }
 		
 		$standard_settings = [	
 			'mandatory' => array(
@@ -364,7 +367,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 				$standard_settings['restrict_to_relationship_types']['useRelationshipTypeList'] = $path[1];
 			}
 		}
-		$this->setAvailableSettings(array_merge($standard_settings, $pa_additional_settings));
+		$this->setAvailableSettings(array_merge($standard_settings, $additional_settings));
 		
 		return true;
 	}
@@ -382,8 +385,8 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	/**
 	 *
 	 */
-	public function set($pa_fields, $pm_value="", $pa_options=null) {
-		$r = parent::set($pa_fields, $pm_value, $pa_options);
+	public function set($fields, $value="", $options=null) {
+		$r = parent::set($fields, $value, $options);
 		if ($this->changed('bundle_name')) { 
 			$this->setSettingDefinitionsForEntry($this->additional_settings);
 		}
@@ -414,11 +417,11 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 			ORDER BY rule_id
 		", [$id]);
 
-		$va_return = [];
+		$return = [];
 
 		while($qr_rules->nextRow()) {
 			$rule_id = $qr_rules->get('rule_id');
-			$va_return[$rule_id] = $qr_rules->getRow();
+			$return[$rule_id] = $qr_rules->getRow();
 			
 			$settings = caUnserializeForDatabase($qr_rules->get('settings'));
 			if ($for_editing_form) {
@@ -426,147 +429,143 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 					foreach($settings as $setting => $v) {
 						if(is_array($v)) { 
 							foreach($v as $locale => $vl) {
-								$va_return[$rule_id]["{$setting}_{$locale}"] = $vl;	
+								$return[$rule_id]["{$setting}_{$locale}"] = $vl;	
 							}
 						} else {
-							$va_return[$rule_id][$setting] = $v;		
+							$return[$rule_id][$setting] = $v;		
 						}
 					}
-					unset($va_return[$rule_id]['settings']);
+					unset($return[$rule_id]['settings']);
 				}
 			} else {
-				$va_return[$rule_id]['settings'] = $settings;
+				$return[$rule_id]['settings'] = $settings;
 			}
 		}
 
-		MemoryCache::save($cache_key, $va_return, 'MDDictRuleList');
+		MemoryCache::save($cache_key, $return, 'MDDictRuleList');
 
-		return $va_return;
+		return $return;
 	}
 	# ------------------------------------------------------
 	/**
 	 * Check for existence of a dictionary entry for a bundle and return cache indices if it exists.
 	 *
-	 * @param string $ps_bundle_name The bundle name to find a dictionary entry for. 
-	 * @param array $pa_options Options include:
+	 * @param string $bundle_name The bundle name to find a dictionary entry for. 
+	 * @param array $options Options include:
 	 *		noCache = Bypass cache (typically loaded using ca_metadata_dictionary_entries::preloadDefinitions()) and check entry directly. [Default=false]
 	 *
 	 * @return array List of entry_ids for the specified bundle if it exists. These can be plugged into the ca_metadata_dictionary_entries::$s_definition_cache cache array to get entry data. Returns false if the bundle does not exist.
 	 */
-	public static function entryExists($ps_bundle_name, $pa_options=null) {
-		if (caGetOption('noCache', $pa_options, false)) {
-			ca_metadata_dictionary_entries::preloadDefinitions(array($ps_bundle_name));
+	public static function entryExists($bundle_name, $options=null) {
+		if (caGetOption('noCache', $options, false) || (array_key_exists($bundle_name, ca_metadata_dictionary_entries::$s_definition_cache_index ?? []) && is_null(ca_metadata_dictionary_entries::$s_definition_cache_index[$bundle_name]))) {
+			ca_metadata_dictionary_entries::preloadDefinitions(array($bundle_name));
 		}
 		
 		if (
-			isset(ca_metadata_dictionary_entries::$s_definition_cache_index[$ps_bundle_name]) 
+			isset(ca_metadata_dictionary_entries::$s_definition_cache_index[$bundle_name]) 
 			&& 
-			is_array(ca_metadata_dictionary_entries::$s_definition_cache_index[$ps_bundle_name])
+			is_array(ca_metadata_dictionary_entries::$s_definition_cache_index[$bundle_name])
 			&&
-			sizeof(ca_metadata_dictionary_entries::$s_definition_cache_index[$ps_bundle_name])
+			sizeof(ca_metadata_dictionary_entries::$s_definition_cache_index[$bundle_name])
 		) {
-			return ca_metadata_dictionary_entries::$s_definition_cache_index[$ps_bundle_name];
+			return ca_metadata_dictionary_entries::$s_definition_cache_index[$bundle_name];
 		}
 		return false;
 	}
 	# ------------------------------------------------------
 	/**
 	 * Get a dictionary entry for a bundle. Entries are matched first on bundle name, and then filtered on any restrict_to_types
-	 * and restrict_to_relationship_types settings in the $pa_settings parameter. This allows you to have different dictionary entries
+	 * and restrict_to_relationship_types settings in the $settings parameter. This allows you to have different dictionary entries
 	 * for the same bundle name subject to type restrictions set in the user interface. For example, if you have a ca_entities bundle (related
 	 * entities) you can have different dictionary entries return when ca_entities is restricted to authors vs. publishers.
 	 *
-	 * @param string $ps_bundle_name The bundle name to find a dictionary entry for. 
-	 * @param BaseModel $pt_subject 
-	 * @param array $pa_settings Bundle settings to use when matching definitions. The bundle settings restrict_to_types and restrict_to_relationship_types will be used, when present, to find type-restricted dictionary entries.
-	 * @param array $pa_options Options include:
+	 * @param string $bundle_name The bundle name to find a dictionary entry for. 
+	 * @param BaseModel $t_subject 
+	 * @param array $settings Bundle settings to use when matching definitions. The bundle settings restrict_to_types and restrict_to_relationship_types will be used, when present, to find type-restricted dictionary entries.
+	 * @param array $options Options include:
 	 *		noCache = Bypass cache (typically loaded using ca_metadata_dictionary_entries::preloadDefinitions()) and check entry directly. [Default=false]
 	 *
 	 * @return array An array with entry data. Keys are entry field names. The 'settings' key contains the label, definition text and any type restrictions. Returns null if no entry is defined.
 	 */
-	public static function getEntry($ps_bundle_name, $pt_subject, $pa_settings=null, $pa_options=null) {
-		if (caGetOption('noCache', $pa_options, false)) {
-			ca_metadata_dictionary_entries::preloadDefinitions([$ps_bundle_name]);
+	public static function getEntry($bundle_name, $t_subject, $settings=null, $options=null) {
+		$subject_table_name = $t_subject->tableName();
+		$subject_table_num = $t_subject->tableNum();
+		
+		if(!is_array($types = caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null)) && $types) {
+			$types = [$types];
+		}
+		if(!is_array($types)) { $types = [$t_subject->getTypeID()]; }
+		if(sizeof($types = array_filter($types, 'strlen')) && ($t_instance = Datamodel::getInstance($bundle_name)) && method_exists($bundle_name, 'getTypeCode') ) {
+			$types = array_merge($types, caMakeTypeIDList($bundle_name, $types, ['dontIncludeSubtypesInTypeRestriction' => true]) ?? []);
 		}
 		
-		$subject_table_name = $pt_subject->tableName();
-		$subject_table_num = $pt_subject->tableNum();
-		
-		if(!is_array($va_types = caGetOption(['restrict_to_types', 'restrictToTypes'], $pa_settings, null)) && $va_types) {
-			$va_types = [$va_types];
+		if(!is_array($relationship_types = caGetOption(['restrict_to_relationship_types', 'restrictToRelationshipTypes'], $settings, null)) && $relationship_types) {
+			$relationship_types = [$relationship_types];
 		}
-		if(!is_array($va_types)) { $va_types = [$pt_subject->getTypeID()]; }
-		if(sizeof($va_types = array_filter($va_types, 'strlen')) && ($t_instance = Datamodel::getInstance($ps_bundle_name)) && method_exists($ps_bundle_name, 'getTypeCode') ) {
-			$va_types = array_merge($va_types, caMakeTypeIDList($ps_bundle_name, $va_types, ['dontIncludeSubtypesInTypeRestriction' => true]) ?? []);
+		if(!is_array($relationship_types)) { $relationship_types = []; }
+		if (sizeof($relationship_types = array_filter($relationship_types, 'strlen'))) {
+			$relationship_types = array_merge($relationship_types, ca_relationship_types::relationshipTypeIDsToTypeCodes($relationship_types) ?? []);
 		}
-		
-		if(!is_array($va_relationship_types = caGetOption(['restrict_to_relationship_types', 'restrictToRelationshipTypes'], $pa_settings, null)) && $va_relationship_types) {
-			$va_relationship_types = [$va_relationship_types];
-		}
-		if(!is_array($va_relationship_types)) { $va_relationship_types = []; }
-		if (sizeof($va_relationship_types = array_filter($va_relationship_types, 'strlen'))) {
-			$va_relationship_types = array_merge($va_relationship_types, ca_relationship_types::relationshipTypeIDsToTypeCodes($va_relationship_types) ?? []);
-		}
-		if ($va_entry_list = ca_metadata_dictionary_entries::entryExists($ps_bundle_name)) {
-			$vn_entry_id = null;
+		if ($entry_list = ca_metadata_dictionary_entries::entryExists($bundle_name)) {
+			$entry_id = null;
 			
-			foreach(array_keys($va_entry_list) as $vn_id) {
-				$va_entry = ca_metadata_dictionary_entries::$s_definition_cache[$vn_id];
+			foreach(array_keys($entry_list) as $id) {
+				$entry = ca_metadata_dictionary_entries::$s_definition_cache[$id];
 				
-				if($va_entry['table_num'] != $subject_table_num) { continue; }
+				if($entry['table_num'] != $subject_table_num) { continue; }
 				
-				if (is_array($va_tables = ($va_entry['settings']['restrict_to'] ?? null)) && sizeof($va_tables)) {
-					if(in_array($subject_table_name, $va_tables)) { 
-						$vn_entry_id = $vn_id;
+				if (is_array($tables = ($entry['settings']['restrict_to'] ?? null)) && sizeof($tables)) {
+					if(in_array($subject_table_name, $tables)) { 
+						$entry_id = $id;
 					} else {
-						$vn_entry_id = null;
+						$entry_id = null;
 					}
 				} else {
-					$vn_entry_id = $vn_id;
+					$entry_id = $id;
 				}
 				
-				if(!is_array($res_types = $va_entry['settings']['restrict_to_types'] ?? [])) {
+				if(!is_array($res_types = $entry['settings']['restrict_to_types'] ?? [])) {
 					$res_types = [$res_types];
 				}
-				$va_entry_types = array_filter($res_types ?? [], 'strlen');
-				if(!is_array($rel_types = $va_entry['settings']['restrict_to_relationship_types'] ?? [])) {
+				$entry_types = array_filter($res_types ?? [], 'strlen');
+				if(!is_array($rel_types = $entry['settings']['restrict_to_relationship_types'] ?? [])) {
 					$rel_types = [$rel_types];
 				}
-				$va_entry_relationship_types = array_filter($rel_types, 'strlen');
+				$entry_relationship_types = array_filter($rel_types, 'strlen');
 		
-				if($vn_entry_id) {
-					if ((sizeof($va_types) || sizeof($va_relationship_types))) {
-						if (sizeof($va_relationship_types)) {
-							if(is_array($va_entry_relationship_types) && sizeof($va_entry_relationship_types)) {
-								if (sizeof(array_intersect($va_relationship_types, $va_entry_relationship_types))) {
-									$vn_entry_id = $vn_id;
+				if($entry_id) {
+					if ((sizeof($types) || sizeof($relationship_types))) {
+						if (sizeof($relationship_types)) {
+							if(is_array($entry_relationship_types) && sizeof($entry_relationship_types)) {
+								if (sizeof(array_intersect($relationship_types, $entry_relationship_types))) {
+									$entry_id = $id;
 								} else {
-									$vn_entry_id = null;
+									$entry_id = null;
 									continue;
 								}
 							}
 						}
-						if (sizeof($va_types)) {
-							if(is_array($va_entry_types) && sizeof($va_entry_types)) {
-								if (sizeof(array_intersect($va_types, $va_entry_types))) {
-									$vn_entry_id = $vn_id;
+						if (sizeof($types)) {
+							if(is_array($entry_types) && sizeof($entry_types)) {
+								if (sizeof(array_intersect($types, $entry_types))) {
+									$entry_id = $id;
 								} else {
-									$vn_entry_id = null;
+									$entry_id = null;
 									continue;
 								}
 							}
 						}
-					} elseif((sizeof($va_types) && !sizeof($va_entry_types)) || (!sizeof($va_types) && sizeof($va_entry_types))) {
-						$vn_entry_id = null;
-					} elseif((sizeof($va_relationship_types) && !sizeof($va_entry_relationship_types)) || (!sizeof($va_relationship_types) && sizeof($va_entry_relationship_types))) {
-						$vn_entry_id = null;
+					} elseif((sizeof($types) && !sizeof($entry_types)) || (!sizeof($types) && sizeof($entry_types))) {
+						$entry_id = null;
+					} elseif((sizeof($relationship_types) && !sizeof($entry_relationship_types)) || (!sizeof($relationship_types) && sizeof($entry_relationship_types))) {
+						$entry_id = null;
 					}
 				}
-				if ($vn_entry_id) { break; }
+				if ($entry_id) { break; }
 			}
 			
-			if (!$vn_entry_id)  { return null; }
-			return ca_metadata_dictionary_entries::$s_definition_cache[$vn_entry_id];
+			if (!$entry_id)  { return null; }
+			return ca_metadata_dictionary_entries::$s_definition_cache[$entry_id];
 		}
 		
 		return null;
@@ -576,23 +575,23 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	/**
 	 * Render editor bundle for dictionary entry rules
 	 *
-	 * @param RequestHTTP $po_request
-	 * @param string $ps_form_name
-	 * @param string $ps_placement_code
-	 * @param array $pa_bundle_settings
-	 * @param array $pa_options
+	 * @param RequestHTTP $request
+	 * @param string $form_name
+	 * @param string $placement_code
+	 * @param array $bundle_settings
+	 * @param array $options
 	 * @return string
 	 */
-	public function getRulesHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, array $pa_bundle_settings=[], array $pa_options=[]) {
-		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+	public function getRulesHTMLFormBundle($request, $form_name, $placement_code, ?array $bundle_settings=[], ?array $options=[]) {
+		$o_view = new View($request, $request->getViewsDirectoryPath().'/bundles/');
 
-		$o_view->setVar('id_prefix', $ps_form_name);
-		$o_view->setVar('placement_code', $ps_placement_code);
-		$o_view->setVar('request', $po_request);
+		$o_view->setVar('id_prefix', $form_name);
+		$o_view->setVar('placement_code', $placement_code);
+		$o_view->setVar('request', $request);
 
-		if(!($vn_table_num = $this->get('table_num'))) { return null; }
+		if(!($table_num = $this->get('table_num'))) { return null; }
 
-		$o_view->setVar('table_num', $vn_table_num);
+		$o_view->setVar('table_num', $table_num);
 
 		$t_rule = new ca_metadata_dictionary_rules();
 		
@@ -623,13 +622,13 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	/**
 	 * Save trigger bundle
 	 *
-	 * @param $po_request
-	 * @param $ps_form_prefix
-	 * @param $ps_placement_code
+	 * @param $request
+	 * @param $form_prefix
+	 * @param $placement_code
 	 */
-	public function saveRuleHTMLFormBundle($po_request, $ps_form_prefix, $ps_placement_code) {
+	public function saveRuleHTMLFormBundle($request, $form_prefix, $placement_code) {
 		if (!($entry_id = $this->getPrimaryKey())) { return null; }
-		$vs_id_prefix = $ps_placement_code.$ps_form_prefix;
+		$id_prefix = $placement_code.$form_prefix;
 
 		$rules = $this->getRules();
 		
@@ -640,19 +639,19 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 		// find settings keys in request and set them
 		$adds = $edits = $deletes = $settings = [];
 		
-		foreach($_REQUEST as $vs_k => $vm_v) {
+		foreach($_REQUEST as $k => $vm_v) {
 			if(
-				preg_match("/^{$vs_id_prefix}_(.+?)_(new_[\d]+|[\d]+)_([A-Za-z]{2}_[A-Za-z]{2})$/u", $vs_k, $va_matches)
+				preg_match("/^{$id_prefix}_(.+?)_(new_[\d]+|[\d]+)_([A-Za-z]{2}_[A-Za-z]{2})$/u", $k, $matches)
 				||
-				preg_match("/^{$vs_id_prefix}_(.+?)_(new_[\d]+|[\d]+)$/u", $vs_k, $va_matches)	
+				preg_match("/^{$id_prefix}_(.+?)_(new_[\d]+|[\d]+)$/u", $k, $matches)	
 			) {
-				$rule_id = $va_matches[2];
+				$rule_id = $matches[2];
 				if (!isset($rules[$rule_id]) || !is_array($rules[$rule_id])) {
 				    $rules[$rule_id] = [];
 				}
-                $setting = $va_matches[1];
+                $setting = $matches[1];
                 if (in_array($setting, $settings_list)) {
-                    if ($locale = isset($va_matches[3]) ? $va_matches[3] : null) {
+                    if ($locale = isset($matches[3]) ? $matches[3] : null) {
                         $settings[$rule_id][$setting][$locale] = $vm_v;
                     } else {
                         $settings[$rule_id][$setting] = $vm_v;
@@ -660,12 +659,12 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
                     continue;
                 }
 			}
-			if(preg_match("/^{$vs_id_prefix}_(.+?)_new_([\d]+)$/u", $vs_k, $va_matches)) {
-				$adds[$va_matches[2]][$va_matches[1]] = $vm_v;
-			} elseif(preg_match("/^{$vs_id_prefix}_(.+)_([\d]+)$/u", $vs_k, $va_matches)) {
-				$edits[$va_matches[2]][$va_matches[1]] = $vm_v;
-			} elseif(preg_match("/^{$vs_id_prefix}_([\d]+)_delete$/u", $vs_k, $va_matches)) {
-				$deletes[$va_matches[1]] = true;
+			if(preg_match("/^{$id_prefix}_(.+?)_new_([\d]+)$/u", $k, $matches)) {
+				$adds[$matches[2]][$matches[1]] = $vm_v;
+			} elseif(preg_match("/^{$id_prefix}_(.+)_([\d]+)$/u", $k, $matches)) {
+				$edits[$matches[2]][$matches[1]] = $vm_v;
+			} elseif(preg_match("/^{$id_prefix}_([\d]+)_delete$/u", $k, $matches)) {
+				$deletes[$matches[1]] = true;
 			}
 		}
 		
