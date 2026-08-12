@@ -81,7 +81,9 @@ BaseModel::$s_ca_models_definitions['ca_data_importers'] = array(
 					_t('object representations') => 56,
 					_t('representation annotations') => 82,
 					_t('lists') => 36,
-					_t('list items') => 33
+					_t('list items') => 33,
+					_t('ca_sets') => 103,
+					_t('ca_set_items') => 105,
 				)
 		),
 		'settings' => array(
