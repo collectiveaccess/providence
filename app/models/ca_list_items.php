@@ -934,9 +934,20 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	}
 	# ------------------------------------------------------
 	public function load($pm_id=null, $pb_use_cache=true) {
+		$key = md5(serialize($pm_id));
+		if(CompositeCache::contains($key, 'listItem')) { 
+			$this->_FIELD_VALUES = CompositeCache::fetch($key, 'listItem');
+			
+			if(!is_array($this->_FIELD_VALUES) || !sizeof($this->_FIELD_VALUES)) { return false; }
+			return true;
+		}
 		if ($vn_rc = parent::load($pm_id, $pb_use_cache)) {
 			$this->_setSettingsForList();
+			CompositeCache::save($key, $this->_FIELD_VALUES, 'listItem');
+		} else {
+			CompositeCache::save($key, null, 'listItem');
 		}
+
 		return $vn_rc;
 	}
 	# ------------------------------------------------------

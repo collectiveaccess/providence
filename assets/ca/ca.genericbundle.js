@@ -29,7 +29,7 @@ var caUI = caUI || {};
 
 (function ($) {
 	caUI.initBundle = function(container, options) {
-		var that = jQuery.extend({
+		let that = jQuery.extend({
 			container: container,
 			addMode: 'append',
 			templateValues: [],
@@ -83,6 +83,7 @@ var caUI = caUI || {};
 			placementID: null,
 			interstitialPrimaryTable: null,	/* table and id for record from which interstitial was launched */
 			interstitialPrimaryID: null,
+			interstitialKey: "relation_id",
 
 			sortInitialValuesBy: null,
 			firstItemColor: null,
@@ -98,8 +99,15 @@ var caUI = caUI || {};
 			loadedSort: null,			// Dynamically loaded sort order
 			loadedSortDirection: null,
 			
+			alwaysQuickAdd: false,
+			alwaysQuickAddDefaultQuery: "",
+			
 			buttons: []
 		}, options);
+		
+		if(that.alwaysQuickAdd) { 
+			that.showEmptyFormsOnLoad = 0
+		}
 		
 		if (that.singleValuePerLocale) {
 		    that.incrementLocalesForNewBundles = true;  // single value per locale implies incrementing locales on each bundle add
@@ -130,8 +138,8 @@ var caUI = caUI || {};
 		}
 
 		that.appendToInitialValues = function(initialValues) {
-			var sort_order = initialValues.sort;
-			var data = initialValues.data;
+			let sort_order = initialValues.sort;
+			let data = initialValues.data;
 			jQuery.each(sort_order, function(i, v) {
 				that.initialValues[v] = data[v];
 				that.addToBundle(v, data[v], true);
@@ -165,11 +173,11 @@ var caUI = caUI || {};
 
 		that.addNextValuesLink = function() {
 			if(that.loadFrom >= (that.totalValueCount - 1)) { return; }
-			var end = (that.loadFrom + that.loadSize);
+			let end = (that.loadFrom + that.loadSize);
 			if (end > that.totalValueCount) { end = that.totalValueCount % that.loadSize; } else { end = that.loadSize; }
 			
-			var p = that.container + " ." + that.itemListClassName;
-			var msg = that.partialLoadMessage.replace("%num", end).replace("%total", that.totalValueCount);
+			let p = that.container + " ." + that.itemListClassName;
+			let msg = that.partialLoadMessage.replace("%num", end).replace("%total", that.totalValueCount);
 			jQuery(p).append("<div class='caItemLoadNextBundles'><a href='#' id='" + that.fieldNamePrefix + "__next' class='caItemLoadNextBundles'>" + msg + "</a><span id='" + that.fieldNamePrefix + "__busy' class='caItemLoadNextBundlesLoadIndicator'>" + that.partialLoadIndicator + "</span></div>");
 			jQuery(p).off('click').off('scroll').on('click', '.caItemLoadNextBundles', function(e) {
 				jQuery(p).off('click'); // remove handler to prevent repeated calls
@@ -200,8 +208,8 @@ var caUI = caUI || {};
 			}
 			
 			// prepare template values
-			var cnt, templateValues = {};
-			var isNew = false;
+			let cnt, templateValues = {};
+			let isNew = false;
 			if (initialValues && !initialValues['_handleAsNew']) {
 				// existing item
 				templateValues.n = id;
@@ -229,16 +237,22 @@ var caUI = caUI || {};
 						that.errors[id] = initialValues['_errors'];
 					}
 				}
+				
 				templateValues.n = 'new_' + that.getNIndex();
 				templateValues.error = '';
 				isNew = true;
+				
+				if(options.alwaysQuickAdd && that.triggerQuickAdd && (!id || id.match(/^new_[\d]+/))) {
+					if(!id) { id = 'new_' + that.getNIndex(); }
+					that.triggerQuickAdd(that.alwaysQuickAddDefaultQuery, id);
+				}
 			}
 
-			var defaultLocaleSelectedIndex = false;
+			let defaultLocaleSelectedIndex = false;
 			if (isNew && that.incrementLocalesForNewBundles) {
 				// set locale_id for new bundles
 				// find unused locale
-				var localeList = jQuery.makeArray(jQuery(that.container + " select." + that.localeClassName + ":first option"));
+				let localeList = jQuery.makeArray(jQuery(that.container + " select." + that.localeClassName + ":first option"));
 				for(i=0; i < localeList.length; i++) {
 					if (jQuery(that.container + " select." + that.localeClassName + " option:selected[value=" + localeList[i].value + "]").length > 0) {
 						continue;
@@ -249,7 +263,7 @@ var caUI = caUI || {};
 			}
 
 			// Set default value for new items
-			var is_new = false;
+			let is_new = false;
 			if ((id === null) || (id === undefined) || (id === '')) {
 				jQuery.each(that.defaultValues, function(k, v) {
 					if (v && !templateValues[k]) { templateValues[k] = v; }
@@ -259,9 +273,9 @@ var caUI = caUI || {};
 			}
 		
 			// print out any errors
-			var errStrs = [];
+			let errStrs = [];
 			if (that.errors && that.errors[id]) {
-				var i;
+				let i;
 				for (i=0; i < that.errors[id].length; i++) {
 					errStrs.push(that.errors[id][i].errorDescription);
 				}
@@ -271,9 +285,9 @@ var caUI = caUI || {};
 			templateValues.fieldNamePrefix = that.fieldNamePrefix; // always pass field name prefix to template
 
 			// replace values in template
-			var jElement = jQuery(that.container + ' textarea.' + (isNew ? that.templateClassName : that.initialValueTemplateClassName)).template(templateValues);
+			let jElement = jQuery(that.container + ' textarea.' + (isNew ? that.templateClassName : that.initialValueTemplateClassName)).template(templateValues);
 
-			if(options.useAnimation) {
+			if(that.useAnimation) {
 				jQuery(jElement).hide();
 				if ((that.addMode == 'prepend') && isNew) {	// addMode only applies to newly created bundles
 					jQuery(that.container + " ." + that.newItemListClassName).prepend(jElement);
@@ -298,15 +312,15 @@ var caUI = caUI || {};
 			}
 
 			// set defaults in SELECT elements
-			var selects = jQuery.makeArray(jQuery(that.container + " select"));
+			let selects = jQuery.makeArray(jQuery(that.container + " select"));
 
 			// assumes name of fields is:
 			// {fieldNamePrefix} + {fieldname} + {_} + {row id number}
-			var i;
-			var fieldRegex = new RegExp(that.fieldNamePrefix + "([A-Za-z0-9_\-]+)_([0-9]+)");
+			let i;
+			let fieldRegex = new RegExp(that.fieldNamePrefix + "([A-Za-z0-9_\-]+)_([0-9]+)");
 			for(i=0; i < selects.length; i++) {
-				var element_id = selects[i].id;
-				var info = element_id.match(fieldRegex);
+				let element_id = selects[i].id;
+				let info = element_id.match(fieldRegex);
 				if (info && info[2] && ((parseInt(info[2]) == id) || ('new_' + info[2] ==  id))) {
 					if (that.initialValues[id] && typeof(that.initialValues[id][info[1]]) == 'boolean') {
 						that.initialValues[id][info[1]] = (that.initialValues[id][info[1]]) ? '1' : '0';
@@ -320,17 +334,16 @@ var caUI = caUI || {};
 			}
 
 			// set defaults in CHECKBOX elements
-			var checkboxes = jQuery.makeArray(jQuery(that.container + " input[type=checkbox]"));
+			let checkboxes = jQuery.makeArray(jQuery(that.container + " input[type=checkbox]"));
 
 			// assumes name of fields is:
 			// {fieldNamePrefix} + {fieldname} + {_} + {row id number}
-			var i;
-			var fieldRegex = new RegExp(that.fieldNamePrefix + "([A-Za-z0-9_\-]+)_([0-9]+)");
+			fieldRegex = new RegExp(that.fieldNamePrefix + "([A-Za-z0-9_\-]+)_([0-9]+)");
 			for(i=0; i < checkboxes.length; i++) {
 			    if(jQuery(checkboxes[i]).data('exclude')) { continue; }
-				var element_id = checkboxes[i].id;
+				let element_id = checkboxes[i].id;
 
-				var info = element_id.match(fieldRegex);
+				let info = element_id.match(fieldRegex);
 				if (info && info[2] && (parseInt(info[2]) == id)) {
 					jQuery(that.container + " #" + element_id).prop('checked', false);
 					if (typeof(that.initialValues[id][info[1]]) == 'boolean') {
@@ -341,15 +354,14 @@ var caUI = caUI || {};
 			}
 
 			// set defaults in RADIO elements
-			var radios = jQuery.makeArray(jQuery(that.container + " input[type=radio]"));
+			let radios = jQuery.makeArray(jQuery(that.container + " input[type=radio]"));
 
 			// assumes name of fields is:
 			// {fieldNamePrefix} + {fieldname} + {_} + {row id number} + {_} + {checkbox sequence number - eg. 0, 1, 2}
-			var i;
-			var fieldRegex = new RegExp(that.fieldNamePrefix + "([A-Za-z0-9_\-]+)_([0-9]+)_([0-9]+)");
+			fieldRegex = new RegExp(that.fieldNamePrefix + "([A-Za-z0-9_\-]+)_([0-9]+)_([0-9]+)");
 			for(i=0; i < radios.length; i++) {
-				var element_id = radios[i].id;
-				var info = element_id.match(fieldRegex);
+				let element_id = radios[i].id;
+				let info = element_id.match(fieldRegex);
 				if (info && info[2] && (parseInt(info[2]) == id)) {
 					if (typeof(that.initialValues[id][info[1]]) == 'boolean') {
 						that.initialValues[id][info[1]] = (that.initialValues[id][info[1]]) ? '1' : '0';
@@ -361,7 +373,7 @@ var caUI = caUI || {};
 
 			// Do show/hide on creation of new item
 			if (isNew) {
-				var curCount = that.getCount();
+				let curCount = that.getCount();
 				if (that.showOnNewIDList.length > 0) {
 					jQuery.each(that.showOnNewIDList, function(i, show_id) {
 						jQuery(that.container + ' #' + show_id +'new_' + curCount).show(); }
@@ -395,12 +407,12 @@ var caUI = caUI || {};
 				if (!isReadonly && ('hasInterstitialUI' in initialValues) && (initialValues['hasInterstitialUI'] == true)) {
 					jQuery("#" +that.itemID + templateValues.n).find("." + that.interstitialButtonClassName).on('click', null,  {}, function(e) {
 						// Trigger interstitial edit panel
-						var u = options.interstitialUrl + "/relation_id/" + initialValues['relation_id'] + "/placement_id/" + that.placementID + "/n/" + templateValues.n + "/field_name_prefix/" + that.fieldNamePrefix;
+						let u = that.interstitialUrl + "/" + that.interstitialKey + "/" + (initialValues[that.interstitialKey] ?? null) + "/placement_id/" + that.placementID + "/n/" + templateValues.n + "/field_name_prefix/" + that.fieldNamePrefix;
 						if (that.interstitialPrimaryTable && that.interstitialPrimaryID) {	// table and id for record from which interstitial was launched
-							u +=  "/primary/" + that.interstitialPrimaryTable + "/primary_id/" + that.interstitialPrimaryID;
+							u +=  "/primary/" + that.interstitialPrimaryTable + "/primary_id/" + that.interstitialPrimaryID + "/key/" + that.interstitialKey;
 						}
-						options.interstitialPanel.showPanel(u);
-						jQuery('#' + options.interstitialPanel.getPanelContentID()).data('panel', options.interstitialPanel);
+						that.interstitialPanel.showPanel(u);
+						jQuery('#' + that.interstitialPanel.getPanelContentID()).data('panel', that.interstitialPanel);
 						e.preventDefault();
 						return false;
 					});
@@ -418,7 +430,7 @@ var caUI = caUI || {};
 			
 			// attach other buttons
 			if(that.buttons) {
-				for(var i in that.buttons) {
+				for(let i in that.buttons) {
 					let b = that.buttons[i];
 					jQuery("#" +that.itemID + templateValues.n).find("." + b['className']).on('click', null, {}, function(e) { b['callback'](templateValues.n); e.preventDefault(); return false; });
 				}
@@ -473,7 +485,7 @@ var caUI = caUI || {};
 		};
 		
 		that.refreshLocaleAvailability = function() {
-            var localeList = jQuery.makeArray(jQuery(this.container + " select." + this.localeClassName + ":first option"));
+            let localeList = jQuery.makeArray(jQuery(this.container + " select." + this.localeClassName + ":first option"));
             for(i=0; i < localeList.length; i++) {
                 jQuery(this.container + " select." + this.localeClassName + " option:not(:selected)[value=" + localeList[i].value + "]").attr('disabled', (jQuery(this.container + " select." + this.localeClassName + " option:selected[value=" + localeList[i].value + "]").length > 0));
             }
@@ -504,20 +516,20 @@ var caUI = caUI || {};
 			}
 
 			// colorize
-			if ((options.firstItemColor) || (options.lastItemColor) || (options.itemColor)) {
-				jQuery(this.container + " ." + options.listItemClassName).css('background-color', options.itemColor ? options.itemColor : '');
-				if (options.firstItemColor) {
-					jQuery(this.container + " ." + options.listItemClassName + ":first").css('background-color', '#' + options.firstItemColor);
+			if ((that.firstItemColor) || (that.lastItemColor) || (that.itemColor)) {
+				jQuery(this.container + " ." + that.listItemClassName).css('background-color', that.itemColor ? that.itemColor : '');
+				if (that.firstItemColor) {
+					jQuery(this.container + " ." + that.listItemClassName + ":first").css('background-color', '#' + that.firstItemColor);
 				}
-				if (options.lastItemColor) {
-					jQuery(this.container + " ." + options.listItemClassName + ":last").css('background-color', '#' + options.lastItemColor);
+				if (that.lastItemColor) {
+					jQuery(this.container + " ." + that.listItemClassName + ":last").css('background-color', '#' + that.lastItemColor);
 				}
-			} else if((options.oddColor) || (options.evenColor)) {
-				if (options.oddColor) {		// use :even because jQuery is zero-based (eg. 1, 3, 5... are "even" but we consider them "odd")
-					jQuery(this.container + " ." + options.listItemClassName + ":even").css('background-color', '#' + options.oddColor);
+			} else if((that.oddColor) || (that.evenColor)) {
+				if (that.oddColor) {		// use :even because jQuery is zero-based (eg. 1, 3, 5... are "even" but we consider them "odd")
+					jQuery(this.container + " ." + that.listItemClassName + ":even").css('background-color', '#' + that.oddColor);
 				}	
-				if (options.evenColor) {	// use :odd because jQuery is zero-based (eg. 0, 2, 4... are "odd" but we consider them "even")
-					jQuery(this.container + " ." + options.listItemClassName + ":odd").css('background-color', '#' + options.evenColor);
+				if (that.evenColor) {	// use :odd because jQuery is zero-based (eg. 0, 2, 4... are "odd" but we consider them "even")
+					jQuery(this.container + " ." + that.listItemClassName + ":odd").css('background-color', '#' + that.evenColor);
 				}	
 			}
 			
@@ -529,7 +541,7 @@ var caUI = caUI || {};
 		};
 
 		that.deleteFromBundle = function(id) {
-			if(options.useAnimation) {
+			if(that.useAnimation) {
 				jQuery('#' + this.itemID + id).slideUp(that.animationDuration, function() { this.remove(); });
 			} else {
 				jQuery('#' + this.itemID + id).remove();
@@ -575,7 +587,7 @@ var caUI = caUI || {};
 
 		that._updateSortOrderListIDFormElement = function() {
 			if (!that.listSortOrderID) { return false; }
-			var sort_list = [];
+			let sort_list = [];
 			jQuery.each(jQuery(that.container + " ." + that.itemListClassName + " ." + that.itemClassName), function(k, v) {
 				sort_list.push(jQuery(v).attr('id').replace(that.itemID, ''));
 			});
@@ -584,94 +596,113 @@ var caUI = caUI || {};
 			return true;
 		}
 
-		// create initial values
-		var initalizedCount = 0;
-		var initialValuesSorted = [];
-
-		// create an array so we can sort
-		if (!that.initialValueOrder || !that.initialValueOrder.length) {
-			jQuery.each(that.initialValues, function(k, v) {
-				that.initialValueOrder.push(k);
-			});
-		}
-		jQuery.each(that.initialValueOrder, function(i, k) {
-			var v = that.initialValues[k];
-			if(v) {
-				v['_key'] = k;
-				initialValuesSorted.push(v);
-			}
-		});
-
-		// perform configured sort
-		if (that.sortInitialValuesBy) {
-			initialValuesSorted.sort(function(a, b) {
-				return a[that.sortInitialValuesBy] - b[that.sortInitialValuesBy];
-			});
-		}
-
-		// create the bundles
-		jQuery.each(initialValuesSorted, function(k, v) {
-			that.addToBundle(v['_key'], v, true);
-			initalizedCount++;
-		});
-
-		that.loadFrom = initalizedCount;
-
-		// add 'forced' new values (typically used to pre-add new items to the bundle when, for example,
-		// in a previous action the add failed)
-		if (!that.forceNewValues) { that.forceNewValues = []; }
-		jQuery.each(that.forceNewValues, function(k, v) {
-			v['_handleAsNew'] = true;
-			that.addToBundle('new_' + k, v, true);
-			initalizedCount++;
-		});
-
-		// force creation of empty forms if needed
-		if ((initalizedCount <= that.minRepeats) && (that.minRepeats > 0)) {
-			// empty forms to meet minimum count
-			var i;
-			for(i = initalizedCount; i < that.minRepeats; i++) {
-				that.addToBundle(null, null, true);
-				initalizedCount++;
-			}
-		}
-		// empty form to show user on load
-		if (that.showEmptyFormsOnLoad > that.maxRepeats) { that.showEmptyFormsOnLoad = that.maxRepeats; }
-		if (that.showEmptyFormsOnLoad > 0) {
-			var j;
-			for(j=0; j < (that.showEmptyFormsOnLoad - initalizedCount); j++) {
-				that.addToBundle(null, null, true);
-			}
-		}
-
-		if (that.isSortable) {
-			var opts = {
-				opacity: 0.7,
-				revert: 0.2,
-				scroll: true,
-				forcePlaceholderSize: true,
-				update: function(event, ui) {
-					that._updateSortOrderListIDFormElement();
-					that.showUnsavedChangesWarning(true);
-				}
-			};
-
-			if (that.listSortItems) {
-				opts['items'] = that.listSortItems;
-			}
-			opts['stop'] = function(e, ui) {
-				that.updateBundleFormState();
-			};
-
-			jQuery(that.container + " .caItemList").sortable(opts);
-			that._updateSortOrderListIDFormElement();
-		}
-
-		that.updateBundleFormState();
-
-		if (that.partialLoadUrl && (that.totalValueCount > that.loadFrom)) {
-			that.addNextValuesLink();
-		}
+        that._init = function(newInitialValues=null, newInitialValuesOrder=null) {
+            this.counter = 0;
+            this.n = 0;
+            jQuery(that.container + " ." + that.itemListClassName + " ." + that.itemClassName).remove();
+            
+            if(newInitialValues) { 
+                that.initialValues = newInitialValues;
+                if(!newInitialValuesOrder) { that.initialValueOrder = []; }
+            }
+            if(newInitialValuesOrder) { 
+                that.initialValueOrder = newInitialValuesOrder;
+            }
+            
+		    // create initial values
+            let initalizedCount = 0;
+            let initialValuesSorted = [];
+    
+            // create an array so we can sort
+            if (!that.initialValueOrder || !that.initialValueOrder.length) {
+                jQuery.each(that.initialValues, function(k, v) {
+                    that.initialValueOrder.push(k);
+                });
+            }
+            jQuery.each(that.initialValueOrder, function(i, k) {
+                let v = that.initialValues[k];
+                if(v) {
+                    v['_key'] = k;
+                    initialValuesSorted.push(v);
+                }
+            });
+    
+            // perform configured sort
+            if (that.sortInitialValuesBy) {
+                initialValuesSorted.sort(function(a, b) {
+                    return a[that.sortInitialValuesBy] - b[that.sortInitialValuesBy];
+                });
+            }
+    
+            // create the bundles
+            jQuery.each(initialValuesSorted, function(k, v) {
+                that.addToBundle(v['_key'], v, true);
+                initalizedCount++;
+            });
+    
+            that.loadFrom = initalizedCount;
+    
+            // add 'forced' new values (typically used to pre-add new items to the bundle when, for example,
+            // in a previous action the add failed)
+            if (!that.forceNewValues) { that.forceNewValues = []; }
+            
+            const offset = that.getNIndex();
+            jQuery.each(that.forceNewValues, function(k, v) {
+                v['_handleAsNew'] = true;
+                that.addToBundle('new_' + (offset + k), v, true);
+                initalizedCount++;
+            });
+    
+            // force creation of empty forms if needed
+            if ((initalizedCount <= that.minRepeats) && (that.minRepeats > 0)) {
+                // empty forms to meet minimum count
+                let i;
+                for(i = initalizedCount; i < that.minRepeats; i++) {
+                    that.addToBundle('new_' + i, null, true);
+                    initalizedCount++;
+                }
+            }
+            // empty form to show user on load
+            if (that.showEmptyFormsOnLoad > that.maxRepeats) { that.showEmptyFormsOnLoad = that.maxRepeats; }
+            if (that.showEmptyFormsOnLoad > 0) {
+                let j;
+                for(j=0; j < (that.showEmptyFormsOnLoad - initalizedCount); j++) {
+                    that.addToBundle(null, null, true);
+                }
+            }
+    
+            if (that.isSortable) {
+                let opts = {
+                    opacity: 0.7,
+                    revert: 0.2,
+                    scroll: true,
+                    forcePlaceholderSize: true,
+                    update: function(event, ui) {
+                        that._updateSortOrderListIDFormElement();
+                        that.showUnsavedChangesWarning(true);
+                    }
+                };
+    
+                if (that.listSortItems) {
+                    opts['items'] = that.listSortItems;
+                }
+                opts['stop'] = function(e, ui) {
+                    that.updateBundleFormState();
+                };
+    
+                jQuery(that.container + " .caItemList").sortable(opts);
+                that._updateSortOrderListIDFormElement();
+            }
+    
+            that.updateBundleFormState();
+    
+            if (that.partialLoadUrl && (that.totalValueCount > that.loadFrom)) {
+                that.addNextValuesLink();
+            }
+        }
+        
+        
+        that._init();
 
 		return that;
 	};

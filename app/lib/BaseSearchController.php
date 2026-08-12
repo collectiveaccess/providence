@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -403,6 +403,8 @@ class BaseSearchController extends BaseRefineableSearchController {
 				} else {
 					$va_subtypes = method_exists($this, "_getSubTypeActionNav") ? $this->_getSubTypeActionNav($va_item) : [];
 				}
+				
+				if(!$va_item['is_enabled'] && !sizeof($va_subtypes)) { continue; }
 				$va_types[] = array(
 					'displayName' => $va_item['name_plural'],
 					'parameters' => array(
@@ -433,6 +435,7 @@ class BaseSearchController extends BaseRefineableSearchController {
 			if(is_array($limit_to_types) && sizeof($limit_to_types) && !in_array($va_type['idno'], $limit_to_types)) { continue; }
 			if(is_array($exclude_types) && sizeof($exclude_types) && in_array($va_type['idno'], $exclude_types)) { continue; }
 			
+			if(!$va_type['is_enabled'] && !$va_subsubtypes) { continue; }
 			$va_subtypes[$va_type['item_id']] = array(
 				'displayName' => $va_type['name_singular'],
 				'parameters' => array(

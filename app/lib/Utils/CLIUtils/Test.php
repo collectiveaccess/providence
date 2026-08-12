@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021-2025 Whirl-i-Gig
+ * Copyright 2021-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -93,7 +93,7 @@ trait CLIUtilsTest {
 	 *
 	 */
 	public static function test_outgoing_email_configurationHelp() {
-		return _t("In order to send email notifications to users an outgoing email server must be configured in the setup.php file (see https://docs.collectiveaccess.org/providence/user/setup/setup.php for details on configuring a server). Use this utility to test your configuration by sending a test email to the specified address.");
+		return _t("In order to send email notifications to users an outgoing email server must be configured in the setup.php file (see %1 for details on configuring a server). Use this utility to test your configuration by sending a test email to the specified address.", 'https://docs.collectiveaccess.org/providence/user/setup/setup.php');
 	}
 	# -------------------------------------------------------
 	/**

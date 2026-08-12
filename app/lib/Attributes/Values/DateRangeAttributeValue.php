@@ -498,8 +498,6 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 			$locale_settings = [];
 			$o_date_config = Configuration::load('datetime.conf');
 			if ((bool)$o_date_config->get('useDateRangePicker')) {
-				$vs_date_picker = "daterangepicker({'parentEl': parentEl, locale: localeSettings, datepickerOptions: { minDate: null, maxDate: null}});";
-				
 				$lang_settings = DateRangeAttributeValue::$o_tep->getLanguageSettings();
 				$range_conj = $lang_settings->get('rangeConjunctions');
 				$month_first = (bool)$lang_settings->get('monthComesFirstInDelimitedDate');
@@ -507,7 +505,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 				$dd = $date_delimiters[0];
 				
 				$locale_settings = [
-					"format" =>  $month_first ? "MM{$dd}DD{$dd}YYYY" : "DD{$dd}MM{$dd}YYYY",
+					"format" =>  $dp_format = ($month_first ? "MM{$dd}DD{$dd}YYYY" : "DD{$dd}MM{$dd}YYYY"),
 					"separator" =>  " {$range_conj[0]} ",
 					"applyLabel" =>  _t("Apply"),
 					"cancelLabel" =>  _t("Cancel"),
@@ -519,16 +517,29 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 					"monthNames" =>  DateRangeAttributeValue::$o_tep->getMonthList(),
 					"firstDay" =>  1
 				];
-			
+				
+				$date_picker = "jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}').daterangepicker({'autoUpdateInput': false, 'parentEl': parentEl, locale: localeSettings, datepickerOptions: { minDate: null, maxDate: null}});";
+				$date_picker .= "jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}').on('apply.daterangepicker', function(ev, picker) {
+					let s = picker.startDate.format('{$dp_format}');
+					let e = picker.endDate.format('{$dp_format}');
+					let r = '';
+      				if(s != e) {
+      					r= s + ' {$range_conj[0]} ' + e;
+      				} else {
+      					r = s;
+      				}
+      				jQuery(this).val(r);
+  				});";
 			} else {
-				$vs_date_picker = "datepicker({dateFormat: '{$vs_date_format}', constrainInput: false});";
+				$date_picker = "jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}').datepicker({dateFormat: '{$vs_date_format}', constrainInput: false});";
 			}
 
 			$vs_element .= "<script type='text/javascript'>
 				jQuery(document).ready(function() {
 					let parentEl = jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').parents('.caRelationQuickAddPanel');
 					let localeSettings = ".json_encode($locale_settings).";
-					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').{$vs_date_picker}});
+					{$date_picker}
+				});
 			</script>\n";
 
 			// load localization for datepicker. we can't use the asset manager here

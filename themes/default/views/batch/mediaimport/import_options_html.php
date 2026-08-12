@@ -615,7 +615,7 @@ print $vs_control_box = caFormControlBox(
 						<div class="caLabelList" >
 							<p class="bundleDisplayPlacementEditorHelpText">
 	<?php
-		print _t('List names of files you wish to skip during import below, one per line. You may use asterisks ("*") as wildcards to make partial matches. Values enclosed in "/" characters will be treated as <a href="http://www.pcre.org/pcre.txt" target="_new">Perl-compatible regular expressions</a>.');
+		print _t('List names of files you wish to skip during import below, one per line. You may use asterisks ("*") as wildcards to make partial matches. Values enclosed in "/" characters will be treated as <a href="%1" target="_new">Perl-compatible regular expressions</a>.', 'http://www.pcre.org/pcre.txt');
 	?>
 							</p>
 							<p>

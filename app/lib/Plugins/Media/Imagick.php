@@ -945,7 +945,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->handle->setImageFormat($this->magick_names[$mimetype]);
 			# set quality
 			if (isset($this->properties["quality"]) && ($this->properties["mimetype"] != "image/tiff")){ 
-				$this->handle->setCompressionQuality($this->properties["quality"]);
+				$this->handle->setCompressionQuality($this->properties["quality"] ?: 75);
 			}
 			
 			$background = caGetOption('background', $this->properties, "#FFFFFF");

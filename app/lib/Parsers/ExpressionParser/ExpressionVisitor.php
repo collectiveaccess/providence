@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2025 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -85,6 +85,7 @@ class ExpressionVisitor implements Visitor\Visit {
 			'current'		=> xcallable('caIsCurrentDate'),
 			'isvaliddate'	=> xcallable('caIsValidDate'),
 			'future'		=> xcallable('caDateEndsInFuture'),
+			'past'		=> xcallable('caDateStartsInPast'),
 			'wc'			=> xcallable('str_word_count'),
 			'length'		=> xcallable('strlen'),
 			'date'			=> xcallable('caDateToHistoricTimestamp'),

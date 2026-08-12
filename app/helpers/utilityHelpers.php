@@ -3080,11 +3080,32 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $ps_date_expression
 	 * @return bool
 	 */
-	function caDateEndsInFuture($ps_date_expression) {
-		if ($va_date = caDateToHistoricTimestamps($ps_date_expression)) {
-			$va_now = caDateToHistoricTimestamps(_t('now'));
+	function caDateEndsInFuture(?string $date_expression) {
+		if(!trim($date_expression)) { return false; }
+		if ($date = caDateToHistoricTimestamps($date_expression)) {
+			$now = caDateToHistoricTimestamps(_t('now'));
 			if (
-				($va_date['end'] >= $va_now['end'])
+				($date['end'] >= $now['end'])
+			) {
+				return true;
+			}
+		}
+		return false;
+	}
+	# ----------------------------------------
+	/**
+	 * Returns true if the date expression starts before the current date/time.
+	 * Only the start point of the expression is considered.
+	 *
+	 * @param string $date_expression
+	 * @return bool
+	 */
+	function caDateStartsInPast(?string $date_expression) {
+		if(!trim($date_expression)) { return false; }
+		if ($date = caDateToHistoricTimestamps($date_expression)) {
+			$now = caDateToHistoricTimestamps(_t('now'));
+			if (
+				($date['start'] <= $now['start'])
 			) {
 				return true;
 			}
@@ -5353,7 +5374,7 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 *
 	 */
-	 function caGetObjectCollectionHierarchyRelationshipTypes() {
+	function caGetObjectCollectionHierarchyRelationshipTypes() {
 	 	$config = Configuration::load();
 	 	
 	 	if($type = $config->get('ca_objects_x_collections_hierarchy_relationship_type')) {
@@ -5365,4 +5386,14 @@ function caFileIsIncludable($ps_file) {
 	 	}
 	 	return null;
 	 }
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetExcelCellFromSheet($sheet, mixed $coordinate) {
+			if (is_array($coordinate)) {
+				$coordinate = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($coordinate[0]) . $coordinate[1];
+			}
+			return $sheet->getCell($coordinate);
+		};
 	# ----------------------------------------
