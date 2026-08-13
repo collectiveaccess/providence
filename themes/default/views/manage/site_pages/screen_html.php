@@ -68,6 +68,7 @@ print $control_box;
 	print $control_box;
 ?>
 		<input type='hidden' name='page_id' value='<?= $page_id; ?>'/>
+		<input type='hidden' name='template_id' value='<?= $template_id; ?>'/>
 	</form>
 
 	<div class="editorBottomPadding"><!-- empty --></div>
