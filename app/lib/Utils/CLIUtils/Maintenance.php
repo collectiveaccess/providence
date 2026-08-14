@@ -2597,8 +2597,8 @@ trait CLIUtilsMaintenance {
 			$tables = preg_split('![,;]+!', $tables);
 		} else {
 			$tables = [
-				'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_loans', 'ca_movements',
-				'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items'
+				'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_loans', 'ca_occurrences', 'ca_collections', 'ca_tour_stops',
+				'ca_relationship_types', 'ca_data_exporter_items', 'ca_metadata_elements', 'ca_sets'
 			];
 		}
 		
@@ -2611,6 +2611,8 @@ trait CLIUtilsMaintenance {
 			$name_plural = caUcFirstUTF8Safe($t_table->getProperty('NAME_PLURAL'));
 			$idno_fld = $t_table->getProperty('ID_NUMBERING_ID_FIELD');
 			$hier_id_fld = $t_table->getProperty('HIERARCHY_ID_FLD');
+			
+			if(!$hier_id_fld) { continue; }
 			
 			print CLIProgressBar::start($qr->numHits(), _t('[%1]', $name_plural));
 			
