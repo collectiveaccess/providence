@@ -64,10 +64,10 @@ if ($this->request->user->canDoAction('is_administrator') || $this->request->use
 ?>
 <h3><?= _t('Your %1', $type_name_plural); ?>:
 <div><?php
-	if (sizeof($sets['mine']) == 1) {
+	if ($mine_count == 1) {
 		print _t("1 %1 is available", $type_name_singular);
 	} else {
-		print _t("%1 %2 are available", sizeof($sets['mine']), $type_name_plural);
+		print _t("%1 %2 are available", $mine_count, $type_name_plural);
 	}
 ?></div>
 </h3>
