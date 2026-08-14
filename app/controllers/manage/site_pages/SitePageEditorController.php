@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2023 Whirl-i-Gig
+ * Copyright 2016-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_LIB_DIR__."/BaseEditorController.php");
 
 class SitePageEditorController extends BaseEditorController {
@@ -38,16 +37,16 @@ class SitePageEditorController extends BaseEditorController {
 	/**
 	 *
 	 */
-	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-		parent::__construct($po_request, $po_response, $pa_view_paths);
+	public function __construct(&$request, &$response, $view_paths=null) {
+		parent::__construct($request, $response, $view_paths);
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
 	public function getMediaList() {
-		$pn_page_id = $this->request->getParameter('page_id', pInteger);
-		$t_page = new ca_site_pages($pn_page_id);
+		$page_id = $this->request->getParameter('page_id', pInteger);
+		$t_page = new ca_site_pages($page_id);
 		$this->view->setVar('media_list', $t_page->getPageMedia(['icon']));
 		
 		$this->render('media_list_html.php');
@@ -56,15 +55,16 @@ class SitePageEditorController extends BaseEditorController {
 	/**
 	 *
 	 */
-	protected function _initView($pa_options=null) {
+	protected function _initView($options=null) {
 		AssetLoadManager::register('bundleableEditor');
 		AssetLoadManager::register('sortableUI');
-		$va_init = parent::_initView($pa_options);
-		if (!$va_init[1]->getPrimaryKey()) {
-			$va_init[1]->set('user_id', $this->request->getUserID());
-			$va_init[1]->set('table_num', $this->request->getParameter('table_num', pInteger));
+		$init = parent::_initView($options);
+		if (!$init[1]->getPrimaryKey()) {
+			$init[1]->set('user_id', $this->request->getUserID());
+			$init[1]->set('table_num', $this->request->getParameter('table_num', pInteger));
+			$init[1]->set('template_id', $this->request->getParameter('template_id', pInteger));
 		}
-		return $va_init;
+		return $init;
 	}
 	# -------------------------------------------------------
 	# Sidebar info handler
@@ -72,8 +72,8 @@ class SitePageEditorController extends BaseEditorController {
 	/**
 	 *
 	 */
-	public function info($pa_parameters) {
-		parent::info($pa_parameters);
+	public function info($parameters) {
+		parent::info($parameters);
 		return $this->render('widget_site_page_info_html.php', true);
 	}
 	# -------------------------------------------------------
