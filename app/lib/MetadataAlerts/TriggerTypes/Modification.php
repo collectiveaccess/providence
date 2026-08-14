@@ -164,7 +164,7 @@ class Modification extends Base {
 		return [
 			'_preferred_labels' => _t('Preferred labels'),
 			'_nonpreferred_labels' => _t('Non-preferred labels'),
-			'_intrinsic_idno' => _t('Identifer (idno)')
+			'_intrinsic_idno' => _t('Identifier (idno)')
 		];
 	}
 }

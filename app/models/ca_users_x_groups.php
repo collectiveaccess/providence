@@ -37,8 +37,8 @@ require_once(__CA_LIB_DIR__.'/BaseRelationshipModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_users_x_groups'] = array(
- 	'NAME_SINGULAR' 	=> _t('user-group assocation'),
- 	'NAME_PLURAL' 		=> _t('user-group assocations'),
+ 	'NAME_SINGULAR' 	=> _t('user ⇔ group association'),
+ 	'NAME_PLURAL' 		=> _t('user ⇔ group associations'),
  	'FIELDS' 			=> array(
  		'relation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 

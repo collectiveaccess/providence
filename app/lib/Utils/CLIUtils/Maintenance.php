@@ -543,8 +543,8 @@ trait CLIUtilsMaintenance {
 	 */
 	public static function fix_permissionsParamList() {
 		return array(
-			"user|u=s" => _t("Set ownership of directories to specifed user. If not set, an attempt will be made to determine the name of the web server user automatically. If the web server user cannot be determined the current user will be used."),
-			"group|g=s" => _t("Set ownership of directories to specifed group. If not set, the current group will be used.")
+			"user|u=s" => _t("Set ownership of directories to specified user. If not set, an attempt will be made to determine the name of the web server user automatically. If the web server user cannot be determined the current user will be used."),
+			"group|g=s" => _t("Set ownership of directories to specified group. If not set, the current group will be used.")
 		);
 	}
 	# -------------------------------------------------------
@@ -1913,7 +1913,7 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function check_metadata_alertsHelp() {
-		return _t('This utility checks all periodic metadatadata alert triggers users have set up and, if they triggered, sends notifications to the recipients of these rules.');
+		return _t('This utility checks all periodic metadata alert triggers users have set up and, if they triggered, sends notifications to the recipients of these rules.');
 	}
 	
 	# -------------------------------------------------------

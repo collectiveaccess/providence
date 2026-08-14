@@ -66,7 +66,7 @@ BaseModel::$s_ca_models_definitions['ca_collections'] =  array(
 			'IS_NULL' => false, 
 			'DEFAULT' => '',
 			'LIST_CODE' => 'collection_types',
-			'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the collection. In CollectiveAccess every collection has a single "instrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.')
+			'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the collection. In CollectiveAccess every collection has a single "intrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.')
 		),
 		'idno' => array(
 			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 

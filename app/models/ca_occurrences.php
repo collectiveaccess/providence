@@ -64,7 +64,7 @@ BaseModel::$s_ca_models_definitions['ca_occurrences'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LIST_CODE' => 'occurrence_types',
-				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the occurrence. In CollectiveAccess every occurrence has a single "instrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.')
+				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the occurrence. In CollectiveAccess every occurrence has a single "intrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.')
 		),
 		'idno' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 

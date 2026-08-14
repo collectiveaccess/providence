@@ -260,7 +260,7 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'width' => 90, 'height' => 4,
 		'label' => _t('Current selection template'),
 		'validForRootOnly' => 1,
-		'description' => _t('Template formatting current selection text. You may use the following tags: ^current (the currently selected list item), ^parent (the parent of the currently selected list item), ^hierarchy (the full hierarchal path to the list item).')
+		'description' => _t('Template formatting current selection text. You may use the following tags: ^current (the currently selected list item), ^parent (the parent of the currently selected list item), ^hierarchy (the full hierarchical path to the list item).')
 	),
 	'minimizeExistingValues' => array(
 		'formatType' => FT_NUMBER,
