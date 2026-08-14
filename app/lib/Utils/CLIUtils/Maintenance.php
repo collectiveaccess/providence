@@ -2612,7 +2612,10 @@ trait CLIUtilsMaintenance {
 			$idno_fld = $t_table->getProperty('ID_NUMBERING_ID_FIELD');
 			$hier_id_fld = $t_table->getProperty('HIERARCHY_ID_FLD');
 			
-			if(!$hier_id_fld) { continue; }
+			if(!$hier_id_fld || !preg_match("!^hier_!", $hier_id_fld)) { 
+				CLIUtils::addError(_t("Skipping %1 because it does not use hierarchy ids", $table));
+				continue; 
+			}
 			
 			print CLIProgressBar::start($qr->numHits(), _t('[%1]', $name_plural));
 			
