@@ -179,7 +179,7 @@ class OAIPMHService extends BaseService {
 		$this->_listLimit = $vn_limit;
 		$this->_baseUrl = $this->config->get('site_host').$this->config->get('ca_url_root').'/service.php/OAI/'.$this->ops_provider;
 	
-		OaiIdentifier::initializeNamespace($this->opa_provider_info['identiferNamespace']);
+		OaiIdentifier::initializeNamespace($this->opa_provider_info['identifierNamespace']);
 	}
 	# -------------------------------------------------------
 	/**
