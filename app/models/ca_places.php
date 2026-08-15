@@ -67,7 +67,7 @@ BaseModel::$s_ca_models_definitions['ca_places'] = array(
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
 				'LIST_CODE' => 'place_types',
-				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the place. In CollectiveAccess every place has a single "instrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.')
+				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the place. In CollectiveAccess every place has a single "intrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.')
 		),
 		'source_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 

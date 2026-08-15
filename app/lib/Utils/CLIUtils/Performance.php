@@ -131,7 +131,7 @@ trait CLIUtilsPerformance {
 	 *
 	 */
 	public static function precache_simple_servicesHelp() {
-		return _t('Pre-cache responses for appropriately configurated simple services. Caching can dramatically improve performance for services providing infrequently changing data.');
+		return _t('Pre-cache responses for appropriately configured simple services. Caching can dramatically improve performance for services providing infrequently changing data.');
 	}
 	# -------------------------------------------------------
 	/**
