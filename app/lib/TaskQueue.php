@@ -301,7 +301,7 @@ class TaskQueue extends BaseObject {
 		}
 		
 		if (!sizeof($this->handler_plugin_dirs)) {
-			$this->log->logError(_t('[TaskQueu] Queue processing failed because no handler directories are configured; queue was halted'));
+			$this->log->logError(_t('[TaskQueue] Queue processing failed because no handler directories are configured; queue was halted'));
 			$this->postError(510, _t('No handler directories are configured!'), 'TaskQueue->processQueue()');
 			$this->unregisterProcess($proc_id);
 			return false;
