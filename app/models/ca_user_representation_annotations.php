@@ -63,7 +63,7 @@ BaseModel::$s_ca_models_definitions['ca_user_representation_annotations'] = arra
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
-				'LABEL' => 'Identifer', 'DESCRIPTION' => 'Unique identifier for annotation (optional).'
+				'LABEL' => 'Identifier', 'DESCRIPTION' => 'Unique identifier for annotation (optional).'
 		),
 		'user_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
