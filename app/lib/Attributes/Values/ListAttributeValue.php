@@ -276,7 +276,7 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'default' => 0,
 		'width' => 1, 'height' => 1,
 		'label' => _t('Defer loading of hierarchy browser?'),
-		'description' => _t('Check this option to defer loading of hierarachy browser for existing values using hierarchical render modes when not minimized until user clicks.')
+		'description' => _t('Check this option to defer loading of hierarchy browser for existing values using hierarchical render modes when not minimized until user clicks.')
 	),
 	'separateDisabledValues' => array(
 		'formatType' => FT_NUMBER,
