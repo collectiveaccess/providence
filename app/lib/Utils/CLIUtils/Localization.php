@@ -55,7 +55,7 @@ trait CLIUtilsLocalization {
 		$team = $opts->getOption('team');
 		$extracted_strings = [];
 		
-		$directories = [__CA_THEMES_DIR__."/default", __CA_THEMES_DIR__."/{$theme}", __CA_BASE_DIR__."/app/models", __CA_BASE_DIR__."/app/lib", __CA_BASE_DIR__."/app/helpers", __CA_BASE_DIR__."/app/conf", __CA_BASE_DIR__."/app/widgets", __CA_BASE_DIR__."/app/service", __CA_BASE_DIR__."/app/plugins", __CA_BASE_DIR__."/app/controllers", __CA_BASE_DIR__."/app/printTemplates", __CA_BASE_DIR__."/app/refineries"];
+		$directories = [__CA_THEMES_DIR__."/default", __CA_THEMES_DIR__."/{$theme}", __CA_BASE_DIR__."/app/models", __CA_BASE_DIR__."/app/lib", __CA_BASE_DIR__."/app/helpers", __CA_BASE_DIR__."/app/conf", __CA_BASE_DIR__."/app/widgets", __CA_BASE_DIR__."/app/service", __CA_BASE_DIR__."/app/plugins", __CA_BASE_DIR__."/app/controllers", __CA_BASE_DIR__."/app/printTemplates", __CA_BASE_DIR__."/app/refineries", __CA_BASE_DIR__."/install", __CA_BASE_DIR__."/support"];
 		
 		$file_count = 0;
 		foreach($directories as $d) {
