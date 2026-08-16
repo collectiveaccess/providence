@@ -5153,12 +5153,16 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $options Options include:
 	 *		convertOldStyleNamesOnly = only convert old style 'ca_attribute_' prefixed names. [Default is false]
 	 *		includeTablePrefix = Include table in returned value when converting new-style names .[Default is false]
+	 *		table = Table name to prefix old style names with when 'includeTablePrefix' is set. [Default is null]
 	 *
 	 * @return string
 	 */
 	function caConvertBundleNameToCode(string $name, ?array $options=null) : string {
 		if(substr($name, 0, 13) === 'ca_attribute_') {
-			return str_replace('ca_attribute_', '', $name);
+			$name = str_replace('ca_attribute_', '', $name);
+			if(($options['includeTablePrefix'] ?? false) && $options['table'] ?? false) {
+				return $options['table'].".{$name}";
+			}
 		}
 		if(!($options['convertOldStyleNamesOnly'] ?? false)) {
 			$tmp = explode('.', $name);

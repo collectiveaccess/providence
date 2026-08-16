@@ -543,8 +543,8 @@ trait CLIUtilsMaintenance {
 	 */
 	public static function fix_permissionsParamList() {
 		return array(
-			"user|u=s" => _t("Set ownership of directories to specifed user. If not set, an attempt will be made to determine the name of the web server user automatically. If the web server user cannot be determined the current user will be used."),
-			"group|g=s" => _t("Set ownership of directories to specifed group. If not set, the current group will be used.")
+			"user|u=s" => _t("Set ownership of directories to specified user. If not set, an attempt will be made to determine the name of the web server user automatically. If the web server user cannot be determined the current user will be used."),
+			"group|g=s" => _t("Set ownership of directories to specified group. If not set, the current group will be used.")
 		);
 	}
 	# -------------------------------------------------------
@@ -1913,7 +1913,7 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function check_metadata_alertsHelp() {
-		return _t('This utility checks all periodic metadatadata alert triggers users have set up and, if they triggered, sends notifications to the recipients of these rules.');
+		return _t('This utility checks all periodic metadata alert triggers users have set up and, if they triggered, sends notifications to the recipients of these rules.');
 	}
 	
 	# -------------------------------------------------------
@@ -2597,8 +2597,8 @@ trait CLIUtilsMaintenance {
 			$tables = preg_split('![,;]+!', $tables);
 		} else {
 			$tables = [
-				'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_loans', 'ca_movements',
-				'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items'
+				'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_loans', 'ca_occurrences', 'ca_collections', 'ca_tour_stops',
+				'ca_relationship_types', 'ca_data_exporter_items', 'ca_metadata_elements', 'ca_sets'
 			];
 		}
 		
@@ -2611,6 +2611,11 @@ trait CLIUtilsMaintenance {
 			$name_plural = caUcFirstUTF8Safe($t_table->getProperty('NAME_PLURAL'));
 			$idno_fld = $t_table->getProperty('ID_NUMBERING_ID_FIELD');
 			$hier_id_fld = $t_table->getProperty('HIERARCHY_ID_FLD');
+			
+			if(!$hier_id_fld || !preg_match("!^hier_!", $hier_id_fld)) { 
+				CLIUtils::addError(_t("Skipping %1 because it does not use hierarchy ids", $table));
+				continue; 
+			}
 			
 			print CLIProgressBar::start($qr->numHits(), _t('[%1]', $name_plural));
 			

@@ -2135,10 +2135,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	/**
 	 *
 	 */
-	private function _arrayFromDbResult(DbResult $qr_res) {
+	private function _arrayFromDbResult(DbResult $qr_res, ?array $options=null) {
 		$vals = $qr_res->getAllFieldValues(['index_id', 'row_id', 'boost']);
 	 	if(!isset($vals['row_id'])) { return []; }
 	 	$hits = [];
+	 	
+	 	$phrase_window = caGetOption('phraseWindow', $options, null);
+	 	
 	 	foreach($vals['row_id'] as $i => $row_id) {
 	 		if(!isset($hits[$row_id])) { 
 	 			$hits[$row_id]['boost'] = 0; 
@@ -2153,7 +2156,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		}
 	 		
 	 		if(($this->get_result_desc_data  && sizeof($hits[$row_id]['index_ids']) < $max_index_count)) {
-	 			$hits[$row_id]['index_ids'][] = $vals['index_id'][$i];
+	 			if($phrase_window > 0) {
+	 				for($idx=($vals['index_id'][$i] - ($phrase_window - 1)); $idx <= $vals['index_id'][$i]; $idx++) {
+	 					$hits[$row_id]['index_ids'][] = $idx;
+	 				}
+	 			} else {
+	 				$hits[$row_id]['index_ids'][] = $vals['index_id'][$i];
+	 			}
 	 		}
 	 	}
 	 	return $hits;

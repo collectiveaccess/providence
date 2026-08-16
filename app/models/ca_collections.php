@@ -66,7 +66,7 @@ BaseModel::$s_ca_models_definitions['ca_collections'] =  array(
 			'IS_NULL' => false, 
 			'DEFAULT' => '',
 			'LIST_CODE' => 'collection_types',
-			'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the collection. In CollectiveAccess every collection has a single "instrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.')
+			'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the collection. In CollectiveAccess every collection has a single "intrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.')
 		),
 		'idno' => array(
 			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -564,7 +564,7 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
  			$t_obj = new ca_objects();
  			$va_objects = [];
  			
- 			if ($this->getAppConfig()->get('ca_collections_hierarchy_summary_show_full_object_hierarachy')) {
+ 			if ($this->getAppConfig()->get('ca_collections_hierarchy_summary_show_full_object_hierarchy')) {
                 foreach($va_objects_by_collection as $vn_collection_id => $va_object_ids) {
                     foreach($va_object_ids as $vn_object_id) {
                         $va_objects[$vn_collection_id][$vn_object_id] = $t_obj->hierarchyWithTemplate($ps_object_template, ['object_id' => $vn_object_id, 'returnAsArray' => true, 'sort' => caGetHierarchyBrowserSortValues('ca_objects', new ca_objects($vn_object_id)), 'sortDirection' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_direction')]);
