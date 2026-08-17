@@ -58,6 +58,8 @@ trait CLIUtilsLocalization {
 		$directories = [__CA_THEMES_DIR__."/default", __CA_THEMES_DIR__."/{$theme}", __CA_BASE_DIR__."/app/models", __CA_BASE_DIR__."/app/lib", __CA_BASE_DIR__."/app/helpers", __CA_BASE_DIR__."/app/conf", __CA_BASE_DIR__."/app/widgets", __CA_BASE_DIR__."/app/service", __CA_BASE_DIR__."/app/plugins", __CA_BASE_DIR__."/app/controllers", __CA_BASE_DIR__."/app/printTemplates", __CA_BASE_DIR__."/app/refineries", __CA_BASE_DIR__."/install", __CA_BASE_DIR__."/support"];
 		
 		$file_count = 0;
+		
+		$locs = [];
 		foreach($directories as $d) {
 			$files = caGetDirectoryContentsAsList($d);
 			print CLIProgressBar::start(sizeof($files), _t('Processing %1', pathinfo($d, PATHINFO_BASENAME)));
@@ -67,6 +69,7 @@ trait CLIUtilsLocalization {
 				print CLIProgressBar::next();
 				
 				if(!file_exists($f)) { continue; }
+				if(preg_match("!/local/!", $f)) { continue; }
 				$ext = strtolower(pathinfo($f, PATHINFO_EXTENSION));
 				if(!in_array($ext, ['php', 'conf'])) { continue; }
 				$is_conf = ($ext === 'conf');
@@ -74,26 +77,39 @@ trait CLIUtilsLocalization {
 				$file_count++;
 				$r = fopen($f, "r");
 
+				$ln = 1;
 				while($line = fgets($r)) {
 					if($is_conf) {
-						$regexes = ["!_\([\"\']{0,1}([^\"\)]+?)[\"\']{0,1}[,\)]+!s"];	// _() construction used in config files
+						$regexes = [
+							"!_\(([^\"\']{1}[^\)]+?[^\"\']{1})\)!s",	// _() construction used in config files
+							"!_\([\']{1}(.+?)[\']{1}\)!s",				// _('') construction used in config files
+							"!_\([\"]{1}(.+?)[\"]{1}\)!s"				// _("") construction used in config files
+						];	
 					} else {
 						$regexes = [
-							"!_t\([\"]{1}([^\"]+?)[\"]{1}[,\)]+!s",				// _t("") construction used in code
-							"!_t\([\']{1}([^\']+?)[\']{1}[,\)]+!s",				// _t('') construction used in code
-							"!<t>(.*?)</t>!s"									// <t>...</t> construction used in templates and view files
+							"!_t\([\']{1}([^\']+?)[\']{1}[\)]+!s",		// _t('') construction used in code
+							"!_t\([\"]{1}([^\"]+?)[\"]{1}[\)]+!s",		// _t("") construction used in code
+							"!<t>(.*?)</t>!s"							// <t>...</t> construction used in templates and view files
 						];
 					}
 					
 					foreach($regexes as $rx) {
 						$strings = preg_match_all($rx, $line, $m);
-	
-						$extracted_strings = array_merge($extracted_strings, array_map(function($x) { 
+						$mstrings = array_unique(array_map(function($x) { 
 							return str_replace('"', "\\\"", $x);
 						}, array_filter($m[1], function($v) {
 							return preg_match("![A-Za-z0-9]+!s", $v);
 						})));
+						
+						$extracted_strings = array_merge($extracted_strings, $mstrings);
 					}
+					$extracted_strings = array_unique($extracted_strings);
+					foreach($extracted_strings as $s) {
+						$fp = str_replace(__CA_BASE_DIR__.((substr(__CA_BASE_DIR__, -1, 1) !== '/') ? '/' : ''), '', $f);
+						if(!isset($locs[$s])) { $locs[$s] = "{$fp}:{$ln}"; }
+					}
+					
+					$ln++;
 				}
 			}
 			print CLIProgressBar::finish();
@@ -126,6 +142,9 @@ trait CLIUtilsLocalization {
 		fputs($out, "\n");
 
 		foreach($extracted_strings as $s) {
+			if(isset($locs[$s])) { 
+				fputs($out,"# {$locs[$s]}\n");
+			}
 			fputs($out, "msgid \"{$s}\"\n");
 			fputs($out, "msgstr \"\"\n\n");
 		}
