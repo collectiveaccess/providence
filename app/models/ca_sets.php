@@ -860,12 +860,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$va_sets = array();
 			$va_type_name_cache = array();
 
-			$qrx = caMakeSearchResult('ca_sets', $qr_res->getAllFieldValues('set_id'));
-			$creation_times = [];
-			while($qrx->nextHit()) {
-				$creation_times[$qrx->get('ca_sets.set_id')] = $qrx->get('ca_sets.created.timestamp');
-			}
-			$qr_res->seek(0);
 			$t_list = new ca_lists();
 			
 			
@@ -883,8 +877,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$extras = [
 					'item_count' => (int)($va_item_counts[$set_id] ?? 0), 
 					'set_content_type' => $vs_set_type, 
-					'set_type' => $vs_type, 
-					'created' => $creation_times[$set_id] ?? null
+					'set_type' => $vs_type
 				];
 				
 				if ($include_items) {

@@ -136,9 +136,7 @@ if (!$this->request->isAjax()) {
 				<th class="<?= (($current_sort == "access") ? "list-header-sorted-".$current_sort_direction : ""); ?> list-header-nolink">
 					<?= caNavLink($this->request, _t('Access'), '', 'manage', 'Set', 'ListSets', array('sort' => 'access', 'direction' => ((($current_sort == "access") && ($current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
 				</th>
-				<th class="<?= (($current_sort == "created") ? "list-header-sorted-".$current_sort_direction : ""); ?> list-header-nolink">
-					<?= caNavLink($this->request, _t('Created'), '', 'manage', 'Set', 'ListSets', array('sort' => 'created', 'direction' => ((($current_sort == "created") && ($current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
-				</th>
+				
 				<th class="{sorter: false} list-header-nosort listtableEdit"> </th>
 			</tr>
 		</thead>
@@ -186,9 +184,6 @@ if (!$this->request->isAjax()) {
 				</td>
 				<td>
 					<div><?= $t_set->getChoiceListValue('access', $set['access']); ?></div>
-				</td>
-				<td>
-					<div><?= caGetLocalizedDate($set['created'], ['timeOmit' => true]); ?></div>
 				</td>
 				<td class="listtableEditDelete">
 					<?= caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/sets', 'SetEditor', 'Edit', array('set_id' => $set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
