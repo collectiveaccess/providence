@@ -4871,6 +4871,7 @@ class BrowseEngine extends BaseFindEngine {
 							$display_config = $this->getTableEntryFromMap($va_facet_info, 'display', $current_table_name);
 							$vs_template = isset($display_config['template']) ? $display_config['template'] : "^{$current_table_name}.preferred_labels";
 
+							unset($va_config['template']);
 							while($qr_res->nextHit()) {
 								$row_id = $qr_res->getPrimaryKey();
 								$type_id = $qr_res->get("{$current_table_name}.type_id");
