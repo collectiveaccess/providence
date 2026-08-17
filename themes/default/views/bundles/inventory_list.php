@@ -197,5 +197,7 @@ if(!$dont_show_delete) {
 			sorts: <?= json_encode($this->getVar('sorts')); ?>,
 			scrollPosition: <?= (int)$scroll_position; ?>
 		});
+		
+		jQuery('#<?= $id_prefix; ?>inventoryItemAutocompleter').focus();
 	});
 </script>
