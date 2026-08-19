@@ -1062,12 +1062,12 @@ trait CLIUtilsMaintenance {
 		if (in_array($cache, ['all', 'app'])) {
 			CLIUtils::addMessage(_t('Clearing application caches...'));
 			if (is_writable($config->get('taskqueue_tmp_directory'))) {
-				$tempdir_info = stat($config->get('taskqueue_tmp_directory'));
+			#	$tempdir_info = stat($config->get('taskqueue_tmp_directory'));
 				caRemoveDirectory($config->get('taskqueue_tmp_directory'), false);
-				mkdir($config->get('purify_serializer_path'), $tempdir_info['mode']);
-				chown($config->get('purify_serializer_path'), $tempdir_info['uid']);
-				chgrp($config->get('purify_serializer_path'), $tempdir_info['gid']);
-				clearstatcache();
+			#	mkdir($config->get('purify_serializer_path'), $tempdir_info['mode']);
+			#	chown($config->get('purify_serializer_path'), $tempdir_info['uid']);
+			#	chgrp($config->get('purify_serializer_path'), $tempdir_info['gid']);
+			#	clearstatcache();
 			} else {
 				CLIUtils::addError(_t('Skipping clearing of application cache because it is not writable'));
 			}
