@@ -85,6 +85,13 @@ class BrowseEngine extends BaseFindEngine {
 	private $opb_dont_expand_source_restrictions = false;
 
 	/**
+	 * @var Search engine plugin instance used to delegate facet content computation, if the
+	 *		configured engine supports it (implements getBrowseFacetContent()); false when the
+	 *		engine does not support delegation; null when not yet resolved.
+	 */
+	static private $s_facet_engine = null;
+
+	/**
 	 * @var Instance of Db database client
 	 */
 	protected $opo_db;
@@ -3388,6 +3395,25 @@ class BrowseEngine extends BaseFindEngine {
 	 *		checkAvailabilityOnly = if true then content is not actually fetch - only the availablility of content is verified
 	 *		user_id = If set item level access control is performed relative to specified user_id, otherwise defaults to logged in user
 	 */
+	/**
+	 * Return the configured search engine plugin when it can compute browse facet content
+	 * (implements getBrowseFacetContent()), null otherwise. Resolved once per request.
+	 *
+	 * @return WLPlugSearchEngine|null
+	 */
+	static private function getFacetEngine() {
+		if (BrowseEngine::$s_facet_engine === null) {
+			require_once(__CA_LIB_DIR__.'/Search/SearchBase.php');
+			try {
+				$o_engine = SearchBase::newSearchEngine();
+			} catch (Exception $e) {
+				$o_engine = null;
+			}
+			BrowseEngine::$s_facet_engine = ($o_engine && method_exists($o_engine, 'getBrowseFacetContent')) ? $o_engine : false;
+		}
+		return BrowseEngine::$s_facet_engine ? BrowseEngine::$s_facet_engine : null;
+	}
+	# ------------------------------------------------------
 	public function getFacetContent($ps_facet_name, $pa_options=null) {
 		global $AUTH_CURRENT_USER_ID;
 		$t_subject = $this->getSubjectInstance();
@@ -3471,6 +3497,16 @@ class BrowseEngine extends BaseFindEngine {
 
 				if (!$vb_is_ok_to_browse) { return array(); }
 			}
+		}
+
+		// Delegate facet computation to the configured search engine when it supports it
+		// (eg. Meilisearch computes facet counts with facetDistribution). The delegate returns
+		// null to decline — untranslatable facet type, option or browse state — in which case
+		// the SQL-based computation below runs unchanged. returnFullFacet is not delegated:
+		// the delegate always applies current browse criteria.
+		if (($o_facet_engine = BrowseEngine::getFacetEngine()) && !caGetOption('returnFullFacet', $pa_options, false)) {
+			$vm_delegated_facet = $o_facet_engine->getBrowseFacetContent($this, $ps_facet_name, $va_facet_info, $pa_options);
+			if (!is_null($vm_delegated_facet)) { return $vm_delegated_facet; }
 		}
 
 		// Values to exclude from list attributes and authorities; can be idnos or ids
