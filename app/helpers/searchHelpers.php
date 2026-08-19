@@ -2557,7 +2557,15 @@ function caIsSearchStem(string $value) : bool {
 function caTokenizeString(?string $value) : array {
 	$search_engine_class = SearchBase::searchEngineClassName();
 	
-	if(method_exists('SearchBase', $search_engine_class)) {
+	// method_exists('SearchBase', $search_engine_class) asked whether class SearchBase has a
+	// *method* named e.g. "WLPlugSearchEngineMeilisearch" — false by construction, so every
+	// plugin silently fell back to the SqlSearch2 tokenizer, including plugins that do define
+	// their own. The plugin class is not autoloadable, so its file must be loaded before the
+	// check can succeed.
+	$plugin_file = __CA_LIB_DIR__.'/Plugins/SearchEngine/'.SearchBase::searchEngineName().'.php';
+	if(file_exists($plugin_file)) { require_once($plugin_file); }
+
+	if(method_exists($search_engine_class, 'tokenize')) {
 		return $search_engine_class::tokenize($value);
 	} else {	// Any plugin that doesn't define its own tokenizer (like ElasticSearch) uses the SqlSearch2 tokenizer by default
 		require_once(__CA_LIB_DIR__.'/Plugins/SearchEngine/SqlSearch2.php');
