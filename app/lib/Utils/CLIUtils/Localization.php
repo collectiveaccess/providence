@@ -93,6 +93,7 @@ trait CLIUtilsLocalization {
 						];
 					}
 					
+					$estrings = [];
 					foreach($regexes as $rx) {
 						$strings = preg_match_all($rx, $line, $m);
 						$mstrings = array_unique(array_map(function($x) { 
@@ -101,12 +102,12 @@ trait CLIUtilsLocalization {
 							return preg_match("![A-Za-z0-9]+!s", $v);
 						})));
 						
-						$extracted_strings = array_merge($extracted_strings, $mstrings);
+						$estrings = array_merge($estrings, $mstrings);
 					}
-					$extracted_strings = array_unique($extracted_strings);
-					foreach($extracted_strings as $s) {
+					$extracted_strings = array_unique(array_merge($extracted_strings, $estrings));
+					foreach($estrings as $s) {
 						$fp = str_replace(__CA_BASE_DIR__.((substr(__CA_BASE_DIR__, -1, 1) !== '/') ? '/' : ''), '', $f);
-						if(!isset($locs[$s])) { $locs[$s] = "{$fp}:{$ln}"; }
+						$locs[$s][] = "{$fp}:{$ln}"; 
 					}
 					
 					$ln++;
@@ -142,8 +143,10 @@ trait CLIUtilsLocalization {
 		fputs($out, "\n");
 
 		foreach($extracted_strings as $s) {
-			if(isset($locs[$s])) { 
-				fputs($out,"# {$locs[$s]}\n");
+			if(is_array($locs[$s])) { 
+				foreach(($locs[$s]) as $l) {
+					fputs($out,"#: {$l}\n");
+				}
 			}
 			fputs($out, "msgid \"{$s}\"\n");
 			fputs($out, "msgstr \"\"\n\n");
