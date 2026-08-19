@@ -3046,7 +3046,7 @@ function caGetRelationDisplayString($po_request, $ps_table, $pa_attributes=null,
 			return "{$vs_reltype_disp} {$vs_display}";
 			break;
 		case 'none':
-			return "{$vs_display}";
+			return "{$vs_display} <input type='hidden' name='{$ps_prefix}_type_id{n}' id='{$ps_prefix}_type_id{n}' value='{type_id}'/>";
 			break;
 		default:
 		case 'right':
