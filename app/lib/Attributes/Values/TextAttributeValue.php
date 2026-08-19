@@ -456,6 +456,12 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									height: '{$height_w_suffix}',
 									minHeight: '50px',
 									maxHeight: '1500px'
+								},
+								htmlSupport: {
+									allow: [
+										{ name: 'details' },
+										{ name: 'summary' }
+									]
 								}
 							}).then(editor => {
 								// Add current instance to list of initialized editors
