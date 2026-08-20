@@ -454,7 +454,7 @@ class Installer {
 	    // (Eg. those for hideIfSelected_*)
 	    if (sizeof($this->metadata_element_deferred_settings_processing)) {
 	        foreach($this->metadata_element_deferred_settings_processing as $element_code => $settings) {
-	            if (!($t_element = \ca_metadata_elements::getInstance($element_code))) { continue; }
+	            if (!($t_element = \ca_metadata_elements::getInstance($element_code, ['noCache' => true]))) { continue; }
 	            $available_settings = $t_element->getAvailableSettings();
 	            foreach($settings as $setting_name => $setting_values) {
 	                if (!isset($available_settings[$setting_name])) { continue; }
@@ -823,6 +823,8 @@ class Installer {
 				}
 			}
 		}
+		\MemoryCache::flush('ElementInstances');
+		\CompositeCache::flush('metadataElements');
 		return true;
 	}
 	# --------------------------------------------------
@@ -835,7 +837,7 @@ class Installer {
 		$this->logStatus(_t('Processing metadata element with code %1', $element_code));
 
 		// try to load element by code for potential update. codes are unique, globally
-		if(!($t_md_element = \ca_metadata_elements::getInstance($element_code))) {
+		if(!($t_md_element = \ca_metadata_elements::getInstance($element_code, ['noCache' => true]))) {
 			$t_md_element = new \ca_metadata_elements();
 		}
 
