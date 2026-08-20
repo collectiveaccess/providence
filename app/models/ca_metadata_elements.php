@@ -295,6 +295,13 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	public function insert($pa_options=null) {
+		$reserved_codes = ca_metadata_elements::reservedElementCodes();
+		$element_code = $this->get('element_code');
+		if(in_array($element_code, $reserved_codes, true)) {
+			$this->postError(1995, _t('The element code %1 conflicts with a built-in field. Please use a different code.', $element_code), 'ca_metadata_elements->insert()');
+			return false;
+		}
+		
 		$this->set('settings', $this->getSettings());
 		if ($vn_rc =  parent::insert($pa_options)) {
 			if(!caGetOption('noFlush', $pa_options, false)) { $this->flushCacheForElement(); }
@@ -304,6 +311,13 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	public function update($pa_options=null) {
+		$reserved_codes = ca_metadata_elements::reservedElementCodes();
+		$element_code = $this->get('element_code');
+		if(in_array($element_code, $reserved_codes, true)) {
+			$this->postError(1995, _t('The element code %1 conflicts with a built-in field. Please use a different code.', $element_code), 'ca_metadata_elements->update()');
+			return false;
+		}
+		
 		$this->set('settings', $this->getSettings());
 		if(!caGetOption('noFlush', $pa_options, false)) { $this->flushCacheForElement(); }
 		return parent::update($pa_options);
@@ -1881,6 +1895,47 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				$this->opo_app_vars->setVar($vs_var,0);
 				$this->opo_app_vars->save();
 			}
+		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return reserved codes that may not be used for metadata elements
+	 *
+	 * @param string $table Limit reserved codes to those for a specific table [Default is null]
+	 *
+	 * @return array List of reserved codes, or null if no codes are defined for a specified table
+	 */
+	public static function reservedElementCodes(?string $table=null, ?array $options=null) : ?array {
+		$no_cache = caGetOption('noCache', $options, false);
+		if(!$no_cache) {
+			if($table) {
+				if(CompositeCache::contains('resolved_element_codes_by_table', 'reservedElementCodes')) {
+					$reserved_codes_by_table = CompositeCache::fetch('resolved_element_codes_by_table', 'reservedElementCodes');
+					return $reserved_codes_by_table[$table] ?? null;
+				}
+			} elseif(CompositeCache::contains('resolved_element_codes', 'reservedElementCodes')) {
+				return CompositeCache::fetch('resolved_element_codes', 'reservedElementCodes');
+			}
+		}
+		$reserved_codes = $reserved_codes_by_table = [];
+		$tables = ['ca_objects', 'ca_object_lots', 'ca_entities', 'ca_occurrences', 'ca_places', 'ca_collections', 'ca_loans', 'ca_movements', 'ca_list_items', 'ca_lists', 'ca_storage_locations', 'ca_object_representations', 'ca_tours', 'ca_tour_stops']; //Datamodel::getTableNames();
+		foreach($tables as $table) {
+			if(!($t_instance = Datamodel::getInstance($table, true))) { continue; }
+			
+			$fields = $t_instance->getFields();
+			foreach($fields as $f) {
+				$reserved_codes[] = $f;
+				$reserved_codes_by_table[$table][] = $f;	
+			}
+		}
+		$reserved_codes = array_unique($reserved_codes);
+		
+		CompositeCache::save('resolved_element_codes', $reserved_codes, 'reservedElementCodes');
+		CompositeCache::save('resolved_element_codes_by_table', $reserved_codes_by_table, 'reservedElementCodes');
+		if($table) {
+			return $reserved_codes_by_table[$table] ?? null;
+		} else {
+			return $reserved_codes;
 		}
 	}
 	# ------------------------------------------------------
