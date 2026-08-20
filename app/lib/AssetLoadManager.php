@@ -265,8 +265,8 @@ class AssetLoadManager {
 		$vs_theme_directory_path = $po_request->getThemeDirectoryPath();
 		$vs_default_theme_directory_path = $po_request->getDefaultThemeDirectoryPath();
 		
-		if($suffix = Configuration::load('assets.conf')->get('asset_suffix')) {
-			$suffix = "?rev=".urlencode($suffix);
+		if($asset_suffix = Configuration::load('assets.conf')->get('asset_suffix')) {
+			$asset_suffix = "?rev=".urlencode($suffix);
 		}
 		
 		if (!$g_asset_config) { AssetLoadManager::init(); }
@@ -282,6 +282,12 @@ class AssetLoadManager {
 							$va_tmp = explode(".", $vs_lib);
 							array_splice($va_tmp, -1, 0, array('min'));
 							$vs_lib = join('.', $va_tmp);
+						}
+						
+						$suffix = $asset_suffix;
+						if(preg_match("!(\?[A-Za-z0-9_\-\.\=]+)$!", $vs_lib, $m)) {
+							$suffix = $m[1];
+							$vs_lib = preg_replace("!".preg_quote($suffix, '!')."$!", "", $vs_lib);
 						}
 					
 						if (substr($vs_lib, 0, 5) === '_css/') {							
@@ -319,6 +325,7 @@ class AssetLoadManager {
 						} else {
 							$vs_url = "{$vs_base_url_path}/assets/{$vs_lib}";
 						}
+						
 						if (preg_match('!\.css$!', $vs_lib)) {
 							$css_urls[] = $vs_url;
 							if(!$for_ajax) {
