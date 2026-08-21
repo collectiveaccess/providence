@@ -496,7 +496,7 @@ abstract class Base {
 						$this->getModelInstance()->set($vs_field, $t_rel_item->getPrimaryKey());
 						continue;
 					}
-					throw new IrrelevantLogEntry(_t("row_id guid value '%1' is not defined on this system for %3: %4", $vs_field, $va_snapshot['row_guid'], $t_rel_item->tableName(), print_R($va_snapshot, true)));
+					throw new IrrelevantLogEntry(_t("%1 guid value '%2' is not defined on this system for %3: %4", $vs_field, $va_snapshot['row_guid'], $t_rel_item->tableName(), print_R($va_snapshot, true)));
 				}
 				
 				// handle many-to-ones relationships (Eg. ca_set_items.set_id => ca_sets.set_id)
