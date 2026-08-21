@@ -220,7 +220,7 @@ class CurrencyAttributeValue extends AttributeValue implements IAttributeValue {
 			if(!in_array($cur_spec, ['$', "£", "¥", "€"])) { 
 				$cur_spec .= ' ';
 			}
-			return $cur_spac.$this->opn_value;
+			return $cur_spec.$this->opn_value;
 		}
 		
 		$o_locale = $_locale ? $_locale : new Zend_Locale(__CA_DEFAULT_LOCALE__);
@@ -241,7 +241,7 @@ class CurrencyAttributeValue extends AttributeValue implements IAttributeValue {
 		if(substr($vs_decimal_with_placeholder,0,2)=="¤") { // '¤' has length 2
 			$vs_decimal_with_placeholder = preg_replace("!¤[^\d]*!u", ($cur_spec_add_space ? '% ' : '%'), $vs_decimal_with_placeholder);
 		} elseif(substr($vs_decimal_with_placeholder, -2)=="¤") { // placeholder at the end
-			$vs_decimal_with_placeholder = preg_replace("![^\d\,\.]!", "", $vs_decimal_with_placeholder).($cur_spec_add_space ? ' %' : '%')."%";
+			$vs_decimal_with_placeholder = preg_replace("![^\d\,\.]!", "", $vs_decimal_with_placeholder).($cur_spec_add_space ? ' %' : '%');
 		}
 
 		// insert currency which is not locale-dependent in our case

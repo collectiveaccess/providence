@@ -73,13 +73,13 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	}
 	public function hookInsertItem(&$pa_params) {
 		if($this->opo_plugin_config->get('enabled') && !caGetOption('for_duplication', $pa_params, false)) {
-			$this->prepopulateFields($pa_params, ['hook' => 'insertItem', 'use' => 'save']);
+			$this->prepopulateFields($pa_params, ['hook' => 'insertItem', 'use' => 'insert']);
 		}
 		return $pa_params;
 	}
 	public function hookUpdateItem(&$pa_params) {
 		if($this->opo_plugin_config->get('enabled') && !caGetOption('for_duplication', $pa_params, false)) {
-			$this->prepopulateFields($pa_params, ['hook' => 'updateItem', 'use' => 'save']);
+			$this->prepopulateFields($pa_params, ['hook' => 'updateItem', 'use' => 'update']);
 		}
 		return $pa_params;
 	}
@@ -166,6 +166,8 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		if($this->used_for["{$id}::{$use}"] ?? false) { return null; }	// already ran
 		$this->used_for["{$id}::{$use}"] = true;
 		
+		$default_prepop_on_insert  = (bool)$this->opo_plugin_config->get('prepopulate_fields_on_insert');
+		$default_prepop_on_update  = (bool)$this->opo_plugin_config->get('prepopulate_fields_on_update');
 		$default_prepop_on_save  = (bool)$this->opo_plugin_config->get('prepopulate_fields_on_save');
 		$default_prepop_on_edit  = (bool)$this->opo_plugin_config->get('prepopulate_fields_on_edit');
 		$default_prepop_before_insert = (bool)$this->opo_plugin_config->get('prepopulate_fields_before_insert');
@@ -221,6 +223,8 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			if (is_array($useFor) && !is_null($use) && !in_array($use, $useFor, true)) {
 				continue;
 			} elseif(!$useFor) {
+				if (($use === 'insert') && !$default_prepop_on_insert) { continue; }
+				if (($use === 'update') && !$default_prepop_on_update) { continue; }
 				if (($use === 'edit') && !$default_prepop_on_edit) { continue; }
 				if (($use === 'save') && !$default_prepop_on_save) { continue; }
 				if (($use === 'beforeinsert') && !$default_prepop_before_insert) { continue; }

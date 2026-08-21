@@ -962,33 +962,33 @@ function caEditorFindResultNavigation($request, $instance, $result_context, $opt
 /**
  *
  *
- * @param array $pa_bundle_list
- * @param array $pa_options Optional array of options. Supported options are:
+ * @param array $bundle_list
+ * @param array $options Optional array of options. Supported options are:
  *		NONE
  *
  * @return string
  */
-function caSetupEditorScreenOverlays($po_request, $pt_subject, $pa_bundle_list, $pa_options=null) {
-	$vs_buf = '';
-	if ($pt_subject && $pt_subject->isHierarchical()) {
-		$vs_buf .= caEditorHierarchyOverview($po_request, $pt_subject->tableName(), $pt_subject->getPrimaryKey(), $pa_options);
+function caSetupEditorScreenOverlays($po_request, $t_subject, $bundle_list, $options=null) {
+	$buf = '';
+	if ($t_subject && $t_subject->isHierarchical()) {
+		$buf .= caEditorHierarchyOverview($po_request, $t_subject->tableName(), $t_subject->getPrimaryKey(), $options);
 	}
-	$vs_buf .= caEditorFieldList($po_request, $pt_subject, $pa_bundle_list, $pa_options);
+	$buf .= caEditorFieldList($po_request, $t_subject, $bundle_list, $options);
 
-	return $vs_buf;
+	return $buf;
 }
 # ------------------------------------------------------------------------------------------------
 /**
  * 
  *
- * @param array $pa_bundle_list 
- * @param array $pa_options Optional array of options. Supported options are:
+ * @param array $bundle_list 
+ * @param array $options Optional array of options. Supported options are:
  *		NONE
  *
  * @return string
  */
-function caEditorFieldList($po_request, $pt_subject, $pa_bundle_list, $pa_options=null) {
-	$vs_buf = "<script type=\"text/javascript\">
+function caEditorFieldList($request, $subject, $bundle_list, $options=null) {
+	$buf = "<script type=\"text/javascript\">
 	jQuery(document).ready(function() {
 		jQuery(document).on('keydown.ctrl_f', function() {
 			caHierarchyOverviewPanel.hidePanel({dontCloseMask:1});
@@ -1004,19 +1004,19 @@ function caEditorFieldList($po_request, $pt_subject, $pa_bundle_list, $pa_option
 		});
 
 		if (typeof caBundleVisibilityManager !== 'undefined') { caBundleVisibilityManager.setAll(); }
-		if (typeof caBundleUpdateManager !== 'undefined') { caBundleUpdateManager = caUI.initBundleUpdateManager({url:'".caNavUrl($po_request, '*', '*', 'reload')."', screen:'".$po_request->getActionExtra()."', key:'".$pt_subject->primaryKey()."', id: ".(int)$pt_subject->getPrimaryKey()."}); }
-		caBundleUpdateManager.registerBundles(".json_encode($pa_bundle_list).");
+		if (typeof caBundleUpdateManager !== 'undefined') { caBundleUpdateManager = caUI.initBundleUpdateManager({url:'".caNavUrl($request, '*', '*', 'reload')."', screen:'".$request->getActionExtra()."', key:'".$subject->primaryKey()."', id: ".(int)$subject->getPrimaryKey()."}); }
+		caBundleUpdateManager.registerBundles(".json_encode($bundle_list).");
 	});
 </script>
 <div id=\"editorFieldListHTML\">";
-	if (is_array($pa_bundle_list)) { 
-		foreach($pa_bundle_list as $vs_anchor => $va_info) {
-			$vs_buf .= "<a href=\"#\" onclick=\"jQuery.scrollTo('a[name={$vs_anchor}]', {duration: 350, offset: -80 , onAfter : function(selector, data){jQuery(selector).parent('.bundleLabel').find('a:link').first().focus();}}); return false;\" class=\"editorFieldListLink\">".$va_info['name']."</a><br/>";
+	if (is_array($bundle_list)) { 
+		foreach($bundle_list as $anchor => $info) {
+			$buf .= "<a href=\"#\" onclick=\"jQuery.scrollTo('a[name={$anchor}]', {duration: 350, offset: -80 , onAfter : function(selector, data){jQuery(selector).parent('.bundleLabel').find('a:link').first().focus();}}); return false;\" class=\"editorFieldListLink\">".$info['name']."</a><br/>";
 		}
 	}
-	$vs_buf .= "</div>\n";
+	$buf .= "</div>\n";
 
-	return $vs_buf;
+	return $buf;
 }
 # ------------------------------------------------------------------------------------------------
 /**
@@ -1092,15 +1092,42 @@ function caEditorInspector($view, $options=null) {
 		$ancestors = array();
 		$parent_id = null;
 	}
-
-	// action extra to preserve currently open screen across next/previous links
-	$buf = "<h3 class='nextPrevious' {$style}>".caEditorFindResultNavigation($view->request, $t_item, $o_result_context, $options)."</h3>\n";
-
+	
 	$color = null;
 	if ($t_type) { $color = trim($t_type->get('color')); }
 	if (!$color && $t_ui) { $color = trim($t_ui->get('color')); }
 	if (!$color) { $color = "FFFFFF"; }
+	
+	//
+	// Display flags; expressions for these are defined in app.conf in the <table_name>_inspector_display_flags directive
+	//
+	if (is_array($display_flags = $view->request->config->getAssoc("{$table_name}_inspector_display_flags"))) {
+		$display_flag_buf = [];
+		foreach($display_flags as $exp => $display_flag) {
+			if($qr = caMakeSearchResult($t_item->tableName(), [$t_item->getPrimaryKey()])) {
+				$qr->nextHit();
+				$exp_vars = DisplayTemplateParser::getValuesForTemplate($qr, $exp);
+				if (ExpressionParser::evaluate($exp, $exp_vars)) {
+					if(is_array($display_flag)) {
+						$m = $t_item->getWithTemplate($display_flag['message'] ?? '');
+						
+						$m = "<div style=\"color: ".(($display_flag['color'] ?? null) ? $display_flag['color'] : "#000000") .";\">{$m}</div>\n";
+						if($display_flag['border_color'] ?? null) { 
+							$color = $display_flag['border_color'];
+						}
+						$display_flag_buf[] = $m;
+					} else {
+						$display_flag_buf[] = $t_item->getWithTemplate("{$display_flag}");
+					}
+				}
+			}
+		}
+	}
 
+	// action extra to preserve currently open screen across next/previous links
+	$buf = "<h3 class='nextPrevious' {$style}>".caEditorFindResultNavigation($view->request, $t_item, $o_result_context, $options)."</h3>\n";
+
+	$color = preg_replace("!^#+!", "", $color);
 	$buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$color};'>\n";
 
 	$icon = null;
@@ -1146,18 +1173,7 @@ function caEditorInspector($view, $options=null) {
 			//
 			// Display flags; expressions for these are defined in app.conf in the <table_name>_inspector_display_flags directive
 			//
-			if (is_array($display_flags = $view->request->config->getAssoc("{$table_name}_inspector_display_flags"))) {
-				$display_flag_buf = [];
-				foreach($display_flags as $exp => $display_flag) {
-					if($qr = caMakeSearchResult($t_item->tableName(), [$t_item->getPrimaryKey()])) {
-						$qr->nextHit();
-						$exp_vars = DisplayTemplateParser::getValuesForTemplate($qr, $exp);
-						if (ExpressionParser::evaluate($exp, $exp_vars)) {
-							$display_flag_buf[] = $t_item->getWithTemplate("{$display_flag}");
-						}
-					}
-				}
-
+			if (is_array($display_flags)) {
 				if(!($display_flag_delim = $view->request->config->get("{$table_name}_inspector_display_flags_delimiter"))) {
 					$display_flag_delim = '; ';
 				}
@@ -1619,7 +1635,8 @@ function caEditorInspector($view, $options=null) {
 			}
 		}	
 		if ($can_add_component) {
-			$components_tools[] = '<div><a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($view->request, '*', 'ObjectComponent', 'Form', ['parent_id' => $t_item->getPrimaryKey()]).'"); return false;\')>'.caNavIcon(__CA_NAV_ICON_ADD__, '12px').'</a></div>';
+			$label = $view->request->config->get('ca_objects_component_add_button_text');
+			$components_tools[] = '<div><a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($view->request, '*', 'ObjectComponent', 'Form', ['parent_id' => $t_item->getPrimaryKey()]).'"); return false;\')>'.caNavIcon(__CA_NAV_ICON_ADD__, '12px').($label ? " {$label}" : '').'</a></div>';
 
 			$change_type_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
 			$change_type_view->setVar('t_item', $t_item);
@@ -1758,7 +1775,7 @@ jQuery(document).ready(function() {
 </script>\n";
 			}
 		}
-
+//$po_request, $ps_content, $ps_classname, $ps_table, $pn_id, $pa_additional_parameters=null, $pa_attributes=null, $pa_options=null)
 		//
 		// Output related counts
 		//
@@ -1770,16 +1787,32 @@ jQuery(document).ready(function() {
 					if(sizeof($show_counts_config['types']) > 0) {
 						foreach($show_counts_config['types'] as $type_id => $type_info) {
 							if(($count = (int)$t_item->getRelatedItems($show_counts_config['table'], ['returnAs' => 'count', 'limit' => 100000, 'restrictToTypes' => [$type_id]])) > 0) {
-								$links[$show_counts_config['table'].'/'.$type_info['idno']] = caSearchLink($view->request, _t('%1 related %2', $count, ($count === 1) ? $type_info['name_singular'] : $type_info['name_plural']), '', $show_counts_config['table'], $t_item->primaryKey(true).":".$t_item->getPrimaryKey(), ['type_id' => $type_id]);
+								$label = _t('%1 related %2', $count, ($count === 1) ? $type_info['name_singular'] : $type_info['name_plural']);
+								if($count === 1) {
+									if(is_array($ids = $t_item->get($show_counts_config['table'].'.related.'.Datamodel::primaryKey($show_counts_config['table']), ['returnAsArray' => true, 'restrictToTypes' => [$type_id]])) && sizeof($ids)) {
+										$links[$show_counts_config['table'].'/'.$type_info['idno']] = caEditorLink($view->request, $label, '', $show_counts_config['table'], $ids[0]);
+									}
+								} else {
+									$links[$show_counts_config['table'].'/'.$type_info['idno']] = caSearchLink($view->request, $label, '', $show_counts_config['table'], $t_item->primaryKey(true).":".$t_item->getPrimaryKey(), ['type_id' => $type_id]);
+								}
 							}
 						}
 					} elseif (($count = (int)$t_item->getRelatedItems($show_counts_config['table'], ['returnAs' => 'count', 'limit' => 100000])) > 0) {
-						$links[$show_counts_config['table']] = caSearchLink($view->request, _t('%1 related %2', $count, Datamodel::getTableProperty($show_counts_config['table'], ($count === 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), '', $show_counts_config['table'], $t_item->primaryKey(true).":".$t_item->getPrimaryKey());
+						$label = _t('%1 related %2', $count, Datamodel::getTableProperty($show_counts_config['table'], ($count === 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL'));
+						if($count === 1) {
+							if(is_array($ids = $t_item->get($show_counts_config['table'].'.related.'.Datamodel::primaryKey($show_counts_config['table']), ['returnAsArray' => true])) && sizeof($ids)) {
+								$links[$show_counts_config['table'].'/'.$type_info['idno']] = caEditorLink($view->request, $label, '', $show_counts_config['table'], $ids[0]);
+							}
+						} else {
+							$links[$show_counts_config['table']] = caSearchLink($view->request, $label, '', $show_counts_config['table'], $t_item->primaryKey(true).":".$t_item->getPrimaryKey());
+						}
 					}
 				} 
 			}
-			ksort($links, SORT_NATURAL|SORT_FLAG_CASE);
-			$buf .= join("<br/>\n", $links);
+			if(sizeof($links) > 0) {
+				ksort($links, SORT_NATURAL|SORT_FLAG_CASE);
+				$buf .= '<br>'.join("<br>\n", $links);
+			}
 		}
 
 		//
@@ -3351,6 +3384,9 @@ function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=nu
 
 	$va_exclude = 								caGetOption('exclude', $pa_options, array(), array('castTo' => 'array'));
 	$po_request = 								caGetOption('request', $pa_options, null);
+	
+	$always_show_quickadd = 					(bool)$o_config->get(["{$vs_rel_table}_always_include_quickadd_option", 'always_include_quickadd_option']);
+	
 	if(!$po_request) { global $g_request; $po_request = $g_request; }
 
 	if($self_id) { $va_exclude[] = $self_id; }
@@ -3384,10 +3420,8 @@ function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=nu
 			if ($ps_inline_create_does_not_exist_message) {
 				$vb_include_inline_add_does_not_exist_message = true;
 				$vb_include_inline_add_message = false;
-			} else {
-				if ($ps_empty_result_message) {
-					$vb_include_empty_result_message = true;
-				}
+			} elseif ($ps_empty_result_message) {
+				$vb_include_empty_result_message = true;
 			}
 		} else {
 			$vs_table = 	$qr_rel_items->tableName();
@@ -3487,7 +3521,7 @@ function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=nu
 		$va_items = $va_items_sorted;
 	}
 
-	foreach ($va_items as $va_item) {
+	foreach($va_items as $va_item) {
 		$vn_id = $va_item[$vs_rel_pk];
 		if(in_array($vn_id, $va_exclude)) { continue; }
 
@@ -3514,7 +3548,13 @@ function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=nu
 		}
 
 		$vs_display_lc = mb_strtolower($vs_display);
-		if (($vs_display_lc == $ps_inline_create_query_lc) || (isset($va_item['label']) && ($va_item['label'] == $ps_inline_create_query_lc))) {
+		if (
+			(
+				($vs_display_lc == $ps_inline_create_query_lc) || 
+				(isset($va_item['label']) && ($va_item['label'] == $ps_inline_create_query_lc))
+			) &&
+			!$always_show_quickadd
+		) {
 			$vb_include_inline_add_message = false;
 		}
 
@@ -3795,75 +3835,73 @@ function caGetBundleDisplayTemplate($pt_subject, $ps_related_table, $pa_bundle_s
 /**
  * Generates show/hide control HTML for bundles
  *
- * @param RequestHTTP $po_request
- * @param string $ps_id_prefix
- * @param array $pa_settings bundle placement option array
+ * @param RequestHTTP $request
+ * @param string $id_prefix
+ * @param array $settings bundle placement option array
  * @param bool $pb_has_value
- * @param string $ps_preview_init string to initialize bundle preview content section with
+ * @param string $preview_init string to initialize bundle preview content section with
  *
  * @return string HTML implementing the control
  */
-function caEditorBundleShowHideControl($po_request, $ps_id_prefix, $pa_settings=null, $pb_has_value=false, $ps_preview_init="&nbsp;") {
-	if (caGetOption('dont_allow_bundle_show_hide', $pa_settings, false)) { return ''; }
-	$vs_expand_collapse_value = caGetOption('expand_collapse_value', $pa_settings, 'dont_force');
-	$vs_expand_collapse_no_value = caGetOption('expand_collapse_no_value', $pa_settings, 'dont_force');
-	$vs_expand_collapse = caGetOption('expand_collapse', $pa_settings, false);
+function caEditorBundleShowHideControl($request, $id_prefix, $settings=null, $pb_has_value=false, $preview_init="&nbsp;") {
+	if (caGetOption('dont_allow_bundle_show_hide', $settings, false)) { return ''; }
+	$expand_collapse_value = caGetOption('expand_collapse_value', $settings, 'dont_force');
+	$expand_collapse_no_value = caGetOption('expand_collapse_no_value', $settings, 'dont_force');
+	$expand_collapse = caGetOption('expand_collapse', $settings, false);
 
-
-
-	if(!$vs_expand_collapse) {
-		$vs_expand_collapse = ($pb_has_value ? $vs_expand_collapse_value : $vs_expand_collapse_no_value);
+	if(!$expand_collapse) {
+		$expand_collapse = ($pb_has_value ? $expand_collapse_value : $expand_collapse_no_value);
 	}
 
-	switch(strtolower($vs_expand_collapse)) {
+	switch(strtolower($expand_collapse)) {
 		case 'collapse':
-			$vs_force = 'closed';
+			$force = 'closed';
 			break;
 		case 'expand':
-			$vs_force = 'open';
+			$force = 'open';
 			break;
 		case 'dont_force':
 		default:
-			$vs_force = '';
+			$force = '';
 			break;
 	}
 
-	$ps_preview_id_prefix = preg_replace("/[0-9]+\_rel/", "", $ps_id_prefix);
+	$preview_id_prefix = preg_replace("/[0-9]+\_rel/", "", $id_prefix);
 
-	$vs_buf  = "<span class='bundleContentPreview' id='{$ps_preview_id_prefix}_BundleContentPreview'>{$ps_preview_init}</span>";
-	$vs_buf .= "<span class='iconButton'>";
-	$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggle(\"{$ps_id_prefix}\");  return false;' aria-label='" . _t('Toggle visibility') . "'>".caNavIcon(__CA_NAV_ICON_VISIBILITY_TOGGLE__, '18px', array('id' =>"{$ps_id_prefix}VisToggleButton"))."</a>";
-	$vs_buf .= "</span>\n";
-	$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}', '{$vs_force}'); }); </script>";
+	$buf  = "<span class='bundleContentPreview' id='{$preview_id_prefix}_BundleContentPreview'>{$preview_init}</span>";
+	$buf .= "<span class='iconButton'>";
+	$buf .= "<a href='#' onclick='caBundleVisibilityManager.toggle(\"{$id_prefix}\");  return false;' aria-label='" . _t('Toggle visibility') . "'>".caNavIcon(__CA_NAV_ICON_VISIBILITY_TOGGLE__, '18px', array('id' =>"{$id_prefix}VisToggleButton"))."</a>";
+	$buf .= "</span>\n";
+	$buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$id_prefix}', '{$force}'); }); </script>";
 
-	return $vs_buf;
+	return $buf;
 }
 # ---------------------------------------
 /**
  * Generates metadata dictionary control HTML for bundles
  *
- * @param RequestHTTP $po_request
- * @param string $ps_id_prefix
- * @param array $pa_settings
+ * @param RequestHTTP $request
+ * @param string $id_prefix
+ * @param array $settings
  *
  * @return string HTML implementing the control
  */
-function caEditorBundleMetadataDictionary($po_request, $ps_id_prefix, $pa_settings) {
+function caEditorBundleMetadataDictionary($request, $id_prefix, $settings) {
 	global $g_ui_locale;
 
-	$definition = caGetOption($g_ui_locale, $pa_settings['definition'] ?? null, null);
+	$definition = caGetOption($g_ui_locale, $settings['definition'] ?? null, null);
 	if(is_array($definition)) { $definition = join ("", $definition); }
-	if (!($vs_definition = trim($definition))) { return ''; }
+	if (!($definition = trim($definition))) { return ''; }
 
-	$vs_buf = '';
-	$vs_buf .= "<span class='iconButton'>";
-	$vs_buf .= "<a href='#' class='caMetadataDictionaryDefinitionToggle' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$ps_id_prefix}\");  return false;'>".caNavIcon(__CA_NAV_ICON_INFO__, 1, array('id' => "{$ps_id_prefix}MetadataDictionaryToggleButton"))."</a>";
+	$buf = '';
+	$buf .= "<span class='iconButton'>";
+	$buf .= "<a href='#' class='caMetadataDictionaryDefinitionToggle' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$id_prefix}\");  return false;'>".caNavIcon(__CA_NAV_ICON_INFO__, 1, array('id' => "{$id_prefix}MetadataDictionaryToggleButton"))."</a>";
 
-	$vs_buf .= "<div id='{$ps_id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>{$vs_definition}</div>";
-	$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}'); }); </script>";	
-	$vs_buf .= "</span>\n";	
+	$buf .= "<div id='{$id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>{$definition}</div>";
+	$buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$id_prefix}'); }); </script>";	
+	$buf .= "</span>\n";	
 
-	return $vs_buf;
+	return $buf;
 }
 # ---------------------------------------
 /**

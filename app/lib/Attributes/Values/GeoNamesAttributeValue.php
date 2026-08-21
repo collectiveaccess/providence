@@ -300,6 +300,45 @@ $_ca_attribute_settings['GeoNamesAttributeValue'] = array(		// global
 		'label' => _t('GeoNames element delimiter'),
 		'description' => _t('Delimiter to use between multiple values pulled from GeoNames service.')
 	),
+	'mode' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'default' => '',
+		'options' => [
+			_t('Search on all text') => '',
+			_t('Search on names only') => 'name'
+		],
+		'width' => 40, 'height' => 1,
+		'label' => _t('Search mode'),
+		'description' => _t('Set to <em>all text</em> to search on all text associated with a place. Set to <em>names only</em> to search only on the names of places.')
+	),
+	'country' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'default' => '',
+		'width' => 10, 'height' => 1,
+		'label' => _t('Limit search to countries'),
+		'description' => _t('Limit the GeoNames search to specific countries. Enter one or more two-letter country codes separated by semicolons.')
+	),
+	'featureClass' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'default' => '',
+		'multiple' => true,
+		'options' => [
+			_t('Top-level administrative (Country, state, region) (A)') => 'A',
+			_t('Bodies of water (H)') => 'H',
+			_t('Areas (parks, localities) (L)') => 'L',
+			_t('Populated places (Cities, villages) (P)') => 'P',
+			_t('Rights of way (Roads, railroads (R)') => 'R',
+			_t('Spot locations (Buildings, farms, monuments) (S)') => 'S',
+			_t('Undersea (U)') => 'U',
+			_t('Open land (Forest, heath, fields) (V)') => 'V'
+		],
+		'width' => 60, 'height' => 8,
+		'label' => _t('Feature class'),
+		'description' => _t('Limit the GeoNames search to specific types of map features.')
+	),
 );
 
 class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
@@ -486,14 +525,18 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 		}
  		$o_config = Configuration::load();
 
- 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'disableMap', 'maxResults', 'gnElements', 'gnDelimiter', 'hideCoordinates'));
+ 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'disableMap', 'maxResults', 'gnElements', 'gnDelimiter', 'hideCoordinates', 'mode', 'country', 'featureClass'));
 		
  		$vn_max_results = (isset($va_settings['maxResults']) ? intval($va_settings['maxResults']) : 20);
  		$vs_gn_elements = $va_settings['gnElements'];
  		$vs_gn_delimiter = $va_settings['gnDelimiter'];
+ 		
+ 		$mode = (isset($va_settings['mode'])) ? $va_settings['mode'] : '';
+ 		$country = (isset($va_settings['country'])) ? join(';', preg_split('![;,]+!', $va_settings['country'])) : null;
+ 		$feature_class = (isset($va_settings['featureClass']) && is_array($va_settings['featureClass']))? join(";", $va_settings['featureClass']) : null;
 
  		if ($pa_options['request']) {
-			$vs_url = caNavUrl($pa_options['request'], 'lookup', 'GeoNames', 'Get', array('maxRows' => $vn_max_results, 'gnElements' => urlencode($vs_gn_elements), 'gnDelimiter' => urlencode($vs_gn_delimiter)));
+			$vs_url = caNavUrl($pa_options['request'], 'lookup', 'GeoNames', 'Get', array('maxRows' => $vn_max_results, 'gnElements' => urlencode($vs_gn_elements), 'gnDelimiter' => urlencode($vs_gn_delimiter), 'mode' => $mode, 'country' => $country, 'featureClass' => $feature_class));
 		}
 
  		$vs_element = '<div id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_input{n}">'.

@@ -1161,6 +1161,25 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Default type for quickadd'),
 								'description' => _t('Set default type for quickadds, overriding type list default.')
 							),
+							'alwaysQuickAdd' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => '',
+								'allowNull' => false,
+								'label' => _t('Always open quickadd window when adding relationship?'),
+								'description' => _t('If checked a quickadd window will be opened each time a relationship is added.')
+							),
+							'createRelationshipOnQuickaddSave' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => '0',
+								'label' => _t('Immediately create relationship when quick add is saved?'),
+								'description' => _t('If checked saving a quick added record will immediately create a relationship to the primary record. By default the relationship is set in the primary editing form but not created until the primary record is saved.')
+							),
 							'sort' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_SELECT,
@@ -1893,7 +1912,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => 'dont_force',
 										'width' => "200px", 'height' => 1,
-										'label' => _t('Always Expand/collapse'),
+										'label' => _t('Always expand/collapse'),
 										'description' => _t('Controls the expand/collapse behavior')
 									),
 									'hide_include_child_history_controls' => array(

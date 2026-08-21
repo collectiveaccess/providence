@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2025 Whirl-i-Gig
+ * Copyright 2000-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -94,13 +94,15 @@ class Configuration {
 	 * @param bool $dont_cache Don't use config file cached. [Default is false]
 	 * @param bool $dont_cache_instance Don't attempt to cache config file Configuration instance. [Default is false]
 	 * @param bool $dont_load_from_default_path Don't attempt to load additional configuration files from default paths (defined by __CA_LOCAL_CONFIG_DIRECTORY__ and __CA_LOCAL_CONFIG_DIRECTORY__). [Default is false]
+	 * @param bool $dont_load_appname_specific_conf_file Don't attempt to load appname-specific configuratiion files. [Default is false]
+	 * 
 	 * @return Configuration
 	 */
-	static function load($file_path=__CA_APP_CONFIG__, $dont_cache=false, $dont_cache_instance=false, $dont_load_from_default_path=false) {
+	static function load($file_path=__CA_APP_CONFIG__, $dont_cache=false, $dont_cache_instance=false, $dont_load_from_default_path=false, $dont_load_appname_specific_conf_file=false) {
 		if(!$file_path) { $file_path = __CA_APP_CONFIG__; }
 
 		if(!MemoryCache::contains($file_path, 'ConfigurationInstances') || $dont_cache || $dont_cache_instance) {
-			MemoryCache::save($file_path, new Configuration($file_path, true, $dont_cache, $dont_load_from_default_path), 'ConfigurationInstances');
+			MemoryCache::save($file_path, new Configuration($file_path, true, $dont_cache, $dont_load_from_default_path, $dont_load_appname_specific_conf_file), 'ConfigurationInstances');
 		}
 
 		return MemoryCache::fetch($file_path, 'ConfigurationInstances');
@@ -116,10 +118,10 @@ class Configuration {
 	 * @param bool $die_on_error If true, request processing will halt with call to die() on error in parsing config file. [Default is false]
 	 * @param bool $dont_cache If true, file will be parsed even if it's already cached. [Default is false]
 	 * @param bool $dont_load_from_default_path Don't attempt to load additional configuration files from default paths (defined by __CA_LOCAL_CONFIG_DIRECTORY__ and __CA_LOCAL_CONFIG_DIRECTORY__). [Default is false]
-	 *
+	 * @param bool $dont_load_appname_specific_conf_file Don't attempt to load appname-specific configuratiion files. [Default is false]
 	 *
 	 */
-	public function __construct($file_path=__CA_APP_CONFIG__, $die_on_error=false, $dont_cache=false, $dont_load_from_default_path=false) {
+	public function __construct($file_path=__CA_APP_CONFIG__, $die_on_error=false, $dont_cache=false, $dont_load_from_default_path=false, $dont_load_appname_specific_conf_file=false) {
 		global $g_ui_locale, $g_configuration_cache_suffix;
 
 		$this->ops_config_file_path = $file_path ? $file_path : __CA_APP_CONFIG__;	# path to configuration file
@@ -146,10 +148,12 @@ class Configuration {
 				$config_file_list[] = $top_level_config_path = __CA_DEFAULT_THEME_CONFIG_DIRECTORY__.'/'.$config_filename;
 			}
 			
-			// Appname-specific config overrides local config
-			$appname_specific_path = __CA_LOCAL_CONFIG_DIRECTORY__.'/'.pathinfo($config_filename, PATHINFO_FILENAME).'_'.__CA_APP_NAME__.'.'.pathinfo($config_filename, PATHINFO_EXTENSION);
-			if (defined('__CA_LOCAL_CONFIG_DIRECTORY__') && !in_array($appname_specific_path, $config_file_list, true) && file_exists($appname_specific_path)) {
-				$config_file_list[] = $top_level_config_path = $appname_specific_path;
+			if(!$dont_load_appname_specific_conf_file) {
+				// Appname-specific config overrides local config
+				$appname_specific_path = __CA_LOCAL_CONFIG_DIRECTORY__.'/'.pathinfo($config_filename, PATHINFO_FILENAME).'_'.__CA_APP_NAME__.'.'.pathinfo($config_filename, PATHINFO_EXTENSION);
+				if (defined('__CA_LOCAL_CONFIG_DIRECTORY__') && !in_array($appname_specific_path, $config_file_list, true) && file_exists($appname_specific_path)) {
+					$config_file_list[] = $top_level_config_path = $appname_specific_path;
+				}
 			}
 		}
 		if(defined('__CA_CONF_DIR__') && !in_array($p = __CA_CONF_DIR__.'/'.$config_filename, $config_file_list, true) && file_exists($p)) { 
@@ -159,7 +163,7 @@ class Configuration {
 
 		$filename = pathinfo($file_path, PATHINFO_BASENAME);
 		
-		$app_config = ($filename !== 'app.conf') ? Configuration::load(__CA_APP_CONFIG__) : $o_config;
+		$app_config = ($filename !== 'app.conf') ? Configuration::load(__CA_APP_CONFIG__, false, false, false, true) : $o_config;
 		if (($inherit_config = $app_config->get(['allowThemeInheritance', 'allow_theme_inheritance'])) && !$dont_load_from_default_path) {
 		    $i=0;
             while($inherit_from_theme = trim(trim($app_config->get(['inheritFrom', 'inherit_from'])), "/")) {
@@ -880,12 +884,12 @@ class Configuration {
             if (!strlen($tmp)) {
                 $tmp = $this->getList($key);
             }
-            if (!is_array($tmp) && !strlen($tmp)) {
+            if (!is_array($tmp) && !strlen($tmp ?? '')) {
                 if (is_array($tmp = $this->getAssoc($key))) { $assoc_exists = true; }
             }
             Configuration::$s_get_cache[$this->ops_md5_path][$key] = $tmp;
             
-            if (!is_array($tmp) && !strlen($tmp)) { continue; }
+            if (!is_array($tmp) && !strlen($tmp ?? '')) { continue; }
             return $tmp;
         }
         return $assoc_exists ? [] : null;
@@ -1080,7 +1084,7 @@ class Configuration {
 		// perform constant var substitution
 		if (preg_match("/^(__[A-Za-z0-9\_]+)(?=__)/", $scalar_value, $matches)) {
 			if (defined($matches[1].'__')) {
-				return str_replace($matches[1].'__', constant($matches[1].'__'), $scalar_value);
+				return str_replace($matches[1].'__', constant($matches[1].'__') ?? '', $scalar_value ?? '');
 			}
 		}
 		return $scalar_value;
@@ -1091,7 +1095,7 @@ class Configuration {
 	}
 	/* ---------------------------------------- */
 	private function _interpolateScalar(?string $text) : ?string {
-		if (preg_match_all("/<([A-Za-z0-9_\-\.]+)>/", $text, $matches)) {
+		if (preg_match_all("/<([A-Za-z0-9_\-\.]+)>/", $text ?? '', $matches)) {
 			foreach($matches[1] as $key) {
 				if (($val = $this->getScalar($key)) !== false) {
 					$text = preg_replace("/<$key>/", $val, $text);
@@ -1101,7 +1105,7 @@ class Configuration {
 
 		// attempt translation if text is enclosed in _( and ) ... for example _t(translate me)
 		// assumes translation function _t() is present; if not loaded will not attempt translation
-		if (function_exists('_t') && preg_match("/(?<=\s|>|^)_\(([^\"\)]+)\)/", $text, $matches)) {
+		if (function_exists('_t') && preg_match("/(?<=\s|>|^)_\(([^\"\)]+)\)/", $text ?? '', $matches)) {
 			$trans_text = $text;
 			array_shift($matches);
 			foreach($matches as $match) {
