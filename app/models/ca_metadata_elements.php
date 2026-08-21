@@ -261,17 +261,17 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	# ------------------------------------------------------
 	public function load($pm_id=null, $pb_use_cache = true) {
 		$key = md5(serialize($pm_id));
-		if(CompositeCache::contains($key, 'metadataElements')) { 
-			$this->_FIELD_VALUES = CompositeCache::fetch($key, 'metadataElements');
+		if(CompositeCache::contains($key, 'MetadataElements')) { 
+			$this->_FIELD_VALUES = CompositeCache::fetch($key, 'MetadataElements');
 			if(!is_array($this->_FIELD_VALUES) || !sizeof($this->_FIELD_VALUES)) { return false; }
 			$this->loadSettings();
 			return true;
 		}
 		if ($vn_rc = parent::load($pm_id, $pb_use_cache)) {
 			$this->loadSettings();
-			CompositeCache::save($key, $this->_FIELD_VALUES, 'metadataElements');
+			CompositeCache::save($key, $this->_FIELD_VALUES, 'MetadataElements');
 		} else {
-			CompositeCache::save($key, null, 'metadataElements');
+			CompositeCache::save($key, null, 'MetadataElements');
 		}
 
 		return $vn_rc;
@@ -380,6 +380,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				CompositeCache::delete($vs_cache_key, 'ElementList');
 			}
 		}
+		CompositeCache::flush('MetadataElements');
 		CompositeCache::flush('ElementSettings');
 		CompositeCache::flush('SearchBuilder');
 		$this->resetElasticSearchMappingRefresh();
