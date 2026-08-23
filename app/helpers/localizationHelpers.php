@@ -162,7 +162,7 @@ function caGetTextStringsFromPHPFile(string $filepath) : ?array {
 		var $strings = [];
 		public function enterNode(Node $node) {
 			if ($node instanceof \PhpParser\Node\Expr\FuncCall) {
-				if($node->name == '_t') {
+				if(($node->name == '_t') || ($node->name == '_p')) {
 					$arg = $node->args[0]->jsonSerialize();
 					$line = $arg['attributes']['startLine'];
 					$str = $node->args[0]->value->jsonSerialize();
