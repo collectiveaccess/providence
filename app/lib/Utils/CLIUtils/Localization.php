@@ -52,6 +52,8 @@ trait CLIUtilsLocalization {
 			CLIUtils::addError(_t('Cannot write to %1', $file));
 			return null;
 		}
+		$skip_locale = (bool)$opts->getOption('skip-local');
+		
 		$team = $opts->getOption('team');
 		$extracted_strings = [];
 		
@@ -69,49 +71,26 @@ trait CLIUtilsLocalization {
 				print CLIProgressBar::next();
 				
 				if(!file_exists($f)) { continue; }
-				if(preg_match("!/local/!", $f)) { continue; }
+				if($skip_locale && preg_match("!/local/!", $f)) { continue; }
 				$ext = strtolower(pathinfo($f, PATHINFO_EXTENSION));
 				if(!in_array($ext, ['php', 'conf'])) { continue; }
 				$is_conf = ($ext === 'conf');
 				
 				$file_count++;
-				$r = fopen($f, "r");
-
+				$fp = str_replace(__CA_BASE_DIR__.((substr(__CA_BASE_DIR__, -1, 1) !== '/') ? '/' : ''), '', $f);
 				$ln = 1;
-				while($line = fgets($r)) {
-					if($is_conf) {
-						$regexes = [
-							"!_\(([^\"\']{1}[^\)]+?[^\"\']{1})\)!s",	// _() construction used in config files
-							"!_\([\']{1}(.+?)[\']{1}\)!s",				// _('') construction used in config files
-							"!_\([\"]{1}(.+?)[\"]{1}\)!s"				// _("") construction used in config files
-						];	
-					} else {
-						$regexes = [
-							"!_t\([\']{1}([^\']+?)[\']{1}[\)]+!s",		// _t('') construction used in code
-							"!_t\([\"]{1}([^\"]+?)[\"]{1}[\)]+!s",		// _t("") construction used in code
-							"!<t>(.*?)</t>!s"							// <t>...</t> construction used in templates and view files
-						];
-					}
-					
-					$estrings = [];
-					foreach($regexes as $rx) {
-						$strings = preg_match_all($rx, $line, $m);
-						$mstrings = array_unique(array_map(function($x) { 
-							return str_replace('"', "\\\"", $x);
-						}, array_filter($m[1], function($v) {
-							return preg_match("![A-Za-z0-9]+!s", $v);
-						})));
-						
-						$estrings = array_merge($estrings, $mstrings);
-					}
-					$extracted_strings = array_unique(array_merge($extracted_strings, $estrings));
-					foreach($estrings as $s) {
-						$fp = str_replace(__CA_BASE_DIR__.((substr(__CA_BASE_DIR__, -1, 1) !== '/') ? '/' : ''), '', $f);
-						$locs[$s][] = "{$fp}:{$ln}"; 
-					}
-					
-					$ln++;
+
+				if($is_conf) {
+					$conf = Configuration::load($f);
+					$cstrings = $conf->getTranslatedStrings();
+				} else {
+					$cstrings = caGetTextStringsFromPHPFile($f);
 				}
+				foreach($cstrings as $cs) {
+					$locs[$cs['text']][] = "{$fp}:{$cs['line']}";
+					$extracted_strings[] = $cs['text'];
+				}
+				$extracted_strings = array_unique($extracted_strings);
 			}
 			print CLIProgressBar::finish();
 		}
@@ -161,6 +140,7 @@ trait CLIUtilsLocalization {
 			"theme|g=s" => _t('Theme to extract strings from. If omitted the currently configured theme is used.'),
 			"locale|l=s" => _t('Locale of translation.'),
 			"file|f=s" => _t('File to write strings to.'),
+			"skip-local|c=s" => _t('Skip files in local configuration and printTemplates directories.'),
 			"team|t=s" => _t('Language team name. If omitted the current application name'),
 		];
 	}
