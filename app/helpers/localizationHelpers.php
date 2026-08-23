@@ -167,9 +167,9 @@ function caGetTextStringsFromPHPFile(string $filepath) : ?array {
 					$line = $arg['attributes']['startLine'];
 					$str = $node->args[0]->value->jsonSerialize();
 					$value = $str['value'];
-					
+					if(!strlen($value)) { return; }
 					$this->strings[] = [
-						'text' => $value,
+						'text' => caEscapeStringforGetTextPOT($value),
 						'line' => $line
 					];
 				} else {
@@ -182,8 +182,9 @@ function caGetTextStringsFromPHPFile(string $filepath) : ?array {
 						
 						if(preg_match_all("!<t>(.*?)</t>!s", $argvalue, $m)) {
 							foreach($m[1] as $value) {
+								if(!strlen($value)) { continue; }
 								$this->strings[] = [
-									'text' => $value,
+									'text' => caEscapeStringforGetTextPOT($value),
 									'line' => $line
 								];
 							}	
@@ -196,8 +197,9 @@ function caGetTextStringsFromPHPFile(string $filepath) : ?array {
 					$n = $node->jsonSerialize();
 					$line = $n['attributes']['startLine'];
 					foreach($m[1] as $value) {
+						if(!strlen($value)) { continue; }
 						$this->strings[] = [
-							'text' => $value,
+							'text' => caEscapeStringforGetTextPOT($value),
 							'line' => $line
 						];
 					}	
@@ -207,5 +209,16 @@ function caGetTextStringsFromPHPFile(string $filepath) : ?array {
 	});
 	$traverser->traverse($ast);
 	return $c->strings;
+}
+# ----------------------------------------
+/**
+ *
+ */
+function caEscapeStringforGetTextPOT(string $value) : string {
+	$value = str_replace('"', '\\"', $value);
+	$value = str_replace("\t", '\\t', $value);
+	$value = str_replace("\n", '\\n', $value);
+	$value = str_replace("\r", '\\n', $value);
+	return $value;
 }
 # ----------------------------------------
