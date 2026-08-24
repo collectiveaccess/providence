@@ -1103,23 +1103,19 @@ class Configuration {
 		if (preg_match_all("/<([A-Za-z0-9_\-\.]+)>/", $text ?? '', $matches)) {
 			foreach($matches[1] as $key) {
 				if (($val = $this->getScalar($key)) !== false) {
-					$text = preg_replace("/<$key>/", $val, $text);
+					$text = preg_replace("/<{$key}>/", $val, $text);
 				}
 			}
 		}
 
-		// attempt translation if text is enclosed in _( and ) ... for example _t(translate me)
+		// attempt translation if text is enclosed in _( and ) ... for example _(translate me)
 		// assumes translation function _t() is present; if not loaded will not attempt translation
-		if (function_exists('_t') && preg_match("/(?<=\s|>|^)_\(([^\"\)]+)\)/", $text ?? '', $matches)) {
-			$trans_text = $text;
-			array_shift($matches);
-			foreach($matches as $match) {
-				$trans_text = str_replace("_({$match})", _t($match), $trans_text);
-				$this->translated_strings[] = [
-					'line' => $line_num,
-					'text' => $match
-				];
-			}
+		if (function_exists('_t') && preg_match("!^_\(!", $text ?? '') && preg_match("!\)$!", $text ?? '')) {
+			$trans_text = mb_substr($text, 2, -1);
+			$this->translated_strings[] = [
+				'line' => $line_num,
+				'value' => $trans_text
+			];
 			return $trans_text;
 		}
 		return $text;
