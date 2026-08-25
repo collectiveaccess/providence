@@ -66,7 +66,7 @@ BaseModel::$s_ca_models_definitions['ca_movements'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Idno sort', 'DESCRIPTION' => 'Sortable version of value in idno',
-				'BOUNDS_LENGTH' => array(0,1024)
+				'BOUNDS_LENGTH' => array(0, 768)
 		),
 		'idno_sort_num' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 

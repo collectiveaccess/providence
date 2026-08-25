@@ -64,7 +64,7 @@ BaseModel::$s_ca_models_definitions['ca_site_page_media'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Sortable media identifier', 'DESCRIPTION' => 'Value used for sorting media on identifier value.',
-				'BOUNDS_LENGTH' => array(0,1024)
+				'BOUNDS_LENGTH' => array(0,768)
 		),
 		'idno_sort_num' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 

@@ -109,7 +109,7 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 			'IS_NULL' => false, 
 			'DEFAULT' => '',
 			'LABEL' => 'Sortable object identifier', 'DESCRIPTION' => 'Value used for sorting objects on identifier value.',
-			'BOUNDS_LENGTH' => array(0,1024)
+			'BOUNDS_LENGTH' => array(0,768)
 		),
 		'idno_sort_num' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
