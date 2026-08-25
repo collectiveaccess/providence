@@ -507,7 +507,7 @@ trait CLIUtilsMaintenance {
 			chmod($path, 0775);
 		}
 
-		if (!$opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the HTMLPurifier definition cache directory " . Configuration::load()->get('purify_serializer_path') . " for ownership by \"%1\"...", $user)); }
+		if (!$opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the HTMLPurifier definition cache directory %2 for ownership by \"%1\"...", $user, Configuration::load()->get('purify_serializer_path'))); }
 		$files = caGetDirectoryContentsAsList(Configuration::load()->get('purify_serializer_path'), true, false, false, true, ['includeRoot' => true]);
 
 		foreach($files as $path) {
