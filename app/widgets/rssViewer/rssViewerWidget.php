@@ -184,7 +184,6 @@
 				_t('Remove HTML') => 2
 			),
 			'label' => _t('Filter to remove images or HTML?'),
-			'description' => _t('When remove images is chosen, images (IMG) will be removed from the display. Useful for ads and big images feeds.<br/>'.
-				'When remove HTML is chosen, all of the feed will be cleaned of any HTML tags, leaving text only.')
+			'description' => _t('When remove images is chosen, images (IMG) will be removed from the display. Useful for ads and big images feeds.<br/>When remove HTML is chosen, all of the feed will be cleaned of any HTML tags, leaving text only.')
 		)		
 	);

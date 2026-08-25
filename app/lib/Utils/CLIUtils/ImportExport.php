@@ -954,7 +954,7 @@ trait CLIUtilsImportExport {
 			}
 
 			$o_rows->next();
-			print CLIProgressBar::next(1, _t($is_existing_item ? 'Updated preferred term %1' : 'Added preferred term %1', $data[$level]));
+			print CLIProgressBar::next(1, $is_existing_item ? _t('Updated preferred term %1', $data[$level]) : _t('Added preferred term %1', $data[$level]));
 			if(!sizeof($data)) { continue; }
 
 			$parent_id = isset($parent_ids[$level-1]) ? $parent_ids[$level-1] : $root_id;
