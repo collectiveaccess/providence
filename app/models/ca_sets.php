@@ -116,9 +116,9 @@ BaseModel::$s_ca_models_definitions['ca_sets'] = array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
-				'DEFAULT' => '',
+				'DEFAULT' => null,
 				'LABEL' => _t('Set code sortable value'), 'DESCRIPTION' => _t('Sortable value for set code.'),
-				'BOUNDS_LENGTH' => array(0, 100),
+				'BOUNDS_LENGTH' => array(0, 1024),
 				'UNIQUE_WITHIN' => array()
 		),
 		'access' => array(
