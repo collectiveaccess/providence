@@ -182,7 +182,7 @@ function caGetTextStringsFromPHPFile(string $filepath) : ?array {
 						
 						if(preg_match_all("!<t>(.*?)</t>!s", $argvalue, $m)) {
 							foreach($m[1] as $value) {
-								if(!strlen($value)) { continue; }
+								if(!strlen($value) || ($value === '(.*?)')) { continue; }
 								$this->strings[] = [
 									'text' => caEscapeStringforGetTextPOT($value),
 									'line' => $line
@@ -197,7 +197,7 @@ function caGetTextStringsFromPHPFile(string $filepath) : ?array {
 					$n = $node->jsonSerialize();
 					$line = $n['attributes']['startLine'];
 					foreach($m[1] as $value) {
-						if(!strlen($value)) { continue; }
+						if(!strlen($value) || ($value === '(.*?)')) { continue; }
 						$this->strings[] = [
 							'text' => caEscapeStringforGetTextPOT($value),
 							'line' => $line
