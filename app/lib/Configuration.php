@@ -1114,7 +1114,7 @@ class Configuration {
 			$trans_text = mb_substr($text, 2, -1);
 			$this->translated_strings[] = [
 				'line' => $line_num,
-				'value' => $trans_text
+				'text' => $trans_text
 			];
 			return $trans_text;
 		}
