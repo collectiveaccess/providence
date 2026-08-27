@@ -77,10 +77,10 @@ class ListItemController extends BaseLookupController {
 		
 		$template = $t_item->getAppConfig()->get('ca_list_items_hierarchy_browser_display_settings');
 		
-		$lists = array();
 		if ($lists = $this->request->getParameter('lists', pString)) {
 			$lists = explode(";", $lists);
 		}
+		if(!is_array($lists)) { $lists = []; }
 		
 		$max_items_per_page = $this->request->getParameter('max', pInteger);
 		if (($max_items_per_page > 1000) || ($max_items_per_page <= 0)) {
