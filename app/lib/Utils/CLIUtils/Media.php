@@ -113,8 +113,7 @@ trait CLIUtilsMedia {
 			}
 
 			if ( $o_log ) {
-				$o_log->logDebug( _t( "[reprocess-media] Running query for '$sql_joins' and '$sql_where' with params '"
-									  . str_replace(array("\r", "\n"), '',var_export( $params, true ) . "'" )) );
+				$o_log->logDebug( _t( "[reprocess-media] Running query for '%1' and '%2' with params '%3'", $sql_joins, $sql_where,  str_replace(array("\r", "\n"), '',var_export($params, true))));
 			}
 
 			$qr_c = $o_db->query("

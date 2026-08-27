@@ -87,6 +87,7 @@ trait CLIUtilsLocalization {
 					$cstrings = caGetTextStringsFromPHPFile($f);
 				}
 				foreach($cstrings as $cs) {
+					$cs['text'] = caEscapeStringforGetTextPOT($cs['text']);
 					$locs[$cs['text']][] = "{$fp}:{$cs['line']}";
 					$extracted_strings[] = $cs['text'];
 				}

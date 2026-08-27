@@ -164,12 +164,40 @@ function caGetTextStringsFromPHPFile(string $filepath) : ?array {
 			if ($node instanceof \PhpParser\Node\Expr\FuncCall) {
 				if(($node->name == '_t') || ($node->name == '_p')) {
 					$arg = $node->args[0]->jsonSerialize();
-					$line = $arg['attributes']['startLine'];
-					$str = $node->args[0]->value->jsonSerialize();
-					$value = $str['value'];
+					
+					if($arg['value'] instanceof \PhpParser\Node\Expr\BinaryOp) {
+						$s = $arg['value'];
+						$stack = [];
+						$str = [];
+						$value = null;
+						do {
+							if($s->left instanceof \PhpParser\Node\Scalar\String_) {
+								$str[] = (string)$s->left->value;
+								$str[] = (string)$s->right->value;
+								do {
+									$s = array_pop($stack);
+									$str[] = (string)$s->right->value;
+								} while(sizeof($stack) > 0);
+								$line = $arg['attributes']['startLine'];
+								$value = join('', $str);
+								break;
+							} else {
+								array_push($stack, $s);
+								$s = $s->left;
+							}
+						} while($s);
+						if(!$line || is_null($value)) { 
+							throw new ApplicationException(_t('Could not extract complex string in %1 at line %2', $this->filepath, $arg['attributes']['startLine'] ?? '???'));
+						}
+					} else {
+						$line = $arg['attributes']['startLine'];
+						$str = $node->args[0]->value->jsonSerialize();
+						$value = $str['value'];
+					}
+					
 					if(!strlen($value)) { return; }
 					$this->strings[] = [
-						'text' => caEscapeStringforGetTextPOT($value),
+						'text' => $value,
 						'line' => $line
 					];
 				} else {
@@ -184,7 +212,7 @@ function caGetTextStringsFromPHPFile(string $filepath) : ?array {
 							foreach($m[1] as $value) {
 								if(!strlen($value) || ($value === '(.*?)')) { continue; }
 								$this->strings[] = [
-									'text' => caEscapeStringforGetTextPOT($value),
+									'text' => $value,
 									'line' => $line
 								];
 							}	
@@ -199,7 +227,7 @@ function caGetTextStringsFromPHPFile(string $filepath) : ?array {
 					foreach($m[1] as $value) {
 						if(!strlen($value) || ($value === '(.*?)')) { continue; }
 						$this->strings[] = [
-							'text' => caEscapeStringforGetTextPOT($value),
+							'text' => $value,
 							'line' => $line
 						];
 					}	
@@ -207,6 +235,7 @@ function caGetTextStringsFromPHPFile(string $filepath) : ?array {
 			}
 		}
 	});
+	$c->filepath = $filepath;
 	$traverser->traverse($ast);
 	return $c->strings;
 }
@@ -215,7 +244,8 @@ function caGetTextStringsFromPHPFile(string $filepath) : ?array {
  *
  */
 function caEscapeStringforGetTextPOT(string $value) : string {
-	$value = str_replace('"', '\\"', $value);
+	$value = str_replace("\\", "\\\\", $value);
+	$value = str_replace("\"", "\\\"", $value);
 	$value = str_replace("\t", '\\t', $value);
 	$value = str_replace("\n", '\\n', $value);
 	$value = str_replace("\r", '\\n', $value);
