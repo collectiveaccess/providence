@@ -52,12 +52,16 @@ trait CLIUtilsLocalization {
 			CLIUtils::addError(_t('Cannot write to %1', $file));
 			return null;
 		}
+		$skip_locale = (bool)$opts->getOption('skip-local');
+		
 		$team = $opts->getOption('team');
 		$extracted_strings = [];
 		
-		$directories = [__CA_THEMES_DIR__."/default", __CA_THEMES_DIR__."/{$theme}", __CA_BASE_DIR__."/app/models", __CA_BASE_DIR__."/app/lib", __CA_BASE_DIR__."/app/helpers", __CA_BASE_DIR__."/app/conf", __CA_BASE_DIR__."/app/widgets", __CA_BASE_DIR__."/app/service", __CA_BASE_DIR__."/app/plugins", __CA_BASE_DIR__."/app/controllers", __CA_BASE_DIR__."/app/printTemplates", __CA_BASE_DIR__."/app/refineries"];
+		$directories = [__CA_THEMES_DIR__."/default", __CA_THEMES_DIR__."/{$theme}", __CA_BASE_DIR__."/app/models", __CA_BASE_DIR__."/app/lib", __CA_BASE_DIR__."/app/helpers", __CA_BASE_DIR__."/app/conf", __CA_BASE_DIR__."/app/widgets", __CA_BASE_DIR__."/app/service", __CA_BASE_DIR__."/app/plugins", __CA_BASE_DIR__."/app/controllers", __CA_BASE_DIR__."/app/printTemplates", __CA_BASE_DIR__."/app/refineries", __CA_BASE_DIR__."/install", __CA_BASE_DIR__."/support"];
 		
 		$file_count = 0;
+		
+		$locs = [];
 		foreach($directories as $d) {
 			$files = caGetDirectoryContentsAsList($d);
 			print CLIProgressBar::start(sizeof($files), _t('Processing %1', pathinfo($d, PATHINFO_BASENAME)));
@@ -67,34 +71,26 @@ trait CLIUtilsLocalization {
 				print CLIProgressBar::next();
 				
 				if(!file_exists($f)) { continue; }
+				if($skip_locale && preg_match("!/local/!", $f)) { continue; }
 				$ext = strtolower(pathinfo($f, PATHINFO_EXTENSION));
 				if(!in_array($ext, ['php', 'conf'])) { continue; }
 				$is_conf = ($ext === 'conf');
 				
 				$file_count++;
-				$r = fopen($f, "r");
+				$fp = str_replace(__CA_BASE_DIR__.((substr(__CA_BASE_DIR__, -1, 1) !== '/') ? '/' : ''), '', $f);
+				$ln = 1;
 
-				while($line = fgets($r)) {
-					if($is_conf) {
-						$regexes = ["!_\([\"\']{0,1}([^\"\)]+?)[\"\']{0,1}[,\)]+!s"];	// _() construction used in config files
-					} else {
-						$regexes = [
-							"!_t\([\"]{1}([^\"]+?)[\"]{1}[,\)]+!s",				// _t("") construction used in code
-							"!_t\([\']{1}([^\']+?)[\']{1}[,\)]+!s",				// _t('') construction used in code
-							"!<t>(.*?)</t>!s"									// <t>...</t> construction used in templates and view files
-						];
-					}
-					
-					foreach($regexes as $rx) {
-						$strings = preg_match_all($rx, $line, $m);
-	
-						$extracted_strings = array_merge($extracted_strings, array_map(function($x) { 
-							return str_replace('"', "\\\"", $x);
-						}, array_filter($m[1], function($v) {
-							return preg_match("![A-Za-z0-9]+!s", $v);
-						})));
-					}
+				if($is_conf) {
+					$conf = Configuration::load($f);
+					$cstrings = $conf->getTranslatedStrings();
+				} else {
+					$cstrings = caGetTextStringsFromPHPFile($f);
 				}
+				foreach($cstrings as $cs) {
+					$locs[$cs['text']][] = "{$fp}:{$cs['line']}";
+					$extracted_strings[] = $cs['text'];
+				}
+				$extracted_strings = array_unique($extracted_strings);
 			}
 			print CLIProgressBar::finish();
 		}
@@ -126,6 +122,11 @@ trait CLIUtilsLocalization {
 		fputs($out, "\n");
 
 		foreach($extracted_strings as $s) {
+			if(is_array($locs[$s])) { 
+				foreach(($locs[$s]) as $l) {
+					fputs($out,"#: {$l}\n");
+				}
+			}
 			fputs($out, "msgid \"{$s}\"\n");
 			fputs($out, "msgstr \"\"\n\n");
 		}
@@ -139,6 +140,7 @@ trait CLIUtilsLocalization {
 			"theme|g=s" => _t('Theme to extract strings from. If omitted the currently configured theme is used.'),
 			"locale|l=s" => _t('Locale of translation.'),
 			"file|f=s" => _t('File to write strings to.'),
+			"skip-local|c=s" => _t('Skip files in local configuration and printTemplates directories.'),
 			"team|t=s" => _t('Language team name. If omitted the current application name'),
 		];
 	}

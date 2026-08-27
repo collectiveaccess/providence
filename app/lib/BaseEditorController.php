@@ -2020,7 +2020,7 @@ class BaseEditorController extends ActionController {
 			
 			$vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE');
 			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype))) {
-				throw new ApplicationException(_t('Invalid viewer for '.$vs_mimetype));
+				throw new ApplicationException(_t('Invalid viewer for %1', $vs_mimetype));
 			}
 			
 			$va_display_info = caGetMediaDisplayInfo('media_overlay', $vs_mimetype);
@@ -2780,13 +2780,13 @@ class BaseEditorController extends ActionController {
 		}
 		$placement = new ca_editor_ui_bundle_placements($placement_id);
 		if (!$placement->isLoaded()) {
-			throw new ApplicationException(_('Invalid placement_id'));
+			throw new ApplicationException(_t('Invalid placement_id'));
 		}
 		$editor_table = $placement->getEditorType();
 		$t_instance = Datamodel::getInstance($editor_table, true);
 		$vn_primary_id = $this->getRequest()->getParameter('primary_id', pInteger);
 		if (!($t_instance->load($vn_primary_id))) { 
-			throw new ApplicationException(_('Invalid id'));
+			throw new ApplicationException(_t('Invalid id'));
 		}
 		
 		$bundle_name = $placement->get('bundle_name');
@@ -2794,13 +2794,13 @@ class BaseEditorController extends ActionController {
 		switch($bundle_name) {
 			case 'history_tracking_current_contents':
 				if(!($policy = $placement->getSetting('policy'))) {
-					throw new ApplicationException(_('No policy set'));
+					throw new ApplicationException(_t('No policy set'));
 				}
 				if(!is_array($policy_config = $editor_table::getPolicyConfig($policy))) {
-					throw new ApplicationException(_('Could not get policy configuration for policy %1', $policy));
+					throw new ApplicationException(_t('Could not get policy configuration for policy %1', $policy));
 				}
 				if(!($table = $policy_config['table']) || !Datamodel::tableExists($table)) {
-					throw new ApplicationException(_('Invalid table %1 in policy %2', $table, $policy));
+					throw new ApplicationException(_t('Invalid table %1 in policy %2', $table, $policy));
 				}
 				$ids = $t_instance->getContents($policy, array_merge($placement->getSettings(), ['idsOnly' => true]));
 				break;
@@ -2808,7 +2808,7 @@ class BaseEditorController extends ActionController {
 				$id = $this->request->getParameter('primary_id', pInteger);
 				$t_object = ca_objects::findAsInstance($id);
 				if(!$t_object || !$t_object->isSaveable($this->request) || !$t_object->canTakeComponents()) {
-					throw new ApplicationException(_('Invalid item'));
+					throw new ApplicationException(_t('Invalid item'));
 				}
 				$ids = $t_object->getComponents(['returnAs' => 'ids']);
 				$table = "ca_objects";
@@ -2825,7 +2825,7 @@ class BaseEditorController extends ActionController {
 		}
 	
 		if(!$ids || !sizeof($ids)) { 
-			throw new ApplicationException(_('No related items'));
+			throw new ApplicationException(_t('No related items'));
 		}
 		$rc = new ResultContext($this->request, $table, 'BatchEdit');
 		$rc->setResultList($ids);
@@ -3066,12 +3066,12 @@ class BaseEditorController extends ActionController {
 			// For now support both placement_ids and passed ID lists
 			$placement = new ca_editor_ui_bundle_placements($placement_id);
 			if (!$placement->isLoaded()) {
-				throw new ApplicationException(_('Invalid placement_id'));
+				throw new ApplicationException(_t('Invalid placement_id'));
 			}
 			$t_instance = Datamodel::getInstance($placement->getEditorType(), true);
 	
 			if (!($t_instance->load($vn_primary_id))) { 
-				throw new ApplicationException(_('Invalid id'));
+				throw new ApplicationException(_t('Invalid id'));
 			}
 			$va_ids = $t_instance->getRelatedItems($placement->get('bundle_name'), ['returnAs' => 'ids']);
 		} else {

@@ -60,7 +60,8 @@
     "geocoder-php/nominatim-provider": "^5.8",
     "geocoder-php/geonames-provider": "^4.5",
     "geocoder-php/chain-provider": "^4.6",
-    "anthonymartin/geo-location": "^2.0"
+    "anthonymartin/geo-location": "^2.0",
+    "nikic/php-parser": "^5.8"
   },
   "suggest": {
     "binaryoung/jieba-php": "^0.1.0",

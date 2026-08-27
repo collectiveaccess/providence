@@ -85,6 +85,10 @@ class Configuration {
 	static $s_config_cache = null;
 	static $s_have_to_write_config_cache = false;
 	
+	/**
+	 *
+	 */
+	private $translated_strings = [];
 
 	/* ---------------------------------------- */
 	/**
@@ -273,13 +277,14 @@ class Configuration {
 	public function loadFile($filepath, $die_on_error=false, $num_lines_to_read=null) {
 		$this->ops_md5_path = md5($filepath);
 		$this->ops_error = "";
+		$this->translated_strings = [];
+		
 		$r_file = @fopen($filepath,"r", true);
 		if (!$r_file) {
 			$this->ops_error = "Couldn't open configuration file '".$filepath."'";
 			if ($die_on_error) { $this->_dieOnError(); }
 			return false;
 		}
-
 		$key = $scalar_value = $assoc_key = "";
 		$in_quote = $state = 0;
 		$escape_set = $quoted_item_is_closed = false;
@@ -466,7 +471,7 @@ class Configuration {
 								if ($in_quote || $escape_set) {
 									$scalar_value .= ",";
 								} else {
-									if (strlen($item = trim($this->_interpolateScalar($this->_trimScalar($scalar_value)))) > 0) {
+									if (strlen($item = trim($this->_interpolateScalar($this->_trimScalar($scalar_value), $line_num))) > 0) {
 										$this->ops_config_settings["lists"][$key][] = $item;
 									}
 									$scalar_value = "";
@@ -480,7 +485,7 @@ class Configuration {
 									$scalar_value .= "]";
 								} else {
 									# accept list
-									if (strlen($item = trim($this->_interpolateScalar($this->_trimScalar($scalar_value)))) > 0) {
+									if (strlen($item = trim($this->_interpolateScalar($this->_trimScalar($scalar_value), $line_num))) > 0) {
 										$this->ops_config_settings["lists"][$key][] = $item;
 									}
 									# initialize
@@ -536,7 +541,7 @@ class Configuration {
 								if ($in_quote || $escape_set) {
 									$assoc_key .= "=";
 								} else {
-									if ((strlen($assoc_key = trim($this->_interpolateScalar($assoc_key)))) == '') {
+									if ((strlen($assoc_key = trim($this->_interpolateScalar($assoc_key, $line_num)))) == '') {
 										$this->ops_error = "Associative key must not be empty";
 										fclose($r_file);
 
@@ -635,7 +640,7 @@ class Configuration {
 									$scalar_value .= ",";
 								} else {
 									if (strlen($assoc_key)) {
-										$assoc_pointer_stack[sizeof($assoc_pointer_stack) - 1][$assoc_key] = $this->_trimScalar($this->_interpolateScalar($scalar_value));
+										$assoc_pointer_stack[sizeof($assoc_pointer_stack) - 1][$assoc_key] = $this->_interpolateScalar($this->_trimScalar($scalar_value), $line_num);
 									}
 									$assoc_key = "";
 									$scalar_value = "";
@@ -670,14 +675,14 @@ class Configuration {
 								} else {
 									if (sizeof($assoc_pointer_stack) > 1) {
 										if (strlen($assoc_key)) {
-											$assoc_pointer_stack[sizeof($assoc_pointer_stack) - 1][$assoc_key] = $this->_trimScalar($this->_interpolateScalar($scalar_value));
+											$assoc_pointer_stack[sizeof($assoc_pointer_stack) - 1][$assoc_key] = $this->_interpolateScalar($this->_trimScalar($scalar_value), $line_num);
 										}
 										array_pop($assoc_pointer_stack);
 
 										$state = 40;
 									} else {
 										if (strlen($assoc_key)) {
-											$assoc_pointer_stack[sizeof($assoc_pointer_stack) - 1][$assoc_key] = $this->_trimScalar($this->_interpolateScalar($scalar_value));
+											$assoc_pointer_stack[sizeof($assoc_pointer_stack) - 1][$assoc_key] = $this->_interpolateScalar($this->_trimScalar($scalar_value), $line_num);
 										}
 										$state = -1;
 									}
@@ -744,7 +749,7 @@ class Configuration {
 								if ($in_quote || $escape_set) {
 									$scalar_value .= ",";
 								} else {
-									if (strlen($item = trim($this->_interpolateScalar($this->_trimScalar($scalar_value)))) > 0) {
+									if (strlen($item = trim($this->_interpolateScalar($this->_trimScalar($scalar_value), $line_num))) > 0) {
 										$assoc_pointer_stack[sizeof($assoc_pointer_stack) - 1][] = $item;
 									}
 									$scalar_value = "";
@@ -758,7 +763,7 @@ class Configuration {
 									$scalar_value .= "]";
 								} else {
 									# accept list
-									if (strlen($item = trim($this->_interpolateScalar($this->_trimScalar($scalar_value)))) > 0) {
+									if (strlen($item = trim($this->_interpolateScalar($this->_trimScalar($scalar_value), $line_num))) > 0) {
 										$assoc_pointer_stack[sizeof($assoc_pointer_stack) - 1][] = $item;
 									}
 									array_pop($assoc_pointer_stack);
@@ -837,7 +842,7 @@ class Configuration {
 		// interpolate scalars
 		if (isset($this->ops_config_settings["scalars"]) && is_array($this->ops_config_settings["scalars"])) {
 			foreach($this->ops_config_settings["scalars"] as $key => $val) {
-				$this->ops_config_settings["scalars"][$key] = $this->_interpolateScalar($val);
+				$this->ops_config_settings["scalars"][$key] = $this->_interpolateScalar($val, null);
 			}
 		}
 		fclose($r_file);
@@ -1094,26 +1099,35 @@ class Configuration {
 		die("Error loading configuration file '".$this->ops_config_file_path."': ".$this->ops_error."\n");
 	}
 	/* ---------------------------------------- */
-	private function _interpolateScalar(?string $text) : ?string {
+	private function _interpolateScalar(?string $text, ?int $line_num) : ?string {
 		if (preg_match_all("/<([A-Za-z0-9_\-\.]+)>/", $text ?? '', $matches)) {
 			foreach($matches[1] as $key) {
 				if (($val = $this->getScalar($key)) !== false) {
-					$text = preg_replace("/<$key>/", $val, $text);
+					$text = preg_replace("/<{$key}>/", $val, $text);
 				}
 			}
 		}
 
-		// attempt translation if text is enclosed in _( and ) ... for example _t(translate me)
+		// attempt translation if text is enclosed in _( and ) ... for example _(translate me)
 		// assumes translation function _t() is present; if not loaded will not attempt translation
-		if (function_exists('_t') && preg_match("/(?<=\s|>|^)_\(([^\"\)]+)\)/", $text ?? '', $matches)) {
-			$trans_text = $text;
-			array_shift($matches);
-			foreach($matches as $match) {
-				$trans_text = str_replace("_({$match})", _t($match), $trans_text);
-			}
+		if (function_exists('_t') && preg_match("!^_\(!", $text ?? '') && preg_match("!\)$!", $text ?? '')) {
+			$trans_text = mb_substr($text, 2, -1);
+			$this->translated_strings[] = [
+				'line' => $line_num,
+				'text' => $trans_text
+			];
 			return $trans_text;
 		}
 		return $text;
+	}
+	/* ---------------------------------------- */
+	/**
+	 * Return list of strings marked for translation in the loaded configuration file
+	 *
+	 * @return array
+	 */
+	public function getTranslatedStrings() : array {
+		return $this->translated_strings;
 	}
 	/* ---------------------------------------- */
 	/**

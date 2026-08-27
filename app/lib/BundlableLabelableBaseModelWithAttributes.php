@@ -1120,8 +1120,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			
 			if (($o_idno = $this->getIDNoPlugInInstance()) && (method_exists($o_idno, 'getSortableValue'))) {	// try to use plug-in's sort key generator if defined
 				$this->isChild();
-				$this->set($vs_idno_sort_field, $o_idno->getSortableValue($this->get($vs_idno_field)));
-				
+				$idno_sort = $o_idno->getSortableValue($this->get($vs_idno_field));
+				if(mb_strlen($idno_sort) > 768) { $idno_sort = mb_substr($idno_sort, 0, 768); }	// max sortable width is 768 characters
+				$this->set($vs_idno_sort_field, $idno_sort);
 				if($this->hasField("{$vs_idno_sort_field}_num") && (method_exists($o_idno, 'getSortableNumericValue'))) {
 					if(($n = $o_idno->getSortableNumericValue($this->get($vs_idno_field))) < 0) { return; } 
 					$this->set("{$vs_idno_sort_field}_num", $n);

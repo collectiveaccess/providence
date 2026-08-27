@@ -322,7 +322,7 @@ function caExportContentAsPDF($ps_content, $pa_template_info, $ps_output_filenam
 		}
 	} catch (Exception $e) {
 		$vb_printed_properly = false;
-		throw new ApplicationException(_t("Could not generate PDF: ".$e->getMessage()));
+		throw new ApplicationException(_t("Could not generate PDF: %1", $e->getMessage()));
 	}
 	
 	return $vb_printed_properly;

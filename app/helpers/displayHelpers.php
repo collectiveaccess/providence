@@ -403,7 +403,7 @@ function caDeleteRemapper($po_request, $t_instance) {
 			if (is_array($va_references_from = $t_instance->getAuthorityElementList()) && sizeof($va_references_from)) {
 				foreach($va_references_from as $va_ref) {
 					if (!($t_element = ca_metadata_elements::getInstance($va_ref['hier_element_id']))) { continue; }
-					$va_reference_from_buf[] = _t(($va_ref['count'] == 1) ? "%1 reference in %2" : "%1 references in %2", $va_ref['count'], $t_element->getLabelForDisplay());
+					$va_reference_from_buf[] = ($va_ref['count'] == 1) ? _t("%1 reference in %2", $va_ref['count'], $t_element->getLabelForDisplay()) :  _t("%1 references in %2", $va_ref['count'], $t_element->getLabelForDisplay());
 					$vn_reference_from_count += $va_ref['count'];
 				}
 			}
@@ -3083,7 +3083,7 @@ function caGetRelationDisplayString($po_request, $ps_table, $pa_attributes=null,
 			return "{$vs_reltype_disp} {$vs_display}";
 			break;
 		case 'none':
-			return "{$vs_display}";
+			return "{$vs_display} <input type='hidden' name='{$ps_prefix}_type_id{n}' id='{$ps_prefix}_type_id{n}' value='{type_id}'/>";
 			break;
 		default:
 		case 'right':

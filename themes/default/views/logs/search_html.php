@@ -76,7 +76,7 @@
 		</thead>
 		<tbody>
 <?php
-	if (sizeof($va_search_list)) {
+	if (sizeof($va_search_list ?? [])) {
 		foreach($va_search_list as $va_search) {
 ?>
 			<tr>
