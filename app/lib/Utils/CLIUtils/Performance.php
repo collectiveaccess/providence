@@ -79,7 +79,7 @@ trait CLIUtilsPerformance {
 										foreach($va_tag_vals as $vs_val) {
 											$vs_search_proc = caProcessTemplate($vs_search, [$vs_tag => $vs_val]);
 											file_get_contents($vs_url = $o_app_conf->get('site_protocol')."://{$vs_auth}".$o_app_conf->get('site_hostname').'/'.$o_app_conf->get('ca_url_root')."/service.php/simple/{$vs_endpoint}?noCache=1&q=".urlencode($vs_search_proc));
-											CLIUtils::addMessage(_t("[".$t_instance->getProperty('NAME_PLURAL')."] Cached endpoint %1 for search %2", $vs_endpoint, $vs_search_proc));
+											CLIUtils::addMessage(_t("[%1] Cached endpoint %2 for search %3", $t_instance->getProperty('NAME_PLURAL'), $vs_endpoint, $vs_search_proc));
 										}
 									}
 								} else {
