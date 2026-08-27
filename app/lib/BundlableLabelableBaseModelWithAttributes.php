@@ -2054,7 +2054,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// This bundle is only available when editing objects of type ca_sets
 					case 'inventory_list':
 						if ($vb_batch) { return null; } // not supported in batch mode
-						$vs_element .= $this->getInventoryListHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options, $pa_bundle_settings);
+						$element .= $this->getInventoryListHTMLFormBundle($options['request'], $options['formName'], $placement_code, $options, $bundle_settings);
 						break;
 					# -------------------------------
 					// This bundle is only available for types which support set membership
