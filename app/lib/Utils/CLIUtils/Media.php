@@ -744,8 +744,8 @@ trait CLIUtilsMedia {
 		}
 
 		$ids = [];
-		if ($ids = (string)$opts->getOption('ids')) {
-			if (sizeof($tmp = explode(",", $ids))) {
+		if ($p_ids = (string)$opts->getOption('ids')) {
+			if (sizeof($tmp = explode(",", $p_ids))) {
 				foreach($tmp as $id) {
 					if ((int)$id > 0) {
 						$ids[] = (int)$id;
@@ -806,6 +806,7 @@ trait CLIUtilsMedia {
 			print CLIProgressBar::finish();
 			CLIUtils::addMessage(_t('Complete'));
 		}
+		\CA\Process\Background::run('taskQueue');
 	}
 	# -------------------------------------------------------
 	/**
