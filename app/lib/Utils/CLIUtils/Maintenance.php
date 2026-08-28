@@ -40,6 +40,9 @@ trait CLIUtilsMaintenance {
 		
 		$tables = $opts ? trim((string)$opts->getOption('table')) : null;
 		
+		$process_labels = $opts ? $opts->getOption('labels') : null;
+		$process_identifiers = $opts ? $opts->getOption('identifiers') : null;
+		
 		if($tables) {
 			$tables = preg_split('![,;]+!', $tables);
 		} else {
@@ -60,46 +63,50 @@ trait CLIUtilsMaintenance {
 			$pk = $t_table->primaryKey();
 			$qr_res = $o_db->query("SELECT t.{$pk} FROM {$table} t {$deleted_sql}");
 
-			if ($label_table_name = $t_table->getLabelTableName()) {
-				$t_label = new $label_table_name;
-				$label_pk = $t_label->primaryKey();
-				$qr_labels = $o_db->query("
-					SELECT l.{$label_pk} 
-					FROM {$label_table_name} l
-					INNER JOIN {$table} AS t ON t.{$pk} = l.{$pk}
-					{$deleted_sql}
-				");
-				
-				$table_name_display = $t_label->getProperty('NAME_PLURAL');
-
-				print CLIProgressBar::start($qr_labels->numRows(), _t('Processing %1', $t_label->getProperty('NAME_PLURAL')));
-				while($qr_labels->nextRow()) {
-					$label_pk_val = $qr_labels->get($label_pk);
+			if(!(!$process_labels && $process_identifiers)) {
+				if ($label_table_name = $t_table->getLabelTableName()) {
+					$t_label = new $label_table_name;
+					$label_pk = $t_label->primaryKey();
+					$qr_labels = $o_db->query("
+						SELECT l.{$label_pk} 
+						FROM {$label_table_name} l
+						INNER JOIN {$table} AS t ON t.{$pk} = l.{$pk}
+						{$deleted_sql}
+					");
 					
-					CLIProgressBar::setMessage(_t("[Sort: %1][Mem: %2]", $table_name_display, caGetMemoryUsage()));
+					$table_name_display = $t_label->getProperty('NAME_PLURAL');
+	
+					print CLIProgressBar::start($qr_labels->numRows(), _t('Processing %1', $t_label->getProperty('NAME_PLURAL')));
+					while($qr_labels->nextRow()) {
+						$label_pk_val = $qr_labels->get($label_pk);
+						
+						CLIProgressBar::setMessage(_t("[Sort: %1][Mem: %2]", $table_name_display, caGetMemoryUsage()));
+						print CLIProgressBar::next();
+						if ($t_label->load($label_pk_val)) {
+							$t_table->logChanges(false);
+							$t_label->update(['dontDoSearchIndexing' => true]);
+						}
+					}
+					print CLIProgressBar::finish();
+				}
+			}
+
+			if(!($process_labels && !$process_identifiers)) {
+				print CLIProgressBar::start($qr_res->numRows(), _t('Processing %1 identifiers', $t_table->getProperty('NAME_SINGULAR')));
+				
+				$table_name_display = $t_table->getProperty('NAME_PLURAL');
+				while($qr_res->nextRow()) {
+					$pk_val = $qr_res->get($pk);
+					
+					CLIProgressBar::setMessage(_t("[Sort: %1 identifiers][Mem: %2]", $table_name_display, caGetMemoryUsage()));
 					print CLIProgressBar::next();
-					if ($t_label->load($label_pk_val)) {
+					if ($t_table->load($pk_val)) {
 						$t_table->logChanges(false);
-						$t_label->update(['dontDoSearchIndexing' => true]);
+						$t_table->update(['dontDoSearchIndexing' => true]);
 					}
 				}
 				print CLIProgressBar::finish();
 			}
-
-			print CLIProgressBar::start($qr_res->numRows(), _t('Processing %1 identifiers', $t_table->getProperty('NAME_SINGULAR')));
-			
-			$table_name_display = $t_table->getProperty('NAME_PLURAL');
-			while($qr_res->nextRow()) {
-				$pk_val = $qr_res->get($pk);
-				
-				CLIProgressBar::setMessage(_t("[Sort: %1 identifiers][Mem: %2]", $table_name_display, caGetMemoryUsage()));
-				print CLIProgressBar::next();
-				if ($t_table->load($pk_val)) {
-					$t_table->logChanges(false);
-					$t_table->update(['dontDoSearchIndexing' => true]);
-				}
-			}
-			print CLIProgressBar::finish();
 		}
 		return true;
 	}
@@ -109,7 +116,9 @@ trait CLIUtilsMaintenance {
 	 */
 	public static function rebuild_sort_valuesParamList() {
 		return array(
-			"table|t=s" => _t('Restrict rebuilding to a comma-separated list of table names.')
+			"table|t=s" => _t('Restrict rebuilding to a comma-separated list of table names.'),
+			"labels|l=s" => _t('Restrict rebuilding to labels.'),
+			"identifiers|i=s" => _t('Restrict rebuilding to identifiers.')
 		);
 	}
 	# -------------------------------------------------------
