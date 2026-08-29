@@ -2451,17 +2451,11 @@ trait CLIUtilsMaintenance {
 						break;
 					default:
 						$v = $qr_res->get('value_longtext1');
-						if(!$v) { 
-							print CLIProgressBar::next();
-							continue(2); 
-						}
 						break;
 				}
 				$value_id = $qr_res->get('value_id');
-				if (strlen($v) > 0) {
-					$sv = ca_metadata_elements::getSortableValueForElement($qr_res->get('element_id'), $v);
-					$o_db->query("UPDATE ca_attribute_values SET value_sortable = ? WHERE value_id = ?", [$sv, $value_id]);
-				}
+				$sv = ca_metadata_elements::getSortableValueForElement($qr_res->get('element_id'), $v);
+				$o_db->query("UPDATE ca_attribute_values SET value_sortable = ? WHERE value_id = ?", [$sv, $value_id]);
 				print CLIProgressBar::next();
 				$c++;
 				$last_value_id = $value_id;
