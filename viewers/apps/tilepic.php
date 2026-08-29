@@ -30,40 +30,66 @@
 # to save time. If you are using non-JPEG tiles (unlikely, right?) then change the 
 # Content-type header below.
 
-$is_windows = (substr(PHP_OS, 0, 3) == 'WIN');
-$filepath = $_REQUEST["p"];
-$tile = $_REQUEST["t"];
-$win_disk = '';
-if ($is_windows) {
-        $p = explode(DIRECTORY_SEPARATOR, __FILE__);
-        $script_path = join("/", array_slice($p, 0, -3));
-        $win_disk = $p[0];
-} else {
-    	$script_path = join("/", array_slice(explode(DIRECTORY_SEPARATOR, isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : __FILE__), 0, -3));
+$filepath = $_REQUEST["p"] ?? '';
+$tile = (int)($_REQUEST["t"] ?? 0);
+
+$raw_filepath = preg_replace("/\.tpc$/", "", $filepath);
+$public_path = parse_url($raw_filepath, PHP_URL_PATH);
+if (!$public_path) {
+	$public_path = $raw_filepath;
 }
-$filepath = preg_replace("/^http[s]{0,1}:\/\/[^\/]+/i", "", preg_replace("/\.tpc\$/", "", $filepath));
+$public_path = '/'.ltrim($public_path, '/');
+$public_path = preg_replace("/[^A-Za-z0-9_\-\/.]/", "", $public_path);
+$public_path = preg_replace('!/+!', '/', $public_path);
 
-$fp = explode("/", $filepath); array_shift($fp);
-$sp = explode("/", $script_path); array_shift($sp);
-
-foreach ($sp as $i => $s) {
-    if ($s === $fp[0]) {
-    	$sp = array_slice($sp, 0, $i);
-    	break;
-    }
+$ca_media_url_root = null;
+$ca_media_root_dir = null;
+$conf_path = dirname(__DIR__, 2).'/app/conf/global.conf';
+if (file_exists($conf_path) && is_readable($conf_path)) {
+	foreach (file($conf_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+		$line = trim($line);
+		if (!$line || ($line[0] === '#')) { continue; }
+		if (preg_match('/^ca_media_url_root\s*=\s*(.+)$/', $line, $m)) {
+			$ca_media_url_root = trim($m[1]);
+		}
+		if (preg_match('/^ca_media_root_dir\s*=\s*(.+)$/', $line, $m)) {
+			$ca_media_root_dir = trim($m[1]);
+		}
+	}
 }
-$script_path = $win_disk."/".join("/", $sp);
-$filepath = preg_replace("/[^A-Za-z0-9_\-\/]/", "", $filepath);
 
-if (file_exists("{$script_path}{$filepath}.tpc")) {
+$resolved_path = null;
+if ($ca_media_url_root && $ca_media_root_dir) {
+	$ca_media_url_root = rtrim(trim($ca_media_url_root, " \t\n\r\0\x0B\"'"), '/');
+	$ca_media_root_dir = rtrim(trim($ca_media_root_dir, " \t\n\r\0\x0B\"'"), '/');
+	$path_candidates = [];
+	if (($ca_media_url_root !== '') && (strpos($public_path, $ca_media_url_root.'/') === 0)) {
+		$relative_media_path = substr($public_path, strlen($ca_media_url_root));
+		$path_candidates[] = $ca_media_root_dir.$relative_media_path.'.tpc';
+	}
+	$path_candidates[] = $ca_media_root_dir.$public_path.'.tpc';
+	foreach ($path_candidates as $candidate) {
+		if ($candidate && file_exists($candidate)) {
+			$resolved_path = $candidate;
+			break;
+		}
+	}
+}
+
+if ($resolved_path && ($tile > 0)) {
 	header("Content-type: image/jpeg");
-	$output = caTilepicGetTileQuickly($script_path."/".$filepath.".tpc", $tile);
+	$output = caTilepicGetTileQuickly($resolved_path, $tile);
+	if ($output === false) {
+		http_response_code(404);
+		die("Invalid tile");
+	}
 	header("Content-Length: ".strlen($output));
 	print $output;
 	exit;
-} else {
-	die("Invalid file");
 }
+
+http_response_code(404);
+die("Invalid file");
 
 # ------------------------------------------------------------------------------------
 # Utilities
