@@ -26,6 +26,20 @@
  * ----------------------------------------------------------------------
  */
 class ShowController extends ActionController {
+	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+		// Set view path for plugin views directory
+		if (!is_array($pa_view_paths)) { $pa_view_paths = array(); }
+		$pa_view_paths[] = __CA_APP_DIR__."/plugins/helpMenu/themes/".__CA_THEME__."/views";
+
+		// Load plugin configuration file
+		$this->config = Configuration::load(__CA_APP_DIR__.'/plugins/helpMenu/conf/helpMenu.conf');
+
+
+		parent::__construct($po_request, $po_response, $pa_view_paths);
+
+		// Load plugin stylesheet
+		//MetaTagManager::addLink('stylesheet', __CA_URL_ROOT__."/app/plugins/ArtefactsCanada/themes/".__CA_THEME__."/css/ArtefactsCanada.css",'text/css');     
+	}
 	# -------------------------------------------------------
 	/**
 	 *
@@ -45,5 +59,13 @@ class ShowController extends ActionController {
 			return;
 		}
 	}
-	# -------------------------------------------------------		
+	# -------------------------------------------------------
+	public function Info(){
+		$current_page = new ca_site_pages($this->request->getAction());
+
+		$this->view->setVar('current_page', $current_page );
+
+		return $this->render('widget_helpmenu_info_html.php',true);
+
+	}
 }
