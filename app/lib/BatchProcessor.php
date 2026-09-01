@@ -1492,7 +1492,7 @@ class BatchProcessor {
 		}
 		
 		if (isset($pa_options['sendSMS']) && $pa_options['sendSMS']) {
-			SMS::send($po_request->getUserID(), _t("[%1] Metadata import processing for begun at %2 is complete", $po_request->config->get('app_display_name'),  caGetLocalizedDate($vn_start_time)));
+			SMS::send($po_request->getUserID(), _t("[%1] Metadata import processing begun at %2 is complete", $po_request->config->get('app_display_name'),  caGetLocalizedDate($vn_start_time)));
 		}
 		return array('errors' => $va_errors, 'notices' => $va_notices, 'processing_time' => caFormatInterval($vn_elapsed_time));
 	}
