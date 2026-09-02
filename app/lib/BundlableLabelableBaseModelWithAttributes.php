@@ -4657,6 +4657,7 @@ if (!$batch) {
 				) {
 					$this->set($this->HIERARCHY_PARENT_ID_FLD, null);
 					$this->set($this->HIERARCHY_ID_FLD, $this->getPrimaryKey());
+					$this->update();
 				
 					// Support for collection-object cross-table hierarchies
 					if ((bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($target_table == 'ca_objects') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')) && ($vn_parent_id == -1)) {	// -1 = extract from hierarchy
