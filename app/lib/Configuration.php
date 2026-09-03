@@ -128,6 +128,7 @@ class Configuration {
 	public function __construct($file_path=__CA_APP_CONFIG__, $die_on_error=false, $dont_cache=false, $dont_load_from_default_path=false, $dont_load_appname_specific_conf_file=false) {
 		global $g_ui_locale, $g_configuration_cache_suffix;
 
+		$this->translated_strings = [];
 		$this->ops_config_file_path = $file_path ? $file_path : __CA_APP_CONFIG__;	# path to configuration file
 		
 		$config_file_list = [];
@@ -277,7 +278,6 @@ class Configuration {
 	public function loadFile($filepath, $die_on_error=false, $num_lines_to_read=null) {
 		$this->ops_md5_path = md5($filepath);
 		$this->ops_error = "";
-		$this->translated_strings = [];
 		
 		$r_file = @fopen($filepath,"r", true);
 		if (!$r_file) {
@@ -337,8 +337,7 @@ class Configuration {
 							$key .= $token;
 						} else {
 							$got_key = 1;
-							$key = trim($key);
-
+							$key = $this->_interpolateScalar(trim($key), $line_num);
 							$state = 10;
 						}
 						break;
@@ -541,7 +540,7 @@ class Configuration {
 								if ($in_quote || $escape_set) {
 									$assoc_key .= "=";
 								} else {
-									if ((strlen($assoc_key = trim($this->_interpolateScalar($assoc_key, $line_num)))) == '') {
+									if ((strlen($assoc_key = $this->_interpolateScalar(trim($assoc_key), $line_num))) == '') {
 										$this->ops_error = "Associative key must not be empty";
 										fclose($r_file);
 
@@ -1111,7 +1110,7 @@ class Configuration {
 		// attempt translation if text is enclosed in _( and ) ... for example _(translate me)
 		// assumes translation function _t() is present; if not loaded will not attempt translation
 		if (function_exists('_t') && preg_match("!^_\(!", $text ?? '') && preg_match("!\)$!", $text ?? '')) {
-			$trans_text = mb_substr($text, 2, -1);
+			$trans_text = trim(mb_substr($text, 2, -1), " \"");
 			$this->translated_strings[] = [
 				'line' => $line_num,
 				'text' => $trans_text

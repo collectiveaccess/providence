@@ -778,7 +778,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 								$anchor_sql = '';
 								$word_op = 'LIKE';
 								$word = ($w == 0) ? "%{$word}%" : "{$word}%";
-								print "[$w] $word<br>\n";
 							}
 							break;
 						case 'START':
