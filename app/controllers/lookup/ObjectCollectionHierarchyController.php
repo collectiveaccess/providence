@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2025 Whirl-i-Gig
+ * Copyright 2012-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -113,8 +113,6 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 					}
 					$o_object_search->addResultFilter($this->opo_item_instance->tableName().'.'.$this->opo_item_instance->getTypeFieldName(), 'IN', join(",", $va_ids));
 				}
-			} else {
-				$va_ids = null;
 			}
 
 			// add any additional search elements
@@ -177,7 +175,9 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 				$va_col_sort = array('ca_collections.idno_sort');
 			}
 
-			$o_collection_search->addResultFilter($this->opo_item_instance->tableName().'.'.$this->opo_item_instance->getTypeFieldName(), 'IN', join(",", $va_ids));
+			if(is_array($va_ids) && sizeof($va_ids)) {
+				$o_collection_search->addResultFilter($this->opo_item_instance->tableName().'.'.$this->opo_item_instance->getTypeFieldName(), 'IN', join(",", $va_ids));
+			}
 			$qr_res = $o_collection_search->search(
 				'('.$ps_query_proc.(intval($pb_exact) ? '' : '*').')'.$vs_type_query.$vs_restrict_to_search.$vs_additional_query_params,
 				array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $va_col_sort)

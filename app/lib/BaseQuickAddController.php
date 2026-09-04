@@ -63,13 +63,14 @@ class BaseQuickAddController extends ActionController {
 		$vn_subject_id = $t_subject->getPrimaryKey();
 		
 		$t_placement = ($placement_id = $this->request->getParameter('placement_id', pString)) ? ca_editor_ui_bundle_placements::findAsInstance($placement_id) : null;
+		$this->view->setVar('placement_id', $placement_id);
 		
+		$create_relationship_on_save = $t_placement ? $t_placement->getSetting('createRelationshipOnQuickaddSave') : null;
 		$default_type_id = $t_placement ? $t_placement->getSetting('defaultQuickaddType') : null;
 		if(is_array($default_type_id)) { $default_type_id = array_shift($default_type_id); }
 		if(!$default_type_id) { $default_type_id = $t_subject->getDefaultTypeID(); }
 		
 		// table name and row_id from calling record (what we're quick-adding on)
-		// only set for ca_objects quick-adds
 		$vs_source = $this->request->getParameter('source', pString);
 		$vn_source_id = $this->request->getParameter('source_id', pInteger);
 	
@@ -93,6 +94,7 @@ class BaseQuickAddController extends ActionController {
 		// table name and row_id of caller
 		$this->view->setVar('source', $vs_source);
 		$this->view->setVar('source_id', $vn_source_id);
+		
 		
 		//
 		// Is record of correct type?
@@ -204,6 +206,17 @@ class BaseQuickAddController extends ActionController {
 			$this->view->setVar('forceLabel', $va_force_new_label);
 		}
 		
+		if($create_relationship_on_save && $vs_source && ($rt = Datamodel::getLinkingTableName($vs_source, $t_subject->tableName()))) {
+			$t_rel = Datamodel::getINstance($rt);
+			
+			$rtl = null;
+			if($t_source = $vs_source::findAsInstance($vn_source_id)) {
+				$rtl = $t_rel->getRelationshipTypesAsHTMLSelect($t_subject->tableName(), $t_subject->getTypeID(), $t_source->getTypeID(), ['name' => 'relationship_type_id'], $t_placement ? $t_placement->getSettings() : []);
+			}
+			
+			$this->view->setVar('relationship_type_list', $rtl);
+		}
+		
 		$this->view->setVar('restrict_to_lists', $this->request->getParameter('lists', pString));
 		$this->request->setParameter('type_id', $vn_type_id);
 		if($t_subject->hasField('type_id')) {
@@ -286,6 +299,14 @@ class BaseQuickAddController extends ActionController {
 	public function Save($pa_options=null) {
 		list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
 		if (!is_array($pa_options)) { $pa_options = array(); }
+		
+		$source = $this->request->getParameter('source', pString);
+		$source_id = $this->request->getParameter('source_id', pInteger);
+		
+		$t_placement = ($placement_id = $this->request->getParameter('placement_id', pString)) ? ca_editor_ui_bundle_placements::findAsInstance($placement_id) : null;
+		$this->view->setVar('placement_id', $placement_id);
+		
+		$create_relationship_on_save = $t_placement ? $t_placement->getSetting('createRelationshipOnQuickaddSave') : null;
 		
 		// Is user allowed to quickadd?
 		if (!(is_array($pa_options) && isset($pa_options['dontCheckQuickAddAction']) && (bool)$pa_options['dontCheckQuickAddAction']) && (!$this->request->user->canDoAction('can_quickadd_'.$t_subject->tableName()))) {
@@ -473,8 +494,8 @@ class BaseQuickAddController extends ActionController {
 			'table' => $t_subject->tableName(),
 			'type_id' => method_exists($t_subject, "getTypeID") ? $t_subject->getTypeID() : null,
 			'relation_id' => $vn_relation_id,
-			'display' => $va_name['label'],
-			'errors' => $va_error_list
+			'display' => $va_name['label'] ?? '???',
+			'errors' => $va_error_list ?? []
 		);
 		
 		$this->view->setVar('response', $va_response);

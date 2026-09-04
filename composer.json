@@ -10,7 +10,7 @@
   "require": {
     "caseyamcl/phpoaipmh": "^3.0",
     "collectiveaccess/service-wrapper": "dev-dev/2.0",
-    "dompdf/dompdf": "~2.0.2",
+    "dompdf/dompdf": "^3.1",
     "easyrdf/easyrdf": "1.1.1",
     "elasticsearch/elasticsearch": "~7.0",
     "ezyang/htmlpurifier": "~4.9",
@@ -60,7 +60,8 @@
     "geocoder-php/nominatim-provider": "^5.8",
     "geocoder-php/geonames-provider": "^4.5",
     "geocoder-php/chain-provider": "^4.6",
-    "anthonymartin/geo-location": "^2.0"
+    "anthonymartin/geo-location": "^2.0",
+    "nikic/php-parser": "^5.8"
   },
   "suggest": {
     "binaryoung/jieba-php": "^0.1.0",

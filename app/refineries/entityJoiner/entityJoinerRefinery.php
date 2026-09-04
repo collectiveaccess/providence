@@ -36,7 +36,7 @@
 		public function __construct() {
 			$this->ops_name = 'entityJoiner';
 			$this->ops_title = _t('Entity joiner');
-			$this->ops_description = _t('Converts data with partial entity names into a valid entities for import.');
+			$this->ops_description = _t('Converts data with partial entity names into valid entities for import.');
 
 			$this->opb_supports_relationships = true;
 			

@@ -1576,31 +1576,32 @@ class BaseEditorController extends ActionController {
 	 * reload an editing form.
 	 */
 	public function reload() {
-		list($vn_subject_id, $t_subject) = $this->_initView();
+		list($subject_id, $t_subject) = $this->_initView();
 
 		if(!$this->verifyAccess($t_subject)) { return; }
 
-		$ps_bundle = $this->request->getParameter("bundle", pString);
-		$pn_placement_id = $this->request->getParameter("placement_id", pInteger);
+		$bundle = $this->request->getParameter("bundle", pString);
+		$placement_id = $this->request->getParameter("placement_id", pInteger);
 		
-		$ps_sort = $this->request->getParameter("sort", pString);
-		$ps_sort_direction = $this->request->getParameter("sortDirection", pString);
+		$sort = $this->request->getParameter("sort", pString);
+		$sort_direction = $this->request->getParameter("sortDirection", pString);
 
 		$form_name = $this->request->getParameter("formName", pString);
+		$reload_item_list_only = $this->request->getParameter("reloadItemListOnly", pInteger);
 
-		switch($ps_bundle) {
+		switch($bundle) {
 			case '__inspector__':
-				$this->response->addContent($this->info(array($t_subject->primaryKey() => $vn_subject_id, 'type_id' => $this->request->getParameter("type_id", pInteger))));
+				$this->response->addContent($this->info(array($t_subject->primaryKey() => $subject_id, 'type_id' => $this->request->getParameter("type_id", pInteger))));
 				break;
 			default:
-				$t_placement = new ca_editor_ui_bundle_placements($pn_placement_id);
+				$t_placement = new ca_editor_ui_bundle_placements($placement_id);
 
 				if (!$t_placement->getPrimaryKey()) {
 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 					return;
 				}
 
-				if ($t_placement->get('bundle_name') != $ps_bundle) {
+				if ($t_placement->get('bundle_name') != $bundle) {
 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 					return;
 				}
@@ -1608,11 +1609,18 @@ class BaseEditorController extends ActionController {
 				if (!is_array($bundle_sort_defaults = $this->request->user->getVar('bundleSortDefaults'))) { 
 					$bundle_sort_defaults = [];
 				}
-				$bundle_sort_defaults["P{$pn_placement_id}"] = ['sort' => $ps_sort, 'sortDirection' => $ps_sort_direction];
+				$bundle_sort_defaults["P{$placement_id}"] = ['sort' => $sort, 'sortDirection' => $sort_direction];
 				$this->request->user->setVar('bundleSortDefaults', $bundle_sort_defaults);
 				
 				$bundle_label = null;
-				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, "P{$pn_placement_id}", array_merge($t_placement->get('settings') ?? [], ['placement_id' => $pn_placement_id]), ['formName' => $form_name, 'request' => $this->request, 'contentOnly' => true, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction, 'userSetSort' => true], $bundle_label));
+				
+				$content = $t_subject->getBundleFormHTML($bundle, "P{$placement_id}", array_merge($t_placement->get('settings') ?? [], ['placement_id' => $placement_id]), ['formName' => $form_name, 'request' => $this->request, 'contentOnly' => true, 'sort' => $sort, 'sortDirection' => $sort_direction, 'userSetSort' => true, 'relatedListOnly' => $reload_item_list_only], $bundle_label);
+				if($reload_item_list_only) {
+					$this->response->setContentType('application/json');
+					$this->response->addContent(json_encode($content));
+				} else {
+					$this->response->addContent($content);
+				}
 				break;
 		}
 	}
@@ -1621,22 +1629,22 @@ class BaseEditorController extends ActionController {
 	 * Return partial list of values for bundle. Used for incremental loading of relationship lists.
 	 */
 	public function loadBundleValues() {
-		list($vn_subject_id, $t_subject) = $this->_initView();
+		list($subject_id, $t_subject) = $this->_initView();
 
 		if(!$this->verifyAccess($t_subject)) { return; }
 		
-		$ps_bundle_name = $this->request->getParameter("bundle", pString);
-		if ($this->request->user->getBundleAccessLevel($t_subject->tableName(), $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
+		$bundle_name = $this->request->getParameter("bundle", pString);
+		if ($this->request->user->getBundleAccessLevel($t_subject->tableName(), $bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
 
-		$pn_placement_id = $this->request->getParameter("placement_id", pInteger);
-		$pn_start = (int)$this->request->getParameter("start", pInteger);
-		if (!($pn_limit = $this->request->getParameter("limit", pInteger))) { $pn_limit = null; }
+		$placement_id = $this->request->getParameter("placement_id", pInteger);
+		$start = (int)$this->request->getParameter("start", pInteger);
+		if (!($limit = $this->request->getParameter("limit", pInteger))) { $limit = null; }
 		$sort = $this->request->getParameter("sort", pString);
 		$sort_direction = $this->request->getParameter("sortDirection", pString);
 
-		$t_placement = new ca_editor_ui_bundle_placements($pn_placement_id);
+		$t_placement = new ca_editor_ui_bundle_placements($placement_id);
 		
-		$d = $t_subject->getBundleFormValues($ps_bundle_name, "{$pn_placement_id}", $t_placement->get('settings'), array('start' => $pn_start, 'limit' => $pn_limit, 'sort' => $sort, 'sortDirection' => $sort_direction, 'request' => $this->request, 'contentOnly' => true));
+		$d = $t_subject->getBundleFormValues($bundle_name, "{$placement_id}", $t_placement->get('settings'), array('start' => $start, 'limit' => $limit, 'sort' => $sort, 'sortDirection' => $sort_direction, 'request' => $this->request, 'contentOnly' => true));
 
 		$this->response->setContentType('application/json');
 		$this->response->addContent(json_encode(['sort' => array_keys($d ?? []), 'data' => $d]));
@@ -2011,7 +2019,7 @@ class BaseEditorController extends ActionController {
 			
 			$vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE');
 			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype))) {
-				throw new ApplicationException(_t('Invalid viewer for '.$vs_mimetype));
+				throw new ApplicationException(_t('Invalid viewer for %1', $vs_mimetype));
 			}
 			
 			$va_display_info = caGetMediaDisplayInfo('media_overlay', $vs_mimetype);
@@ -2771,13 +2779,13 @@ class BaseEditorController extends ActionController {
 		}
 		$placement = new ca_editor_ui_bundle_placements($placement_id);
 		if (!$placement->isLoaded()) {
-			throw new ApplicationException(_('Invalid placement_id'));
+			throw new ApplicationException(_t('Invalid placement_id'));
 		}
 		$editor_table = $placement->getEditorType();
 		$t_instance = Datamodel::getInstance($editor_table, true);
 		$vn_primary_id = $this->getRequest()->getParameter('primary_id', pInteger);
 		if (!($t_instance->load($vn_primary_id))) { 
-			throw new ApplicationException(_('Invalid id'));
+			throw new ApplicationException(_t('Invalid id'));
 		}
 		
 		$bundle_name = $placement->get('bundle_name');
@@ -2785,13 +2793,13 @@ class BaseEditorController extends ActionController {
 		switch($bundle_name) {
 			case 'history_tracking_current_contents':
 				if(!($policy = $placement->getSetting('policy'))) {
-					throw new ApplicationException(_('No policy set'));
+					throw new ApplicationException(_t('No policy set'));
 				}
 				if(!is_array($policy_config = $editor_table::getPolicyConfig($policy))) {
-					throw new ApplicationException(_('Could not get policy configuration for policy %1', $policy));
+					throw new ApplicationException(_t('Could not get policy configuration for policy %1', $policy));
 				}
 				if(!($table = $policy_config['table']) || !Datamodel::tableExists($table)) {
-					throw new ApplicationException(_('Invalid table %1 in policy %2', $table, $policy));
+					throw new ApplicationException(_t('Invalid table %1 in policy %2', $table, $policy));
 				}
 				$ids = $t_instance->getContents($policy, array_merge($placement->getSettings(), ['idsOnly' => true]));
 				break;
@@ -2799,7 +2807,7 @@ class BaseEditorController extends ActionController {
 				$id = $this->request->getParameter('primary_id', pInteger);
 				$t_object = ca_objects::findAsInstance($id);
 				if(!$t_object || !$t_object->isSaveable($this->request) || !$t_object->canTakeComponents()) {
-					throw new ApplicationException(_('Invalid item'));
+					throw new ApplicationException(_t('Invalid item'));
 				}
 				$ids = $t_object->getComponents(['returnAs' => 'ids']);
 				$table = "ca_objects";
@@ -2816,7 +2824,7 @@ class BaseEditorController extends ActionController {
 		}
 	
 		if(!$ids || !sizeof($ids)) { 
-			throw new ApplicationException(_('No related items'));
+			throw new ApplicationException(_t('No related items'));
 		}
 		$rc = new ResultContext($this->request, $table, 'BatchEdit');
 		$rc->setResultList($ids);
@@ -3041,12 +3049,12 @@ class BaseEditorController extends ActionController {
 			// For now support both placement_ids and passed ID lists
 			$placement = new ca_editor_ui_bundle_placements($placement_id);
 			if (!$placement->isLoaded()) {
-				throw new ApplicationException(_('Invalid placement_id'));
+				throw new ApplicationException(_t('Invalid placement_id'));
 			}
 			$t_instance = Datamodel::getInstance($placement->getEditorType(), true);
 	
 			if (!($t_instance->load($vn_primary_id))) { 
-				throw new ApplicationException(_('Invalid id'));
+				throw new ApplicationException(_t('Invalid id'));
 			}
 			$va_ids = $t_instance->getRelatedItems($placement->get('bundle_name'), ['returnAs' => 'ids']);
 		} else {

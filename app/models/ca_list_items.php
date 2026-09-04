@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -82,7 +82,7 @@ BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Identifier sort'), 'DESCRIPTION' => _t('Sortable value for identifier'),
-				'BOUNDS_LENGTH' => array(0,255)
+				'BOUNDS_LENGTH' => array(0, 768)
 		),
 		'idno_sort_num' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -934,9 +934,20 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	}
 	# ------------------------------------------------------
 	public function load($pm_id=null, $pb_use_cache=true) {
+		$key = md5(serialize($pm_id));
+		if(CompositeCache::contains($key, 'listItem')) { 
+			$this->_FIELD_VALUES = CompositeCache::fetch($key, 'listItem');
+			
+			if(!is_array($this->_FIELD_VALUES) || !sizeof($this->_FIELD_VALUES)) { return false; }
+			return true;
+		}
 		if ($vn_rc = parent::load($pm_id, $pb_use_cache)) {
 			$this->_setSettingsForList();
+			CompositeCache::save($key, $this->_FIELD_VALUES, 'listItem');
+		} else {
+			CompositeCache::save($key, null, 'listItem');
 		}
+
 		return $vn_rc;
 	}
 	# ------------------------------------------------------

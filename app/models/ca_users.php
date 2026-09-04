@@ -3216,7 +3216,7 @@ class ca_users extends BaseModel {
 		$this->set('active', 0);
 		$this->update();
 
-		caLogEvent('SYS', _t('User %1 was permanently deactivated because the maximum number of consecutive unsuccessful password reset attemps was reached.', $this->get('user_name')), 'ca_users->passwordResetDeactivateAccount');
+		caLogEvent('SYS', _t('User %1 was permanently deactivated because the maximum number of consecutive unsuccessful password reset attempts was reached.', $this->get('user_name')), 'ca_users->passwordResetDeactivateAccount');
 			
 		global $g_request;
 		caSendMessageUsingView(
@@ -3702,7 +3702,7 @@ class ca_users extends BaseModel {
 			}
 		}
 		
-		return ca_users::$s_user_action_access_cache[$cache_key] = null;
+		return ca_users::$s_user_action_access_cache[$cache_key] = false;
 	}
 	# ----------------------------------------
 	/**

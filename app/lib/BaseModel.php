@@ -3446,7 +3446,7 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 			$this->_FIELD_VALUE_CHANGED = array();
 			
 			// Update instance cache
-			if (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100) { 	// Limit cache to 100 instances per table
+			if (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()] ?? []) > 100) { 	// Limit cache to 100 instances per table
 				BaseModel::$s_instance_cache[$vs_table_name] = array_slice(BaseModel::$s_instance_cache[$vs_table_name], 0, 50, true);
 			}
 			BaseModel::$s_instance_cache[$vs_table_name][(int)$this->getPrimaryKey()] = $this->_FIELD_VALUES;
@@ -9958,7 +9958,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 			return $t_item_rel;
 		} else {
-			switch(sizeof($va_rel_info['path'])) {
+			switch(sizeof($va_rel_info['path'] ?? [])) {
 				case 3:		// many-to-many relationship
 					
 					$vs_left_table = $t_item_rel->getLeftTableName();
@@ -10126,7 +10126,7 @@ $pa_options["display_form_field_tips"] = true;
 				return $t_item_rel;
 			}
 		} else {
-			switch(sizeof($va_rel_info['path'])) {
+			switch(sizeof($va_rel_info['path'] ?? [])) {
 				case 3:		// many-to-many relationship
 					if ($t_item_rel->load($pn_relation_id)) {
 						if(!is_null($pn_rel_id)) {
@@ -10239,7 +10239,7 @@ $pa_options["display_form_field_tips"] = true;
 				return true;
 			}	
 		} else {
-			switch(sizeof($va_rel_info['path'])) {
+			switch(sizeof($va_rel_info['path'] ?? [])) {
 				case 3:		// many-to-one relationship
 					if ($t_item_rel->load($pn_relation_id)) {
 						$t_item_rel->delete();
@@ -10295,7 +10295,7 @@ $pa_options["display_form_field_tips"] = true;
 		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { return null; }
 		
 		// Is this a many-one? (Eg. ca_objects <= ca_object_lots)
-		if(sizeof($va_rel_info['path']) == 2) {
+		if(is_array($va_rel_info['path']) && (sizeof($va_rel_info['path']) == 2)) {
 			if(isset($va_rel_info['rel_keys']['many_table']) && ($va_rel_info['rel_keys']['many_table'] === $this->tableName()) && ($key = $va_rel_info['rel_keys']['many_table_field'])) {
 				$this->set($key, null);
 				return $this->update();

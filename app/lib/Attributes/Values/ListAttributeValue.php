@@ -128,7 +128,6 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 	'render' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_SELECT,
-		'default' => 1,
 		'width' => 40, 'height' => 1,
 		'label' => _t('Render list in editor as'),
 		'description' => _t('Set the presentation of the list when editing to select, checkboxes, radio buttons, type-ahead lookup or browser.'),
@@ -261,7 +260,7 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'width' => 90, 'height' => 4,
 		'label' => _t('Current selection template'),
 		'validForRootOnly' => 1,
-		'description' => _t('Template formatting current selection text. You may use the following tags: ^current (the currently selected list item), ^parent (the parent of the currently selected list item), ^hierarchy (the full hierarchal path to the list item).')
+		'description' => _t('Template formatting current selection text. You may use the following tags: ^current (the currently selected list item), ^parent (the parent of the currently selected list item), ^hierarchy (the full hierarchical path to the list item).')
 	),
 	'minimizeExistingValues' => array(
 		'formatType' => FT_NUMBER,
@@ -277,7 +276,7 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 		'default' => 0,
 		'width' => 1, 'height' => 1,
 		'label' => _t('Defer loading of hierarchy browser?'),
-		'description' => _t('Check this option to defer loading of hierarachy browser for existing values using hierarchical render modes when not minimized until user clicks.')
+		'description' => _t('Check this option to defer loading of hierarchy browser for existing values using hierarchical render modes when not minimized until user clicks.')
 	),
 	'separateDisabledValues' => array(
 		'formatType' => FT_NUMBER,
@@ -942,7 +941,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 		if(preg_match("/^hideIfSelected/", $ps_setting_key)) {
 			if(isset($pa_element_info['settings']['render']) && !is_null($pa_element_info['settings']['render'])) {
 				if (!in_array($pa_element_info['settings']['render'], array('radio_buttons', 'select', 'yes_no_checkboxes'))) {
-					$ps_error = _t("dependent field visibility is only supported for radio buttons and drop-down (select) menus");
+					$ps_error = _t("Dependent field visibility is only supported for radio buttons and drop-down (select) menus");
 					return false;
 				}
 			}

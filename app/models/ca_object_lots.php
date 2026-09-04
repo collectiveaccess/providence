@@ -67,7 +67,7 @@ BaseModel::$s_ca_models_definitions['ca_object_lots'] = array(
 			'IS_NULL' => false, 
 			'DEFAULT' => '',
 			'LIST_CODE' => 'object_lot_types',
-			'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the object lot. In CollectiveAccess every lot has a single "instrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.')
+			'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the object lot. In CollectiveAccess every lot has a single "intrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.')
 		),
 		'lot_status_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -92,7 +92,7 @@ BaseModel::$s_ca_models_definitions['ca_object_lots'] = array(
 			'IS_NULL' => false, 
 			'DEFAULT' => '',
 			'LABEL' => 'Idno stub sort', 'DESCRIPTION' => 'Sortable version of idno_stub',
-			'BOUNDS_LENGTH' => array(0,255)
+			'BOUNDS_LENGTH' => array(0,768)
 		),
 		'idno_stub_sort_num' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 

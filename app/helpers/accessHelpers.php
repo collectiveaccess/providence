@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2025 Whirl-i-Gig
+ * Copyright 2010-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -902,7 +902,9 @@ function caTranslateBundlesForAccessChecking($ps_table_name, $ps_bundle_name) {
  *		useSettingsOnly = Return ACL enabled status based upon configuration settings only, ignoring __CA_DISABLE_ACL__ constant. [Default is false]
  * @return bool
  */
+$g_acl_is_enabled_checked_support = [];
 function caACLIsEnabled($t_item=null, ?array $options=null) : bool {
+	global $g_acl_is_enabled_checked_support;
 	$use_settings_only = caGetOption('useSettingsOnly', $options, false);
 	if(!$use_settings_only && defined("__CA_DISABLE_ACL__") && __CA_DISABLE_ACL__) { return false; }
 	if($options['dontFilterByACL'] ?? false) { return false; }
@@ -935,8 +937,11 @@ function caACLIsEnabled($t_item=null, ?array $options=null) : bool {
 	if(!is_a($t_item, 'BaseModel')) { $t_item = Datamodel::getInstance($t_item, true); }
 	
 	if(!$config->get('perform_item_level_access_checking') || ($t_item && $config->get($t_item->tableName().'_dont_do_item_level_access_control'))) { return false; } 
+	$table = $t_item->tableName();
+	
 	if($t_item && method_exists($t_item, "supportsACL")) {
-		return (bool)$t_item->supportsACL();
+		if(isset($g_acl_is_enabled_checked_support[$table])) { return $g_acl_is_enabled_checked_support[$table]; }
+		return $g_acl_is_enabled_checked_support[$table] = (bool)$t_item->supportsACL();
 	}
 	return true;
 }
@@ -1040,5 +1045,34 @@ function caGetAccessConfigOption(BaseModelWithAttributes $t_item, string $config
 		}
 	}
 	return $ret;
+}
+# ---------------------------------------------------------------------------------------------
+/**
+ *
+ */
+function caConvertACLStringToConstant(string $name) : int {
+	switch($name) {
+		case 'edit':
+			return __CA_BUNDLE_ACCESS_EDIT__;
+		case 'read':
+			return __CA_BUNDLE_ACCESS_READONLY__;
+		case 'none':
+		default:
+			return __CA_BUNDLE_ACCESS_NONE__;
+	}
+}
+# ---------------------------------------------------------------------------------------------
+/**
+ *
+ */
+function caConvertUserGroupAccessStringToInt(string $name) : int {
+	switch($name) {
+		case 'read':
+			return 1;
+		case 'edit':
+			return 2;
+		default:
+			return 0;
+	}
 }
 # ---------------------------------------------------------------------------------------------

@@ -554,6 +554,13 @@ class DataMigrationUtils {
 		global $g_ui_locale;
 		$text = $original_text = trim(preg_replace("![ ]+!", " ", $text));
 		
+		// Consolidate parenthesised names with incorrectly applied whitespace
+		// Eg. MARY( MARNER) LARSON
+		$text = preg_replace("!([A-Za-z0-9]+)\(!", "$1 (", $text);
+		$text = preg_replace("!\)([A-Za-z0-9]+)!", ") $1", $text);
+		$text = preg_replace("!\([ ]+([A-Za-z0-9]+)!", "($1", $text);
+		$text = preg_replace("!([A-Za-z0-9]+)[ ]+\)!", "$1)", $text);
+		
 		// check for trailing year or years
 		$date = null;
 		if (caGetOption('parseDateSuffix', $options, false) && preg_match("![ ,]*[\(]{0,1}([\d]{4}[ \-\–]*[\d]{0,4})[\)]{0,1}$!i", trim($text), $matches)) {

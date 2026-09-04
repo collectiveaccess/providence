@@ -45,7 +45,7 @@ $g_information_service_settings_viaf = [
 		],
 		'default' => 'cql.any',
 		'width' => 90, 'height' => 1,
-		'label' => _t(''),
+		'label' => _t('Search on'),
 		'description' => _t('Search on')
 	]
 ];
