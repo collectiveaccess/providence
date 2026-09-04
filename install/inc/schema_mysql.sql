@@ -5015,7 +5015,7 @@ create table ca_sets (
     tagging_status tinyint unsigned not null default 0,
     rating_status tinyint unsigned not null default 0,
 	set_code    varchar(100) null,
-	set_code_sort varchar(1024) null,
+	set_code_sort varchar(768) null,
 	table_num	tinyint unsigned not null,
 	access		tinyint unsigned not null default 0,	
 	status		tinyint unsigned not null default 0,
