@@ -1,4 +1,0 @@
-$ cat .gitattributes
-*.ts linguist-language=TypeScript
-**/*.ts linguist-language=TypeScript
-/src/extensions/uv-pdf-extension/lib/* linguist-vendored=true
