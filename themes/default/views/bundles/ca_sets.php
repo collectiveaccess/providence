@@ -26,7 +26,6 @@
  * ----------------------------------------------------------------------
  */ 
 $id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
-$t_instance 		= $this->getVar('t_instance');
 $t_item 			= $this->getVar('t_item');			// set
 
 /** @var ca_sets $t_item_rel */
@@ -39,7 +38,7 @@ $placement_id	= (int)$settings['placement_id'];
 $batch				= $this->getVar('batch');
 
 $sort				= ((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
-$read_only			= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_sets') == __CA_BUNDLE_ACCESS_READONLY__));
+$read_only			= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_subject->tableName(), 'ca_sets') == __CA_BUNDLE_ACCESS_READONLY__));
 $dont_show_del		= ((isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton'])) ? true : false;
 
 $color 				= ((isset($settings['colorItem']) && $settings['colorItem'])) ? $settings['colorItem'] : '';
@@ -73,7 +72,7 @@ print caEditorBundleMetadataDictionary($this->request, $id_prefix, $settings);
 
 print "<div class='bundleSubLabel'>";	
 if(sizeof($this->getVar('initialValues'))) {
-	print caGetPrintFormatsListAsHTMLForRelatedBundles($id_prefix, $this->request, $t_instance, $t_item, $t_item_rel, $placement_id);
+	print caGetPrintFormatsListAsHTMLForRelatedBundles($id_prefix, $this->request, $t_subject, $t_item, $t_item_rel, $placement_id);
 }
 if(sizeof($this->getVar('initialValues')) && !$read_only && !$sort && ($settings['list_format'] != 'list')) {
 	print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), $t_item_rel->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
@@ -300,8 +299,8 @@ foreach($action_errors = $this->request->getActionErrors($placement_code) as $o_
 			interstitialButtonClassName: 'caInterstitialEditButton',
 			interstitialPanel: caRelationEditorPanel<?= $id_prefix; ?>,
 			interstitialUrl: '<?= caNavUrl($this->request, 'editor', 'Interstitial', 'Form', ['t' => 'ca_set_items']); ?>',
-			interstitialPrimaryTable: '<?= $t_instance->tableName(); ?>',
-			interstitialPrimaryID: <?= (int)$t_instance->getPrimaryKey(); ?>,
+			interstitialPrimaryTable: '<?= $t_subject->tableName(); ?>',
+			interstitialPrimaryID: <?= (int)$t_subject->getPrimaryKey(); ?>,
 			interstitialKey: "item_id",
 			
 			itemColor: '<?= $color; ?>',
