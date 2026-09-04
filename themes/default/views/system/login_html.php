@@ -33,14 +33,9 @@
 	<head>
 		<title><?= $this->request->config->get("app_display_name"); ?></title>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-		
-		<link href="<?= caGetThemeUrlPath() ?>/css/login.css" rel="stylesheet" type="text/css" />
-		<?= AssetLoadManager::getLoadHTML($this->request); ?>
 
-		<script type="text/javascript">
-			// initialize CA Utils
-			jQuery(document).ready(function() { caUI.initUtils({disableUnsavedChangesWarning: true}); });
-		</script>
+		<script type="module"  src="/dist/assets/main-ilE9n-JG.js"></script>
+		<link rel='stylesheet' href='/dist/assets/main-DSRCEfUD.css' type='text/css' media='all'></link>
 	</head>
 	<body>
 		<div align="center">
@@ -59,7 +54,7 @@
 			}
 ?>
 				</div><!-- end  systemTitle -->
-				<div id="loginForm">
+				<div id="loginForm" class="row">
 					<?= caFormTag($this->request, 'DoLogin', 'login'); ?>
 						<div class="loginFormElement"><?= _t("User Name"); ?>:<br/>
 							<input type="text" name="username" size="25"/>
@@ -81,21 +76,14 @@
 			</div><!-- end loginBox -->
 		</div><!-- end center -->
 		
-		<script type='text/javascript'>
-			jQuery(document).ready(function() {
-				jQuery('#passwordView').on('click', function(e) {
-					const t = jQuery('#password').attr('type');
-					if(t == 'password') {
-						jQuery('#password').attr('type', 'text');
-						jQuery('#passwordView i').css('color', 'red');
-					} else {
-						jQuery('#password').attr('type', 'password');
-						jQuery('#passwordView i').css('color', 'black');
-					}
-					e.preventDefault();
-					return false;
-				});
-			});
-		</script>
+		
+	
+			<div class="container">
+				<div class="row">
+					<!-- This column takes up 50% width on medium screens and up -->
+					<div class="col-md-6">Column Content</div>
+					<div class="col-md-6">Column Content</div>
+				</div>
+			</div>
 	</body>
 </html>

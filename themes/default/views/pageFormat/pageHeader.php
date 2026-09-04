@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -45,34 +45,17 @@ $window_title = strip_tags($window_title);
 		<title><?= $this->appconfig->get("window_title").($window_title ? " : {$window_title}" : ''); ?></title>
 
 		<script type="text/javascript">window.caBasePath = '<?= $this->request->getBaseUrlPath(); ?>';</script>
+		
+		<script type="text/javascript" src="/dist/assets/main-ilE9n-JG.js"/>
+		<link rel='stylesheet' href='/dist/assets/main-DSRCEfUD.css' type='text/css' media='all'>
 <?php
-	print AssetLoadManager::getLoadHTML($this->request, ['outputTarget' => 'header']);
-	print MetaTagManager::getHTML();
+	//print MetaTagManager::getHTML();
 	
 	if ($local_css_url_path = $this->request->getUrlPathForThemeFile("css/local.css")) {
 		print "<link rel='stylesheet' href='{$local_css_url_path}' type='text/css' media='screen' />
 ";
 	}
 ?>
-		<script type="text/javascript">
-			// initialise plugins
-			jQuery(document).ready(function() {
-				jQuery('ul.sf-menu').superfish(
-					{
-						delay: 350,
-						speed: 150,
-						disableHI: true,
-						animation: { opacity: 'show' }
-					}
-				);
-			});
-			
-			// initialize CA Utils
-			caUI.initUtils({unsavedChangesWarningMessage: '<?php _p('You have made changes in this form that you have not yet saved. If you navigate away from this form you will lose your unsaved changes.'); ?>'});
-
-			var caPromptManager = caUI.initPromptManager();
-			let providenceUIApps = {};
-		</script>
 	</head>	
 	<body id="providenceApp">
 		<div align="center">
