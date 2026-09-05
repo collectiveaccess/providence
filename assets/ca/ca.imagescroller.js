@@ -83,8 +83,8 @@ var caUI = caUI || {};
 					var horizCentering, vertCentering, linkOpenTag, linkCloseTag;
 					if (that.noHorizCentering) { horizCentering = ''; } else { horizCentering = 'margin-left: ' + ((that.containerWidth - that.scrollingImageList[i].width)/2) + 'px;'; }
 					if (that.noVertCentering) { vertCentering = ''; } else { vertCentering = 'margin-top: ' + ((that.containerHeight - that.scrollingImageList[i].height)/2) + 'px;'; }
-					if (!that.noImageLink) { linkOpenTag = '<a href="' + that.scrollingImageList[i].link + '" '+(that.scrollingImageList[i].onclick ? 'onclick="' + that.scrollingImageList[i].onclick + '"' : '') + ' '+(that.scrollingImageList[i].rel ? 'rel="' + that.scrollingImageList[i].rel + '"' : '') + '>'; linkCloseTag = '</a>'} else { linkOpenTag = linkCloseTag = ""; }
-					jQuery('#' + that.container).append('<div class="' + that.scrollingImageClass + '" id="' + that.scrollingImageIDPrefix + i + '" style="'+horizCentering + ' ' + vertCentering +'">'+ linkOpenTag +'<img src="' + that.scrollingImageList[i].url+ '" width="' + that.scrollingImageList[i].width + '" height ="' + that.scrollingImageList[i].height + '" border=\'0\'>'+ linkCloseTag +'</div>');
+					if (!that.noImageLink) { linkOpenTag = '<a href="' + that.scrollingImageList[i].link + '" '+(that.scrollingImageList[i].onclick ? 'onclick="' + that.scrollingImageList[i].onclick + '"' : '') + ' '+(that.scrollingImageList[i].rel ? 'rel="' + that.scrollingImageList[i].rel + '"' : '') + ' aria-label="' + that.scrollingImageList[i].label + '">'; linkCloseTag = '</a>'} else { linkOpenTag = linkCloseTag = ""; }
+					jQuery('#' + that.container).append('<div class="' + that.scrollingImageClass + '" id="' + that.scrollingImageIDPrefix + i + '" style="'+horizCentering + ' ' + vertCentering +'">'+ linkOpenTag +'<img src="' + that.scrollingImageList[i].url+ '" width="' + that.scrollingImageList[i].width + '" height ="' + that.scrollingImageList[i].height + '" border=\'0\'' + '" alt="' + that.scrollingImageList[i].label  + '>'+ linkCloseTag +'</div>');
 					jQuery('#' + that.scrollingImageIDPrefix + i).css('left', (that.containerWidth * i)  + "px");
 				}
 			}

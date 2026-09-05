@@ -72,6 +72,7 @@ $window_title = strip_tags($window_title);
 
 			var caPromptManager = caUI.initPromptManager();
 			let providenceUIApps = {};
+			
 		</script>
 	</head>	
 	<body id="providenceApp">

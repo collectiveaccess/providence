@@ -68,7 +68,7 @@ print caEditorBundleMetadataDictionary($this->request, $id_prefix.'NPLabels', $s
 
 			<div class="formLabel">
 				<?= $locale_list; ?>	
-				<?= $label_list ? $t_label->htmlFormElement('type_id', "^LABEL ^ELEMENT ^BUNDLECODE", array('classname' => 'labelType', 'id' => "{fieldNamePrefix}type_id_{n}", 'name' => "{fieldNamePrefix}type_id_{n}", "value" => "{type_id}", 'no_tooltips' => true, 'list_code' => $label_list, 'dont_show_null_value' => true, 'hide_select_if_no_options' => true)) : ''; ?>
+				<?= $label_list ? $t_label->htmlFormElement('type_id', "^LABEL ^ELEMENT ^BUNDLECODE", array('classname' => 'labelType', 'id' => "{fieldNamePrefix}type_id_{n}", 'name' => "{fieldNamePrefix}type_id_{n}", "value" => "{type_id}", 'no_tooltips' => true, 'list_code' => $label_list, 'dont_show_null_value' => true, 'hide_select_if_no_options' => true, 'aria-label' => _t('Type'))) : ''; ?>
 				<?= $show_effective_date ? $t_label->htmlFormElement('effective_date', "^LABEL ^ELEMENT ^BUNDLECODE", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}effective_date_{n}", 'name' => "{fieldNamePrefix}effective_date_{n}", "value" => "{effective_date}", 'no_tooltips' => true)) : ''; ?>	
 				<?= $show_access ? $t_label->htmlFormElement('access', "^LABEL ^ELEMENT ^BUNDLECODE", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "{access}", 'no_tooltips' => true)) : ''; ?>	
 			</div>

@@ -609,7 +609,8 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
 			array(
 				'class' => $vs_class,
-				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}'
+				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
+				'aria-label' => $pa_element_info['display_label'] ?? null
 			),
 			array_merge(
 				$pa_options,

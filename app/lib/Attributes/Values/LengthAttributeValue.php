@@ -409,7 +409,8 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                 'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'], 
                 'value' => '{{'.$pa_element_info['element_id'].'}}',
                 'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
-                'class' => $vs_class
+                'class' => $vs_class,
+             	'aria-label' => $element_info['display_label'] ?? null
             )
         );
     }

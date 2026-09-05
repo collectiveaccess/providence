@@ -467,7 +467,8 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 				'value' => '{{'.$pa_element_info['element_id'].'}}',
 				'maxlength' => $vn_max_length,
 				'class' => $vs_class,
-				'placeholder' => $pa_options['placeholder'] ?? null
+				'placeholder' => $pa_options['placeholder'] ?? null,
+				'aria-label' => $element_info['display_label'] ?? null
 			])
 		);
 		

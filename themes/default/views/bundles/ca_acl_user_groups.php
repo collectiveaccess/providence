@@ -54,7 +54,7 @@ $t_acl = new ca_acl();
 			<table class="caListItem">
 				<tr>
 					<td class="formLabel aclLabel">
-						<input type="text" size="60" name="<?= $id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?= $id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
+						<input type="text" size="60" name="<?= $id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?= $id_prefix; ?>_autocomplete{n}" class="lookupBg" aria-label="<?= htmlspecialchars(_t('Search')); ?>"/>
 						<?= $t_acl->htmlFormElement('access', '^ELEMENT', ['name' => "{$id_prefix}_access_{n}", 'id' => "{$id_prefix}_access_{n}", 'value' => '{{access}}', 'no_tooltips' => true, 'forPawtucket' => $pawtucket_only_acl_enabled]); ?>
 						<?= $show_rep_access_inheritance_controls ? $t_acl->htmlFormElement('include_representations', '^ELEMENT ^LABEL', ['name' => "{$id_prefix}_include_representations_{n}", 'id' => "{$id_prefix}_include_representations_{n}", 'value' => '{{include_representations}}', 'no_tooltips' => true, 'forPawtucket' => $pawtucket_only_acl_enabled]) : ''; ?>
 						<input type="hidden" name="<?= $id_prefix; ?>_id{n}" id="<?= $id_prefix; ?>_id{n}" value="{id}"/>

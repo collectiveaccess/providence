@@ -397,6 +397,9 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 			'id' => '{fieldNamePrefix}'.$element_info['element_id'].'_{n}',
 			'class' => "{$class}"
 		];
+		
+		$attr['aria-label'] = $element_info['display_label'] ?? null;
+		
 		$opts = [
 			'textAreaTagName' => caGetOption('textAreaTagName', $options, null)
 		];
@@ -504,7 +507,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 						</script>\n";
 					$attr['style'] = 'display: none;';
 					$element .= "<div id='{fieldNamePrefix}".$element_info['element_id']."_editor_{n}' style='height: {$height_w_suffix};' class='ql-ca-editor'></div>";
-							
+					
 					$element .= caHTMLTextInput(
 						'{fieldNamePrefix}'.$element_info['element_id'].'_{n}', 
 						$attr, $opts

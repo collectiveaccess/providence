@@ -1279,7 +1279,7 @@ function caEditorInspector($view, $options=null) {
 				}
 
 				$imgs[] = "{url:'".$va_rep['urls']['preview170']."', width: ".$va_rep['info']['preview170']['WIDTH'].", height: ".
-				$va_rep['info']['preview170']['HEIGHT'].", link: '#', onclick:  'caMediaPanel.showPanel(\'".
+				$va_rep['info']['preview170']['HEIGHT'].", link: '#', label: 'xxx', onclick:  'caMediaPanel.showPanel(\'".
 				caNavUrl($view->request, '*', '*', 'GetMediaOverlay', array($t_item->primaryKey() => $item_id, 'representation_id' => $va_rep['representation_id']))."\')'}";
 
 				$vn_r++;
@@ -1288,7 +1288,7 @@ function caEditorInspector($view, $options=null) {
 				if (sizeof($va_reps) > 1) {
 					$buf .= "
 				<div class='leftScroll'>
-					<a href='#' onclick='inspectorInfoRepScroller.scrollToPreviousImage(); return false;'>".caNavIcon(__CA_NAV_ICON_SCROLL_LT__, '16px')."</a>
+					<a href='#' onclick='inspectorInfoRepScroller.scrollToPreviousImage(); return false;' aria-label='"._t('Previous image')."'>".caNavIcon(__CA_NAV_ICON_SCROLL_LT__, '16px')."</a>
 				</div>
 	";
 				}
@@ -1304,7 +1304,7 @@ function caEditorInspector($view, $options=null) {
 				if (sizeof($va_reps) > 1) {
 					$buf .= "
 				<div class='rightScroll'>
-					<a href='#' onclick='inspectorInfoRepScroller.scrollToNextImage(); return false;'>".caNavIcon(__CA_NAV_ICON_SCROLL_RT__, '16px')."</a>
+					<a href='#' onclick='inspectorInfoRepScroller.scrollToNextImage(); return false;' aria-label='"._t('Next image').">".caNavIcon(__CA_NAV_ICON_SCROLL_RT__, '16px')."</a>
 				</div>
 	";
 				}
@@ -1371,7 +1371,7 @@ function caEditorInspector($view, $options=null) {
 			}
 
 			if ($view->request->user->canDoAction("can_change_type_{$table_name}") && (sizeof($t_item->getTypeList()) >= 1)) {
-				$tools[] = "<div id='inspectorChangeType' class='inspectorActionButton'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_CHANGE__, '20px', array('title' => _t('Change type')))."</a></div></div>\n";
+				$tools[] = "<div id='inspectorChangeType' class='inspectorActionButton'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;' aria-label='"._t('Change type').">".caNavIcon(__CA_NAV_ICON_CHANGE__, '20px', array('title' => _t('Change type')))."</a></div></div>\n";
 
 				$change_type_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
 				$change_type_view->setVar('t_item', $t_item);
@@ -1398,7 +1398,7 @@ function caEditorInspector($view, $options=null) {
 					}
 
 					if ($vs_type_list) {
-						$tools[] = "<div id='inspectorCreateChild' class='inspectorActionButton'><div id='inspectorCreateChildButton'><a href='#' onclick='caCreateChildPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_CHILD__, '20px', array('title' => _t('Create Child Record')))."</a></div></div>\n";
+						$tools[] = "<div id='inspectorCreateChild' class='inspectorActionButton'><div id='inspectorCreateChildButton'><a href='#' onclick='caCreateChildPanel.showPanel(); return false;' aria-label='"._t('Add child record').">".caNavIcon(__CA_NAV_ICON_CHILD__, '20px', array('title' => _t('Create Child Record')))."</a></div></div>\n";
 
 						$create_child_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
 						$create_child_view->setVar('t_item', $t_item);
@@ -1492,7 +1492,7 @@ function caEditorInspector($view, $options=null) {
 		$set_access_for_related_tables = $view->request->config->getAssoc('set_access_for_related_tables');
 		if($view->request->user->canDoAction("can_set_access_for_related_{$table_name}") && is_array($set_access_for_related_tables) && is_array($set_access_for_related_tables[$table_name]) && sizeof($set_access_for_related_tables[$table_name])) {
 			$set_access_for_related_tables = $set_access_for_related_tables[$table_name];
-			$tools[] = "<div id='inspectorSetAccessForRelated' class='inspectorActionButton'><div id='inspectorSetAccessForRelatedButon'><a href='#' onclick='caSetAccessForRelatedPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_SET_ACCESS__, '20px', array('title' => _t('Set access for related')))."</a></div></div>\n";
+			$tools[] = "<div id='inspectorSetAccessForRelated' class='inspectorActionButton'><div id='inspectorSetAccessForRelatedButon'><a href='#' onclick='caSetAccessForRelatedPanel.showPanel(); return false;' aria-label='"._t('Set access for related').">".caNavIcon(__CA_NAV_ICON_SET_ACCESS__, '20px', array('title' => _t('Set access for related')))."</a></div></div>\n";
 
 			$set_access_for_related_tables_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
 			$set_access_for_related_tables_view->setVar('t_item', $t_item);
@@ -1628,7 +1628,7 @@ function caEditorInspector($view, $options=null) {
 		}	
 		if ($can_add_component) {
 			$label = $view->request->config->get('ca_objects_component_add_button_text');
-			$components_tools[] = '<div><a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($view->request, '*', 'ObjectComponent', 'Form', ['parent_id' => $t_item->getPrimaryKey()]).'"); return false;\')>'.caNavIcon(__CA_NAV_ICON_ADD__, '12px').($label ? " {$label}" : '').'</a></div>';
+			$components_tools[] = '<div><a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($view->request, '*', 'ObjectComponent', 'Form', ['parent_id' => $t_item->getPrimaryKey()]).'"); return false;\' aria-label=\''._t('Previous image').'\'>'.caNavIcon(__CA_NAV_ICON_ADD__, '12px').($label ? " {$label}" : '').'</a></div>';
 
 			$change_type_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
 			$change_type_view->setVar('t_item', $t_item);
@@ -2456,7 +2456,7 @@ function caBatchEditorInspector(View $po_view, ?array $pa_options=null) : ?strin
 		);
 		if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}")) {
 
-			$vs_buf .= "<a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_CHANGE__, '20px', array('style' => 'margin: 7px 4px 0 0; vertical-align: text-bottom;'))." "._t("Set type for records in set")."</a>\n";
+			$vs_buf .= "<a href='#' onclick='caTypeChangePanel.showPanel(); return false;' aria-label='"._t('Set type for type change').">".caNavIcon(__CA_NAV_ICON_CHANGE__, '20px', array('style' => 'margin: 7px 4px 0 0; vertical-align: text-bottom;'))." "._t("Set type for records in set")."</a>\n";
 
 			$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
 			$vo_change_type_view->setVar('t_item', $t_item);
@@ -4036,7 +4036,8 @@ function caEditorBundleSortControls($request, $id_prefix, $table, $related_table
 			[
 				'onChange' => "caRelationBundle{$id_prefix}.sort(jQuery(this).val())", 
 				'id' => "{$id_prefix}_RelationBundleSortControl", 
-				'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning'], 
+				'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning', 
+				'aria-label' => _t('Sort related %1', $table)],
 			['value' => $sort, 'disabledOptions' => $default_sort_options]
 		), 
 		caHTMLSelect(
@@ -4045,7 +4046,8 @@ function caEditorBundleSortControls($request, $id_prefix, $table, $related_table
 			[
 				'onChange' => "caRelationBundle{$id_prefix}.sort(jQuery('#{$id_prefix}_RelationBundleSortControl').val())", 
 				'id' => "{$id_prefix}_RelationBundleSortDirectionControl", 
-				'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning'
+				'class' => 'caItemListSortControlTrigger dontTriggerUnsavedChangeWarning',
+				'aria-label' => _t('sort related %1 with direction', $table)
 			], 
 			['value' => strtoupper($sort_direction)]
 		)

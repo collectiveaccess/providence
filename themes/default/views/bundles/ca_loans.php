@@ -162,7 +162,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 			<table class="caListItem">
 				<tr>
 					<td>
-						<input type="text" size="60" name="<?= $id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?= $id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
+						<input type="text" size="60" name="<?= $id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?= $id_prefix; ?>_autocomplete{n}" class="lookupBg" aria-label="<?= htmlspecialchars(_t('Search')); ?>"/>
 					</td>
 					<td>
 						<select name="<?= $id_prefix; ?>_type_id{n}" id="<?= $id_prefix; ?>_type_id{n}" style="display: none;"></select>

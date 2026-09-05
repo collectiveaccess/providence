@@ -1085,7 +1085,7 @@ class MultipartIDNumber extends IDNumber {
 				$extra_size = 10;
 			}
 			foreach($extra_values as $i => $v) {
-				$element_controls[] = "<input type='text' name='{$name}_extra_{$i}' id='{$name}_extra_{$i}' value='".htmlspecialchars($v, ENT_QUOTES, 'UTF-8')."' size='{$extra_size}'".($options['readonly'] ? ' readonly="1" ' : '').">";
+				$element_controls[] = "<input type='text' name='{$name}_extra_{$i}' id='{$name}_extra_{$i}' aria-level='' value='".htmlspecialchars($v, ENT_QUOTES, 'UTF-8')."' size='{$extra_size}'".($options['readonly'] ? ' readonly="1" ' : '').">";
 				$element_control_names[] = $name.'_extra_'.$i;
 			}
 		}
@@ -1408,6 +1408,8 @@ class MultipartIDNumber extends IDNumber {
 
 		$element_info = $this->formats[$format][$type]['elements'][$element_name];
 		$element_form_name = $name.'_'.$element_name;
+		
+		$element_desc = htmlspecialchars($element_info['description'] ?? null);
 
 		$element_value = $value;
 		$element_info['editable'] = $element_info['editable'] ?? false;
@@ -1418,7 +1420,7 @@ class MultipartIDNumber extends IDNumber {
 				if (!is_array($element_info['values'])) { $element_info['values'] = []; }
 				if (!$element_value || $element_info['editable'] || $generate_for_search_form) {
 					if (!$element_value && !$generate_for_search_form) { $element_value = $element_info['default']; }
-					$element = '<select name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'">';
+					$element = '<select name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name."\" aria-label='{$element_desc}'>";
 					if ($generate_for_search_form) {
 						$element .= "<option value='' selected='selected'>-</option>";
 					}
@@ -1445,13 +1447,13 @@ class MultipartIDNumber extends IDNumber {
 				$width = $this->getElementWidth($element_info, 3);
 
 				if ($generate_for_search_form) {
-					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="" maxlength="'.$width.'" size="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
+					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="" maxlength="'.$width.'" size="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').' aria-label="'.$element_desc.'"/>';
 				} elseif ($element_value == '') {
 						$next_num = $this->getNextValue($element_name, null, true);
 						$element .= "<span id='".$id_prefix.$element_form_name."'>&lt;"._t('%1 on save', $next_num)."&gt;</span>";
 				} else {
 					if ($element_info['editable']) {
-						$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
+						$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').' aria-label="'.$element_desc.'"/>';
 					} else {
 						$element .= '<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'"/>'.$element_value;
 					}
@@ -1463,7 +1465,7 @@ class MultipartIDNumber extends IDNumber {
 
 				if (!$element_value) { $element_value = $element_info['value']; }
 				if ($element_info['editable'] || $generate_for_search_form) {
-					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
+					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').' aria-label="'.$element_desc.'"/>';
 				} else {
 					$element .= '<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'"/>'.$element_value;
 				}
@@ -1475,7 +1477,7 @@ class MultipartIDNumber extends IDNumber {
 				if (!$element_value && !$generate_for_search_form) { $element_value = $element_info['default'] ?? null; }
 				$width = $this->getElementWidth($element_info, 3);
 				if (!$element_value || $element_info['editable'] || $generate_for_search_form) {
-					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
+					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').' aria-label="'.$element_desc.'"/>';
 				} else {
 					$element .= '<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'"/>'.$element_value;
 				}
@@ -1495,13 +1497,13 @@ class MultipartIDNumber extends IDNumber {
 					}
 
 					if ($element_info['editable'] || $generate_for_search_form) {
-						$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($v, ENT_QUOTES, 'UTF-8').'" size="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
+						$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($v, ENT_QUOTES, 'UTF-8').'" size="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').' aria-label="'.$element_desc.'"/>';
 					} else {
 						$element .= '<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($v, ENT_QUOTES, 'UTF-8').'"/>'.$v;
 					}
 				} else {
 					if ($element_info['editable'] || $generate_for_search_form) {
-						$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
+						$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').' aria-label="'.$element_desc.'"/>';
 					} else {
 						$element .= '<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'"/>'.$element_value;
 					}
@@ -1514,7 +1516,7 @@ class MultipartIDNumber extends IDNumber {
 				$width = $this->getElementWidth($element_info, 3);
 
 				if ($generate_for_search_form) {
-					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="" maxlength="'.$width.'" size="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
+					$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="" maxlength="'.$width.'" size="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').' aria-label="'.$element_desc.'"/>';
 				} else {
 					if ($element_value == '') {
 						$next_num = $this->getParentValue();
@@ -1525,7 +1527,7 @@ class MultipartIDNumber extends IDNumber {
 						$element .= '&lt;'._t('%1', $next_num).'&gt;'.'<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($next_num, ENT_QUOTES, 'UTF-8').'"/>';
 					} else {
 						if ($element_info['editable']) {
-							$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').'/>';
+							$element .= '<input type="text" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'" size="'.$width.'" maxlength="'.$width.'"'.($options['readonly'] ? ' readonly="1" ' : '').' aria-label="'.$element_desc.'"/>';
 						} else {
 							$element .= '<input type="hidden" name="'.$element_form_name.'" id="'.$id_prefix.$element_form_name.'" value="'.htmlspecialchars($element_value, ENT_QUOTES, 'UTF-8').'"/>'.$element_value;
 						}

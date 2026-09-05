@@ -51,7 +51,7 @@ textarea {
     
 }
 
-a, a:link, a:visited, a font { /*color:#138290;*/color:#107784; text-decoration: underline; }
+a, a:link, a:visited, a font { color:#000; text-decoration: underline; }
 
 a:hover{
     color: #333;
@@ -222,10 +222,10 @@ div.clear {
 
 #leftNav h2 a, #leftNav h2 span { display: block; padding-left: 15px; padding-top: 7px; padding-bottom: 4px; text-decoration: none; color: #666666; border-right:1px solid #dddddd;} 
 #leftNav h2 a:hover{
-    color: #138290;
+    color: #999;
 }
 #leftNav h3 h4 a:hover{
-    color: #138290;
+    color: #999;
 }
 #leftNav ul { list-style: none; margin: 0px; padding: 3px 0px 3px 0px; display:none; }
 #leftNav ul.arrow { padding:0px; }
@@ -235,7 +235,7 @@ div.clear {
 #leftNav ul.arrow li a, #leftNav ul.arrow li span { _height: 15px; text-decoration: none; display: block;  padding: 8px 0 5px 0;; padding-left: 30px; padding-right: 5px; margin: 0; color:#666; text-transform:uppercase; font-family:"din-regular", arial, sans-serif;}
 #leftNav ul li a:hover { background-color: #fff; }
 #leftNav ul .sf-menu-selected a:hover { background-color: #eee; }
-#leftNav ul.arrow li a:hover { color: #138290}
+#leftNav ul.arrow li a:hover { color: #999}
 
 /* h3 used for non link left side nav - currently editing */
 #leftNav h4 {
@@ -307,10 +307,10 @@ div.clear {
 #leftNav .resultLink  {
 	display: inline-block;
 	width: 110px;
-	color: #138290;
+	color: #000;
 }
 #leftNav .resultLink:hover  {
-	color: #138290;
+	color: #999;
 	text-decoration:underline;
 }
 #leftNav .creatingNew {
@@ -500,12 +500,12 @@ div.inspectorCheckedOut {
 #leftNav h4 div .separator { border-bottom: solid 1px #fff; margin-top: 5px; margin-bottom: 5px; }
 #leftNav h3 div .separator { border-bottom: solid 1px #fff; margin-top: 5px; margin-bottom: 5px; }
 
-#leftNav h4 a { text-decoration: none; }
-#leftNav h3 a { text-decoration: none; }
+#leftNav h4 a { text-decoration: underline; }
+#leftNav h3 a { text-decoration: underline; }
 #leftNav div.form-button {text-align:right; margin-top: 5px; }
 #leftNav .form-button a {	text-transform:uppercase; text-decoration: underline; }
 #leftNav .form-button a:hover{
-    color: #138290;
+    color: #999;
 }
 #leftNav #inspectorMedia, #leftNav #hierarchyInfo { display:none; }
 #leftNav #inspectorMedia {
@@ -1561,7 +1561,7 @@ div.button a{
 }
 
 div.button a:hover{
-    color: #138290;
+    color: #999;
 }
 
 div.button img{
@@ -1583,7 +1583,7 @@ a.button{
 	font-weight:bold;
 }
 a.button:hover{
-    color: #138290;
+    color: #999;
 }
 
 a.inline-button-small {
@@ -1593,7 +1593,7 @@ a.inline-button-small {
 }
 a.inline-button-small:hover {
     text-decoration: none;
-    color: #138290;
+    color: #999;
 }
 
 a.form-button, span.form-button, del.form-button{
@@ -1792,7 +1792,7 @@ a.form-button:focus,
 a.dom-button-focus,
 span.form-button-behavior-hover{
     background-position:0 -60px;
-    color: #138290;
+    color: #999;
     text-decoration:none;
 }
 
@@ -2108,7 +2108,7 @@ a.deleteButton span{
 }
 
 a.deleteButton span.form-button:hover {
-	color: #138290;
+	color: #999;
 }
 div.control-box-right-content select {
     width: 150px;
@@ -2615,7 +2615,7 @@ select.searchToolsSelect {
 	cursor: pointer;
 }
 .qlButtonContainerThumbnail a:hover, .qlButtonContainerFull a:hover{
-    color:#138290;
+    color:#999;
 }
 
 .objectThumbnailsImageContainer, .entityThumbnailsImageContainer, .occurrenceThumbnailsImageContainer {
@@ -4013,7 +4013,7 @@ a.exploreSelected {
 
 }
 .hierNav a:hover{
-    color: #138290;
+    color: #999;
 }
 .hierNav .buttonPosition{
     float:right;
@@ -4495,7 +4495,7 @@ div.quickSearchNoResults {
     white-space: nowrap;
 }
 #browseCriteria a.startOver:hover{
-    color:#138290;
+    color:#999;
     text-decoration:underline;
 }
 .criteriaLink {
@@ -7537,7 +7537,7 @@ div.caResultsComplexDataEditorErrorContainer {
 }
 
 .caIcon:hover {
-	color: #138290;
+	color: #999;
 }
 
 .caIconRed {
