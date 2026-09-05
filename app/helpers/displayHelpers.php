@@ -6095,6 +6095,9 @@ function caGetBrandingLogo(string $type, array $options=null) : ?string {
 	$config = Configuration::load();
 	
 	if(is_array($branding = $config->getAssoc('branding')) && is_array($logo = caGetOption($type, $branding, null)) && !empty($logo['src'])) {
+		if(caGetOption('return', $options, null) === 'url') {
+			return ($abs ? __CA_BASE_DIR__ : __CA_URL_ROOT__).'/'.caGetOption('src', $logo);
+		} 
 		return caHTMLImage(($abs ? __CA_BASE_DIR__ : __CA_URL_ROOT__).'/'.caGetOption('src', $logo), ['alt' => caGetOption('alt', $logo), 'class' => caGetOption('class', $logo), 'style' => caGetOption('style', $logo), 'id' => caGetOption('id', $logo), 'scaleCSSWidthTo' => caGetOption('width', $logo), 'scaleCSSHeightTo' => caGetOption('height', $logo)]);
 	}
 	
@@ -6126,8 +6129,8 @@ function caGetBrandingLogo(string $type, array $options=null) : ?string {
  *
  * @return string
  */
-function caGetMenuBarLogo() {
-	return caGetBrandingLogo('menuBar');
+function caGetMenuBarLogo(?array $options=null) {
+	return caGetBrandingLogo('menuBar', $options);
 }
 # ------------------------------------------------------------------
 /**
@@ -6135,8 +6138,8 @@ function caGetMenuBarLogo() {
  *
  * @return string
  */
-function caGetLoginLogo() {
-	return caGetBrandingLogo('login');
+function caGetLoginLogo(?array $options=null) {
+	return caGetBrandingLogo('login', $options);
 }
 # ------------------------------------------------------------------
 /**
@@ -6148,7 +6151,7 @@ function caGetLoginLogo() {
  * @return string
  */
 function caGetReportLogo(?array $options=null) {
-	return caGetBrandingLogo(caGetOption('name', $options, 'report'), ['absolute' => true]);
+	return caGetBrandingLogo(caGetOption('name', $options, 'report'), ['absolute' => true], $options);
 }
 # ------------------------------------------------------------------
 /**
