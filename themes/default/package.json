@@ -1,0 +1,39 @@
+{
+  "name": "providence",
+  "version": "3.0.0",
+  "description": "CollectiveAccess is collections management and presentation software maintained by Whirl-i-Gig and contributed to by the open-source community. ",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/collectiveaccess/providence.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/collectiveaccess/providence/issues"
+  },
+  "homepage": "https://github.com/collectiveaccess/providence#readme",
+  "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "alpinejs": "^3.17.1",
+    "bootstrap": "^5.3.8",
+    "bootstrap-icons": "^1.13.1",
+    "htmx": "^0.0.2",
+    "htmx.org": "^2.0.10",
+    "online-3d-viewer": "^0.18.0",
+    "openseadragon": "^6.1.0",
+    "plyr": "^3.8.4",
+    "sass": "^1.104.0"
+  },
+  "devDependencies": {
+    "vite": "^8.2.2"
+  }
+}

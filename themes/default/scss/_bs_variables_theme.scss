@@ -1,0 +1,216 @@
+		// Quickly modify global styling by enabling or disabling optional features.
+		
+		$enable-caret:                true !default;
+		$enable-rounded:              true !default;
+		$enable-shadows:              false !default;
+		$enable-gradients:            false !default;
+		$enable-transitions:          true !default;
+		$enable-reduced-motion:       true !default;
+		$enable-smooth-scroll:        true !default;
+		$enable-grid-classes:         true !default;
+		$enable-container-classes:    true !default;
+		$enable-cssgrid:              false !default;
+		$enable-button-pointers:      true !default;
+		$enable-rfs:                  true !default;
+		$enable-validation-icons:     true !default;
+		$enable-negative-margins:     true !default;
+		$enable-deprecation-messages: true !default;
+		$enable-important-utilities:  true !default;
+		
+		$enable-dark-mode:            true !default;
+		$color-mode-type:             data !default; // `data` or `media-query`
+		
+		
+$gray-100: #f8f8f8 !default;
+		$gray-200: #ecedee !default;
+		$gray-300: #d0d3d5 !default;
+		$gray-400: #ced4da !default;
+		$gray-500: #adb5bd !default;
+		$gray-600: #666 !default;
+$gray-700: #495057;
+		$gray-800: #343a40 !default;
+		$gray-900: #212529 !default;
+		
+$primary:       $gray-700;
+$secondary:     $gray-300;
+$light:         $gray-100;
+		$dark:          $gray-700 !default; /* used for .bg-dark style */
+		
+		// scss-docs-start spacer-variables-maps
+		$spacer: 1rem !default;
+		$spacers: (
+		  0: 0,
+		  1: $spacer * .25,
+		  2: $spacer * .5,
+		  3: $spacer,
+		  4: $spacer * 1.5,
+		  5: $spacer * 3,
+		) !default;
+		
+		$border-color: $gray-300 !default;
+		
+		/* font */
+		// $font-size-root affects the value of `rem`, which is used for as well font sizes, paddings, and margins
+		// $font-size-base affects the font size of the body text
+		$font-size-root:              16px !default;
+		$font-size-base:              1rem !default; // Assumes the browser default, typically `16px`
+		$font-size-sm:                $font-size-base * .875 !default;
+		$font-size-lg:                $font-size-base * 1.25 !default;
+		
+$font-family-sans-serif: "Inter", "Noto Sans";
+		
+		$font-weight-lighter:         lighter !default;
+		$font-weight-light:           300 !default;
+		$font-weight-normal:          300 !default;
+		$font-weight-medium:          400 !default;
+		$font-weight-semibold:        600 !default; /* lato doesn't have 600 */
+		$font-weight-bold:            700 !default;
+		$font-weight-bolder:          bolder !default;
+		
+		$font-weight-base:            $font-weight-normal !default;
+		
+$h1-font-size:                $font-size-base * 1.75;
+$h2-font-size:                $font-size-base * 1.5;
+$h3-font-size:                $font-size-base * 1.25;
+$h4-font-size:                $font-size-base * 1.25;
+		$h5-font-size:                $font-size-base * 1 !default;
+		$h6-font-size:                $font-size-base * .75 !default;
+		// scss-docs-end font-sizes
+		
+		// scss-docs-start headings-variables
+		$headings-margin-bottom:      $spacer * .5 !default;
+		$headings-font-family:        null !default;
+		$headings-font-style:         null !default;
+		$headings-font-weight:        400 !default;
+		$headings-line-height:        1.2 !default;
+		$headings-color:              inherit !default;
+		// scss-docs-end headings-variables
+		
+		// scss-docs-start display-headings
+		$display-font-sizes: (
+		  1: 4rem,
+		  2: 3.5rem,
+		  3: 3rem,
+		  4: 2.5rem,
+		  5: 2rem,
+		  6: 1.5rem
+		) !default;
+		
+		$display-font-family: null !default;
+		$display-font-style:  null !default;
+		$display-font-weight: 300 !default;
+		$display-line-height: $headings-line-height !default;
+		// scss-docs-end display-headings
+		
+		// scss-docs-start font-sizes
+		$font-sizes: (
+		  1: $h1-font-size,
+		  2: $h2-font-size,
+		  3: $h3-font-size,
+		  4: $h4-font-size,
+		  5: $h5-font-size,
+		  6: $h6-font-size
+		) !default;
+		
+		$body-color: #000 !default;
+		$body-secondary-color:      rgba($body-color, .75) !default;
+		$body-secondary-bg:         $gray-300 !default; /* used for .bg-body-secondary */
+		
+		$body-tertiary-color:       rgba($body-color, .5) !default;
+		$body-tertiary-bg:          $gray-200 !default; /* used for .bg-body-tertiary */
+		
+		$light-bg-subtle:         mix($gray-100, #FFF) !default;
+		$dark-bg-subtle:          $gray-400 !default;
+		
+		$box-shadow:                  0 1px 8px rgba(#000, .15) !default;
+$box-shadow-sm: 0 0 20px rgba(0, 0, 0, 0.08);		
+		// scss-docs-start border-radius-variables
+		$border-radius:	0 !default;
+		
+		/* links */
+$link-color: $primary;
+		$link-decoration: underline solid .5px  !default;
+		$link-shade-percentage: 20% !default;
+		/*$link-hover-color: #000 !default;*/
+		$link-hover-decoration: null !default;
+		
+		
+		/* nav bar */
+		
+		$nav-link-padding-y:                .5rem !default;
+		$nav-link-padding-x:                1rem !default;
+		$line-height-base:            		1.5 !default;
+		
+		$navbar-nav-link-padding-x: 		1rem !default;
+		$nav-link-font-size: 				$font-size-base;
+		$nav-link-font-weight: 				$font-weight-medium !default;
+		$nav-link-color:                    $link-color !default;
+		$nav-link-transition:               color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out !default;
+		
+		$navbar-light-color: 				$body-color;
+$navbar-light-hover-color: 			$gray-600;
+$navbar-light-active-color: 		#000;
+		
+		
+		// scss-docs-start navbar-variables
+		$navbar-padding-y:                  $spacer * .5 !default;
+		$navbar-padding-x:                  null !default;
+		
+		$navbar-nav-link-padding-x:         .5rem !default;
+		
+$navbar-brand-font-size: 2rem;
+$navbar-brand-font-color: #000000;
+		// Compute the navbar-brand padding-y so the navbar-brand will have the same height as navbar-text and nav-link
+		$nav-link-height:                   $nav-link-font-size * $line-height-base + $nav-link-padding-y * 2 !default;
+		$navbar-brand-height:               $navbar-brand-font-size * $line-height-base !default;
+		$navbar-brand-padding-y:            ($nav-link-height - $navbar-brand-height) * .5 !default;
+		$navbar-brand-margin-end:           1rem !default;
+		
+		
+		/* add class .nav-underline to ul in nav to underline .active nav item */
+		$nav-underline-gap:                 1rem !default;
+		$nav-underline-border-width:        .125rem !default;
+		
+		/* add nav-pills to navbar to have background color added to .active nav items */
+		$nav-pills-link-active-bg: $light;
+		$nav-pills-link-active-color: $navbar-light-active-color; /* note this is over ridden by $navbar-light-active-color so set the color there instead */
+		
+		/* buttons */
+		$input-btn-font-family:       null !default;
+		$input-btn-font-size:         $font-size-base !default;
+		
+		$btn-border-radius:           0 !default;
+		$btn-border-radius-sm:        0 !default;
+		$btn-border-radius-lg:        0 !default;
+		
+		
+		// scss-docs-start focus-ring-variables --- used with accordion and input focus states
+		$focus-ring-width:      2px !default;
+		$focus-ring-opacity:    .1 !default;
+		$focus-ring-color:      rgba($secondary, $focus-ring-opacity) !default;
+		$focus-ring-blur:       2px !default;
+		$focus-ring-box-shadow: 0 0 $focus-ring-blur $focus-ring-width $focus-ring-color !default;
+		// scss-docs-end focus-ring-variables
+		
+		$accordion-bg: $light-bg-subtle !default;
+		$accordion-button-bg: $light !default;
+		$accordion-button-active-bg: $light-bg-subtle !default;
+		$accordion-border-color: $light-bg-subtle !default;
+		
+		/* dropdowns */
+		/*$dropdown-border-width:             0px !default;
+		$dropdown-box-shadow:               0 .25rem .25rem rgba(#000, .075) !default; // --- this is only used when shadows are enabled so shadow is set in main.scss
+		*/
+		$dropdown-border-color:             $gray-200 !default;
+		// Forms
+		
+		// scss-docs-start form-label-variables
+		$form-label-margin-bottom:              .5rem !default;
+		$form-label-font-size:                  null !default;
+		$form-label-font-style:                 null !default;
+		$form-label-font-weight:                $font-weight-medium !default;
+		$form-label-color:                      null !default;
+		
+		$input-focus-border-color:              #000 !default;
+		
+		// scss-docs-end form-label-variables

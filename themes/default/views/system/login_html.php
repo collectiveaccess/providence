@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,65 +25,70 @@
  *
  * ----------------------------------------------------------------------
  */
-  AppController::getInstance()->removeAllPlugins();
+	$notifications = $this->getVar('notifications');
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>
-	<head>
-		<title><?= $this->request->config->get("app_display_name"); ?></title>
-		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-
-		<script type="module"  src="/dist/assets/main-ilE9n-JG.js"></script>
-		<link rel='stylesheet' href='/dist/assets/main-DSRCEfUD.css' type='text/css' media='all'></link>
-	</head>
-	<body>
-		<div align="center">
-			<div id="loginBox">
-				<div align="center">
-					<?= caGetDefaultLogo(); ?>
-				</div>
-				<div id="systemTitle">
-					<?= $this->request->config->get("app_display_name"); ?>
-							
-<?php 
-			if ($va_notifications = $this->getVar('notifications')) {  
-?>
-				<p class="notificationContent"><?php foreach($va_notifications as $va_notification) { print $va_notification['message']."<br/>\n"; }; ?></p>
+<div class="row">
+	<div class="col-md-12 col-lg-8 offset-lg-2 pb-2">
+		<H2><?= $this->request->config->get("app_display_name"); ?></H2>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-12 col-lg-8 offset-lg-2">
 <?php
-			}
+		if ($notifications = $this->getVar('notifications')) {  
 ?>
-				</div><!-- end  systemTitle -->
-				<div id="loginForm" class="row">
-					<?= caFormTag($this->request, 'DoLogin', 'login'); ?>
-						<div class="loginFormElement"><?= _t("User Name"); ?>:<br/>
-							<input type="text" name="username" size="25"/>
+			<p class="notificationContent"><?php foreach($notifications as $notification) { print $notification['message']."<br/>\n"; }; ?></p>
+<?php
+		}
+?>
+		<form id="LoginForm" action="<?= caNavUrl('*', '*', 'DoLogin'); ?>" class="form-horizontal needs-validation" method="POST" novalidate>
+			<div class="row">
+				<div class="col-md-12 col-lg-12">			
+					<div class="bg-light px-4 pt-4 pb-2 mb-4">
+						<div class="row">
+							<div class="col mb-4">
+								<label for="username" class="form-label"><?= _t("Username"); ?></label>
+								<input type="text" class="form-control" id="username" name="username" autocomplete="off" required/>
+								<div class="invalid-feedback"><?= _t('Please enter your username'); ?></div>
+							</div>
 						</div>
-						<div class="loginFormElement"><?= _t("Password"); ?>:<br/>
-							<input id="password" type="password" name="password" size="25"/>
-							<button type="button" id='passwordView' class="passwordView"><?= caNavIcon(__CA_NAV_ICON_WATCH__, '20px', []); ?></button>
+						<div class="row">
+							<div class="col mb-4">
+								<label for="password" class="form-label"><?= _t("Password"); ?></label>
+								<input type="password" name="password" class="form-control" id="password" autocomplete="off" required/>
+								<div class="invalid-feedback"><?_t('Please enter your password'); ?></div>
+							</div>
 						</div>
-						<input name="redirect" type="hidden" value="<?php echo htmlspecialchars($this->getVar('redirect'), ENT_QUOTES); ?>" />
-						<input name="local" type="hidden" value="<?php echo (bool)($_REQUEST['local'] ?? null) ? 1 : 0; ?>" />
-						<div class="loginSubmitButton"><?= caFormSubmitButton($this->request, __CA_NAV_ICON_LOGIN__, _t("Login"),"login", array('icon_position' => __CA_NAV_ICON_ICON_POS_RIGHT__)); ?></div>
-					</form>
-<?php if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { ?>
-					<div id="forgotLink"><?= caNavLink($this->request, _t("Forgot your password?"), 'forgotLink', 'system/auth', 'forgot', ''); ?></div>
-<?php } else if($vs_adapter_account_link = AuthenticationManager::getAccountManagementLink()) { ?>
-	<div id="forgotLink"><a href="<?= $vs_adapter_account_link; ?>" target="_blank"><?= _t("Manage your account"); ?></a></div>
-<?php } ?>
-				</div><!-- end loginForm -->
-			</div><!-- end loginBox -->
-		</div><!-- end center -->
-		
-		
-	
-			<div class="container">
-				<div class="row">
-					<!-- This column takes up 50% width on medium screens and up -->
-					<div class="col-md-6">Column Content</div>
-					<div class="col-md-6">Column Content</div>
+					</div>
+					<div class="row">
+						<div class="col mb-4">
+							<button type="submit" class="btn btn-primary"><?= _t("Login"); ?></button>
+						</div>
+					</div>
 				</div>
 			</div>
-	</body>
-</html>
+			
+			<input type="hidden" name="csrfToken" value="<?= caGenerateCSRFToken($this->request); ?>"/>
+		</form>
+	</div>
+</div>
+<script>
+(() => {
+  'use strict'
+
+  // Fetch all the forms we want to apply custom Bootstrap validation styles to
+  const forms = document.querySelectorAll('.needs-validation')
+
+  // Loop over them and prevent submission
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', event => {
+      if (!form.checkValidity()) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+
+      form.classList.add('was-validated')
+    }, false)
+  })
+})()
+</script>
