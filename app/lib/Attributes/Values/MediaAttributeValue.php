@@ -395,9 +395,9 @@ class MediaAttributeValue extends AttributeValue implements IAttributeValue {
 	public function htmlFormElement($pa_element_info, $pa_options=null) {
 		$vs_element = '<div '._caHTMLMakeAttributeString(['class' => caGetOption('class', $pa_options, null)]).'>';
 		$vs_element .= '<div id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_content">{'.$pa_element_info['element_id'].'}</div>';
-		$vs_element .= '<div id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_clear_control">'.caHTMLCHeckboxInput('{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_clear', ['value' => 1, 'data-exclude' => 1, 'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_clear_control']).' '._t('Clear').'</div>';
+		$vs_element .= '<div id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_clear_control">'.caHTMLCHeckboxInput('{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_clear', ['value' => 1, 'data-exclude' => 1, 'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_clear_control', 'aria-label' => _t('Clear')]).' '._t('Clear').'</div>';
 		
-		$vs_element .= '<div id="{fieldNamePrefix}upload_control_{n}" class="attributeMediaDownloadControl">'._t("Upload").': <input type="file" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}"></div>' ;
+		$vs_element .= '<div id="{fieldNamePrefix}upload_control_{n}" class="attributeMediaDownloadControl">'._t("Upload").': <input type="file" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}" aria-label="'.htmlspecialchars($pa_element_info['display_label'] ?? null).'"></div>' ;
 		$vs_element .= '</div>';
 		
 		$vs_element .= "

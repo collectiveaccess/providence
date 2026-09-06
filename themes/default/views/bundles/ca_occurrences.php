@@ -119,7 +119,6 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 ?><a href="#" class="caDeleteItemButton listRelDeleteButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a><?php
 	}
 ?>
-			<a href="<?= urldecode(caEditorUrl($this->request, 'ca_occurrences', '{occurrence_id}')); ?>" class="caEditItemButton" id="<?= $id_prefix; ?>_edit_related_{n}"></a>
 			<span id='<?= $id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
 			print caGetRelationDisplayString($this->request, 'ca_occurrences', array('class' => 'caEditItemButton', 'id' => "{$id_prefix}_edit_related_{n}", "aria-label" => _t('Edit')), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $id_prefix, 'relationshipTypeDisplayPosition' => $dont_show_relationship_type));

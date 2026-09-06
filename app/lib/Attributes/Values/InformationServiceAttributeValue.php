@@ -420,7 +420,8 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
                         'value' => '{{'.$element_info['element_id'].'}}',
                         'maxlength' => 512,
                         'id' => "{fieldNamePrefix}".$element_info['element_id']."_autocomplete{n}",
-                        'class' => $class
+                        'class' => $class,
+						'aria-label' => $element_info['display_label'] ?? null
                     )
                 ).
                 caHTMLHiddenInput(

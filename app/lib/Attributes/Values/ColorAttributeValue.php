@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2025 Whirl-i-Gig
+ * Copyright 2018-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -206,7 +206,7 @@ class ColorAttributeValue extends AttributeValue implements IAttributeValue {
 		}
 		
 		$id = '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}';
-		$vs_element = "<input name='{$id}' type='hidden' value='{{".$pa_element_info['element_id']."}}' id='{$id}'/>\n";
+		$vs_element = "<input name='{$id}' type='hidden' value='{{".$pa_element_info['element_id']."}}' id='{$id}' aria-label=".htmlspecialchars($pa_element_info['display_label'])."/>\n";
 		
 		if (isset($va_settings['showHexValueText']) && (bool)$va_settings['showHexValueText']) {
 			$vs_element .= "<div class='colorpickerText' id='{$id}_hexdisplay'>#{{".$pa_element_info['element_id']."}}</div>";  

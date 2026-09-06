@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -289,7 +289,8 @@ class TimeCodeAttributeValue extends AttributeValue implements IAttributeValue {
 				'height' => $vs_height,
 				'value' => '{{'.$pa_element_info['element_id'].'}}',
 				'maxlength' => $vn_max_length,
-				'class' => $vs_class
+				'class' => $vs_class,
+				'aria-label' => $pa_element_info['display_label'] ?? null
 			)
 		);
 	}

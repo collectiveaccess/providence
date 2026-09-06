@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2025 Whirl-i-Gig
+ * Copyright 2020-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -230,7 +230,8 @@ class FilesizeAttributeValue extends AttributeValue implements IAttributeValue {
                 'height' => (isset($options['height']) && $options['height'] > 0) ? $options['height'] : $settings['fieldHeight'], 
                 'value' => '{{'.$element_info['element_id'].'}}',
                 'id' => '{fieldNamePrefix}'.$element_info['element_id'].'_{n}',
-                'class' => $class
+                'class' => $class,
+				'aria-label' => $element_info['display_label'] ?? null
             ]
         );
     }

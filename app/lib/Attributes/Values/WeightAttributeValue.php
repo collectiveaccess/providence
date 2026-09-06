@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -303,7 +303,8 @@ class WeightAttributeValue extends AttributeValue implements IAttributeValue {
 				'value' => '{{'.$pa_element_info['element_id'].'}}', 
 				'maxWeight' => $va_settings['maxChars'] ?? null,
 				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
-				'class' => $vs_class
+				'class' => $vs_class,
+				'aria-label' => $pa_element_info['display_label'] ?? null
 			)
 		);
 	}

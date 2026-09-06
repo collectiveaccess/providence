@@ -222,7 +222,8 @@ class ExternalMediaAttributeValue extends AttributeValue implements IAttributeVa
                 'value' => '{{'.$element_info['element_id'].'}}',
                 'id' => '{fieldNamePrefix}'.$element_info['element_id'].'_{n}',
                 'class' => $class,
-                'placeholder' => _t('%1 media url', caMakeCommaListWithConjunction(caGetExternalMediaUrlSupportedFormats(['names' => true]), ['conjunction' => _t('or')]))
+                'placeholder' => _t('%1 media url', caMakeCommaListWithConjunction(caGetExternalMediaUrlSupportedFormats(['names' => true]), ['conjunction' => _t('or')])),
+				'aria-label' => $element_info['display_label'] ?? null
             ]
         );
         

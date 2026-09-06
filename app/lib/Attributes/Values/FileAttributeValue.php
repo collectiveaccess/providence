@@ -273,8 +273,8 @@ class FileAttributeValue extends AttributeValue implements IAttributeValue {
 		$vs_element = '<div '._caHTMLMakeAttributeString(['class' => caGetOption('class', $pa_options, null)]).'>';
 		$vs_element .= '<div id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_content">{'.$pa_element_info['element_id'].'}</div>';
 		
-		$vs_element .= caHTMLCHeckboxInput('{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_clear', ['value' => 1, 'data-exclude' => 1, 'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_clear_control']).' '._t('Clear');
-		$vs_element .= '<div id="{fieldNamePrefix}upload_control_{n}" class="attributeFileDownloadControl">'._t("Set file").': <input type="file" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}"></div>' ;
+		$vs_element .= caHTMLCHeckboxInput('{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_clear', ['value' => 1, 'data-exclude' => 1, 'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_clear_control', 'aria-label' => _t('Clear')]).' '._t('Clear');
+		$vs_element .= '<div id="{fieldNamePrefix}upload_control_{n}" class="attributeFileDownloadControl">'._t("Set file").': <input type="file" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}" aria-label="'.htmlspecialchars($pa_element_info['display_label'] ?? null).'"></div>' ;
 		$vs_element .= '</div>';
 		
 		$vs_element .= "

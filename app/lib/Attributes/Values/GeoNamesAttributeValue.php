@@ -548,7 +548,8 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 					'value' => '{{'.$pa_element_info['element_id'].'}}',
 					'maxlength' => 512,
 					'id' => "{fieldNamePrefix}".$pa_element_info['element_id']."_autocomplete{n}",
-					'class' => $vs_class ? $vs_class : 'lookupBg'
+					'class' => $vs_class ? $vs_class : 'lookupBg',
+					'aria-label' => $pa_element_info['display_label'] ?? null
 				)
 			).
 			caHTMLHiddenInput(

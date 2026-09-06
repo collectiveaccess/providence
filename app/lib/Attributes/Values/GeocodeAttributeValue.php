@@ -647,7 +647,8 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 			'maxZoomLevel' => caGetOption('maxZoomLevel', $element_info['settings'], null),
 			'defaultLocation' => caGetOption('defaultLocation', $element_info['settings'], null),
 			'mapWidth' => caGetOption('mapWidth', $element_info['settings'], '695px'), 
-			'mapHeight' => caGetOption('mapHeight', $element_info['settings'], '400px')
+			'mapHeight' => caGetOption('mapHeight', $element_info['settings'], '400px'),
+			'aria-label' => $element_info['display_label'] ?? null
 		], $options));
 	}
 	# ------------------------------------------------------------------

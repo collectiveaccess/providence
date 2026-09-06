@@ -319,7 +319,8 @@ class NumericAttributeValue extends AttributeValue implements IAttributeValue {
 				'value' => '{{'.$pa_element_info['element_id'].'}}', 
 				'maxlength' => $va_settings['maxChars'],
 				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
-				'class' => $vs_class
+				'class' => $vs_class,
+				'aria-label' => $pa_element_info['display_label'] ?? null
 			]
 		);
 	}

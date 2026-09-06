@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (https://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit https://www.CollectiveAccess.org
  *
@@ -417,7 +417,8 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 					'value' => '{{'.$element_info['element_id'].'}}', 
 					'maxlength' => 512,
 					'id' => "{fieldNamePrefix}".$element_info['element_id']."_autocomplete{n}",
-					'class' => $class ? $class : 'lookupBg'
+					'class' => $class ? $class : 'lookupBg',
+					'aria-label' => $element_info['display_label'] ?? null
 				)
 			).
 			caHTMLHiddenInput(
