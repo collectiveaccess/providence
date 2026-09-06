@@ -62,7 +62,7 @@ print caEditorBundleMetadataDictionary($this->request, $id_prefix.'NPLabels', $s
 	<textarea class='caLabelTemplate' style='display: none;'>
 		<div id="{fieldNamePrefix}Label_{n}" class="labelInfo">
 			<div style="float: right;">
-				<a href="#" class="caDeleteLabelButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+				<a href="#" class="caDeleteLabelButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 			</div>
 			<?= $t_label->htmlFormElement('name', "^ELEMENT", array_merge($settings, array('width' => '670px', 'name' => "{fieldNamePrefix}name_{n}", 'id' => "{fieldNamePrefix}name_{n}", "value" => "{{name}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $read_only))); ?>
 

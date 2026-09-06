@@ -60,7 +60,7 @@ print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $settings)
 					</td>
 					<td>
 <?php if (!$vb_read_only) { ?>	
-						<div style="float: right;"><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
+						<div style="float: right;"><a href="#" class="caDeleteItemButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 <?php } ?>
 					</td>
 				</tr>

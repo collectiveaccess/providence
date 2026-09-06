@@ -64,16 +64,16 @@ print caEditorBundleMetadataDictionary($this->request, $id_prefix.'Labels', $set
 	<textarea class='caLabelTemplate' style='display: none;'>
 		<div id="{fieldNamePrefix}Label_{n}" class="labelInfo">
 			<div style="float: right;">
-				<a href="#" class="caDeleteLabelButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1, null, null, array('graphicsPath' => $this->getVar('graphicsPath'))); ?></a>
+				<a href="#" class="caDeleteLabelButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1, null, null, array('graphicsPath' => $this->getVar('graphicsPath'))); ?></a>
 			</div>
 			
-			<?= $t_label->htmlFormElement('name', "^ELEMENT", array_merge($settings, array('request' => $this->request, 'width' => '670px', 'name' => "{fieldNamePrefix}name_{n}", 'id' => "{fieldNamePrefix}name_{n}", "value" => "{{name}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $read_only))); ?>
+			<?= $t_label->htmlFormElement('name', "^ELEMENT", array_merge($settings, array('request' => $this->request, 'width' => '670px', 'name' => "{fieldNamePrefix}name_{n}", 'id' => "{fieldNamePrefix}name_{n}", "value" => "{{name}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $read_only, 'aria-label' => _t('Name')))); ?>
 			<div class="formLabel">
 				<?php if (Configuration::load()->get('ca_objects_user_settable_sortable_value')) { print $t_label->htmlFormElement('name_sort', "^LABEL<br>^ELEMENT", array_merge($settings, array('name' => "{fieldNamePrefix}name_sort_{n}", 'id' => "{fieldNamePrefix}name_sort_{n}", "value" => "{{name_sort}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $read_only)))."<br>\n"; } ?>
 			
 				<?= $locale_list; ?>	
 				<?= $label_list ? $t_label->htmlFormElement('type_id', "^LABEL ^ELEMENT ^BUNDLECODE", array('classname' => 'labelType', 'id' => "{fieldNamePrefix}type_id_{n}", 'name' => "{fieldNamePrefix}type_id_{n}", "value" => "{type_id}", 'no_tooltips' => true, 'list_code' => $label_list, 'dont_show_null_value' => true, 'hide_select_if_no_options' => true, 'aria-label' => _t('Type'))) : ''; ?>
-				<?= $show_effective_date ? $t_label->htmlFormElement('effective_date', "^LABEL ^ELEMENT ^BUNDLECODE", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}effective_date_{n}", 'name' => "{fieldNamePrefix}effective_date_{n}", "value" => "{effective_date}", 'no_tooltips' => true)) : ''; ?>	
+				<?= $show_effective_date ? $t_label->htmlFormElement('effective_date', "^LABEL ^ELEMENT ^BUNDLECODE", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}effective_date_{n}", 'name' => "{fieldNamePrefix}effective_date_{n}", "value" => "{effective_date}", 'no_tooltips' => true, 'aria-label' => _t('Effective date'))) : ''; ?>	
 				<?= $show_access ? $t_label->htmlFormElement('access', "^LABEL ^ELEMENT ^BUNDLECODE", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "{access}", 'no_tooltips' => true)) : ''; ?>	
 			</div>
 <?php

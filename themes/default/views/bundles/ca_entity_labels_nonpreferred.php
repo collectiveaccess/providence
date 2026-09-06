@@ -68,7 +68,7 @@ $show_checked 			= $t_subject->getTypeSetting('show_checked_for_nonpreferred_lab
 	<textarea class='caLabelTemplate' style='display: none;'>
 		<div id="{fieldNamePrefix}Label_{n}" class="labelInfo">
 			<div style="float: right;">
-				<a href="#" class="caDeleteLabelButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+				<a href="#" class="caDeleteLabelButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 			</div>
 			<table class="objectRepresentationListItem">
 				<tr valign="middle">

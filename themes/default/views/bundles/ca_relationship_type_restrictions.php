@@ -74,7 +74,7 @@ print caEditorBundleShowHideControl($this->request, $id_prefix);
 										<span class="formLabelPlain"><?= $right_include.' '._t('Include subtypes?'); ?></span>
 									</td>
 									<td style="align: right;">
-										<a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+										<a href="#" class="caDeleteItemButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 									</td>
 								</tr>
 							</table>

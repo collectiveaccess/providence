@@ -130,7 +130,7 @@ if (!RequestHTTP::isAjax()) {
 			<span class="formLabelError">{error}</span>
 <?php if (!$read_only && !$dont_show_delete) { ?>
 			<div style="float: right;">
-				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
+				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 			</div>
 <?php } ?>	
 			<div class="mediaUploadContainer">
@@ -260,7 +260,7 @@ if (!RequestHTTP::isAjax()) {
 			<div id="<?= $id_prefix; ?>objectRepresentationAddForm{n}" class="objectRepresentationAddForm">
 				<span class="formLabelError">{error}</span>
 				<div style="float: right;">
-					<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
+					<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 				</div>
 				<div class="mediaUploadContainer">
 					<div style="float: left;">
@@ -340,7 +340,7 @@ if (!RequestHTTP::isAjax()) {
 			<div id="<?= $id_prefix; ?>objectRepresentationRelateForm{n}" class="objectRepresentationRelateForm">
 				<span class="formLabelError">{error}</span>
 				<div style="float: right;">
-					<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
+					<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 				</div>
 				
 				<div class='mediaMetadataActionButton'><a href="#" onclick='<?= $id_prefix; ?>switchMode{n}("UPLOAD"); return false;'><?= caNavIcon(__CA_NAV_ICON_UPLOAD__, 1).' '._t('Upload media'); ?></a></div>

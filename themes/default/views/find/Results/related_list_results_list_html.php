@@ -121,7 +121,7 @@ $dont_show_interstitial_editor = $settings['dontShowInterstitialEditor'] ?? fals
 					if(!$dont_show_interstitial_editor) {
 ?>				
 					<td style="width:10px">
-						<a href="#" class="caInterstitialEditButton listRelEditButton"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a>
+						<a href="#" class="caInterstitialEditButton listRelEditButton" aria-label="<?= htmlspecialchars(_t('Edit relationship data')); ?>"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a>
 					</td>
 <?php
 					}
@@ -153,7 +153,7 @@ $dont_show_interstitial_editor = $settings['dontShowInterstitialEditor'] ?? fals
                     }
 ?>	
 					<td style="width:10px">
-						<a href="#" class="caDeleteItemButton listRelDeleteButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+						<a href="#" class="caDeleteItemButton listRelDeleteButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 					</td>
 				</tr>
 <?php

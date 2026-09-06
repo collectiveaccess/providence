@@ -98,7 +98,7 @@ foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) 
 <?php
 	if (!$vb_read_only && !$vb_dont_show_del) {
 ?>				
-			<a href="#" class="caDeleteItemButton listRelDeleteButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+			<a href="#" class="caDeleteItemButton listRelDeleteButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 <?php
 	}
 ?>
@@ -125,7 +125,7 @@ foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) 
 			<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
 <?php
 	if (!$vb_read_only && !$vb_dont_show_del) {
-?><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a><?php
+?><a href="#" class="caDeleteItemButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a><?php
 	}
 ?>			
 			<div style="display: none;" class="itemName">{label}</div>
@@ -153,7 +153,7 @@ foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) 
 						<input type="hidden" name="<?= $vs_id_prefix; ?>_id{n}" id="<?= $vs_id_prefix; ?>_id{n}" value="{id}"/>
 					</td>
 					<td>
-						<a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+						<a href="#" class="caDeleteItemButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 
 						<a href="<?= urldecode(caEditorUrl($this->request, 'ca_sets', '{set_id}')); ?>" class="caEditItemButton" id="<?= $vs_id_prefix; ?>_edit_related_{n}"><?= caNavIcon(__CA_NAV_ICON_GO__, 1); ?></a>
 					</td>

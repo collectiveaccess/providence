@@ -124,14 +124,14 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 <?php
 	if (!$read_only && !$dont_show_del) {
 ?>				
-			<a href="#" class="caDeleteItemButton listRelDeleteButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+			<a href="#" class="caDeleteItemButton listRelDeleteButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 <?php
 	}
 ?>
 			<a href="<?= urldecode(caEditorUrl($this->request, 'ca_occurrences', '{occurrence_id}')); ?>" class="caEditItemButton" id="<?= $id_prefix; ?>_edit_related_{n}"></a>
 			<span id='<?= $id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $id_prefix, 'relationshipTypeDisplayPosition' => (($t_subject->tableName() == 'ca_object_lots') ? 'none' : $dont_show_relationship_type)));
+			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$id_prefix}_edit_related_{n}", "aria-label" => _t('Edit')), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $id_prefix, 'relationshipTypeDisplayPosition' => (($t_subject->tableName() == 'ca_object_lots') ? 'none' : $dont_show_relationship_type)));
 ?>
 			</span>
 			<input type="hidden" name="<?= $id_prefix; ?>_type_id{n}" id="<?= $id_prefix; ?>_type_id{n}" value="{type_id}"/>
@@ -145,7 +145,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
 			<span id='<?= $id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $id_prefix, 'relationshipTypeDisplayPosition' => (($t_subject->tableName() == 'ca_object_lots') ? 'none' : $dont_show_relationship_type)));
+			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$id_prefix}_edit_related_{n}", "aria-label" => _t('Edit')), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $id_prefix, 'relationshipTypeDisplayPosition' => (($t_subject->tableName() == 'ca_object_lots') ? 'none' : $dont_show_relationship_type)));
 ?>
 			</span>
 			<input type="hidden" name="<?= $id_prefix; ?>_type_id{n}" id="<?= $id_prefix; ?>_type_id{n}" value="{type_id}"/>
@@ -153,7 +153,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 <?php
 	if (!$read_only && !$dont_show_del) {
 ?>				
-			<a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+			<a href="#" class="caDeleteItemButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 <?php
 	}
 ?>			
@@ -175,12 +175,12 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
 <?php
 	if (!$read_only && ca_editor_uis::loadDefaultUI($t_item_rel->tableNum(), $this->request)) {
-?><a href="#" class="caInterstitialEditButton listRelEditButton"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a><?php
+?><a href="#" class="caInterstitialEditButton listRelEditButton" aria-label="<?= htmlspecialchars(_t('Edit relationship data')); ?>"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a><?php
 	}
 	
 	if (!$read_only && !$dont_show_del) {
 ?>				
-			<a href="#" class="caDeleteItemButton listRelDeleteButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+			<a href="#" class="caDeleteItemButton listRelDeleteButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 <?php
 	}
 	
@@ -193,7 +193,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 
 			<span id='<?= $id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $id_prefix, 'relationshipTypeDisplayPosition' => (($t_subject->tableName() == 'ca_object_lots') ? 'none' : $dont_show_relationship_type)));
+			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$id_prefix}_edit_related_{n}", "aria-label" => _t('Edit')), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $id_prefix, 'relationshipTypeDisplayPosition' => (($t_subject->tableName() == 'ca_object_lots') ? 'none' : $dont_show_relationship_type)));
 ?>
 			</span>
 			<input type="hidden" name="<?= $id_prefix; ?>_id{n}" id="<?= $id_prefix; ?>_id{n}" value="{id}"/>
@@ -206,16 +206,16 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 		<div id="<?= $id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
 			<span id='<?= $id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $id_prefix, 'relationshipTypeDisplayPosition' => (($t_subject->tableName() == 'ca_object_lots') ? 'none' : $dont_show_relationship_type)));
+			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$id_prefix}_edit_related_{n}", "aria-label" => _t('Edit')), array('display' => '_display', 'makeLink' => $make_link, 'prefix' => $id_prefix, 'relationshipTypeDisplayPosition' => (($t_subject->tableName() == 'ca_object_lots') ? 'none' : $dont_show_relationship_type)));
 ?>
 			</span>
 			<input type="hidden" name="<?= $id_prefix; ?>_id{n}" id="<?= $id_prefix; ?>_id{n}" value="{id}"/>
 <?php
 	if (!$read_only && ca_editor_uis::loadDefaultUI($t_item_rel->tableNum(), $this->request)) {
-?><a href="#" class="caInterstitialEditButton listRelEditButton"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a><?php
+?><a href="#" class="caInterstitialEditButton listRelEditButton" aria-label="<?= htmlspecialchars(_t('Edit relationship data')); ?>"><?= caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, "16px"); ?></a><?php
 	}
 	if (!$read_only && !$dont_show_del) {
-?><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a><?php
+?><a href="#" class="caDeleteItemButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a><?php
 	}
 ?>			
 			<div style="display: none;" class="itemName">{label}</div>
@@ -252,7 +252,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 						<input type="hidden" name="<?= $id_prefix; ?>_id{n}" id="<?= $id_prefix; ?>_id{n}" value="{id}"/>
 					</td>
 					<td>
-						<a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+						<a href="#" class="caDeleteItemButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 					</td>
 				</tr>
 			</table>

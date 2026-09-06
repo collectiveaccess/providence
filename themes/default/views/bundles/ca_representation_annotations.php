@@ -138,7 +138,7 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 					<td><a href="#" onclick="jQuery('#{fieldNamePrefix}moreOptions_{n}').slideToggle(250); return false;" class="button"><?= _t('More'); ?> &rsaquo;</a></td>
 					
 					<td>
-						<a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>						
+						<a href="#" class="caDeleteItemButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>						
 					</td>
 				</tr>
 			</table>

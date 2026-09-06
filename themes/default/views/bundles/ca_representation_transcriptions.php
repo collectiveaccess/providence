@@ -67,7 +67,7 @@
 <?php
 	if (!$vb_read_only && !$vb_dont_show_del) {
 ?>				
-			<a href="#" class="caDeleteItemButton listRelDeleteButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+			<a href="#" class="caDeleteItemButton listRelDeleteButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 <?php
 	}
 ?>

@@ -398,17 +398,17 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
     /**
      *
      */
-    public function htmlFormElement($pa_element_info, $pa_options=null) {
-        $va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight'));
-        $vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : 'rulerBg');
+    public function htmlFormElement($element_info, $options=null) {
+        $va_settings = $this->getSettingValuesFromElementArray($element_info, array('fieldWidth', 'fieldHeight'));
+        $vs_class = trim((isset($options['class']) && $options['class']) ? $options['class'] : 'rulerBg');
         
         return caHTMLTextInput(
-            '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
+            '{fieldNamePrefix}'.$element_info['element_id'].'_{n}', 
             array(
-                'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
-                'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'], 
-                'value' => '{{'.$pa_element_info['element_id'].'}}',
-                'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
+                'size' => (isset($options['width']) && $options['width'] > 0) ? $options['width'] : $va_settings['fieldWidth'],
+                'height' => (isset($options['height']) && $options['height'] > 0) ? $options['height'] : $va_settings['fieldHeight'], 
+                'value' => '{{'.$element_info['element_id'].'}}',
+                'id' => '{fieldNamePrefix}'.$element_info['element_id'].'_{n}',
                 'class' => $vs_class,
              	'aria-label' => $element_info['display_label'] ?? null
             )

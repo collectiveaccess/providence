@@ -449,41 +449,41 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 	 *
 	 * @return string
 	 */
-	public function htmlFormElement($pa_element_info, $pa_options=null) {
-		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'suggestExistingValues', 'useDatePicker', 'datePickerDateFormat'));
-		$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : 'dateBg');
+	public function htmlFormElement($element_info, $options=null) {
+		$va_settings = $this->getSettingValuesFromElementArray($element_info, array('fieldWidth', 'suggestExistingValues', 'useDatePicker', 'datePickerDateFormat'));
+		$vs_class = trim((isset($options['class']) && $options['class']) ? $options['class'] : 'dateBg');
 		
-		if (isset($pa_options['useDatePicker'])) {
-			$va_settings['useDatePicker'] = $pa_options['useDatePicker'];
+		if (isset($options['useDatePicker'])) {
+			$va_settings['useDatePicker'] = $options['useDatePicker'];
 		}
-		$attributes = caGetOption('attributes', $pa_options, null);
+		$attributes = caGetOption('attributes', $options, null);
 
 		$vn_max_length = 255;
 		$vs_element = caHTMLTextInput(
-			'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
+			'{fieldNamePrefix}'.$element_info['element_id'].'_{n}',
 			array_merge($attributes ?? [], [
-				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
-				'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
-				'value' => '{{'.$pa_element_info['element_id'].'}}',
+				'id' => '{fieldNamePrefix}'.$element_info['element_id'].'_{n}',
+				'size' => (isset($options['width']) && $options['width'] > 0) ? $options['width'] : $va_settings['fieldWidth'],
+				'value' => '{{'.$element_info['element_id'].'}}',
 				'maxlength' => $vn_max_length,
 				'class' => $vs_class,
-				'placeholder' => $pa_options['placeholder'] ?? null,
+				'placeholder' => $options['placeholder'] ?? null,
 				'aria-label' => $element_info['display_label'] ?? null
 			])
 		);
 		
 		$vs_bundle_name = $vs_lookup_url = null;
-		if (isset($pa_options['t_subject']) && is_object($pa_options['t_subject'])) {
-			$vs_bundle_name = $pa_options['t_subject']->tableName().'.'.$pa_element_info['element_code'];
+		if (isset($options['t_subject']) && is_object($options['t_subject'])) {
+			$vs_bundle_name = $options['t_subject']->tableName().'.'.$element_info['element_code'];
 			
-			if ($pa_options['request']) {
-				$vs_lookup_url	= caNavUrl($pa_options['request'], 'lookup', 'AttributeValue', 'Get', array('bundle' => $vs_bundle_name, 'max' => 500));
+			if ($options['request']) {
+				$vs_lookup_url	= caNavUrl($options['request'], 'lookup', 'AttributeValue', 'Get', array('bundle' => $vs_bundle_name, 'max' => 500));
 			}
 		}
 		
 		if ((bool)$va_settings['suggestExistingValues'] && $vs_lookup_url && $vs_bundle_name) { 
 			$vs_element .= "<script type='text/javascript'>
-				jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').autocomplete( 
+				jQuery('#{fieldNamePrefix}".$element_info['element_id']."_{n}').autocomplete( 
 					{ source: '{$vs_lookup_url}', minLength: 3, delay: 800}
 				);
 			</script>\n";
@@ -519,8 +519,8 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 					"firstDay" =>  1
 				];
 				
-				$date_picker = "jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}').daterangepicker({'autoUpdateInput': false, 'parentEl': parentEl, locale: localeSettings, datepickerOptions: { minDate: null, maxDate: null}});";
-				$date_picker .= "jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}').on('apply.daterangepicker', function(ev, picker) {
+				$date_picker = "jQuery('#{fieldNamePrefix}{$element_info['element_id']}_{n}').daterangepicker({'autoUpdateInput': false, 'parentEl': parentEl, locale: localeSettings, datepickerOptions: { minDate: null, maxDate: null}});";
+				$date_picker .= "jQuery('#{fieldNamePrefix}{$element_info['element_id']}_{n}').on('apply.daterangepicker', function(ev, picker) {
 					let s = picker.startDate.format('{$dp_format}');
 					let e = picker.endDate.format('{$dp_format}');
 					let r = '';
@@ -532,12 +532,12 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
       				jQuery(this).val(r);
   				});";
 			} else {
-				$date_picker = "jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}').datepicker({dateFormat: '{$vs_date_format}', constrainInput: false});";
+				$date_picker = "jQuery('#{fieldNamePrefix}{$element_info['element_id']}_{n}').datepicker({dateFormat: '{$vs_date_format}', constrainInput: false});";
 			}
 
 			$vs_element .= "<script type='text/javascript'>
 				jQuery(document).ready(function() {
-					let parentEl = jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').parents('.caRelationQuickAddPanel');
+					let parentEl = jQuery('#{fieldNamePrefix}".$element_info['element_id']."_{n}').parents('.caRelationQuickAddPanel');
 					let localeSettings = ".json_encode($locale_settings).";
 					{$date_picker}
 				});

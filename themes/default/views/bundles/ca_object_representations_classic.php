@@ -123,7 +123,7 @@ print caEditorBundleMetadataDictionary($this->request, $id_prefix, $settings);
 	if (!$read_only) {
 ?>
 			<div style="float: right;">
-				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
+				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 			</div>
 <?php
 	}
@@ -406,7 +406,7 @@ print caEditorBundleMetadataDictionary($this->request, $id_prefix, $settings);
 ?>
 			<span class="formLabelError">{error}</span>
 			<div style="float: right;">
-				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
+				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 			</div>
 			
 			<div id='{fieldNamePrefix}detail_editor_{n}' class="caObjectRepresentationNewDetailEditorContainer">

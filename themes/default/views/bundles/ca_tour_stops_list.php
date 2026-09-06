@@ -64,7 +64,7 @@
 					<td>
 						<div style="float:right;">
 							<span id="{fieldNamePrefix}edit_{n}"><?= urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 1), '', 'editor/tour_stops', 'TourStopEditor', 'Edit', array('stop_id' => '{stop_id}'))); ?></span>
-							<a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+							<a href="#" class="caDeleteItemButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 						</div>
 					</td>
 				</tr>

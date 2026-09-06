@@ -241,7 +241,7 @@ if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], fa
 	if (($vs_render_mode !== 'checklist') && !$vb_read_only) {		// static (non-repeating) checkbox list for list attributes
 ?>
 			<div style="float: right;">
-				<a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
+				<a href="#" class="caDeleteItemButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 			</div>				
 <?php
 	}
@@ -304,7 +304,7 @@ if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], fa
 			<?= caHTMLHiddenInput($vs_id_prefix.'_'.$root_element_id.'_{n}', ['value' => '{'.$root_element_id.'}']); ?>	
 <?php
 			if (!$vb_read_only && !$vb_dont_show_del) {
-?><a href="#" class="caDeleteItemButton"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a><?php
+?><a href="#" class="caDeleteItemButton" aria-label="<?= htmlspecialchars(_t('Delete')); ?>"><?= caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a><?php
 	}
 ?>
 		</div>

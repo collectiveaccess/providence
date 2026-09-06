@@ -220,7 +220,7 @@ div.clear {
     text-transform:uppercase;
 }
 
-#leftNav h2 a, #leftNav h2 span { display: block; padding-left: 15px; padding-top: 7px; padding-bottom: 4px; text-decoration: none; color: #666666; border-right:1px solid #dddddd;} 
+#leftNav h2 a, #leftNav h2 span { display: block; padding-left: 15px; padding-top: 7px; padding-bottom: 4px; text-decoration: none; color: #000; border-right:1px solid #dddddd;} 
 #leftNav h2 a:hover{
     color: #999;
 }
@@ -844,7 +844,7 @@ a.sf-menu-selected:hover {
 }
 
 #leftNav h2 a.sf-menu-selected {
-    color:#666;
+    color: #000;
     background-color: #ddd;
     background-repeat:no-repeat;
     background-position: top right;
