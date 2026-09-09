@@ -94,7 +94,7 @@ class DisplayTemplateParser {
 							if (!$qr_res) { return; }
 
 							/** @var HTML_Node $o_node */
-							$filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($qr_res, $o_node->filterNonPrimaryRepresentations);
+							$filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($qr_res, (bool)$o_node->filterNonPrimaryRepresentations);
 						
 							$va_cache_opts = $qr_res->get($vs_relative_to.".".$qr_res->primaryKey(), array_merge($va_get_options, ['returnCacheOptions' => true]));
 						
@@ -485,7 +485,7 @@ class DisplayTemplateParser {
 					$va_restrict_to_sources = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToSources']); 
 					$vb_omit_blanks = !is_null($o_node->omitBlanks) ? (bool)$o_node->omitBlanks : null;
 					$vs_filter = !is_null($o_node->filter) ? (string)$o_node->filter : null;
-					$filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($pr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, $o_node->filterNonPrimaryRepresentations));
+					$filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($pr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, (bool)$o_node->filterNonPrimaryRepresentations));
 
 					$vs_unit_skip_if_expression = (string)$o_node->skipIfExpression;
 					$va_skip_if_expression_tags = caGetTemplateTags($vs_unit_skip_if_expression);
@@ -634,7 +634,7 @@ class DisplayTemplateParser {
 					$vb_aggregate_unique = $o_node->aggregateUnique ? (bool)$o_node->aggregateUnique : false;
 					$vb_omit_blanks = !is_null($o_node->omitBlanks) ? (bool)$o_node->omitBlanks : null;
 
-					$filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($pr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, $o_node->filterNonPrimaryRepresentations));
+					$filter_non_primary_reps = self::_setPrimaryRepresentationFiltering($pr_res, caGetOption('filterNonPrimaryRepresentations', $pa_options, (bool)$o_node->filterNonPrimaryRepresentations));
 
 					$vs_unit_skip_if_expression = (string)$o_node->skipIfExpression;
 					$vs_unit_skip_when = (string)$o_node->skipWhen;
@@ -1349,7 +1349,6 @@ class DisplayTemplateParser {
                 			$va_val_list[] = $g_request->user->get('fname').' '.$g_request->user->get('lname');
                 		} 
                 	}
-                	$va_val_list[] = 'meow';
 				} else {				
 					switch(strtolower($vs_get_spec)) {
                         case 'relationship_typename':
@@ -1400,7 +1399,7 @@ class DisplayTemplateParser {
                             $va_val_list = [$pr_res->tableName()];
                             break;
                         case 'count':
-                            $va_val_list = [$vn_full_value_count];
+                            $va_val_list = [(int)$vn_full_value_count];
                             break;
                         case 'omitcount':
                             $va_val_list = [$vn_full_value_count - ($vn_length - $vn_start)];
