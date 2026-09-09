@@ -432,9 +432,9 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 				if (!$t_item->isLoaded()) { $t_item->load((int)$this->opn_item_id); }
 				
 				if (is_array($pa_options['filterTypes'])) {
-				    return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, array_merge(array('filterTypes' => $pa_options['filterTypes'], 'delimiter' => ' ➔ ', $pa_options)));
+				    return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, array_merge(array('filterTypes' => $pa_options['filterTypes'], 'delimiter' => ' ➔ ', 'removeFirstItems' => 1), $pa_options));
 				} 
-				return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, array_merge(array('delimiter' => ' ➔ ', $pa_options)));
+				return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, array_merge(array('delimiter' => ' ➔ ', 'removeFirstItems' => 1), $pa_options));
 			}
 			return $t_list->getItemForDisplayByItemID($this->opn_item_id, array_merge($pa_options, ['return' => caGetOption('useSingular', $pa_options, false) ? 'singular' : 'plural']));
 		}
