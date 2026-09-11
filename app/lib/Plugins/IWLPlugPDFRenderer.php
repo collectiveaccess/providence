@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,22 +26,22 @@
  * ----------------------------------------------------------------------
  */
 	
-	interface IWLPlugPDFRenderer {
-		# -------------------------------------------------------
-		# Initialization and state
-		# -------------------------------------------------------
-		public function __construct();
-		public function register();
-		public function init();
-		public function cleanup();
-		
-		public function getDescription();
-		public function checkStatus();
-		
-		# -------------------------------------------------------
-		# Render
-		# -------------------------------------------------------
-		public function render($ps_content, $pa_options=null);
-		public function renderFile($ps_file_path, $pa_options=null);
-		public function setPage($ps_size, $ps_orientation, $ps_margin_top=0, $ps_margin_right=0, $ps_margin_bottom=0, $ps_margin_left=0);
-	}
+interface IWLPlugPDFRenderer {
+	# -------------------------------------------------------
+	# Initialization and state
+	# -------------------------------------------------------
+	public function __construct();
+	public function register();
+	public function init();
+	public function cleanup();
+	
+	public function getDescription();
+	public function checkStatus();
+	
+	# -------------------------------------------------------
+	# Render
+	# -------------------------------------------------------
+	public function render(string $content, ?array $options=null);
+	public function renderFile(string $file_path, ?array $options=null);
+	public function setPage(string $size, string $orientation, $margin_top=0, $margin_right=0, $margin_bottom=0, $margin_left=0);
+}

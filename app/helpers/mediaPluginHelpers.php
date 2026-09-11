@@ -410,6 +410,101 @@ function caWkhtmltopdfInstalled($ps_wkhtmltopdf_path=null, $options=null) {
 }
 # ------------------------------------------------------------------------------------------------
 /**
+ * Detects if weasyprint (http://www.weasyprint.org) is installed in the given path.
+ *
+ * @param string $weasyprint_path path to weasyprint executable
+ * @param array $options Options include:
+ *		noCache = Don't cached path value. [Default is false]
+ *
+ * @return mixed Path to executable if installed, false if not installed
+ */
+function caWeasyprintInstalled($weasyprint_path=null, $options=null) {
+	//if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_weasyprint_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_weasyprint_installed", "mediaPluginInfo"); }
+	if(!$weasyprint_path) { $weasyprint_path = caGetExternalApplicationPath('weasyprint'); }
+	
+	if (!trim($weasyprint_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $weasyprint_path)) || !@is_readable($weasyprint_path)) { 
+		CompositeCache::save("mediahelper_weasyprint_installed", false, "mediaPluginInfo");
+		return false; 
+	}
+	
+	if (!@is_readable($weasyprint_path)) { 
+		CompositeCache::save("mediahelper_weasyprint_installed", false, "mediaPluginInfo");
+		return false; 
+	}
+	if ((caGetOSFamily() == OS_WIN32) && $weasyprint_path){ 
+		CompositeCache::save("mediahelper_weasyprint_installed", $weasyprint_path, "mediaPluginInfo");
+		return $weasyprint_path; 
+	} // don't try exec test on Windows
+	
+	caExec($weasyprint_path." --version > /dev/null 2> /dev/null", $output, $return);
+	$ret = (($return == 0) || ($return == 1));
+	CompositeCache::save("mediahelper_weasyprint_installed", $weasyprint_path, "mediaPluginInfo");
+	
+	return $ret ? $weasyprint_path : false;
+}
+# ------------------------------------------------------------------------------------------------
+/**
+ * Detects if Google Chrome is installed in the given path.
+ *
+ * @param string $chrome_path path to chrome executable
+ * @param array $options Options include:
+ *		noCache = Don't cached path value. [Default is false]
+ *
+ * @return mixed Path to executable if installed, false if not installed
+ */
+function caGoogleChromeInstalled($chrome_path=null, $options=null) {
+	if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_google_chrome_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_google_chrome_installed", "mediaPluginInfo"); }
+	if(!$google_chrome_path) { $google_chrome_path = caGetExternalApplicationPath('chrome'); }
+	
+	if (!trim($google_chrome_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $google_chrome_path)) || !@is_readable($google_chrome_path)) { 
+		CompositeCache::save("mediahelper_google_chrome_installed", false, "mediaPluginInfo");
+		return false; 
+	}
+	
+	if (!@is_readable($google_chrome_path)) { 
+		CompositeCache::save("mediahelper_google_chrome_installed", false, "mediaPluginInfo");
+		return false; 
+	}
+	if ((caGetOSFamily() == OS_WIN32) && $google_chrome_path){ 
+		CompositeCache::save("mediahelper_google_chrome_installed", $google_chrome_path, "mediaPluginInfo");
+		return $google_chrome_path; 
+	} // don't try exec test on Windows
+	
+	caExec($google_chrome_path." > /dev/null 2> /dev/null",$va_output,$return);
+	
+	$ret = (($return == 0) || ($return == 1));
+	
+	CompositeCache::save("mediahelper_google_chrome_installed", $google_chrome_path, "mediaPluginInfo");
+	
+	return $ret ? $google_chrome_path : false;
+}
+# ------------------------------------------------------------------------------------------------
+/**
+ * Returns instance of PDF preferred PDF renderer
+ *
+ * @param array $options Options include:
+ *		noCache = Don't cached path value. [Default is false]
+ *
+ * @return mixed Path to executable if installed, false if not installed
+ */
+function caUsePDFRenderer(?array $options=null) : string {	
+	$config = Configuration::load();
+	$use = $config->get('use_pdf_renderer');
+	
+	if(($chrome_installed = caGoogleChromeInstalled(null, $options)) && (!$use || ($use === 'chrome'))) {
+		return 'chrome';
+	}
+	if(($wkhtmltopdf_installed = caWkhtmltopdfInstalled(null, $options)) && (!$use || ($use === 'wkhtmltopdf'))) {
+		return 'wkhtmltopdf';
+	}
+	if(($weasyprint_installed = caWeasyprintInstalled(null, $options)) && (!$use || ($use === 'weasyprint'))) {
+		return 'weasyprint';
+	}
+	
+	return 'dompdf';
+}
+# ------------------------------------------------------------------------------------------------
+/**
  * Detects if youtube-dl (http://www.youtube-dl.org) is installed in the given path.
  *
  * @param string $youtube_dl_path path to youtube-dl executable

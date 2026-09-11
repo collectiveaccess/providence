@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Plugins/PDFRenderer/domPDF.php : renders HTML as PDF using domPDF
+ * app/lib/Plugins/PDFRenderer/weasyprint.php : renders HTML as PDF using weasyprint
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2026 Whirl-i-Gig
+ * Copyright 2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,15 +32,43 @@
 include_once(__CA_LIB_DIR__."/Plugins/PDFRenderer/BasePDFRendererPlugin.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
-use Dompdf\Dompdf;
-use Dompdf\Options;
 
-class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugin Implements IWLPlugPDFRenderer {
+class WLPlugPDFRendererweasyprint Extends BasePDFRendererPlugin Implements IWLPlugPDFRenderer {
 	# ------------------------------------------------
+	/**
+	 * Path to Weasyprint executable
+	 */
+	protected $app_path = null;
+	
 	/** 
 	 *
 	 */
-	private $renderer;
+	private $page_size="letter";
+		
+	/** 
+	 *
+	 */
+	private $page_orientation="portrait";
+	
+	/** 
+	 *
+	 */
+	private $margin_top="0mm";
+	
+	/** 
+	 *
+	 */
+	private $margin_right="0mm";
+	
+	/** 
+	 *
+	 */
+	private $margin_bottom="0mm";
+	
+	/** 
+	 *
+	 */
+	private $margin_left="0mm";
 	
 	# ------------------------------------------------
 	/**
@@ -48,99 +76,80 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugin Implements IWLPlugPD
 	 */
 	public function __construct() {
 		parent::__construct();
-		$this->info['NAME'] = 'domPDF';
-		$this->set('CODE', 'domPDF');
+		$this->info['NAME'] = 'weasyprint';
+		$this->set('CODE', 'weasyprint');
 		
-		$this->description = _t('Renders HTML as PDF using domPDF');
+		$this->app_path = caGetExternalApplicationPath('weasyprint');
 		
-		$chroot = [realpath(__CA_BASE_DIR__), realpath(__CA_BASE_DIR__.'/media'), realpath(__CA_BASE_DIR__.'/media/'.__CA_APP_NAME__)];
-		if (($chroot_opt = Configuration::load()->get('dompdf_chroot_path'))) {
-			$chroot[] = realpath($chroot_opt);
-		}
-		
-		$options = new Options();
-		$options->set('isRemoteEnabled', TRUE);
-		$options->set('chroot', $chroot);
-		$options->set('logOutputFile', __CA_TEMP_DIR__.'/log.htm');
-    	$options->set('tempDir', __CA_TEMP_DIR__);
-    	
-    	// Look for theme and app-based font directories
-    	if(file_exists(__CA_THEME_DIR__.'/fonts')) {
-    		$options->set('fontDir', __CA_THEME_DIR__.'/fonts');
-    	} elseif(file_exists(__CA_APP_DIR__.'/fonts')) {
-    		$options->set('fontDir', __CA_APP_DIR__.'/fonts');
-    	}
-		$this->renderer = new DOMPDF($options);
+		$this->description = _t('Renders HTML as PDF using weasyprint');
 	}
 	# ------------------------------------------------
 	/**
 	 * Render HTML formatted string as a PDF
 	 *
-	 * @param string $content A fully-formed HTML document to render as a PDF
-	 * @param array $options Options include:
+	 * @param string $ps_content A fully-formed HTML document to render as a PDF
+	 * @param array $pa_options Options include:
 	 *		stream = Output the rendered PDF directly to the response [Default=false]
 	 *		filename = The filename to set the PDF to when streams [Default=export_results.pdf]
 	 *		writeFile = File path to write PDF to. [Default=false]
 	 *
 	 * @return string The rendered PDF content
-	 * @seealso domPDF::renderFile()
+	 * @seealso weasyprint::renderFile()
 	 */
 	public function render(string $content, ?array $options=null) {
-		$this->renderer->load_html($content);
+		$path = caGetOption('writeFile', $options, false);
 		
-		try {
-			$this->renderer->render();
-		} catch(TypeError $e) {
-			$log = caGetLogger();
-			$log->logError(_t('[domPDF] PDF rendering failed. Is the font directory writeable?'));
-			return null;
+		$tmp_file = caGetTempFileName('weasyprint', 'html');
+		file_put_contents($tmp_file, $content);
+		$output = $path ?: caGetTempFileName('weasyprint', 'pdf');
+		
+		$cli = new \CA\Process\CLI();
+		$cli->execute($this->app_path , [$p, $output], ['async' => false, 'background' => false]);
+		$content = file_get_contents($output);
+		
+		if(!$path) { @unlink($output); }
+		@unlink($tmp_file);
+		if(caGetOption('stream', $options, false)) { 
+			header("Cache-Control: private");
+   			header("Content-type: application/pdf");
+			header("Content-Disposition: attachment; filename=".caGetOption('filename', $options, 'output.pdf'));
+			
+			print $content;
 		}
 		
-		if (caGetOption('stream', $options, false)) {
-			$this->renderer->stream(caGetOption('filename', $options, 'export_results.pdf'));
-		}
-		
-		$output = $this->renderer->output();
-		if($path = caGetOption('writeFile', $options, false)) {
-			file_put_contents($path, $output);
-		}
-		
-		return $this->renderer->output();
+		return $content;
 	}
 	# ------------------------------------------------
 	/**
 	 * Render HTML file as a PDF
 	 *
-	 * @param string $file_path Path to fully-formed HTML file to render as a PDF
-	 * @param array $options Options include:
+	 * @param string $ps_file_path Path to fully-formed HTML file to render as a PDF
+	 * @param array $pa_options Options include:
 	 *		stream = Output the rendered PDF directly to the response [Default=false]
 	 *		filename = The filename to set the PDF to when streams [Default=export_results.pdf]
 	 *		writeFile = File path to write PDF to. [Default=false]
 	 *
 	 * @return string The rendered PDF content
-	 * @seealso domPDF::render()
+	 * @seealso weasyprint::render()
 	 */
 	public function renderFile(string $file_path, ?array $options=null) {
-		$this->renderer->load_html_file($file_path);
+		$output = $path ?: caGetTempFileName('weasyprint', 'pdf');
 		
-		try {
-			$this->renderer->render();
-		} catch(TypeError $e) {
-			$log = caGetLogger();
-			$log->logError(_t('[domPDF] PDF rendering failed. Is the font directory writeable?'));
-			return null;
+		$cli = new \CA\Process\CLI();
+		$cli->execute($this->app_path , [$file_path, $output], ['async' => false, 'background' => false]);
+		
+		$content = file_get_contents($output);
+		
+		if(!$path) { @unlink($output); }
+		@unlink($tmp_file);
+		if(caGetOption('stream', $options, false)) { 
+			header("Cache-Control: private");
+   			header("Content-type: application/pdf");
+			header("Content-Disposition: attachment; filename=".caGetOption('filename', $options, 'output.pdf'));
+			
+			print $content;
 		}
-		
-		if (caGetOption('stream', $options, false)) {
-			$this->renderer->stream(caGetOption('filename', $options, 'output.pdf'));
-		}
-		
-		$output = $this->renderer->output();
-		if($path = caGetOption('writeFile', $options, false)) {
-			file_put_contents($path, $output);
-		}
-		
-		return $output;
+		return $content;
 	}
 	# ------------------------------------------------
 	/**
@@ -153,12 +162,14 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugin Implements IWLPlugPD
 	 */
 	public function setPage(string $size, string $orientation, $margin_top=0, $margin_right=0, $margin_bottom=0, $margin_left=0) {
 		if (PDFRenderer::isCustomPageSize($size)){
-			if(!is_array($s = PDFRenderer::getPageSize($size, 'px', $orientation))) {
-				throw new ApplicationException(_t('Invalid page size %1', $size));
-			}
-			$this->renderer->set_paper([0, 0, $s['width'], $s['height']]);
-		} else {
-			$this->renderer->set_paper($size, $orientation);
+			
+			$this->page_size = $size;
+			$this->page_orientation = $orientation;
+			
+			$this->margin_top = caConvertMeasurement($margin_top, 'mm').'mm';
+			$this->margin_right = caConvertMeasurement($margin_right, 'mm').'mm';
+			$this->margin_bottom = caConvertMeasurement($margin_bottom, 'mm').'mm';
+			$this->margin_left = caConvertMeasurement($margin_left, 'mm').'mm';
 		}
 		return true;
 	}
@@ -173,7 +184,7 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugin Implements IWLPlugPD
 		
 		$use_renderer = caUsePDFRenderer();
 		
-		if ($use_renderer === 'dompdf') {
+		if ($use_renderer === 'weasyprint') {
 			$status['available'] = true;
 		} else {
 			$status['available'] = false;
