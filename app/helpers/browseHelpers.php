@@ -317,3 +317,31 @@ function caGetBrowseForType($table, $type=null, ?array $options=null) : ?string 
 	return null;
 }
 # ---------------------------------------
+/**
+ *
+ *
+ *
+ */
+function caGetInformationServiceMirrorListInformation($t_element) {
+	if (!$t_element) {
+		return false;
+	}
+
+	$va_settings = $t_element->getSettings();
+
+	// direct list mirror
+	if (isset($va_settings['list']) && (int)$va_settings['list'] > 0) {
+		return [
+			'list' => (int)$va_settings['list']
+		];
+	}
+
+	// common CA list_id pattern
+	if (isset($va_settings['list_id']) && (int)$va_settings['list_id'] > 0) {
+		return [
+			'list' => (int)$va_settings['list_id']
+		];
+	}
+
+	return false;
+}
