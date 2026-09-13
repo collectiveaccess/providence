@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -236,6 +236,12 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 							toolbar: {
 								items: ".json_encode($toolbar).",
 								shouldNotGroupWhenFull: true
+							},
+							htmlSupport: {
+								allow: [
+									{ name: 'details' },
+									{ name: 'summary' }
+								]
 							}
 						} ).then(editor => {
 								// Add current instance to list of initialized editors

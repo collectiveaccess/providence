@@ -2122,7 +2122,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 							));
 							if (is_array($ids) && (sizeof($ids) > 0)) {
-								if ($log_erp) { $o_log->logInfo(_t('[%1] Merged with existing record matched on identifer %2 by policy %3', $vs_idno, is_array($erp_idno) ? join('; ', $erp_idno) : $erp_idno, $vs_existing_record_policy)); }
+								if ($log_erp) { $o_log->logInfo(_t('[%1] Merged with existing record matched on identifier %2 by policy %3', $vs_idno, is_array($erp_idno) ? join('; ', $erp_idno) : $erp_idno, $vs_existing_record_policy)); }
 								break;
 							} else {
 								if($vs_existing_record_policy === 'merge_on_idno_with_skip') {
@@ -2130,7 +2130,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$this->num_records_skipped++;
 									continue(2);	// skip 
 								} else {
-									if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on identifer %2 by policy %4 using base criteria %4', $vs_idno, is_array($erp_idno) ? join('; ', $erp_idno) : $erp_idno, $vs_existing_record_policy, print_r($va_base_criteria, true))); }
+									if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on identifier %2 by policy %4 using base criteria %4', $vs_idno, is_array($erp_idno) ? join('; ', $erp_idno) : $erp_idno, $vs_existing_record_policy, print_r($va_base_criteria, true))); }
 								}
 							}
 						}
@@ -2157,7 +2157,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 							));
 							if (!is_array($ids) || (sizeof($ids) === 0)) {
-								if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on identifer %2 by policy %3 using base criteria %4', $vs_idno, is_array($erp_idno) ? join('; ', $erp_idno) : $erp_idno, $vs_existing_record_policy, print_r($va_base_criteria, true))); }
+								if ($log_erp) { $o_log->logInfo(_t('[%1] Could not match existing record on identifier %2 by policy %3 using base criteria %4', $vs_idno, is_array($erp_idno) ? join('; ', $erp_idno) : $erp_idno, $vs_existing_record_policy, print_r($va_base_criteria, true))); }
 							}
 						}
 						if ($vs_existing_record_policy == 'overwrite_on_idno') { break; }	// fall through if overwrite_on_idno_and_preferred_labels

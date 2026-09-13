@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,21 +25,23 @@
  *
  * ----------------------------------------------------------------------
  */
-	AssetLoadManager::register("directoryBrowser");
- 					
-	$vs_id = $this->getVar('id');
-	$vs_default = $this->getVar('defaultPath');
+AssetLoadManager::register("directoryBrowser");
+				
+$id = $this->getVar('id');
+$default = $this->getVar('defaultPath');
+$allow_file_selection = (bool)$this->getVar('allowFileSelection');
+
 ?>
-<div id="<?= $vs_id; ?>directoryBrowser" class='directoryBrowserSmall'>
+<div id="<?= $id; ?>directoryBrowser" class='directoryBrowserSmall'>
 	<!-- Content for directory browser is dynamically inserted here by ca.hierbrowser -->
 </div><!-- end directoryBrowser -->
 <?php
-	print caHTMLHiddenInput($vs_id, array('value' => '', 'id' => $vs_id));	
+	print caHTMLHiddenInput($id, array('value' => '', 'id' => $id));	
 ?>
 <script type="text/javascript">
 	var oDirBrowser;
 	jQuery(document).ready(function() {
-		oDirBrowser = caUI.initDirectoryBrowser('<?= $vs_id; ?>directoryBrowser', {
+		oDirBrowser = caUI.initDirectoryBrowser('<?= $id; ?>directoryBrowser', {
 			levelDataUrl: '<?= caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryLevel'); ?>',
 			initDataUrl: '<?= caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryAncestorList'); ?>',
 			
@@ -50,15 +52,19 @@
 			fileIcon: "<?= caNavIcon(__CA_NAV_ICON_FILE__, 1); ?>",
 			
 			displayFiles: true,
-			allowFileSelection: false,
+			allowFileSelection: <?= ($allow_file_selection ? 'true' : 'false'); ?>,
 			
-			initItemID: '<?= $vs_default; ?>',
+			initItemID: '<?= $default; ?>',
 			indicator: "<?= caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 			
 			currentSelectionDisplayID: 'browseCurrentSelection',
 			
 			onSelection: function(item_id, path, name, type) {
-				if (type == 'DIR') { jQuery('#<?= $vs_id; ?>').val(path); }
+				if (type == 'DIR') {
+					jQuery('#<?= $id; ?>').val(path); 
+				} else if(<?= $allow_file_selection ? 'true' : 'false'; ?>) {
+					jQuery('#<?= $id; ?>').val(path + item_id); 
+				}
 			}
 		});
 	});

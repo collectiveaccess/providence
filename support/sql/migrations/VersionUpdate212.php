@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * views/mailTemplates/account_deactivated.tpl
+ * app/lib/VersionUpdate212.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,11 +24,41 @@
  * http://www.CollectiveAccess.org
  *
  * @package CollectiveAccess
- * @subpackage Auth
+ * @subpackage Installer
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
+require_once(__CA_LIB_DIR__ . '/BaseVersionUpdater.php');
 
-?>
-<p><?php print _t("Your account was deactivated because the maximum number of consecutive unsuccessful password reset attempts was reached. Please contact your CollectiveAccess administrator at %1 for assistance.", __CA_ADMIN_EMAIL__); ?></p>
+class VersionUpdate212 extends BaseVersionUpdater {
+	# -------------------------------------------------------
+	protected $opn_schema_update_to_version_number = 212;
+	protected $messages = [];
+	# -------------------------------------------------------
+
+	/**
+	 * @inheritDoc
+	 *
+	 * @return void
+	 */
+	public function applyDatabaseUpdate($options = null) {
+		$db	 = new Db();
+		$db->query("TRUNCATE TABLE ca_sql_search_word_index");
+		$db->query("TRUNCATE TABLE ca_sql_search_words");
+		
+		$ret = parent::applyDatabaseUpdate($options);
+		
+		return $ret;
+	}
+	# -------------------------------------------------------
+
+	/**
+	 *
+	 * @return string HTML to display after update
+	 */
+	public function getPostupdateMessage() {
+		return _t("The search indexing format has changed. You must reindex your system now.");
+	}
+	# -------------------------------------------------------
+}

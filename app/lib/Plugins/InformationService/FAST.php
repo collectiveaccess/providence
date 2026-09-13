@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2025 Whirl-i-Gig
+ * Copyright 2025-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -64,7 +64,7 @@ $g_information_service_settings_fast = [
 		],
 		'default' => 'cql.any',
 		'width' => 90, 'height' => 1,
-		'label' => _t(''),
+		'label' => _t('Search on'),
 		'description' => _t('Search on')
 	]
 ];

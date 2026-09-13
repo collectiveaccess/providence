@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 require_once(__CA_LIB_DIR__.'/Export/BaseExportFormat.php');
 require_once(__CA_APP_DIR__.'/helpers/mediaPluginHelpers.php');
 
@@ -66,7 +65,7 @@ class ExportExifTool extends BaseExportFormat {
 	# ------------------------------------------------------
 	public function __construct() {
 		$this->ops_name = 'ExifTool';
-		$this->ops_element_description = _t('Values are ExifTool XML element names. See http://www.sno.phy.queensu.ca/~phil/exiftool/metafiles.html#xml');
+		$this->ops_element_description = _t('Values are ExifTool XML element names. See %1', 'http://www.sno.phy.queensu.ca/~phil/exiftool/metafiles.html#xml');
 
 		$this->opo_dom = new DOMDocument('1.0','utf-8');
 		$this->opo_dom->formatOutput = true;

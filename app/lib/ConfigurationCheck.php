@@ -249,10 +249,10 @@ final class ConfigurationCheck {
 	 */
 	public static function DBOutOfDateQuickCheck(?array $options=null) {
 		if (!in_array('ca_schema_updates', self::$opo_db->getTables())) {
-			self::addError(_t("Your database is extremely out-of-date. Please install all database migrations starting with migration #1 or contact support@collectiveaccess.org for assistance."));
+			self::addError(_t("Your database is extremely out-of-date. Please install all database migrations starting with migration #1 or contact %1 for assistance.", 'support@collectiveaccess.org'));
 		} else if (!caGetOption('forMigration', $options, false) && ($vn_schema_revision = self::getSchemaVersion()) < __CollectiveAccess_Schema_Rev__) {
 			if($vn_schema_revision <= 158) { 
-				self::addError(_t("You appear to be upgrading a CollectiveAccess 1.7.x system. Upgrading is a multi-step process. Learn more about it at <a href='https://github.com/collectiveaccess/providence/tree/master?tab=readme-ov-file#updating-from-providence-version-17-or-later'>here</a>."));
+				self::addError(_t("You appear to be upgrading a CollectiveAccess 1.7.x system. Upgrading is a multi-step process. Learn more about it at <a href='%1'>here</a>.", 'https://github.com/collectiveaccess/providence/tree/master?tab=readme-ov-file#updating-from-providence-version-17-or-later'));
 			} elseif (defined('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__') && __CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__) {
 				self::addError(_t("Your database is out-of-date. Please install all schema migrations starting with migration #%1. <a href='index.php?updateSchema=1'><strong>Click here</strong></a> to automatically apply the required updates.<br/><br/><div align='center'><strong>NOTE: you should back-up your database before applying updates!</strong></div>",($vn_schema_revision + 1)));
 			} else {
@@ -525,9 +525,9 @@ final class ConfigurationCheck {
 			self::addError(_t(
 				'The memory limit for your PHP installation may not be sufficient to run CollectiveAccess correctly. '.
 				'Please consider adjusting the "memory_limit" variable in your PHP configuration (usually a file named) '.
-				'&quot;php.ini&quot;. See <a href="http://us.php.net/manual/en/ini.core.php#ini.memory-limit" target="_blank" rel="noopener noreferrer">http://us.php.net/manual/en/ini.core.php</a> '.
+				'&quot;php.ini&quot;. See <a href="%2" target="_blank" rel="noopener noreferrer">%2</a> '.
 				'for more details. The value in your config is &quot;%1&quot;, the recommended value is &quot;128M&quot; or higher.'
-			,$vs_memory_limit));
+			,$vs_memory_limit, 'http://us.php.net/manual/en/ini.core.php#ini.memory-limit', 'http://us.php.net/manual/en/ini.core.php'));
 		}
 		return true;
 	}

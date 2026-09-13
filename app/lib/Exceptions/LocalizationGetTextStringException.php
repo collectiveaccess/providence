@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * views/mailTemplates/account_deactivated.tpl
+ * app/lib/Exceptions/LocalizationGetTextStringException.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,11 +24,10 @@
  * http://www.CollectiveAccess.org
  *
  * @package CollectiveAccess
- * @subpackage Auth
+ * @subpackage Core
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
 
-?>
-<p><?php print _t("Your account was deactivated because the maximum number of consecutive unsuccessful password reset attempts was reached. Please contact your CollectiveAccess administrator at %1 for assistance.", __CA_ADMIN_EMAIL__); ?></p>
+class LocalizationGetTextStringException extends ApplicationException {}

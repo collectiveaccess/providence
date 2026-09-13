@@ -166,6 +166,7 @@
 1985 = Value already exists
 1990 = Too many values exist
 1992 = Value is required
+1995 = Element code is reserved
 
 # --- Hierarchical processing errors
 2010 = Circular reference
