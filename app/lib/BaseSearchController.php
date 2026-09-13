@@ -65,6 +65,11 @@ class BaseSearchController extends BaseRefineableSearchController {
 			$this->opo_result_context->setSearchExpression($pa_options['saved_search']['search']);
 			$this->opo_result_context->isNewSearch(true);
 		}
+
+		if ($this->opo_result_context->searchExpressionHasChanged() && ($default_display = $this->request->config->get($this->ops_tablename.'_reset_display_on_new_search'))) {
+			$this->opo_result_context->setCurrentBundleDisplay($default_display);
+		}
+
 		parent::Index($pa_options);
 		
 		AssetLoadManager::register('hierBrowser');
@@ -104,10 +109,6 @@ class BaseSearchController extends BaseRefineableSearchController {
 			$this->opo_result_context->setCurrentSortDirection('ASC');
 		}
 
-		if ($vb_is_new_search && ($default_display = $this->request->config->get($this->ops_tablename.'_reset_display_on_new_search'))) {
-			$this->opo_result_context->setCurrentBundleDisplay($default_display);
-		}
-		
 		if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { 
 			$va_tmp = array_keys($this->opa_sorts);
 			$vs_sort = array_shift($va_tmp);
