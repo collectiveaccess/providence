@@ -583,7 +583,7 @@ class ca_users extends BaseModel {
 			}
 		}
 	
-		if($this->changed('password')) {
+		if($password_has_changed = $this->changed('password')) {
 			if (!self::applyPasswordPolicy($this->get('password'))) {
 				$this->postError(922, _t("Password must %1", self::getPasswordPolicyAsText()), 'ca_users->update()');
 				return false;
@@ -623,6 +623,9 @@ class ca_users extends BaseModel {
 		
 		unset(ca_users::$s_user_role_cache[$this->getPrimaryKey()]);
 		unset(ca_users::$s_group_role_cache[$this->getPrimaryKey()]);
+		
+		if($password_has_changed) { Session::invalidateSessionsForUser($this->getPrimaryKey()); }
+		
 		return parent::update($pa_options);
 	}
 	# ----------------------------------------
