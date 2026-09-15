@@ -104,7 +104,7 @@ class WLPlugPDFRendererweasyprint Extends BasePDFRendererPlugin Implements IWLPl
 		$output = $path ?: caGetTempFileName('weasyprint', 'pdf');
 		
 		$cli = new \CA\Process\CLI();
-		$cli->execute($this->app_path , [$p, $output], ['async' => false, 'background' => false]);
+		$cli->execute($this->app_path , [$tmp_file, $output], ['async' => false, 'background' => false]);
 		$content = file_get_contents($output);
 		
 		if(!$path) { @unlink($output); }

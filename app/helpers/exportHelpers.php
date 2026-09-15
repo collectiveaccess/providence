@@ -1330,6 +1330,8 @@ function caExportSummary($request, BaseModel $t_instance, string $template, $dis
 	$output = caGetOption('output', $options, 'STREAM');
 	$access_values = caGetOption('checkAccess', $options, null);
 	
+	$use_legacy = caUseLegacyPrintTemplatesSystem();
+	
 	$table = $t_instance->tableName();
 	$view = new View($request, $request->getViewsDirectoryPath().'/');
 	
@@ -1444,7 +1446,7 @@ function caExportSummary($request, BaseModel $t_instance, string $template, $dis
 
 				$view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
 
-				$page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $template_info, 'letter'), 'mm', $page_orientation);
+				$page_size = PDFRenderer::getPageSize(caGetOption('pageSize', $template_info, 'letter'), 'mm', $page_orientation);
 				$page_width = $page_size['width']; $page_height = $page_size['height'];
 				$view->setVar('pageWidth', "{$page_width}mm");
 				$view->setVar('pageHeight', "{$page_height}mm");
@@ -1456,12 +1458,20 @@ function caExportSummary($request, BaseModel $t_instance, string $template, $dis
 				
 				$content = '';
 				if($include_header_footer) {
-					$content .= $view->render("{$base_path}/pdfStart.php").$view->render("{$base_path}/header.php").$view->render("{$base_path}/footer.php");
+					if($use_legacy) {
+						$content .= $view->render("{$base_path}/pdfStart.php").$view->render("{$base_path}/header.php").$view->render("{$base_path}/footer.php");
+					} else {
+						$content .= $view->render("{$base_path}/../page/weasyprint/header.php");
+					}
 				}	
 				$content .= $view->render($template_info['path']);
 
-				if($include_header_footer) {
-					$content .= $view->render("{$base_path}/pdfEnd.php");
+				if($include_header_footer){ 
+					if($use_legacy) {
+						$content .= $view->render("{$base_path}/pdfEnd.php");
+					} else {
+						$content .= $view->render("{$base_path}/../page/weasyprint/footer.php");
+					}
 				}
 				
 				// Printable views can pass back PDFs to append if they want...
