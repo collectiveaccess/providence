@@ -46,7 +46,7 @@ print $vs_control_box = caFormControlBox(
 				<div class="caLabelList" >
 					<p>
 <?php
-		print ca_data_importers::getImporterListAsHTMLFormElement('importer_id', null, array('id' => 'caImporterList', 'onchange' => 'caSetBatchMetadataImportFormState(true);'), array('value' => $t_importer->getPrimaryKey()));
+		print ca_data_importers::getImporterListAsHTMLFormElement('importer_id', null, array('id' => 'caImporterList', 'onchange' => 'caSetBatchMetadataImportFormState(true);', 'aria-label' => _t('Importer')), array('value' => $t_importer->getPrimaryKey()));
 ?>
 					</p>
 				</div>
@@ -58,9 +58,9 @@ print $vs_control_box = caFormControlBox(
 				<div class="caLabelList" >
 					<p>
 <?php
-		print ca_data_importers::getInputFormatListAsHTMLFormElement('inputFormat', array('id' => 'caInputFormatList', 'onchange' => 'caSetBatchMetadataImportFormState(true);'));
+		print ca_data_importers::getInputFormatListAsHTMLFormElement('inputFormat', array('id' => 'caInputFormatList', 'onchange' => 'caSetBatchMetadataImportFormState(true);', 'aria-label' => _t('Data format')));
 
-		print "<span id='caImportAllDatasetsContainer' class='formLabelPlain'>".caHTMLCheckboxInput('importAllDatasets', array('id' => 'caImportAllDatasets', 'value' => 1), array()).' '._t('Import all data sets')."</span>\n";
+		print "<span id='caImportAllDatasetsContainer' class='formLabelPlain'>".caHTMLCheckboxInput('importAllDatasets', array('id' => 'caImportAllDatasets', 'value' => 1, 'aria-label' => _t('Import all data sets')), array()).' '._t('Import all data sets')."</span>\n";
 ?>	
 					</p>
 				</div>
@@ -75,9 +75,9 @@ print $vs_control_box = caFormControlBox(
 							<tr class="caFileSourceControls">
 								<td class="caSourceFileControlRadio">
 <?php	
-		$va_attr = array('value' => 'file',  'onclick' => 'caSetBatchMetadataImportFormState();', 'id' => 'caFileInputRadio');
+		$va_attr = array('value' => 'file',  'onclick' => 'caSetBatchMetadataImportFormState();', 'id' => 'caFileInputRadio', 'aria-label' => _t('Data file'));
 		if (caGetOption('fileInput', $va_last_settings, 'file') === 'file') { $va_attr['checked'] = 'checked'; }
-		print caHTMLRadioButtonInput("fileInput", $va_attr)."</td><td class='formLabel caFileSourceControls'>"._t('From a file')." <span id='caFileInputContainer'><input type='file' name='sourceFile' id='caSourceFile'/></span>";
+		print caHTMLRadioButtonInput("fileInput", $va_attr)."</td><td class='formLabel caFileSourceControls'>"._t('From a file')." <span id='caFileInputContainer'><input type='file' name='sourceFile' id='caSourceFile' aria-label='".htmlspecialchars(_t('Data file'))."'/></span>";
 		
 ?>
 								</td>
@@ -85,7 +85,7 @@ print $vs_control_box = caFormControlBox(
 							<tr class="caFileSourceControls">
 								<td class="caSourceFileControlRadio">
 <?php		
-		$va_attr = array('value' => 'import',  'onclick' => 'caSetBatchMetadataImportFormState();', 'id' => 'caFileBrowserRadio');
+		$va_attr = array('value' => 'import',  'onclick' => 'caSetBatchMetadataImportFormState();', 'id' => 'caFileBrowserRadio', 'aria-label' => _t('File browser'));
 		if (caGetOption('fileInput', $va_last_settings, 'file') === 'import') { $va_attr['checked'] = 'checked'; }	
 		print caHTMLRadioButtonInput("fileInput", $va_attr)."</td><td class='formLabel caFileSourceControls'>"._t('From the import directory')." <div id='caFileBrowserContainer'>".$this->getVar('file_browser')."</div>";
 ?>
@@ -94,9 +94,9 @@ print $vs_control_box = caFormControlBox(
 							<tr class="caFileSourceControls" id='caFileGoogleDriveContainer'>
 								<td class="caSourceFileControlRadio">
 <?php		
-		$va_attr = array('value' => 'googledrive',  'onclick' => 'caSetBatchMetadataImportFormState();', 'id' => 'caFileGoogleDriveRadio');
+		$va_attr = array('value' => 'googledrive',  'onclick' => 'caSetBatchMetadataImportFormState();', 'id' => 'caFileGoogleDriveRadio', 'aria-label' => _t('From Google Drive'));
 		if (caGetOption('fileInput', $va_last_settings, 'file') === 'googledrive') { $va_attr['checked'] = 'checked'; }	
-		print caHTMLRadioButtonInput("fileInput", $va_attr)."</td><td class='formLabel caFileSourceControls'>"._t('From GoogleDrive')." <span id='caFileGoogleDriveInputContainer'>".caHTMLTextInput('google_drive_url', ['value' => caGetOption('googleDriveUrl', $va_last_settings, ''), 'class' => 'urlBg', 'id' => 'caFileGoogleDriveInput'], ['width' => '500px'])."</span>";
+		print caHTMLRadioButtonInput("fileInput", $va_attr)."</td><td class='formLabel caFileSourceControls'>"._t('From GoogleDrive')." <span id='caFileGoogleDriveInputContainer'>".caHTMLTextInput('google_drive_url', ['value' => caGetOption('googleDriveUrl', $va_last_settings, ''), 'class' => 'urlBg', 'id' => 'caFileGoogleDriveInput', 'aria-label' => _t('Google Drive URL')], ['width' => '500px'])."</span>";
 ?>
 								</td>
 							</tr>
@@ -111,7 +111,7 @@ print $vs_control_box = caFormControlBox(
 				<div class="caLabelList" >
 					<p>
 <?php
-		print caHTMLTextInput('sourceUrl', array('id' => 'caSourceUrl', 'class' => 'urlBg'), array('width' => '300px'));
+		print caHTMLTextInput('sourceUrl', array('id' => 'caSourceUrl', 'class' => 'urlBg', _t('Data URL')), array('width' => '300px'));
 ?>
 					</p>
 				</div>
@@ -123,7 +123,7 @@ print $vs_control_box = caFormControlBox(
 				<div class="caLabelList" >
 					<p>
 <?php
-		print caHTMLTextInput('sourceText', array('id' => 'caSourceText'), array('width' => '600px', 'height' => 3));
+		print caHTMLTextInput('sourceText', array('id' => 'caSourceText', _t('Data as text')), array('width' => '600px', 'height' => 3));
 ?>
 					</p>
 				</div>
@@ -135,7 +135,7 @@ print $vs_control_box = caFormControlBox(
 				<div class="caLabelList">
 					<p>
 <?php
-		print caHTMLSelect('logLevel', caGetLogLevels(), array('id' => 'caLogLevel'), array('value' => $va_last_settings['logLevel'] ?? null));
+		print caHTMLSelect('logLevel', caGetLogLevels(), array('id' => 'caLogLevel', 'aria-label' => _t('Log level')), array('value' => $va_last_settings['logLevel'] ?? null));
 ?>
 					</p>
 				</div>
@@ -151,7 +151,7 @@ print $vs_control_box = caFormControlBox(
 		$acc = [];
 		$limit_log_to_selected = caGetOption('limitLogTo', $va_last_settings, [], ['castTo' => 'array']);
 		foreach(['GENERAL' => _t('General information'), 'EXISTING_RECORD_POLICY' => _t('Existing record policy messages'), 'SKIP' => _t('Skip message'), 'RELATIONSHIPS' => _t('Relationship creation messages')] as $level => $name) {
-			$attr = ['value' => $level];
+			$attr = ['value' => $level, 'aria-label' => $name];
 			if(in_array($level, $limit_log_to_selected)) { $attr['checked'] = true; }
 			$acc[] = "<td class='formLabelPlain' style='padding: 5px'>".caHTMLCheckboxInput('limitLogTo[]', $attr, [])." {$name}</td>";
 			$c++;
@@ -171,7 +171,7 @@ print $vs_control_box = caFormControlBox(
 				<div class="caLabelList" >
 					<p class="formLabelPlain">
 <?php	
-		$va_attr = array('id' => 'caDryRun', 'value' => 1);
+		$va_attr = array('id' => 'caDryRun', 'value' => 1, 'aria-label' => _t('Dry run'));
 		if (($va_last_settings['dryRun'] ?? null) == 1) { $va_attr['checked'] = 1; }
 		print caHTMLCheckboxInput('dryRun', $va_attr)." "._t('Dry run');
 ?>
@@ -190,7 +190,7 @@ print $vs_control_box = caFormControlBox(
 
 <script type="text/javascript">
 	function caShowConfirmBatchExecutionPanel() {
-		var msg = '<?= addslashes(_t("You are about to import data using the <em>%1</em> importer")); ?>';
+		var msg = <?= json_encode(_t("You are about to import data using the <em>%1</em> importer")); ?>;
 		msg = msg.replace("%1", jQuery("#caImporterList option:selected").text())
 		
 		caConfirmBatchExecutionPanel.showPanel();

@@ -41,7 +41,7 @@ $vn_start				= (int)$this->getVar('start');
 			<thead>
 			<tr>
 			<th class='list-header-nosort addItemToSetControl'>
-				<input type='checkbox' name='record' value='' id='addItemToSetSelectAllControl' class='addItemToSetControl' onchange="jQuery('input.addItemToSetControl').prop('checked', (jQuery('#addItemToSetSelectAllControl').prop('checked') == true));"/>
+				<input aria-label="<?= htmlspecialchars(_t('Mark all items for addition to set')); ?>" type='checkbox' name='record' value='' id='addItemToSetSelectAllControl' class='addItemToSetControl' onchange="jQuery('input.addItemToSetControl').prop('checked', (jQuery('#addItemToSetSelectAllControl').prop('checked') == true));"/>
 			</th>
 			<th class='list-header-nosort'>
 				<?= ($vs_default_action	== "Edit" ? _t("Edit") : _t("View")); ?>
@@ -93,11 +93,11 @@ $vn_start				= (int)$this->getVar('start');
 ?>
 				<tr <?= ($i ==1) ? "class='odd'" : ""; ?>>
 					<td class="addItemToSetControl">
-						<input type='checkbox' name='add_to_set_ids' value='<?= (int)$vn_object_id; ?>' class="addItemToSetControl" />
+						<input type='checkbox' name='add_to_set_ids' value='<?= (int)$vn_object_id; ?>' class="addItemToSetControl" aria-label="<?= htmlspecialchars(_t('Mark item for addition to set')); ?>" />
 						<div><?= $vn_start + $vn_item_count + 1; ?></div>
 					</td>
 <?php
-					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', 'ca_objects', $vn_object_id, array(), array())."</td>";
+					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', 'ca_objects', $vn_object_id, array(), array('aria-label' => _t('Edit')))."</td>";
 						
 					foreach($va_display_list as $placement_id => $info) {
                         print "<td><div class='result-content'>".$t_display->getDisplayValue($vo_result, ($placement_id > 0) ? $placement_id : $info['bundle_name'] ?? null, array_merge(array('request' => $this->request), is_array($info['settings'] ?? null) ? $info['settings'] : []))."</div></td>";

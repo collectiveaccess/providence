@@ -39,7 +39,7 @@
 		<div class="sectionBox">
 <?php 
 				print caFormControlBox(
-					'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>', 
+					'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" aria-label="'.htmlspecialchars(_t('Filter')).'"  value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 					'', 
 					''
 				); 

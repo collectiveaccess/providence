@@ -42,7 +42,7 @@
 	<?php 
 		print caFormTag($this->request, 'Index', 'downloadLogSearch', null, 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true));
 		print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caDownloadList\').caFilterTable(this.value); return false;" size="20"/></div>', 
+			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" aria-label="'.htmlspecialchars(_t('Filter')).'"  value="" onkeyup="$(\'#caDownloadList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 
 			_t('Group by %1 from %2', caHTMLSelect('group_by', array(_t('Downloads') => "download", _t('Record') => "record"), null, array('value' => $vs_group_by)), caHTMLTextInput('search', array('size' => 12, 'value' => $this->getVar('download_list_search'), 'class' => 'dateBg'))).caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'downloadLogSearch')
 		);

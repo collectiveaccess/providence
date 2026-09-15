@@ -52,7 +52,7 @@
 		
 		if ($can_filter_by_user) {
 			print caFormControlBox(
-				'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caChangeLogList\').caFilterTable(this.value); return false;" size="20"/></div>',
+				'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" aria-label="'.htmlspecialchars(_t('Filter')).'"  value="" onkeyup="$(\'#caChangeLogList\').caFilterTable(this.value); return false;" size="20"/></div>',
 				'<div class="list-filter" style="margin-top: -5px; margin-left: -5px; font-weight: normal;">'._t('Show %1 to %2 from %3 by %4', 
 					caHTMLSelect('filter_change_type', [_t('all changes') => '', _t('adds') => 'I', _t('edits') => 'U', _t('deletes') => 'D'], null, ['value' => $filter_change_type, 'width' => '100px']),
 					caHTMLSelect('filter_table', array_merge([_t('anything') => ''], $table_list), null, ['value' => $filter_table]),
@@ -63,7 +63,7 @@
 			);
 		} else {
 			print caFormControlBox(
-				'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caChangeLogList\').caFilterTable(this.value); return false;" size="20"/></div>',
+				'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" aria-label="'.htmlspecialchars(_t('Filter')).'"  value="" onkeyup="$(\'#caChangeLogList\').caFilterTable(this.value); return false;" size="20"/></div>',
 				'<div class="list-filter" style="margin-top: -5px; margin-left: -5px; font-weight: normal;">'._t('Show %1 to %2 from %3', 
 					caHTMLSelect('filter_change_type', [_t('all changes') => '', _t('adds') => 'I', _t('edits') => 'U', _t('deletes') => 'D'], null, ['value' => $filter_change_type, 'width' => '100px']),
 					caHTMLSelect('filter_table', array_merge([_t('anything') => ''], caGetPrimaryTablesForHTMLSelect()), null, ['value' => $filter_table]),

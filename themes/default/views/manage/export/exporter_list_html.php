@@ -40,7 +40,7 @@ if (!$this->request->isAjax()) {
 ?>
 <div class="sectionBox">
 	<?= caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="jQuery(\'#caExporterList\').caFilterTable(this.value); return false;" size="20"/></div>',
+			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" aria-label="'.htmlspecialchars(_t('Filter')).'"  value="" onkeyup="jQuery(\'#caExporterList\').caFilterTable(this.value); return false;" size="20"/></div>',
 			'',
 			caFormJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Add exporters"), 'caAddExportersButton', array('onclick' => 'caOpenExporterUploadArea(true, true); return false;', 'id' => 'caAddExportersButton')).
 			caFormJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Close"), 'caCloseExportersButton', array('onclick' => 'caOpenExporterUploadArea(false, true); return false;', 'id' => 'caCloseExportersButton'))

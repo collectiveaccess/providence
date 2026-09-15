@@ -43,7 +43,7 @@
 <?php
 		print caFormTag($this->request, 'Index', 'caSearchHistoryForm', 'find/SearchEntities', 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
 		
-		print "<select name='search' class='searchHistorySelect'>\n";
+		print "<select name='search' class='searchHistorySelect' aria-label='".htmlspecialchars(_t('Search history'))."'>\n";
 		foreach(array_reverse($va_search_history, true) as $vs_search => $va_search_info) {
 			$SELECTED = ($vs_cur_search == $va_search_info['display']) ? 'SELECTED="1"' : '';
 			$vs_display = strip_tags($va_search_info['display']);
@@ -66,7 +66,7 @@
 <?php
 		print caFormTag($this->request, 'doSavedSearch', 'caSavedSearchesForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => true, 'disableUnsavedChangesWarning' => true)); 
 		
-		print "<select name='saved_search_key' class='savedSearchSelect'>\n";
+		print "<select name='saved_search_key' class='savedSearchSelect'aria-label='".htmlspecialchars(_t('Saved search')).">\n";
 		
 		if (sizeof($va_saved_searches) > 0) {
 			foreach(array_reverse($va_saved_searches, true) as $vs_key => $va_search) {

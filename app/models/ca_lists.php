@@ -1775,6 +1775,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				if (isset($pa_options['readonly']) && ($pa_options['readonly'])) {
 					$pa_attributes['disabled'] = 1;
 				}
+				$pa_attributes['aria-label'] = trim($pa_options['label'] ?? '');
 				return caHTMLCheckboxInput($ps_name, $pa_attributes, $pa_options);
 				break;
 			case 'checklist':
@@ -1795,6 +1796,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 						$va_attributes['checked'] = '1';
 					}
 					
+					$va_attributes['aria-label'] = trim($vs_label);
 					$buf .= "<div class='checklistItem'>".caHTMLCheckboxInput($ps_name.'_'.$vm_value, $va_attributes, $pa_options)." ".str_replace('&nbsp;', '', $vs_label)."</div>\n";				
 				}
 				$buf .= "</div>";

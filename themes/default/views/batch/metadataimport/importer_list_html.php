@@ -36,7 +36,7 @@ if (!$this->request->isAjax()) {
 </script>
 <div class="sectionBox">
 	<?= caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="jQuery(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>',
+			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" aria-label="'.htmlspecialchars(_t('Filter')).'"  value="" onkeyup="jQuery(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>',
 			'',
 			caFormJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Add importers"), 'caAddImportersButton', array('onclick' => 'caOpenImporterUploadArea(true, true); return false;', 'id' => 'caAddImportersButton')).
 			caFormJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Close"), 'caCloseImportersButton', array('onclick' => 'caOpenImporterUploadArea(false, true); return false;', 'id' => 'caCloseImportersButton'))
@@ -56,8 +56,8 @@ if (!$this->request->isAjax()) {
 	<div style="margin: 10px 0 0 0;">
 <?php 
 			print caFormTag($this->request, 'Load', 'caLoadFromGoogleDrive', null, 'post', 'multipart/form-data', '_top', ['disableUnsavedChangesWarning' => true, 'submitOnReturn' => true, 'noCSRFToken' => true]);
-			print _t('Load importer worksheet from GoogleDrive: %1', caHTMLTextInput('google_drive_url', ['class' => 'urlBg'], ['width' => '300px'])); 
-			print caFormSubmitButton($this->request, __CA_NAV_ICON_GO__, "", 'caLoadFromGoogleDrive', ['size' => '24px']);
+			print _t('Load importer worksheet from GoogleDrive: %1', caHTMLTextInput('google_drive_url', ['class' => 'urlBg', 'aria-label' => _t('Google Drive URL')], ['width' => '300px'])); 
+			print caFormSubmitButton($this->request, __CA_NAV_ICON_GO__, "", 'caLoadFromGoogleDrive', ['size' => '24px', 'aria-label' => _t('Load from Google Drive URL')]);
 ?>
 			</form>
 	</div>
@@ -120,7 +120,7 @@ if (!$this->request->isAjax()) {
 					print $importer['worksheet'] ? caNavButton($this->request, __CA_NAV_ICON_DOWNLOAD__, _t("Download"), '', 'batch', 'MetadataImport', 'Download', array('importer_id' => $importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : '' ; 
 
 					if(isset($importer['settings']['sourceUrl'])) {
-						print caNavButton($this->request, __CA_NAV_ICON_ROTATE__, _t("Reload"), '', 'batch', 'MetadataImport', 'Load', array('google_drive_url' => urlencode($importer['settings']['sourceUrl'])), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true));
+						print caNavButton($this->request, __CA_NAV_ICON_ROTATE__, _t("Reload"), '', 'batch', 'MetadataImport', 'Load', array('google_drive_url' => urlencode($importer['settings']['sourceUrl'])), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true,  'aria-label' => _t('Reload from Google Drive URL')));
 					}
 ?>				</td>
 				<td>

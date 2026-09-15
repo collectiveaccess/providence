@@ -54,7 +54,7 @@
 <div class="sectionBox">
 	<?php 
 		print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caFormList\').caFilterTable(this.value); return false;" size="20"/></div>', 
+			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" aria-label="'.htmlspecialchars(_t('Filter')).'"  value="" onkeyup="$(\'#caFormList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 
 			$vs_set_type_menu
 		); 

@@ -9018,7 +9018,6 @@ $pa_options["display_form_field_tips"] = true;
 							}
 						}
 						if ($vs_list_code) {
-							
 							$va_many_to_one_relations = Datamodel::getManyToOneRelations($this->tableName());
 							
 							if ($va_many_to_one_relations[$ps_field]) {
@@ -9055,7 +9054,8 @@ $pa_options["display_form_field_tips"] = true;
 									'restrictTypeListForTable' => $this->tableName(),
 									'limitToItemsWithID' => $va_limit_list ? $va_limit_list : null,
 									'checkAccess' => $pa_options['checkAccess'],
-									'width' => $pa_options['width']
+									'width' => $pa_options['width'],
+									'aria-label' => $aria_label
 								)
 							);
 							
@@ -9122,7 +9122,7 @@ $pa_options["display_form_field_tips"] = true;
 									if (sizeof($va_options) == 0) {
 										$vs_element = isset($pa_options['empty_message']) ? $pa_options['empty_message'] : 'No options available';
 									} else {
-										$vs_element = "<select name='".$pa_options["name"].$vs_multiple_name_extension."' ".$vs_js." ".$vs_is_multiple." ".$ps_size." id='".$pa_options["id"].$vs_multiple_name_extension."' {$vs_css_class_attr}  style='{$vs_dim_style}'".($pa_options['readonly'] ? ' disabled="disabled" ' : '').">\n";
+										$vs_element = "<select name='".$pa_options["name"].$vs_multiple_name_extension."' ".$vs_js." ".$vs_is_multiple." ".$ps_size." id='".$pa_options["id"].$vs_multiple_name_extension."' {$vs_css_class_attr}  style='{$vs_dim_style}'".($pa_options['readonly'] ? ' disabled="disabled" ' : '')." aria-label='".htmlspecialchars($aria_label)."'>\n";
 	
 										if (!$pa_options["nullOption"] && $vb_is_null) {
 											$vs_element .= "<option value=''>"._t('- NONE -')."</option>\n";
@@ -9254,7 +9254,7 @@ $pa_options["display_form_field_tips"] = true;
 											$vs_element = "<input type='hidden' name='".$pa_options["name"]."' ".$vs_js." ".$ps_size." id='".$pa_options["id"]."' value='".($vm_field_value ? $vm_field_value : $va_opts[0][1])."' {$vs_css_class_attr}/>";
 											$ps_format = '^ERRORS^ELEMENT';
 										} else {
-											$vs_element = "<select name='".$pa_options["name"].$vs_multiple_name_extension."' ".$vs_js." ".$vs_is_multiple." ".$ps_size." id='".$pa_options["id"].$vs_multiple_name_extension."' {$vs_css_class_attr} style='{$vs_dim_style}'".($pa_options['readonly'] ? ' disabled="disabled" ' : '')." aria-label=\"{$aria_label}\">\n";
+											$vs_element = "<select name='".$pa_options["name"].$vs_multiple_name_extension."' ".$vs_js." ".$vs_is_multiple." ".$ps_size." id='".$pa_options["id"].$vs_multiple_name_extension."' {$vs_css_class_attr} style='{$vs_dim_style}'".($pa_options['readonly'] ? ' disabled="disabled" ' : '')." aria-label=\"".htmlspecialchars($aria_label)."\">\n";
 											foreach ($va_opts as $va_opt) {
 												$vs_option_text = $va_opt[0];
 												$vs_value = $va_opt[1];
@@ -9300,14 +9300,14 @@ $pa_options["display_form_field_tips"] = true;
 								// if 'LIST' is set try to stock over choice list with the contents of the list
 								if (isset($va_attr['LIST']) && $va_attr['LIST']) {
 									// NOTE: "raw" field value (value passed into method, before the model default value is applied) is used so as to allow the list default to be used if needed
-									$vs_element = ca_lists::getListAsHTMLFormElement($va_attr['LIST'], $pa_options["name"].$vs_multiple_name_extension, array('class' => $pa_options['classname'], 'id' => $pa_options['id']), array('nullOption' => $pa_options['nullOption'] ?? null, 'width' => $pa_options['width'] ?? null, 'key' => 'item_value', 'value' => $vm_raw_field_value, 'readonly' => $pa_options['readonly'], 'checkAccess' => $pa_options['checkAccess'], 'table' => $this->tableName(), 'type' => method_exists($this, 'getTypeCode') ? $this->getTypeCode() : null));
+									$vs_element = ca_lists::getListAsHTMLFormElement($va_attr['LIST'], $pa_options["name"].$vs_multiple_name_extension, array('class' => $pa_options['classname'], 'id' => $pa_options['id'], 'aria-label' => $aria_label), array('nullOption' => $pa_options['nullOption'] ?? null, 'width' => $pa_options['width'] ?? null, 'key' => 'item_value', 'value' => $vm_raw_field_value, 'readonly' => $pa_options['readonly'], 'checkAccess' => $pa_options['checkAccess'], 'table' => $this->tableName(), 'type' => method_exists($this, 'getTypeCode') ? $this->getTypeCode() : null));
 								}
 								if (!$vs_element && (isset($va_attr["BOUNDS_CHOICE_LIST"]) && is_array($va_attr["BOUNDS_CHOICE_LIST"]))) {
 	
 									if (sizeof($va_attr["BOUNDS_CHOICE_LIST"]) == 0) {
 										$vs_element = isset($pa_options['empty_message']) ? $pa_options['empty_message'] : 'No options available';
 									} else {
-										$vs_element = "<select name='".$pa_options["name"].$vs_multiple_name_extension."' ".$vs_js." ".$vs_is_multiple." ".$ps_size." id='".$pa_options['id'].$vs_multiple_name_extension."' {$vs_css_class_attr} style='{$vs_dim_style}'".($pa_options['readonly'] ? ' disabled="disabled" ' : '').">\n";
+										$vs_element = "<select name='".$pa_options["name"].$vs_multiple_name_extension."' ".$vs_js." ".$vs_is_multiple." ".$ps_size." id='".$pa_options['id'].$vs_multiple_name_extension."' {$vs_css_class_attr} style='{$vs_dim_style}'".($pa_options['readonly'] ? ' disabled="disabled" ' : '')." aria-label='".htmlspecialchars($aria_label)."'>\n";
 	
 										if ($pa_options["select_item_text"]) {
 											$vs_element.= "<option value=''>".$this->escapeHTML($pa_options["select_item_text"])."</option>\n";

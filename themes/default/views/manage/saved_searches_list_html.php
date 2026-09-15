@@ -38,7 +38,7 @@ if(sizeof($saved_searches) > 0){
 	<div class="sectionBox">
 <?php
 print caFormControlBox(
-		'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>',
+		'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" aria-label="'.htmlspecialchars(_t('Filter')).'"  value="" onkeyup="$(\'#caItemList\').caFilterTable(this.value); return false;" size="20"/></div>',
 		'',
 		"<a href='#' onclick='jQuery(\"#SavedSearchesListForm\").attr(\"action\", \"".caNavUrl($this->request, 'manage', 'SavedSearches', 'Delete')."\").submit();' class='form-button'><span class='delete'>".caNavIcon(__CA_NAV_ICON_DELETE__, 2)." "._t('Delete selected')."</span></a>"
 	); 
