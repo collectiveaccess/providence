@@ -482,7 +482,6 @@ class TaskQueue extends BaseObject {
 		if (!$t_task->getPrimaryKey()) { return false; }
 		if ((int)$t_task->get('error_code') === 0) { return false; }
 		
-		$t_task->setMode(ACCESS_WRITE);
 		$t_task->set('error_code', 0);
 		$t_task->set('completed_on', null);
 		$t_task->update();
@@ -697,6 +696,117 @@ class TaskQueue extends BaseObject {
 			}
 		}
 		return $_verified_processes;	
+	}
+	# ---------------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getTasksForUser(int $user_id, ?array $options=null) : ?array {
+		$o_db = $this->getDb();
+		
+		$params = [$user_id];
+		
+		$handler_sql = null;
+		if($h = caGetOption('handlers', $options, null)) {
+			if(!is_array($h)) { $h = [$h]; }
+			if(!sizeof($h)) { return []; }
+			$handler_sql = " AND (handler IN (?))";
+			$params[] = $h;
+		}
+		$qr_tasks = $o_db->query("
+			SELECT *
+			FROM ca_task_queue
+			WHERE
+				user_id = ? {$handler_sql}
+		", $params);
+		$tasks = [];
+		while($qr_tasks->nextRow()) {
+			$task_id = $qr_tasks->get('task_id');
+			$started_on = $qr_tasks->get('started_on');
+			$completed_on = $qr_tasks->get('completed_on');
+			$error_code = $qr_tasks->get('error_code');
+			$entity_key = $qr_tasks->get('entity_key');
+			$parameters = caUnserializeForDatabase($qr_tasks->get('parameters'));
+			
+			$ti = [
+				'task_id' => $task_id,
+				'entity_key' => $entity_key,
+				'started_on' => caGetLocalizedDate($started_on, ['timeOmit' => false]),
+				'completed_on' => caGetLocalizedDate($completed_on, ['timeOmit' => false]),
+				'error_code' => $error_code,
+				'parameters' => $parameters
+			];
+			
+			if($error_code > 0) {
+				$tasks['errors'][] = $ti;
+			} elseif(($started_on > 0) && ($completed_on > 0)) {
+				$tasks['completed'][] = $ti;
+			} elseif($started_on > 0) {
+				$tasks['processing'][] = $ti;
+			} else {
+				$tasks['not_started'][] = $ti;
+			}
+		}
+		return $tasks;
+	}
+	# ---------------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getTaskInfo(?array $options=null) : ?array {
+		$o_db = $this->getDb();
+		$params = [];
+		
+		$select_sql = null;
+		if($task_id = caGetOption('task_id', $options, null)) {
+			$select_sql = "(task_id = ?)";
+			$params[] = $task_id;
+		} elseif($entity_key = caGetOption('entity_key', $options, null)) {
+			$select_sql = "(entity_key = ?)";
+			$params[] = $entity_key;
+		} else {
+			return null;
+		}
+		
+		$user_sql = null;
+		if($user_id = caGetOption('user_id', $options, null)) {
+			$user_sql = " AND (user_id = ?)";
+			$params[] = $user_id;
+		}
+		
+		$handler_sql = null;
+		if($h = caGetOption('handlers', $options, null)) {
+			if(!is_array($h)) { $h = [$h]; }
+			if(!sizeof($h)) { return []; }
+			$handler_sql = " AND (handler IN (?))";
+			$params[] = $h;
+		}
+		$qr_tasks = $o_db->query($z="
+			SELECT *
+			FROM ca_task_queue
+			WHERE
+				{$select_sql} {$user_sql} {$handler_sql}
+		", $params);
+		$ti = null;
+		if($qr_tasks->nextRow()) {
+			$task_id = $qr_tasks->get('task_id');
+			$started_on = $qr_tasks->get('started_on');
+			$completed_on = $qr_tasks->get('completed_on');
+			$error_code = $qr_tasks->get('error_code');
+			$entity_key = $qr_tasks->get('entity_key');
+			$parameters = caUnserializeForDatabase($qr_tasks->get('parameters'));
+			
+			$ti = [
+				'task_id' => $task_id,
+				'entity_key' => $entity_key,
+				'started_on' => caGetLocalizedDate($started_on, ['timeOmit' => false]),
+				'completed_on' => caGetLocalizedDate($completed_on, ['timeOmit' => false]),
+				'error_code' => $error_code,
+				'parameters' => $parameters
+			];
+			
+		}
+		return $ti;
 	}
 	# ---------------------------------------------------------------------------
 	# Utilities
