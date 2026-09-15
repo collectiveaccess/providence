@@ -4757,6 +4757,7 @@ create table ca_editor_uis (
 	editor_code varchar(100) null,
 	color char(6) null,
 	icon longblob not null,
+    settings longtext not null,
 	
 	primary key 				(ui_id),
 	index i_user_id				(user_id),
@@ -8026,4 +8027,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (213, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (214, unix_timestamp());
