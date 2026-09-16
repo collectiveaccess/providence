@@ -130,7 +130,9 @@ function caExportItemAsPDF($request, $pt_subject, $ps_template, $ps_output_filen
 	$view = new View($request, $request->getViewsDirectoryPath().'/');
 	
 	$pa_access_values = caGetOption('checkAccess', $options, null);
-	$view->setVar('t_subject', $pt_subject);
+	
+	$view->setVar('result', caMakeSearchResult($pt_instance->tableName(), [$pt_instance->getPrimaryKey()]));
+	$view->setVar('item', $pt_instance);
 	
 	$vs_template_identifier = null;
 	if (substr($ps_template, 0, 5) === '_pdf_') {
@@ -221,6 +223,8 @@ function caExportItemAsPDF($request, $pt_subject, $ps_template, $ps_output_filen
 function caExportViewAsPDF($view, $template_identifier, $output_filename, $options=null) {
 	caIncrementExportCount();
 	
+	$use_legacy = caUseLegacyPrintTemplatesSystem();
+	
 	if (is_array($template_identifier)) {
 		$template_info = $template_identifier;
 		$template_info['identifier'] = pathinfo($template_info['path'], PATHINFO_FILENAME);
@@ -240,7 +244,7 @@ function caExportViewAsPDF($view, $template_identifier, $output_filename, $optio
 	
 	try {
 		$o_pdf = new PDFRenderer();
-		$view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
+		$view->setVar('PDFRenderer', $renderer = $o_pdf->getCurrentRendererCode());
 	
 		if($page_orientation = $view->getVar('param_pageOrientation')) {
 			$template_info['pageOrientation'] = $page_orientation;
@@ -266,12 +270,20 @@ function caExportViewAsPDF($view, $template_identifier, $output_filename, $optio
 		$template_dir = pathinfo($template_info['path'], PATHINFO_DIRNAME);
 		$vs_content = '';
 		if($include_header_footer) {
-			$vs_content .= $view->render("{$template_dir}/pdfStart.php").$view->render("{$template_dir}/header.php").$view->render("{$template_dir}/footer.php");
+			if($use_legacy) {
+				$vs_content .= $view->render("{$template_dir}/pdfStart.php").$view->render("{$template_dir}/header.php").$view->render("{$template_dir}/footer.php");
+			} else {
+				$vs_content .= $view->render(caResolvePrintableFilePath($renderer, 'page', 'pdfStart.php'));
+			}
 		}	
 		$vs_content .= $view->render($template_info['path']);
 
 		if($include_header_footer) {
-			$vs_content .= $view->render("{$template_dir}/pdfEnd.php");
+			if($use_legacy) {
+				$vs_content .= $view->render("{$template_dir}/pdfEnd.php");
+			} else {
+				$vs_content .= $view->render(caResolvePrintableFilePath($renderer, 'page', 'pdfEnd.php'));
+			}
 		}
 		$vb_printed_properly = caExportContentAsPDF($vs_content, $template_info, $output_filename, $options);
 	} catch (Exception $e) {
@@ -1338,7 +1350,8 @@ function caExportSummary($request, BaseModel $t_instance, string $template, $dis
 	$t_display = new ca_bundle_displays();
 	$displays = caExtractValuesByUserLocale($t_display->getBundleDisplays(['table' => $t_instance->tableNum(), 'user_id' => $request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => [$t_instance->getTypeID()]]));
 
-	$view->setVar('t_subject', $t_instance);
+	$view->setVar('result', caMakeSearchResult($t_instance->tableName(), [$t_instance->getPrimaryKey()]));
+	$view->setVar('item', $t_instance);
 	
 	// PDF templates set in the display list need to be remapped to the template parameter
 	if(substr($display_id, 0, 5) === '_pdf_') {
@@ -1437,6 +1450,7 @@ function caExportSummary($request, BaseModel $t_instance, string $template, $dis
 		switch($template_info['fileFormat']) {
 			case 'pdf':
 				$o_pdf = new PDFRenderer();
+				$view->setVar('PDFRenderer', $renderer = $o_pdf->getCurrentRendererCode());
 				
 				if($page_orientation = $view->getVar('param_pageOrientation')) {
 					$template_info['pageOrientation'] = $page_orientation;
@@ -1444,7 +1458,6 @@ function caExportSummary($request, BaseModel $t_instance, string $template, $dis
 					$page_orientation = caGetOption('pageOrientation', $template_info, 'portrait');
 				}
 
-				$view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
 
 				$page_size = PDFRenderer::getPageSize(caGetOption('pageSize', $template_info, 'letter'), 'mm', $page_orientation);
 				$page_width = $page_size['width']; $page_height = $page_size['height'];
@@ -1461,7 +1474,7 @@ function caExportSummary($request, BaseModel $t_instance, string $template, $dis
 					if($use_legacy) {
 						$content .= $view->render("{$base_path}/pdfStart.php").$view->render("{$base_path}/header.php").$view->render("{$base_path}/footer.php");
 					} else {
-						$content .= $view->render("{$base_path}/../page/weasyprint/header.php");
+						$content .= $view->render(caResolvePrintableFilePath($renderer, 'page', 'pdfStart.php'));
 					}
 				}	
 				$content .= $view->render($template_info['path']);
@@ -1470,7 +1483,7 @@ function caExportSummary($request, BaseModel $t_instance, string $template, $dis
 					if($use_legacy) {
 						$content .= $view->render("{$base_path}/pdfEnd.php");
 					} else {
-						$content .= $view->render("{$base_path}/../page/weasyprint/footer.php");
+						$content .= $view->render(caResolvePrintableFilePath($renderer, 'page', 'pdfEnd.php'));
 					}
 				}
 				

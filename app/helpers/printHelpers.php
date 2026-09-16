@@ -288,7 +288,7 @@ function caGetPrintTemplateDetails($type, $template, $options=null) {
 			$info['restrictToTypes'] = preg_split("![,;]{1}!", trim($info['restrictToTypes']));
 		}
 		if (trim($info['contexts'])) {
-			$info['contexts'] = preg_split("![,;]{1}!", trim($info['contexts']));
+			$info['contexts'] = array_map(function($v) { return trim($v); }, preg_split("![ ]*[,;]{1}[ ]*!", $info['contexts']));
 		}
 		$info['path'] = $template_path;
 		$info['identifier'] = $template;
@@ -977,5 +977,79 @@ function caProcessTemplateName(string $template_name, ?array $options=null) {
 function caUseLegacyPrintTemplatesSystem() : bool {
 	$config = Configuration::load();
 	return (bool)$config->get('use_legacy_print_templates_system');
+}
+# ---------------------------------------
+/**
+ * Return CSS <style> tags for PDF printable output
+ *
+ * @param mixed $renderer The code (as string) of the renderer used, or the current View object used for rendering.
+ * @param array $options Options include:
+ *		returnAsArray = return tags in a list. [Default is false]
+ *		return = List of CSS types to return. Include 'default' for renderer-specific, theme-default CSS files; 'local' for locally defined CSS files. Omit or pass null to return both detault and local CSS. [Default is null]
+ *
+ * @return array|string Array of tags if returnAsArray option is set, otherwise a string
+ */
+function caGetPrintablesCSSTags(mixed $renderer, ?array $options=null) : string|array {
+	if(is_a($renderer, "View")) {
+		$renderer = $renderer->getVar('PDFRenderer');
+	}
+	
+	$return = caGetOption('return', $options, null);
+	if($return && !is_array($return)) { $return = [$return]; }
+	if(!is_array($return) || !sizeof($return)) { $return = null; }
+	
+	$css = [];
+	
+	if((!$return || in_array('default', $return, true)) && is_dir($p = __CA_THEME_DIR__."/printables/css/{$renderer}")) {
+		foreach(caGetDirectoryContentsAsList($p, false, false, true, false, ['limitToExtensions' => ['css']]) as $f) {
+			$css[] = "<link rel='stylesheet' href='{$f}' type='text/css' media='all'>";
+		}
+	}
+	
+	if((!$return || in_array('local', $return, true)) && is_dir($lp = __CA_THEME_DIR__.'/printables/css/local')) {
+		foreach(caGetDirectoryContentsAsList($lp, true, false, true, false, ['limitToExtensions' => ['css']]) as $f) {
+			$css[] = "<link rel='stylesheet' href='{$f}' type='text/css' media='all'>";
+		}
+	}
+	
+	if(caGetOption('returnAsArray', $options, false)) { return $css; }
+	return join('', $css);
+}
+# ---------------------------------------
+/**
+ *
+ * @param mixed $renderer The code (as string) of the renderer used, or the current View object used for rendering.
+ * @param string $type
+ * @param string $file
+ * @param array $options
+ */
+function caResolvePrintableFilePath(mixed $renderer, string $type, string $file, ?array $options=null) {
+	if(is_a($renderer, "View")) {
+		$renderer = $renderer->getVar('PDFRenderer');
+	}
+	$base_path = __CA_THEME_DIR__.'/printables';
+	
+	switch($type) {
+		case 'page':
+		case 'css':
+			$primary = file_exists($bp = "{$base_path}/{$type}/{$renderer}/{$file}") ? $bp : null;
+			$local = file_exists($lp = "{$base_path}/{$type}/local/{$file}") ? $lp : null;
+			break;
+		case 'templates':
+		default:
+			$primary = file_exists($bp = "{$base_path}/{$type}/{$file}") ? $bp : null;
+			$local = file_exists($lp = "{$base_path}/{$type}/local/{$file}") ? $lp : null;
+			break;
+	}
+	
+	if($local) { return $local; }
+	return $primary;
+}
+# ---------------------------------------
+/**
+ *
+ */
+function caRenderPrintableFilePath(View $view, string $type, string $file, ?array $options=null) {
+	return $view->render(caResolvePrintableFilePath($view, $type, $file, $options));
 }
 # ---------------------------------------

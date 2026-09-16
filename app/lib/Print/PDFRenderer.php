@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2025 Whirl-i-Gig
+ * Copyright 2014-2026Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -260,7 +260,7 @@ class PDFRenderer {
 	 */
 	public function getCurrentRendererCode() {
 		if (!$this->renderer) { return null; }
-		return $this->renderer->get('CODE');
+		return $this->renderer->renderer();
 	}
 	# ----------------------------------------------------------
 	/**

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2025 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -153,4 +153,15 @@ abstract class BasePDFRendererPlugin Extends WLPlug {
 		return true;
 	}
 	# ------------------------------------------------
+	/**
+	 * Return code for renderer 
+	 *
+	 * @return string
+	 */
+	public function renderer() : string {
+		return $this->get('CODE');
+	}
+	# ------------------------------------------------
+	
+	
 }

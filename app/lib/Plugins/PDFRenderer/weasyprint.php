@@ -182,16 +182,21 @@ class WLPlugPDFRendererweasyprint Extends BasePDFRendererPlugin Implements IWLPl
 	public function checkStatus() {
 		$status = parent::checkStatus();
 		
-		$use_renderer = caUsePDFRenderer();
-		
-		if ($use_renderer === 'weasyprint') {
-			$status['available'] = true;
-		} else {
+		if(caUseLegacyPrintTemplatesSystem()) {
 			$status['available'] = false;
-			if ($use_renderer) {
-				$status['unused'] = true;
-				$status['warnings'][] = _t("Didn't load because %1 is available and preferred", $use_renderer);
-			} 
+			$status['warnings'][] = _t("Weasyprint cannot be used with legacy print template system");
+		} else {
+			$use_renderer = caUsePDFRenderer();
+			
+			if ($use_renderer === 'weasyprint') {
+				$status['available'] = true;
+			} else {
+				$status['available'] = false;
+				if ($use_renderer) {
+					$status['unused'] = true;
+					$status['warnings'][] = _t("Didn't load because %1 is available and preferred", $use_renderer);
+				} 
+			}
 		}
 		
 		return $status;

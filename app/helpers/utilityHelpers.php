@@ -247,6 +247,8 @@ function caFileIsIncludable($ps_file) {
 	 *		notModifiedSince = Only return files and directories not modified after a Unix timestamp [Default=null]
 	 *		includeRoot = Include root directory path in returned values. [Default is false]
 	 *		limit = Maximum number of files to return [Default=null; no limit]
+	 *		limitToExtensions = List of extensions to limit returned files to. [Default is null]
+	 *		excludeExtensions = List of extensions to omit from returned files . [Default is null]
 	 * @return array An array of file paths.
 	 */
 	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false, $pb_sort=false, $pb_include_directories=false, $pa_options=null) {
@@ -261,6 +263,14 @@ function caFileIsIncludable($ps_file) {
 			$va_file_list[$dir] = true;
 		}
 		$limit = caGetOption('limit', $pa_options, null);
+		
+		$limit_to_extensions = caGetOption('limitToExtensions', $pa_options, null);
+		if(!is_array($limit_to_extensions) && $limit_to_extensions) { $limit_to_extensions = [$limit_to_extensions]; }
+		if(!is_array($limit_to_extensions) || !sizeof($limit_to_extensions)) { $limit_to_extensions = null; }
+		
+		$exclude_extensions = caGetOption('excludeExtensions', $pa_options, null);
+		if(!is_array($exclude_extensions) && $exclude_extensions) { $exclude_extensions = [$exclude_extensions]; }
+		if(!is_array($exclude_extensions) || !sizeof($exclude_extensions)) { $exclude_extensions = null; }
 		
 		if($va_paths = @scandir($dir, 0)) {
 			foreach($va_paths as $item) {
@@ -292,6 +302,9 @@ function caFileIsIncludable($ps_file) {
 						$va_file_list = array_merge($va_file_list, array_flip(caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files, false, $pb_include_directories)));
 					} else {
 						if (!$vb_is_dir) {
+							$ext = pathinfo($item, PATHINFO_EXTENSION);
+							if(is_array($limit_to_extensions) && !in_array($ext, $limit_to_extensions, true)) { continue; }
+							if(is_array($exclude_extensions) && in_array($ext, $exclude_extensions, true)) { continue; }
 							$va_file_list["{$dir}/{$item}"] = true;
 						}
 					}

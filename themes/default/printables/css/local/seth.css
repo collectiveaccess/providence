@@ -1,0 +1,121 @@
+
+.body { 
+	font-family: "DejaVuSans";
+	z-index: 30000;
+	position: relative;
+}
+
+.headerText { 
+	font-size: 10px;
+	margin: 0px 0px 10px 25px;
+}
+
+.pagingText { 
+	font-family: "DejaVuSans";
+	font-size: 11px;
+	position: absolute;
+	top: 0px;
+	right: 10px;
+	text-align: right;
+	width: 150px;
+	margin: 0px 0px 10px 25px;
+}
+
+table.footerText { 
+	font-family: "DejaVuSans";
+	width: 100%;
+}
+
+td.footerText { 
+	font-size: 12px;
+	text-align: center;
+}	
+
+span.footerText { 
+	font-size: 12px;
+	margin-left: 45px;
+}
+
+/* Utility styles */
+.pageBreak { 
+	page-break-before: always;
+}
+
+.clear { 
+	clear: both;
+	line-height: 5px;
+}
+
+/* Summary styles */
+.summary > div.title { 
+	font-family: "DejaVuSans"; 
+	font-size: 18px; 
+	font-weight: bold;
+	height: 25px; 
+	text-align: center; 
+}
+
+.summary > div.data { 
+	font-family: "DejaVuSans"; 
+	font-size: 12px; 
+	border-bottom: 1px solid #eeeeee; 
+	margin-top: 10px; 
+}
+
+.summary > div.data > span.label { 
+	font-family: "DejaVuSans"; 
+	font-size: 12px; 
+	font-weight: bold; 
+	width:30%; 
+	display:inline-block; 
+	text-transform:uppercase; 
+	color:#444;
+}
+
+span.meta { 
+	font-family: "DejaVuSans"; 
+	font-weight:regular;
+	width: 350px; 
+	display:inline-block; 
+	color:#000;
+
+}
+
+.representationList { 
+	margin-top:10px; 
+	text-align: center; 
+}
+
+.thumbnail { 
+	font-family: "DejaVuSans"; 
+	font-size: 11px; 
+	border: 1px solid #999; 
+	width: 200px; 
+	height: 160px; 
+	float: left; 
+	text-align: center; 
+	margin-left: 10px; 
+	padding: 5px; 
+	overflow: none;
+}	
+
+/* summary styles */
+.summary > .title { 
+	font: "helvetica, sans-serif"; 
+	font-size: 18px; 
+	width:100%; 
+	margin-top:10px; 
+	text-align: center; 
+	font-weight: bold;
+}
+
+.summary > .representationList { 
+	width: 100%; 
+	margin-top:10px; 
+	text-align: center; 
+}
+
+div.findingAid.data { 
+	border-bottom: 0px; 
+}
+
