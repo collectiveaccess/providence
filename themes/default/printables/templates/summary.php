@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/printTemplates/summary/summary.php
+ * themes/default/printables/templates/display.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -31,26 +31,28 @@
  * @pageSize letter
  * @pageOrientation portrait
  * @tables ca_objects
- * @contexts summary
+ * @contexts summary, results
  *
  * @marginTop 0.75in
- * @marginLeft 0.25in
+ * @marginLeft 0.5in
  * @marginBottom 0.5in
- * @marginRight 0.25in
+ * @marginRight 0.5in
  *
  * @includeHeaderFooter true
  *
  * @param includeLogo {"type": "CHECKBOX",  "label": "Include logo?", "value": "1", "default": true}
  * @param includePageNumbers {"type": "CHECKBOX",  "label": "Include page numbers?", "value": "1", "default": true}
- * @param showIdentifierInFooter {"type": "CHECKBOX",  "label": "Show identifier in footer?", "value": "1", "default": false}
  * @param showTimestampInFooter {"type": "CHECKBOX",  "label": "Show current date/time in footer?", "value": "1", "default": false}
  *
  * ----------------------------------------------------------------------
  */
-$t_item = $this->getVar('t_subject');
+$result = $this->getVar('result');
 $bundle_displays = $this->getVar('bundle_displays');
 $t_display = $this->getVar('t_display');
 $display_list = $this->getVar("display_list");
+
+while($result->nextHit()) {
+	$t_item = $result->getInstance();
 ?>
 <div class="summary"> 
 	<div class="title">
@@ -93,4 +95,5 @@ $display_list = $this->getVar("display_list");
 	}
 ?>
 </div>
-
+<?php
+}
