@@ -83,13 +83,13 @@ abstract class BasePDFRendererPlugin Extends WLPlug {
 	 * @return array - status info array; 'available' key determines if the plugin should be loaded or not
 	 */
 	public function checkStatus() {
-		$va_status = parent::checkStatus();
+		$status = parent::checkStatus();
 		
 		if ($this->register()) {
-			$va_status['available'] = true;
+			$status['available'] = true;
 		}
 		
-		return $va_status;
+		return $status;
 	}
 	# ----------------------------------------------------------
 	/**
@@ -162,6 +162,4 @@ abstract class BasePDFRendererPlugin Extends WLPlug {
 		return $this->get('CODE');
 	}
 	# ------------------------------------------------
-	
-	
 }
