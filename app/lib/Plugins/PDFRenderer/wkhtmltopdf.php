@@ -194,8 +194,8 @@ class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugin Implements IWLP
 		} else {
 			$status['available'] = false;
 			if ($use_renderer) {
-				$status['unused'] = true;
-				$status['warnings'][] = _t("Didn't load because %1 is available and preferred", $use_renderer);
+				$status['unused'] = caWkhtmltopdfInstalled();
+				$status['warnings'][] = $status['unused'] ? _t("Didn't load because %1 is available and preferred", $use_renderer) : _t("Not installed");
 			} 
 		}
 		

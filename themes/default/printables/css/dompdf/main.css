@@ -1,0 +1,65 @@
+header { 
+	position: fixed;
+	left: 0px;
+	top: -54px;
+	right: 0px;
+	height: 40px;
+	text-align: left;
+	vertical-align: top;
+	
+    width: 100%;
+    padding-bottom: 5px;
+    
+	font-family: "DejaVuSans";
+}
+
+footer { 
+	position: fixed;
+	left: 0px;
+	bottom: -50px;
+	right: 0px;
+	height: 20px;
+	text-align: center;
+	vertical-align: bottom;
+	margin: 0px 5px 10px 5px;
+	
+    width: 100%;
+    padding: 0;
+    font-size: 12px;
+	
+	font-family: "DejaVuSans";
+}
+
+
+header div.headerLogo {
+    margin-top: 16px;
+    text-align: center;
+}
+
+header div.headerLogo img {
+    width: 300px;
+    height: auto;
+}
+
+footer table, footer table tr, footer table tr td {
+    width: 100%;
+	font-family: "DejaVuSans";
+	font-size: 12px;
+	text-align: center;
+}
+
+footer table tr td.pageFooterTimestamp {
+    text-align: left;
+}
+
+footer table tr td.pageFooterCopyright {
+    text-align: center;
+}
+
+footer table tr td.pageFooterPagination {
+    text-align: right;
+}
+
+.pageFooterPageNumber:after { 
+	content: counter(page, decimal);
+}

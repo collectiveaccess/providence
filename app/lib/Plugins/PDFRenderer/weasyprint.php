@@ -194,7 +194,7 @@ class WLPlugPDFRendererweasyprint Extends BasePDFRendererPlugin Implements IWLPl
 				$status['available'] = false;
 				if ($use_renderer) {
 					$status['unused'] = true;
-					$status['warnings'][] = _t("Didn't load because %1 is available and preferred", $use_renderer);
+					$status['warnings'][] = caWeasyprintInstalled() ? _t("Didn't load because %1 is available and preferred", $use_renderer) : _t("Not installed");
 				} 
 			}
 		}

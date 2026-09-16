@@ -1030,16 +1030,18 @@ function caResolvePrintableFilePath(mixed $renderer, string $type, string $file,
 	$base_path = __CA_THEME_DIR__.'/printables';
 	
 	switch($type) {
+		case 'templates':
 		case 'page':
 		case 'css':
-			$primary = file_exists($bp = "{$base_path}/{$type}/{$renderer}/{$file}") ? $bp : null;
-			$local = file_exists($lp = "{$base_path}/{$type}/local/{$file}") ? $lp : null;
+			if(is_null($primary = file_exists($bp = "{$base_path}/{$type}/{$renderer}/{$file}") ? $bp : null)) {
+				$primary = file_exists($bp = "{$base_path}/{$type}/{$file}") ? $bp : null;
+			}
+			if(!is_null($local = file_exists($lp = "{$base_path}/{$type}/local/{$file}") ? $lp : null)) {
+				$local = file_exists($lp = "{$base_path}/{$type}/local/{$file}") ? $lp : null;
+			}
 			break;
-		case 'templates':
 		default:
-			$primary = file_exists($bp = "{$base_path}/{$type}/{$file}") ? $bp : null;
-			$local = file_exists($lp = "{$base_path}/{$type}/local/{$file}") ? $lp : null;
-			break;
+			return null;
 	}
 	
 	if($local) { return $local; }

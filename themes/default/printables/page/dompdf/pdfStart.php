@@ -13,7 +13,7 @@
 				@bottom-left {
 					font-family: "DejaVuSans";
 					font-size: 12px;
-					content: "<?= caGetLocalizedDate(null, ['dateFormat' => 'delimited']); ?>";
+					content: "<?= date('Y-m-d @ h:m'); ?>";
 				}
 <?php
 	}
@@ -22,7 +22,7 @@
 				@bottom-right {
 					font-family: "DejaVuSans";
 					font-size: 12px;
-					content: counter(page);
+					content: counter(page) "/" counter(pages);
 				}
 <?php
 	}

@@ -490,14 +490,15 @@ function caGoogleChromeInstalled($chrome_path=null, $options=null) {
 function caUsePDFRenderer(?array $options=null) : string {	
 	$config = Configuration::load();
 	$use = $config->get('use_pdf_renderer');
+	$use_legacy = caUseLegacyPrintTemplatesSystem();
 	
-	if(($chrome_installed = caGoogleChromeInstalled(null, $options)) && (!$use || ($use === 'chrome'))) {
+	if(!$use_legacy && ($chrome_installed = caGoogleChromeInstalled(null, $options)) && (!$use || ($use === 'chrome'))) {
 		return 'chrome';
 	}
 	if(($wkhtmltopdf_installed = caWkhtmltopdfInstalled(null, $options)) && (!$use || ($use === 'wkhtmltopdf'))) {
 		return 'wkhtmltopdf';
 	}
-	if(($weasyprint_installed = caWeasyprintInstalled(null, $options)) && (!$use || ($use === 'weasyprint'))) {
+	if(!$use_legacy && ($weasyprint_installed = caWeasyprintInstalled(null, $options)) && (!$use || ($use === 'weasyprint'))) {
 		return 'weasyprint';
 	}
 	
