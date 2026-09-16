@@ -26,7 +26,7 @@
  * -=-=-=-=-=- CUT HERE -=-=-=-=-=-
  * Template configuration:
  *
- * @name TEST SUMMARY
+ * @name PDF (generic)
  * @type page
  * @pageSize letter
  * @pageOrientation portrait
