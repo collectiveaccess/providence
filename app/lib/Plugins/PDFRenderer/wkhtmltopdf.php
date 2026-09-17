@@ -103,11 +103,18 @@ class WLPlugPDFRendererwkhtmltopdf Extends BasePDFRendererPlugin Implements IWLP
 	    ini_set('pcre.backtrack_limit', '100000000');
 	    
 		// Extract header and footer
-		$header = preg_match("/<!--BEGIN HEADER-->(.*)<!--END HEADER-->/s", $content, $matches) ? $matches[1] : '';
-		$footer = preg_match("/<!--BEGIN FOOTER-->(.*)<!--END FOOTER-->/s", $content, $matches) ? $matches[1] : '';
-		
-		$content = preg_replace("/<!--BEGIN HEADER-->(.*)<!--END HEADER-->/s", "", $content);
-		$content = preg_replace("/<!--BEGIN FOOTER-->(.*)<!--END FOOTER-->/s", "", $content);
+		if(!($header = preg_match("/<header>(.*)<\/header>/s", $content, $matches) ? $matches[1] : '')) {
+			$header = preg_match("/<!--BEGIN HEADER-->(.*)<!--END HEADER-->/s", $content, $matches) ? $matches[1] : '';
+			$content = preg_replace("/<!--BEGIN HEADER-->(.*)<!--END HEADER-->/s", "", $content);
+		} else {
+			$content = preg_replace("/<header>(.*)<\/header>/s", "", $content);
+		}
+		if(!($footer = preg_match("/<footer>(.*)<\/footer>/s", $content, $matches) ? $matches[1] : '')) {
+			$footer = preg_match("/<!--BEGIN FOOTER-->(.*)<!--END FOOTER-->/s", $content, $matches) ? $matches[1] : '';
+			$content = preg_replace("/<!--BEGIN FOOTER-->(.*)<!--END FOOTER-->/s", "", $content);
+		} else {
+			$content = preg_replace("/<footer>(.*)<\/footer>/s", "", $content);
+		}
 		
 		file_put_contents($content_path = caMakeGetFilePath("wkhtmltopdf", "html"), $content); 
 		file_put_contents($header_path = caMakeGetFilePath("wkhtmltopdf", "html"), $header); 

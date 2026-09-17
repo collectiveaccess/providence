@@ -1,0 +1,44 @@
+@page {
+    @top-center {
+        content: element(pageHeader);
+    }
+    @bottom-center {
+        content: element(pageFooter);
+    }
+}
+
+header {
+    position: running(pageHeader);
+    width: 100%;
+    padding-bottom: 5px;
+    
+	font-family: "DejaVuSans";
+}
+
+footer {
+    position: running(pageFooter);
+    width: 100%;
+    padding: 0;
+    font-size: 12pt;
+    color: #333;
+    
+	font-family: "DejaVuSans";
+}
+
+header div.headerLogo {
+    margin-top: 16px;
+    text-align: center;
+}
+
+header div.headerLogo img {
+    width: 300px;
+    height: auto;
+}
+
+footer div {
+    width: 100%;
+	font-family: "DejaVuSans";
+	font-size: 12px;
+	text-align: center;
+}
+

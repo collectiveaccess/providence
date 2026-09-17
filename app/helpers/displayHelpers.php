@@ -6090,12 +6090,18 @@ function caGetBrandingLogo(string $type, array $options=null) : ?string {
 	//if(!in_array($type, ['menuBar', 'login', 'report'], true)) { return null; }
 	
 	$abs = caGetOption('absolute', $options, false);
+	$url = caGetOption('url', $options, false);
 	
 	global $g_request;
 	$config = Configuration::load();
 	
 	if(is_array($branding = $config->getAssoc('branding')) && is_array($logo = caGetOption($type, $branding, null)) && !empty($logo['src'])) {
-		return caHTMLImage(($abs ? __CA_BASE_DIR__ : __CA_URL_ROOT__).'/'.caGetOption('src', $logo), ['alt' => caGetOption('alt', $logo), 'class' => caGetOption('class', $logo), 'style' => caGetOption('style', $logo), 'id' => caGetOption('id', $logo), 'scaleCSSWidthTo' => caGetOption('width', $logo), 'scaleCSSHeightTo' => caGetOption('height', $logo)]);
+		if($url) {
+			$u = __CA_SITE_PROTOCOL__.'://'.__CA_SITE_HOSTNAME__.__CA_URL_ROOT__.'/'.caGetOption('src', $logo);
+		} else {
+			$u = ($abs ? __CA_BASE_DIR__ : __CA_URL_ROOT__).'/'.caGetOption('src', $logo);
+		}
+		return caHTMLImage($u, ['alt' => caGetOption('alt', $logo), 'class' => caGetOption('class', $logo), 'style' => caGetOption('style', $logo), 'id' => caGetOption('id', $logo), 'scaleCSSWidthTo' => caGetOption('width', $logo), 'scaleCSSHeightTo' => caGetOption('height', $logo)]);
 	}
 	
 	if(!$g_request) { return null; }
@@ -6148,7 +6154,8 @@ function caGetLoginLogo() {
  * @return string
  */
 function caGetReportLogo(?array $options=null) {
-	return caGetBrandingLogo(caGetOption('name', $options, 'report'), ['absolute' => true]);
+	if(!isset($options['absolute'])) { $options['absolute'] = true; }
+	return caGetBrandingLogo(caGetOption('name', $options, 'report'), $options);
 }
 # ------------------------------------------------------------------
 /**

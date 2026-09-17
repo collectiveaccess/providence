@@ -995,6 +995,7 @@ function caGetPrintablesCSSTags(mixed $renderer, ?array $options=null) : string|
 	}
 	
 	$return = caGetOption('return', $options, null);
+	$url = caGetOption('url', $options, false);
 	if($return && !is_array($return)) { $return = [$return]; }
 	if(!is_array($return) || !sizeof($return)) { $return = null; }
 	
@@ -1002,16 +1003,23 @@ function caGetPrintablesCSSTags(mixed $renderer, ?array $options=null) : string|
 	
 	if((!$return || in_array('default', $return, true)) && is_dir($p = __CA_THEME_DIR__."/printables/css/{$renderer}")) {
 		foreach(caGetDirectoryContentsAsList($p, false, false, true, false, ['limitToExtensions' => ['css']]) as $f) {
+			if($url) {
+				$f = str_replace(__CA_BASE_DIR__, '', $f);
+				$f = __CA_SITE_PROTOCOL__.'://'.__CA_SITE_HOSTNAME__.__CA_URL_ROOT__.$f;
+			}
 			$css[] = "<link rel='stylesheet' href='{$f}' type='text/css' media='all'>";
 		}
 	}
 	
 	if((!$return || in_array('local', $return, true)) && is_dir($lp = __CA_THEME_DIR__.'/printables/css/local')) {
 		foreach(caGetDirectoryContentsAsList($lp, true, false, true, false, ['limitToExtensions' => ['css']]) as $f) {
+			if($url) {
+				$f = str_replace(__CA_BASE_DIR__, '', $f);
+				$f = __CA_SITE_PROTOCOL__.'://'.__CA_SITE_HOSTNAME__.__CA_URL_ROOT__.$f;
+			}
 			$css[] = "<link rel='stylesheet' href='{$f}' type='text/css' media='all'>";
 		}
 	}
-	
 	if(caGetOption('returnAsArray', $options, false)) { return $css; }
 	return join('', $css);
 }
