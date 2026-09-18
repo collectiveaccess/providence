@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2024 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -79,27 +79,27 @@ final class GarbageCollection {
 	private static function removeStaleDiskCacheItems(array $options=null) {
 		if(__CA_CACHE_BACKEND__ != 'file') { return false; } // the other backends *should* honor the TTL we pass
 
-		$vs_cache_base_dir = (defined('__CA_CACHE_FILEPATH__') ? __CA_CACHE_FILEPATH__ : __CA_TEMP_DIR__);
-		$vs_cache_dir = $vs_cache_base_dir.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache';
+		$cache_base_dir = (defined('__CA_CACHE_FILEPATH__') ? __CA_CACHE_FILEPATH__ : __CA_TEMP_DIR__);
+		$cache_dir = $cache_base_dir.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache';
 
-		$va_list = caGetDirectoryContentsAsList($vs_cache_dir, true, false, false, false, ['limit' => caGetOption('limit', $options, 1000)]);	// max 1000 files to check 
-		foreach($va_list as $vs_file) {
+		$va_list = caGetDirectoryContentsAsList($cache_dir, true, false, false, false, ['limit' => caGetOption('limit', $options, 1000)]);	// max 1000 files to check 
+		foreach($va_list as $file) {
 			// NOTE: this assumes use of the Stash JSON-based cache encoder
-			$d = @json_decode(@file_get_contents($vs_file), true);
+			$d = @json_decode(@file_get_contents($file), true);
 			$exp = $d['expiration'] ?? null;
 			
 			if(!is_null($exp) && ($exp < time())) {
-				@unlink($vs_file);
+				@unlink($file);
 			}
 		}
 
-		$va_dir_list = caGetSubDirectoryList($vs_cache_dir);
+		$va_dir_list = caGetSubDirectoryList($cache_dir);
 		// note we're explicitly reversing the array here so that
 		// the order is /foo/bar/foobar, then /foo/bar and then /foo
 		// that way we don't need recursion because we just work our way up the directory tree
-		foreach(array_reverse($va_dir_list) as $vs_dir => $vn_c) {
-			if(caDirectoryIsEmpty($vs_dir)) {
-				@rmdir($vs_dir);
+		foreach(array_reverse($va_dir_list) as $dir => $vn_c) {
+			if(caDirectoryIsEmpty($dir)) {
+				@rmdir($dir);
 			}
 		}
 
