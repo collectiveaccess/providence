@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2024 Whirl-i-Gig
+ * Copyright 2018-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -87,6 +87,12 @@ $formats 				= $this->getVar('formats');
 		caSummaryDownloadOptionsPanel.hidePanel();
 		return false;
 	}
+	
+	function caExecuteSummaryPreview() {
+		let vals = jQuery("#caSummaryDownloadOptionsForm").serialize();
+		caMediaPanel.showPanel('<?= caNavUrl($this->request, '*', '*' ,'PreviewSummary', []); ?>?' +  vals);
+		return false;
+	}
 </script>
 <?= caFormTag($this->request, 'PrintSummary', 'caSummaryDownloadOptionsForm', null, 'post', 'multipart/form-data', '_top', ['disableUnsavedChangesWarning' => true, 'noCSRFToken' => true]); ?>
 <div id="caSummaryDownloadOptionsPanel" class="caSummaryDownloadOptionsPanel"> 
@@ -125,8 +131,12 @@ $formats 				= $this->getVar('formats');
 			<div id="caSummaryDownloadOptionsPanelControlButtons">
 				<table>
 					<tr>
-						<td align="right"><?= caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Download'), 'caSummaryDownloadOptionsFormExecuteButton', ['onclick' => 'caExecuteSummaryDownload(); return false;'], []); ?></td>
-						<td align="left"><?= caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caSummaryDownloadOptionsFormCancelButton', ['onclick' => 'caSummaryDownloadOptionsPanel.hidePanel(); return false;'], []); ?></td>
+						<td align="left"><?= caJSButton($this->request, __CA_NAV_ICON_OVERVIEW__, _t('Preview'), 'caSummaryDownloadOptionsFormExecuteButton', ['onclick' => 'caExecuteSummaryPreview(); return false;'], []); ?></td>
+						<td align="right">
+							<?= caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Download'), 'caSummaryDownloadOptionsFormExecuteButton', ['onclick' => 'caExecuteSummaryDownload(); return false;'], []); ?>
+							<?= caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caSummaryDownloadOptionsFormCancelButton', ['onclick' => 'caSummaryDownloadOptionsPanel.hidePanel(); return false;'], []); ?>
+						</td>
+						
 					</tr>
 				</table>
 			</div>

@@ -808,8 +808,9 @@ class BaseEditorController extends ActionController {
 	 *
 	 * @param array $pa_options Array of options passed through to _initView
 	 */
-	public function PrintSummary($pa_options=null) {
-		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
+	public function PrintSummary($options=null) {
+		list($vn_subject_id, $t_subject) = $this->_initView($options);
+		$is_preview = caGetOption('preview', $options, false);
 		
 		if(!$this->verifyAccess($t_subject)) { return; }
 
@@ -824,7 +825,7 @@ class BaseEditorController extends ActionController {
         }
 
 		$table = $t_subject->tableName();
-		if(($this->request->getParameter('background', pInteger) === 1) && caTaskQueueIsEnabled()) {
+		if(!$is_preview && ($this->request->getParameter('background', pInteger) === 1) && caTaskQueueIsEnabled()) {
 			$o_tq = new TaskQueue();
 			
 			$idno_fld = $t_subject->getProperty('ID_NUMBERING_ID_FIELD');
@@ -874,7 +875,36 @@ class BaseEditorController extends ActionController {
 			$template = $display_id;
 			$display_id = null;
 		}
-		caExportSummary($this->request, $t_subject, $template, $display_id, 'output.pdf', 'output.pdf', []);
+		return caExportSummary($this->request, $t_subject, $template, $display_id, 'output.pdf', 'output.pdf', ['output' => $is_preview ? 'FILE': 'STREAM']);
+	}
+	# -------------------------------------------------------
+	/**
+	 * Preview summary printable export in media overlay
+	 *
+	 * Expects the following request parameters:
+	 *		representation_id = the id of the ca_object_representations record to display; the representation must belong to the specified object
+	 *		value_id =
+	 *
+	 *	Optional request parameters:
+	 *		version = The version of the representation to display. If omitted the display version configured in media_display.conf is used
+	 *
+	 */
+	public function PreviewSummary() {
+		global $file_cleanup_list;
+		
+		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
+		$ret = $this->PrintSummary(['preview' => true]);
+		$this->response->setContentType($ret['mimetype']);
+		
+		if (!($viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $ret['mimetype']))) {
+			throw new ApplicationException(_t('Invalid viewer'));
+		}
+		$display_info = caGetMediaDisplayInfo('media_overlay', $ret['mimetype']);
+		$this->response->addContent($viewer_name::getViewerHTML(
+				$this->request, 
+				"url:{$ret['url']}", 
+				['context' => 'media_overlay', 't_instance' => null, 't_subject' => $t_subject, 't_media' => null, 'display' => $display_info, 'url' => $ret['url']])
+			);	
 		return;
 	}
 	# -------------------------------------------------------

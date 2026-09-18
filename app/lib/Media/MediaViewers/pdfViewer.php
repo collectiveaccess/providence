@@ -38,10 +38,8 @@ class pdfViewer extends BaseMediaViewer implements IMediaViewer {
 		if ($o_view = BaseMediaViewer::getView($request)) {
 			$o_view->setVar('identifier', $identifier);
 			
-			$params = ['identifier' => $identifier, 'context' => caGetOption('context', $options, $request->getAction())];
-			
 			// Pass subject key when getting viewer data
-			if ($t_subject = caGetOption('t_subject', $data, null)) { $params[$data['t_subject']->primaryKey()] = $data['t_subject']->getPrimaryKey(); }
+			if ($t_subject = caGetOption('t_subject', $data, null)) {  $data['t_subject']->getPrimaryKey(); }
 			
 			$o_view->setVar('viewer', 'pdfViewer');
 			$o_view->setVar('width', caGetOption('width', $data['display'], null));

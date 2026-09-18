@@ -106,7 +106,7 @@ class WLPlugPDFRendererchrome Extends BasePDFRendererPlugin Implements IWLPlugPD
 			'keepAlive' => false,
 			'userDataDir' => __CA_APP_DIR__.'/tmp',
     		'windowSize' => [1920, 1000],
-			'headless' => false,
+			'headless' => true,
 			'enableImages' => true,
 			'noSandbox' => true,
 			'ignoreCertificateErrors' => true,
@@ -128,17 +128,17 @@ class WLPlugPDFRendererchrome Extends BasePDFRendererPlugin Implements IWLPlugPD
 			$browser->close();
 		}
 		
-		
+		$pdf_content = file_get_contents($output);
 		if(caGetOption('stream', $options, false)) { 
 			header("Cache-Control: private");
    			header("Content-type: application/pdf");
 			header("Content-Disposition: attachment; filename=".caGetOption('filename', $options, 'output.pdf'));
 			
-			print file_get_contents($output);
+			print $pdf_content;
 		}
 		
 		if(!$path) { @unlink($output); }
-		return $content;
+		return $pdf_content;
 	}
 	# ------------------------------------------------
 	/**
