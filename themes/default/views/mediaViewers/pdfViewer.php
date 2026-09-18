@@ -30,14 +30,14 @@
  * ----------------------------------------------------------------------
  */ 
 $t_subject = $this->getVar('t_subject');
-$vn_page = (int)$this->getVar('page');
+$page = (int)$this->getVar('page');
 
-$vs_width = caParseElementDimension($this->getVar('width'), ['returnAsString' => true, 'default' => '100%']);
-$vs_height = caParseElementDimension($this->getVar('height'), ['returnAsString' => true, 'default' => '100%']);
+$width = caParseElementDimension($this->getVar('width'), ['returnAsString' => true, 'default' => '100%']);
+$height = caParseElementDimension($this->getVar('height'), ['returnAsString' => true, 'default' => '100%']);
 
 $url = $this->getVar('display_media_url') ? $this->getVar('display_media_url') : $this->getVar('original_media_url');
 ?>
-<div id="pdfMediaViewer" style="width: <?= $vs_width; ?>; height: <?= $vs_height; ?>"></div>
+<div id="pdfMediaViewer" style="width: <?= $width; ?>; height: <?= $height; ?>"></div>
  
 <script type="module">
   import EmbedPDF from '<?= __CA_URL_ROOT__.'/assets/embedpdf/embedpdf.js'; ?>'
@@ -47,7 +47,10 @@ $url = $this->getVar('display_media_url') ? $this->getVar('display_media_url') :
     target: document.getElementById('pdfMediaViewer'),
     src: <?= json_encode($url); ?>,
     theme: { preference: 'system' },
-    disabledCategories: ['annotation', 'print', 'form', 'redaction', 'insert', 'document', 'panel-comment'],
+    disabledCategories: [
+    	'annotation', 'print', 'form', 'redaction', 'insert', 'panel-comment',
+    	'document-open', 'document-close', 'document-capture', 'document-protect'
+    ],
     scroll: {
 		defaultStrategy: <?= json_encode($this->getVar('scroll_mode')); ?>, 
 		defaultPageGap: 20          
