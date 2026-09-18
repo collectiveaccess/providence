@@ -455,7 +455,7 @@ function caWeasyprintInstalled($weasyprint_path=null, $options=null) {
 function caGoogleChromeInstalled($chrome_path=null, $options=null) {
 	if (!caGetOption('noCache', $options, defined('__CA_DONT_CACHE_EXTERNAL_APPLICATION_PATHS__')) && CompositeCache::contains("mediahelper_google_chrome_installed", "mediaPluginInfo")) { return CompositeCache::fetch("mediahelper_google_chrome_installed", "mediaPluginInfo"); }
 	if(!$google_chrome_path) { $google_chrome_path = caGetExternalApplicationPath('chrome'); }
-	if (!trim($google_chrome_path) || (preg_match("/[^\/A-Z a-z0-9\.:]+/", $google_chrome_path)) || !@is_readable($google_chrome_path)) { 
+	if (!trim($google_chrome_path) || (preg_match("/[^\/A-Z a-z0-9\-\.:]+/", $google_chrome_path)) || !@is_readable($google_chrome_path)) { 
 		CompositeCache::save("mediahelper_google_chrome_installed", false, "mediaPluginInfo");
 		return false; 
 	}
@@ -470,7 +470,7 @@ function caGoogleChromeInstalled($chrome_path=null, $options=null) {
 	} // don't try exec test on Windows
 	
 	caExec($google_chrome_path." > /dev/null 2> /dev/null", $output,$return);
-	
+
 	$ret = (($return == 0) || ($return == 1) || ($return == 127));
 	
 	CompositeCache::save("mediahelper_google_chrome_installed", $google_chrome_path, "mediaPluginInfo");
