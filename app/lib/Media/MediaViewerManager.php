@@ -111,6 +111,7 @@ class MediaViewerManager {
 			if (!isset($info['viewer']) || !($viewer = $info['viewer'])) { 
 				$viewer = caGetDefaultMediaViewer($mimetype);
 			}
+			if($viewer === 'pdfjs') { $viewer = 'pdfViewer'; }
 			if (!$viewer) { return null; }
 		}
 		return MediaViewerManager::viewerIsAvailable($viewer) ? $viewer : null;
