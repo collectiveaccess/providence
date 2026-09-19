@@ -1037,6 +1037,7 @@ function caResolvePrintableFilePath(mixed $renderer, string $type, string $file,
 	}
 	$base_path = __CA_THEME_DIR__.'/printables';
 	
+	$renderer = strtolower($renderer);
 	switch($type) {
 		case 'templates':
 		case 'page':

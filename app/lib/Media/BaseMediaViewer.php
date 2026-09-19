@@ -73,7 +73,7 @@ class BaseMediaViewer {
 				$media_overlay_titlebar_text = caTruncateStringWithEllipsis($t_subject->get($t_instance->tableName().'.preferred_labels'), 80)." (".$t_instance->get($t_subject->tableName().'.'.$t_subject->getProperty('ID_NUMBERING_ID_FIELD')).")";
 			} elseif(is_a($t_instance, 'ca_attribute_values')) {
 				$media_overlay_titlebar_text = caTruncateStringWithEllipsis($t_subject->get($t_subject->tableName().'.preferred_labels'), 80)." (".$t_subject->get($t_subject->tableName().'.'.$t_subject->getProperty('ID_NUMBERING_ID_FIELD')).")";
-			} else {
+			} elseif($t_instance) {
 				// for ca_site_page_media 
 				$media_overlay_titlebar_text = caTruncateStringWithEllipsis($t_instance->get($t_instance->tableName().'.'.array_shift($t_instance->getProperty('LIST_FIELDS'))), 80)." (".$t_instance->get($t_instance->tableName().'.'.$t_instance->getProperty('ID_NUMBERING_ID_FIELD')).")";
 			}
@@ -142,6 +142,9 @@ class BaseMediaViewer {
 		} elseif(is_a($t_instance, 'ca_site_page_media')) {
 			$o_view->setVar('original_media_url', $original_media_url = $t_instance->getMediaUrl('media', 'original', []));
 			$o_view->setVar('display_media_url', $display_version ? $t_instance->getMediaUrl('media', $display_version, []) : $original_media_url);
+		} elseif(!$t_instance && ($data['url'] ?? null)){
+			$o_view->setVar('original_media_url', $data['url']);
+			$o_view->setVar('display_media_url', $data['url']);
 		}
 		if ($t_subject && $t_instance && ($request->user->canDoAction('can_download_media') || $request->user->canDoAction('can_download_ca_object_representations'))) {
 				if (is_array($versions = $request->config->getList('ca_object_representation_download_versions'))) {

@@ -31,7 +31,7 @@
  * @pageSize letter
  * @pageOrientation portrait
  * @tables ca_objects
- * @contexts summary, results
+ * @contexts summary, results, sets, bundles
  *
  * @marginTop 0.75in
  * @marginLeft 0.5in
@@ -64,7 +64,7 @@ while($result->nextHit()) {
 		if($t_display->getSetting("show_representations") == "primary"){
 			print $t_item->get("ca_object_representations.media.medium");
 		}elseif($t_display->getSetting("show_representations") == "all"){
-			$reps = $t_item->getRepresentations(array("thumbnail", "medium"), null, ['usePath' => true]);
+			$reps = $t_item->getRepresentations(array("thumbnail", "medium"), null, ['usePath' => false]);
 
 			foreach($reps as $rep) {
 				if(sizeof($reps) > 1){

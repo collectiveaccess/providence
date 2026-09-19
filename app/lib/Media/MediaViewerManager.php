@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2025 Whirl-i-Gig
+ * Copyright 2016-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -111,6 +111,7 @@ class MediaViewerManager {
 			if (!isset($info['viewer']) || !($viewer = $info['viewer'])) { 
 				$viewer = caGetDefaultMediaViewer($mimetype);
 			}
+			if($viewer === 'pdfjs') { $viewer = 'pdfViewer'; }
 			if (!$viewer) { return null; }
 		}
 		return MediaViewerManager::viewerIsAvailable($viewer) ? $viewer : null;

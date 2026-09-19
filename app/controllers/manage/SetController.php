@@ -649,4 +649,5 @@ class SetController extends ActionController {
 
 		return $va_subtypes_proc;
 	}
+	# ------------------------------------------------------------------
 }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2025 Whirl-i-Gig
+ * Copyright 2007-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -822,6 +822,10 @@ function caFileIsIncludable($ps_file) {
 		foreach($files_to_delete as $file_to_delete) {
 			if(is_writeable($file_to_delete)) {
 				if(preg_match("!^".__CA_TEMP_DIR__."/wkhtmltopdf[\d]+!", $file_to_delete)) {
+					@unlink($file_to_delete);
+					$count++;
+				}
+				if(preg_match("!^".__CA_TEMP_DIR__."/caExport!", $file_to_delete)) {
 					@unlink($file_to_delete);
 					$count++;
 				}

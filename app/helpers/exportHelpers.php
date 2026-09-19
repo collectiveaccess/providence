@@ -660,6 +660,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 				return [
 					'mimetype' =>  $mimetype, 
 					'path' => $tmp_filename,
+					'url' => str_replace(__CA_BASE_DIR__, __CA_SITE_PROTOCOL__.'://'.__CA_SITE_HOSTNAME__.__CA_URL_ROOT__, $tmp_filename),
 					'extension' =>  $extension
 				];
 			}
@@ -935,6 +936,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 				return [
 					'mimetype' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 					'path' => $path,
+					'url' => str_replace(__CA_BASE_DIR__, __CA_SITE_PROTOCOL__.'://'.__CA_SITE_HOSTNAME__.__CA_URL_ROOT__, $path),
 					'extension' => 'xlsx'
 				];
 			}
@@ -1099,6 +1101,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 				return [
 					'mimetype' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 					'path' => $path,
+					'url' => str_replace(__CA_BASE_DIR__, __CA_SITE_PROTOCOL__.'://'.__CA_SITE_HOSTNAME__.__CA_URL_ROOT__, $path),
 					'extension' => 'docx'
 				];
 			}
@@ -1125,6 +1128,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 				return [
 					'mimetype' => 'application/pdf', 
 					'path' => $tmp_filename,
+					'url' => str_replace(__CA_BASE_DIR__, __CA_SITE_PROTOCOL__.'://'.__CA_SITE_HOSTNAME__.__CA_URL_ROOT__, $tmp_filename),
 					'extension' => 'pdf'
 				];
 			}
@@ -1325,6 +1329,7 @@ function caExportAsLabels($request, SearchResult $result, string $label_code, st
 			return [
 				'mimetype' => 'application/pdf', 
 				'path' => $tmp_filename,
+				'url' => str_replace(__CA_BASE_DIR__, __CA_SITE_PROTOCOL__.'://'.__CA_SITE_HOSTNAME__.__CA_URL_ROOT__, $tmp_filename),
 				'extension' => 'pdf'
 			];
 		}
@@ -1446,7 +1451,7 @@ function caExportSummary($request, BaseModel $t_instance, string $template, $dis
 		$view->addViewPath(array($base_path, "{$base_path}/local"));
 
 		$barcode_files_to_delete += caDoPrintViewTagSubstitution($view, $t_instance, $template_info['path'], array('checkAccess' => $access_values));
-
+		$view->getVar('result')->seek(0);
 		switch($template_info['fileFormat']) {
 			case 'pdf':
 				$o_pdf = new PDFRenderer();
@@ -1506,13 +1511,14 @@ function caExportSummary($request, BaseModel $t_instance, string $template, $dis
 					$request->isDownload(true);
 					$o_pdf->render($content, ['stream'=> true, 'append' => $media_to_append, 'filename' => "{$filename}.pdf"]);
 				} else {
-					$tmp_filename = caGetTempFileName('caExportSummary', '');
+					$tmp_filename = caGetTempFileName('caExportSummary', 'pdf');
 			
 					file_put_contents($tmp_filename, $o_pdf->render($content, ['stream'=> false, 'append' => $media_to_append]));
 		
 					return [
 						'mimetype' => 'application/pdf', 
 						'path' => $tmp_filename,
+						'url' => str_replace(__CA_BASE_DIR__, __CA_SITE_PROTOCOL__.'://'.__CA_SITE_HOSTNAME__.__CA_URL_ROOT__, $tmp_filename),
 						'extension' => 'pdf'
 					];
 				}
@@ -1524,11 +1530,12 @@ function caExportSummary($request, BaseModel $t_instance, string $template, $dis
 				if($output === 'STREAM') { 
 					print $content;
 				} else {
-					$tmp_filename = caGetTempFileName('caExportSummary', '');
+					$tmp_filename = caGetTempFileName('caExportSummary', 'docx');
 					file_put_contents($tmp_filename, $content);
 					return [
 						'mimetype' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
 						'path' => $tmp_filename,
+						'url' => str_replace(__CA_BASE_DIR__, __CA_SITE_PROTOCOL__.'://'.__CA_SITE_HOSTNAME__.__CA_URL_ROOT__, $tmp_filename),
 						'extension' => 'docx'
 					];
 				}

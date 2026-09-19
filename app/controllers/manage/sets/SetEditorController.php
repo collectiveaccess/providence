@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -306,7 +306,8 @@ class SetEditorController extends BaseEditorController {
 	# -------------------------------------------------------
 	# Export set items
 	# -------------------------------------------------------
-	public function ExportSetItems() {
+	public function ExportSetItems(?array $options=null) {
+		$is_preview = caGetOption('preview', $options, false);
 		$this->opo_result_context->setParameter('ca_sets_last_export_type', $_REQUEST['export_format'] ?? null);
 		$this->opo_result_context->saveContext();
 		
@@ -345,7 +346,7 @@ class SetEditorController extends BaseEditorController {
 		$subject_table = Datamodel::getTableName($t_set->get('table_num'));
 		$t_instance = Datamodel::getInstanceByTableName($subject_table);
 		
-		if($is_background && caTaskQueueIsEnabled()) {
+		if(!$is_preview && $is_background && caTaskQueueIsEnabled()) {
 			$o_tq = new TaskQueue();
 
 			$exp = 'ca_sets.set_code:'.$t_set->get('set_code');
@@ -409,8 +410,33 @@ class SetEditorController extends BaseEditorController {
 		if ($filename_template = $this->request->config->get('ca_sets_export_file_naming')) {
 			$filename_stub = $t_set->getWithTemplate($filename_template);
 		}
-		caExportResult($this->request, $res, $export_format, $filename_stub, ['display' => $display_id ? new ca_bundle_displays($display_id) : null, 'printTemplateType' => 'sets', 'set' => $t_set]);
 		
+		return caExportResult($this->request, $res, $export_format, $filename_stub, ['output' => $is_preview ? 'FILE' : 'STREAM', 'display' => $display_id ? new ca_bundle_displays($display_id) : null, 'printTemplateType' => 'sets', 'set' => $t_set]);
+	}
+	# -------------------------------------------------------
+	/**
+	 * Preview set printable export in media overlay
+	 *
+	 * Expects the following request parameters:
+	 *		representation_id = the id of the ca_object_representations record to display; the representation must belong to the specified object
+	 *		value_id =
+	 *
+	 *	Optional request parameters:
+	 *		version = The version of the representation to display. If omitted the display version configured in media_display.conf is used
+	 *
+	 */
+	public function PreviewSetExport() {
+		$ret = $this->ExportSetItems(['preview' => true]);
+		$this->response->setContentType($ret['mimetype']);
+		if (!($viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $ret['mimetype']))) {
+			throw new ApplicationException(_t('Invalid viewer'));
+		}
+		$display_info = caGetMediaDisplayInfo('media_overlay', $ret['mimetype']);
+		$this->response->addContent($viewer_name::getViewerHTML(
+				$this->request, 
+				"url:{$ret['url']}", 
+				['context' => 'media_overlay', 't_instance' => null, 't_subject' => $t_subject, 't_media' => null, 'display' => $display_info, 'url' => $ret['url']])
+			);	
 		return;
 	}
 	# -------------------------------------------------------

@@ -73,8 +73,12 @@ $url = caNavUrl($this->request, 'manage', 'sets/setEditor', 'ExportSetItems/'.$t
 			<div id="caSummaryDownloadOptionsPanelControlButtons">
 				<table>
 					<tr>
-						<td align="right"><?= caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Download'), 'caSummaryDownloadOptionsFormExecuteButton dontTriggerUnsavedChangeWarning', ['onclick' => 'caGetExport(); return false;'], []); ?></td>
-						<td align="left"><?= caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caSummaryDownloadOptionsFormCancelButton dontTriggerUnsavedChangeWarning', ['onclick' => 'caSummaryDownloadOptionsPanel.hidePanel(); return false;'], []); ?></td>
+						<td align="left"><?= caJSButton($this->request, __CA_NAV_ICON_OVERVIEW__, _t('Preview'), 'caSetExportPreviewButton', ['onclick' => 'caExecuteSetExportPreview(); return false;'], []); ?></td>
+						
+						<td align="right">
+							<?= caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Download'), 'caSummaryDownloadOptionsFormExecuteButton dontTriggerUnsavedChangeWarning', ['onclick' => 'caGetExport(); return false;'], []); ?>
+							<?= caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caSummaryDownloadOptionsFormCancelButton dontTriggerUnsavedChangeWarning', ['onclick' => 'caSummaryDownloadOptionsPanel.hidePanel(); return false;'], []); ?>
+						</td>
 					</tr>
 				</table>
 			</div>
@@ -151,5 +155,27 @@ $url = caNavUrl($this->request, 'manage', 'sets/setEditor', 'ExportSetItems/'.$t
 			jQuery(v).appendTo('body #caTempExportForm');
 		});
 		f.submit();
+	}
+	
+	function caExecuteSetExportPreview() {
+		var s = jQuery('#caSummaryDisplaySelector').val();
+		var x = jQuery('#caSummaryFormatSelector').val();
+		var b = jQuery('#caSummaryProcessInBackground:checked').val() ? 1 : 0;
+		
+		
+		var f = jQuery('<form id="caTempExportForm" action="<?= $url; ?>/export_format/' + x + '/display_id/' + s + '/background/' + b + '" method="post" style="display:none;"></form>');
+		jQuery('body #caTempExportForm').replaceWith(f).hide();
+		
+		jQuery('#caSummaryDownloadOptionsPanelOptions').find('select,textarea,input').each(function(k, v) {
+			jQuery(v).appendTo('body #caTempExportForm');
+		});
+		let xx = "<input type='hidden' name='export_format' value='" + x + "'>" + "<input type='hidden' name='display_id' value='" + s + "'>" + "<input type='hidden' name='background' value='" + b + "'>";
+		console.log(xx);
+		jQuery('body #caTempExportForm').append(xx);
+		
+		let vals = jQuery('body #caTempExportForm').serialize();
+		console.log("vvv", vals);
+		caMediaPanel.showPanel('<?= caNavUrl($this->request, '*', '*' ,'PreviewSetExport', ['set_id' => $t_set->getPrimaryKey()]); ?>?' +  vals);
+		return false;
 	}
 </script>
