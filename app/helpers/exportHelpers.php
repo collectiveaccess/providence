@@ -660,6 +660,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 				return [
 					'mimetype' =>  $mimetype, 
 					'path' => $tmp_filename,
+					'url' => str_replace(__CA_BASE_DIR__, __CA_SITE_PROTOCOL__.'://'.__CA_SITE_HOSTNAME__.__CA_URL_ROOT__, $tmp_filename),
 					'extension' =>  $extension
 				];
 			}
@@ -935,6 +936,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 				return [
 					'mimetype' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 					'path' => $path,
+					'url' => str_replace(__CA_BASE_DIR__, __CA_SITE_PROTOCOL__.'://'.__CA_SITE_HOSTNAME__.__CA_URL_ROOT__, $path),
 					'extension' => 'xlsx'
 				];
 			}
@@ -1099,6 +1101,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 				return [
 					'mimetype' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 					'path' => $path,
+					'url' => str_replace(__CA_BASE_DIR__, __CA_SITE_PROTOCOL__.'://'.__CA_SITE_HOSTNAME__.__CA_URL_ROOT__, $path),
 					'extension' => 'docx'
 				];
 			}
@@ -1125,6 +1128,7 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 				return [
 					'mimetype' => 'application/pdf', 
 					'path' => $tmp_filename,
+					'url' => str_replace(__CA_BASE_DIR__, __CA_SITE_PROTOCOL__.'://'.__CA_SITE_HOSTNAME__.__CA_URL_ROOT__, $tmp_filename),
 					'extension' => 'pdf'
 				];
 			}
@@ -1325,6 +1329,7 @@ function caExportAsLabels($request, SearchResult $result, string $label_code, st
 			return [
 				'mimetype' => 'application/pdf', 
 				'path' => $tmp_filename,
+				'url' => str_replace(__CA_BASE_DIR__, __CA_SITE_PROTOCOL__.'://'.__CA_SITE_HOSTNAME__.__CA_URL_ROOT__, $tmp_filename),
 				'extension' => 'pdf'
 			];
 		}

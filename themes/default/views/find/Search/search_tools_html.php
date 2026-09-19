@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2024 Whirl-i-Gig
+ * Copyright 2010-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -63,6 +63,8 @@ $table = $t_subject->tableName();
 				print caHTMLSelect('label_form', $options, ['id' => 'labelsSelect', 'class' => 'searchToolsSelect'], ['value' => $this->getVar('current_label_form'), 'width' => '150px'])."\n";
 				print caHTMLHiddenInput('background', ['value' => 0, 'id' => 'caPrintLabelsFormInBackground']);
 				print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caPrintLabelsForm', null, ['aria-label' => _t('Download labels')]);
+				
+				print caJSButton($this->request, __CA_NAV_ICON_OVERVIEW__, _t('Preview'), 'caSummaryDownloadOptionsFormExecuteButton', ['onclick' => 'caExecuteSummaryPreview(); return false;'], []);
 ?>
 				<div class="caLabelsDownloadOptionsPanelOptions" id="caLabelsDownloadOptionsPanelOptions"></div>
 				<input type='hidden' name='download' value='1' id='caPrintLabelsFormDownloadFlag'/>
@@ -84,6 +86,8 @@ $table = $t_subject->tableName();
 		
 			print caHTMLHiddenInput('background', ['value' => 0, 'id' => 'caExportInBackground']);
 			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportForm', null, ['aria-label' => _t('Download results')]);
+			
+			print caJSButton($this->request, __CA_NAV_ICON_OVERVIEW__, _t('Preview'), 'caSummaryDownloadOptionsFormExecuteButton', ['onclick' => 'caExecuteSummaryPreview(); return false;'], []);
 ?>
 		<div class="caResultsDownloadOptionsPanelOptions" id="caResultsDownloadOptionsPanelOptions"></div>	
 			
@@ -96,23 +100,23 @@ $table = $t_subject->tableName();
 		$options_types = [];
 
 		$t_list = new ca_lists();
-		$va_representation_types = $t_list->getItemsForList('object_representation_types');
+		$representation_types = $t_list->getItemsForList('object_representation_types');
 
 
-		if (is_array($va_representation_types) && sizeof($va_representation_types)) {
-			foreach ($va_representation_types as $item_id => $va_type_by_locale) {
-				if (!is_array($va_type_by_locale)) { continue; }
+		if (is_array($representation_types) && sizeof($representation_types)) {
+			foreach ($representation_types as $item_id => $type_by_locale) {
+				if (!is_array($type_by_locale)) { continue; }
 
-				$vn_locale_id = $this->request->getUser()->getPreferredUILocaleID();
-				if (isset($va_type_by_locale[$vn_locale_id])) {
-					$va_type = $va_type_by_locale[$vn_locale_id];
+				$locale_id = $this->request->getUser()->getPreferredUILocaleID();
+				if (isset($type_by_locale[$locale_id])) {
+					$type = $type_by_locale[$locale_id];
 				} else {
-					$va_type = reset($va_type_by_locale);
+					$type = reset($type_by_locale);
 				}
 
-				if (!empty($va_type['name_singular']) && !empty($va_type['item_id'])) {
-					$label = _t('All results: %1 (representation)', $va_type['name_singular']);
-					$options_types[$label] = 'type_'.$va_type['item_id'];
+				if (!empty($type['name_singular']) && !empty($type['item_id'])) {
+					$label = _t('All results: %1 (representation)', $type['name_singular']);
+					$options_types[$label] = 'type_'.$type['item_id'];
 				}
 			}
 		}

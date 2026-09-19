@@ -890,8 +890,6 @@ class BaseEditorController extends ActionController {
 	 *
 	 */
 	public function PreviewSummary() {
-		global $file_cleanup_list;
-		
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 		$ret = $this->PrintSummary(['preview' => true]);
 		$this->response->setContentType($ret['mimetype']);

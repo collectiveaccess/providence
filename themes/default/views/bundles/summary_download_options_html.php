@@ -131,7 +131,7 @@ $formats 				= $this->getVar('formats');
 			<div id="caSummaryDownloadOptionsPanelControlButtons">
 				<table>
 					<tr>
-						<td align="left"><?= caJSButton($this->request, __CA_NAV_ICON_OVERVIEW__, _t('Preview'), 'caSummaryDownloadOptionsFormExecuteButton', ['onclick' => 'caExecuteSummaryPreview(); return false;'], []); ?></td>
+						<td align="left"><?= caJSButton($this->request, __CA_NAV_ICON_OVERVIEW__, _t('Preview'), 'caSummmaryPreviewButton', ['onclick' => 'caExecuteSummaryPreview(); return false;'], []); ?></td>
 						<td align="right">
 							<?= caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Download'), 'caSummaryDownloadOptionsFormExecuteButton', ['onclick' => 'caExecuteSummaryDownload(); return false;'], []); ?>
 							<?= caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caSummaryDownloadOptionsFormCancelButton', ['onclick' => 'caSummaryDownloadOptionsPanel.hidePanel(); return false;'], []); ?>
