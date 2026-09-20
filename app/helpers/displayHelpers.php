@@ -1440,13 +1440,56 @@ function caEditorInspector($view, $options=null) {
 				TooltipManager::add('#inspectorLotMediaDownloadButton', _t("Download all media associated with objects in this lot"));
 			}
 
+			if($view->request->user->canDoAction("can_duplicate_{$table_name}") && $t_item->getPrimaryKey()) {
+				if(!$view->request->user->getPreference($t_item->tableName().'_extended_duplication_options')) {
+					$tools[] = "<div id='caDuplicateItemButton' class='inspectorActionButton'>".
+								caFormTag($view->request, 'Edit', 'DuplicateItemForm', $view->request->getModulePath().'/'.$view->request->getController(), 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true]).
+								"<div>".caFormSubmitLink($view->request, caNavIcon(__CA_NAV_ICON_DUPLICATE__, '20px'), '', 'DuplicateItemForm', null, ['aria-label' => _t('Duplicate item')])."</div>".
+								caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey())).
+								caHTMLHiddenInput('mode', array('value' => 'dupe')).
+							"	</form>
+							</div>\n";
+	
+					TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($type_name, 'UTF-8')));
+				} else {
+					$tools[] = "<div id='caDuplicateItem' class='inspectorActionButton'><div id='caDuplicateItemButton'><a href='#' onclick='caDuplicationSettingsPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_DUPLICATE__, '20px', ['title' => _t('Duplicate item')])."</a></div></div>\n";
+					
+					$duplication_settings_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
+					$duplication_settings_view->setVar('t_item', $t_item);
+					$duplication_settings_view->setVar('type_name', $type_name ?? $t_item->getPropery('NAME_SINGULAR'));
+					$duplication_settings_view->setVar('last_duplication_mode', Session::getVar($t_item->tableName().'_editor_last_duplication_mode') ?? 'create');
+					
+					$duplication_settings_view->setVar('set_select', caHTMLSelect('pair_with_set_id', [], ['id' => 'caDuplicateItemFormSetList', 'class' => ''], ['width' => '200px']));
+					
+					FooterManager::add($duplication_settings_view->render("duplication_html.php"));
+		
+					TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($type_name, 'UTF-8')));
+				}
+			}
+			
+			if (method_exists($t_item, 'getTypeCode') && caHomeLocationsEnabled($t_item->tableName(), $t_item->getTypeCode()) && $view->request->user->canDoAction("can_set_home_location_".$table_name)) {	
+				$tools[] = "<div id='inspectorSetHomeLocation' class='inspectorActionButton'><div id='inspectorSetHomeLocationButton'><a href='#' onclick='_initSetHomeLocationHierarchyBrowser(); return false;'>".caNavIcon(__CA_NAV_ICON_HOME__, '20px', array('title' => _t('Set home location')))."</a></div></div>\n";
+	
+				$change_type_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
+				$change_type_view->setVar('t_item', $t_item);
+	
+				FooterManager::add($change_type_view->render("set_home_location_html.php"));
+				TooltipManager::add("#inspectorSetHomeLocation", _t('Set home location'));
+			}
+	
+			// Download media in lot ($num_objects is only set for object lots)
+			if ($num_objects > 0) {
+				$tools[] = "<div id='inspectorLotMediaDownloadButton' class='inspectorActionButton'>".caNavLink($view->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, '20px'), "button", $view->request->getModulePath(), $view->request->getController(), 'getLotMedia', array('lot_id' => $t_item->getPrimaryKey(), 'download' => 1), array())."</div>\n";
+				TooltipManager::add('#inspectorLotMediaDownloadButton', _t("Download all media associated with objects in this lot"));
+			}
+			
 			// Download media in set
 			if(($table_name == 'ca_sets') && (sizeof($t_item->getItemRowIDs() ?? []) > 0)) {
 				$tools [] = "<div id='inspectorSetMediaDownloadButton' class='inspectorActionButton'>".caNavLink($view->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, '20px'), "button", $view->request->getModulePath(), $view->request->getController(), 'getSetMedia', array('set_id' => $t_item->getPrimaryKey(), 'download' => 1), array())."</div>\n";
-
+	
 				TooltipManager::add('#inspectorSetMediaDownloadButton', _t("Download all media associated with records in this set"));
 			}
-
+		
 			// Auto-delete set?
 			if(($table_name == 'ca_sets') && ($view->request->user->getPreference('autodelete_sets') === 'yes')) {
 				$autodelete = "<div class='inspectorActionButton'><div><a href='#' title='"._t('Set auto-deletion of set.')."' onclick='caToggleAutoDelete(); return false;' id='inspectorSetAutoDeleteButton'>".caNavIcon($t_item->willAutoDelete() ? __CA_NAV_ICON_AUTO_DELETE__ : __CA_NAV_ICON_NO_AUTO_DELETE__, '20px')."</a></div></div>";
