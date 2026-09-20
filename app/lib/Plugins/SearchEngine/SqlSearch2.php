@@ -188,6 +188,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				'omitPrivateIndexing' => false,								//
 				'excludeFieldsFromSearch' => null,
 				'restrictSearchToFields' => null,
+				'omitSelfRelationships' => false,							// exclude hits on records related by self-relationships
 				'strictPhraseSearching' => true,							// strict phrase searching finds only records with the precise phrase; non-strict will find fields with all of the words, in any order
 				'useAsync' => true
 		);
@@ -196,7 +197,8 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		// The indexer and engine can use this information to optimize how they call the plug-in
 		$this->capabilities = array(
 			'incremental_reindexing' => true,		// can update indexing using only changed fields, rather than having to reindex the entire row (and related stuff) every time
-			'restrict_to_fields' => true
+			'restrict_to_fields' => true,
+			'omit_self_relationships' => true
 		);
 		
 		if (defined('__CA_SEARCH_IS_FOR_PUBLIC_DISPLAY__')) {
@@ -614,6 +616,10 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					}
 				
 					$private_sql = ($this->getOption('omitPrivateIndexing') ? ' AND swi.access = 0' : '');		
+					
+					$subject_label_tablenum = Datamodel::getTableNum(Datamodel::getTableProperty($subject_tablenum, 'LABEL_TABLE_NAME'));
+					$omit_self_relationships = (($this->getOption('omitSelfRelationships') && $subject_label_tablenum) ? " AND NOT (swi.rel_type_id > 0 AND swi.field_table_num IN ({$subject_tablenum}, {$subject_label_tablenum}))" : '');
+					
 					if ($is_bare_wildcard) {
 						$t = Datamodel::getInstance($subject_tablenum, true);
 						$pk = $t->primaryKey();
@@ -631,7 +637,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 							WHERE
 								swi.table_num = ? AND {$word_field} {$word_op} ?
 								{$field_sql}
-								{$private_sql} {$anchor_sql}
+								{$private_sql} {$omit_self_relationships} {$anchor_sql}
 						", $params);
 					} else {
 						$qr_res = $this->db->query("
@@ -641,7 +647,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 							WHERE
 								swi.table_num = ? AND {$word_field} {$word_op} ?
 								{$field_sql}
-								{$private_sql} {$anchor_sql}
+								{$private_sql} {$omit_self_relationships} {$anchor_sql}
 						", $params);
 					}
 					$results[] = $this->_arrayFromDbResult($qr_res);
@@ -663,6 +669,10 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	private function _processQueryPhrase(int $subject_tablenum, $query) {
 	 	$terms = $query->getTerms();
 	 	$private_sql = ($this->getOption('omitPrivateIndexing') ? ' AND swi.access = 0' : '');
+	 	
+	 	$subject_label_tablenum = Datamodel::getTableNum(Datamodel::getTableProperty($subject_tablenum, 'LABEL_TABLE_NAME'));
+		$omit_self_relationships = (($this->getOption('omitSelfRelationships') && $subject_label_tablenum) ? " AND NOT (swi.rel_type_id > 0 AND swi.field_table_num IN ({$subject_tablenum}, {$subject_label_tablenum}))" : '');
+				
 	 
 	 	$force_strict = false;
 	 	if($terms[0]->text[0] === '~') {
@@ -768,7 +778,6 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 								$anchor_sql = '';
 								$word_op = 'LIKE';
 								$word = ($w == 0) ? "%{$word}%" : "{$word}%";
-								print "[$w] $word<br>\n";
 							}
 							break;
 						case 'START':
@@ -793,7 +802,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 						".(($tc > 0) ? " INNER JOIN ".$temp_tables[$tc - 1]." AS tt ON swi.index_id = tt.row_id AND swi.field_index = tt.field_container_id" : "")."
 						WHERE 
 							sw.word {$word_op} ? AND swi.table_num = ? {$fld_limit_sql}
-							{$private_sql} {$anchor_sql}
+							{$private_sql} {$omit_self_relationships} {$anchor_sql}
 					", (string)$word, (int)$subject_tablenum);
 					$temp_tables[] = $temp_table;	
 					while(sizeof($temp_tables) > 2) {
@@ -2125,10 +2134,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	/**
 	 *
 	 */
-	private function _arrayFromDbResult(DbResult $qr_res) {
+	private function _arrayFromDbResult(DbResult $qr_res, ?array $options=null) {
 		$vals = $qr_res->getAllFieldValues(['index_id', 'row_id', 'boost']);
 	 	if(!isset($vals['row_id'])) { return []; }
 	 	$hits = [];
+	 	
+	 	$phrase_window = caGetOption('phraseWindow', $options, null);
+	 	
 	 	foreach($vals['row_id'] as $i => $row_id) {
 	 		if(!isset($hits[$row_id])) { 
 	 			$hits[$row_id]['boost'] = 0; 
@@ -2143,7 +2155,13 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 	 		}
 	 		
 	 		if(($this->get_result_desc_data  && sizeof($hits[$row_id]['index_ids']) < $max_index_count)) {
-	 			$hits[$row_id]['index_ids'][] = $vals['index_id'][$i];
+	 			if($phrase_window > 0) {
+	 				for($idx=($vals['index_id'][$i] - ($phrase_window - 1)); $idx <= $vals['index_id'][$i]; $idx++) {
+	 					$hits[$row_id]['index_ids'][] = $idx;
+	 				}
+	 			} else {
+	 				$hits[$row_id]['index_ids'][] = $vals['index_id'][$i];
+	 			}
 	 		}
 	 	}
 	 	return $hits;

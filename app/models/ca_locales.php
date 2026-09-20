@@ -61,7 +61,7 @@ BaseModel::$s_ca_models_definitions['ca_locales'] = array(
 				'DISPLAY_WIDTH' => 2, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('ISO 3166-1 alpha-2 country code'), 'DESCRIPTION' => _t('2 characer country code for locale; use the ISO 3166-1 alpha-2 standard.'),
+				'LABEL' => _t('ISO 3166-1 alpha-2 country code'), 'DESCRIPTION' => _t('2 character country code for locale; use the ISO 3166-1 alpha-2 standard.'),
 				'BOUNDS_LENGTH' => array(0,2)
 		),
 		'dialect' => array(

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -64,7 +64,7 @@ BaseModel::$s_ca_models_definitions['ca_occurrences'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LIST_CODE' => 'occurrence_types',
-				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the occurrence. In CollectiveAccess every occurrence has a single "instrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.')
+				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the occurrence. In CollectiveAccess every occurrence has a single "intrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.')
 		),
 		'idno' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -81,7 +81,7 @@ BaseModel::$s_ca_models_definitions['ca_occurrences'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Idno sort', 'DESCRIPTION' => 'Sortable version of value in idno',
-				'BOUNDS_LENGTH' => array(0,255)
+				'BOUNDS_LENGTH' => array(0, 768)
 		),
 		'idno_sort_num' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 

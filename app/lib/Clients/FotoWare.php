@@ -327,7 +327,7 @@ class FotoWareClient {
 		$response = $this->request('POST', '/fotoweb/services/renditions', [], $headers, ['json' => $params]);
 		if($response) {
 			if(!($rend_href = ($response['content']['href'] ?? null))) { 
-				throw new \Exception(_t('Could not render media: not rendition url returned'));	
+				throw new \Exception(_t('Could not render media: no rendition url returned'));	
 			}
 			
 			do {
@@ -385,7 +385,7 @@ class FotoWareClient {
 				return $acc;
 			}
 		} catch(\Exception $e) {
-			throw new \Exception(_t('Could not get metdata definitions: %1', $e->getMessage()));
+			throw new \Exception(_t('Could not get metadata definitions: %1', $e->getMessage()));
 		}
 		
 		return null;

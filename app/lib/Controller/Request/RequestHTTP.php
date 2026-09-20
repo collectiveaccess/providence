@@ -988,8 +988,6 @@ class RequestHTTP extends Request {
 			
 			$this->user->setVar('last_login', time(), array('volatile' => true));
 			$this->user->setLastLogout($this->user->getLastPing(), array('volatile' => true));
-			
-			$this->user->setMode(ACCESS_WRITE);
 			$this->user->update();
 			
 			$AUTH_CURRENT_USER_ID = $vn_user_id;

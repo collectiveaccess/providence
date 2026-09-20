@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2024 Whirl-i-Gig
+ * Copyright 2020-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -72,7 +72,7 @@ class MediaUploadManager {
     	if ($s->insert()) {
     		return $s;
     	}
-    	throw new MediaUploadManageSessionException(_t('Could not create media upload session: '.join('; ', $s->getErrors())));
+    	throw new MediaUploadManageSessionException(_t('Could not create media upload session: %1', join('; ', $s->getErrors())));
     }
     # ------------------------------------------------------
     /**
@@ -100,7 +100,7 @@ class MediaUploadManager {
 		$s->set('status', 'COMPLETED');
 		$s->update();
 		if ($s->numErrors() > 0) {
-			throw new MediaUploadManageSessionException(_t('Could not complete media upload session: '.join('; ', $s->getErrors())));
+			throw new MediaUploadManageSessionException(_t('Could not complete media upload session: %1', join('; ', $s->getErrors())));
 		}
         return $s;
     }
@@ -115,7 +115,7 @@ class MediaUploadManager {
 		$s->set('status', 'CANCELLED');
 		$s->update();
 		if ($s->numErrors() > 0) {
-			throw new MediaUploadManageSessionException(_t('Could not cancel media upload session: '.join('; ', $s->getErrors())));
+			throw new MediaUploadManageSessionException(_t('Could not cancel media upload session: %1', join('; ', $s->getErrors())));
 		}
         return $s;
     }

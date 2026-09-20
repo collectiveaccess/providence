@@ -193,6 +193,15 @@ class WLPlugInformationServiceNomenclature extends BaseInformationServicePlugin 
     public function getExtendedInformation($settings, $url) {
     	global $g_ui_locale;
     	$default_locale = $g_ui_locale ?? (defined('__CA_DEFAULT_LOCALE__') ? __CA_DEFAULT_LOCALE__ : 'en_US');
+    	$tmp = explode('_', $default_locale);
+    	$lang = $tmp[0];
+    	
+    	if($lang == 'fr') {
+    		$url .= "&lang=fr";
+    	} else {
+    		$url .= "&lang=en";
+    	}
+    	
     	$info = $this->getExtraInfo($settings, $url);
     	$path = array_map(function($v) {
     		return $v['label'];
