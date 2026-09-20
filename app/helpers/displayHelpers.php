@@ -1412,7 +1412,8 @@ function caEditorInspector($view, $options=null) {
 		}
 
 		if($view->request->user->canDoAction("can_duplicate_{$table_name}") && $t_item->getPrimaryKey()) {
-			$tools[] = "<div id='caDuplicateItemButton' class='inspectorActionButton'>".
+			if(!$view->request->user->getPreference($t_item->tableName().'_extended_duplication_options')) {
+				$tools[] = "<div id='caDuplicateItemButton' class='inspectorActionButton'>".
 							caFormTag($view->request, 'Edit', 'DuplicateItemForm', $view->request->getModulePath().'/'.$view->request->getController(), 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true]).
 							"<div>".caFormSubmitLink($view->request, caNavIcon(__CA_NAV_ICON_DUPLICATE__, '20px'), '', 'DuplicateItemForm', null, ['aria-label' => _t('Duplicate item')])."</div>".
 							caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey())).
@@ -1420,9 +1421,23 @@ function caEditorInspector($view, $options=null) {
 						"	</form>
 						</div>\n";
 
-			TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($type_name, 'UTF-8')));
+				TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($type_name, 'UTF-8')));
+			} else {
+				$tools[] = "<div id='caDuplicateItem' class='inspectorActionButton'><div id='caDuplicateItemButton'><a href='#' onclick='caDuplicationSettingsPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_DUPLICATE__, '20px', ['title' => _t('Duplicate item')])."</a></div></div>\n";
+				
+				$duplication_settings_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
+				$duplication_settings_view->setVar('t_item', $t_item);
+				$duplication_settings_view->setVar('type_name', $type_name ?? $t_item->getPropery('NAME_SINGULAR'));
+				$duplication_settings_view->setVar('last_duplication_mode', Session::getVar($t_item->tableName().'_editor_last_duplication_mode') ?? 'create');
+				
+				$duplication_settings_view->setVar('set_select', caHTMLSelect('pair_with_set_id', [], ['id' => 'caDuplicateItemFormSetList', 'class' => ''], ['width' => '200px']));
+				
+				FooterManager::add($duplication_settings_view->render("duplication_html.php"));
+	
+				TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($type_name, 'UTF-8')));
+			}
 		}
-
+		
 		if (method_exists($t_item, 'getTypeCode') && caHomeLocationsEnabled($t_item->tableName(), $t_item->getTypeCode()) && $view->request->user->canDoAction("can_set_home_location_".$table_name)) {	
 			$tools[] = "<div id='inspectorSetHomeLocation' class='inspectorActionButton'><div id='inspectorSetHomeLocationButton'><a href='#' onclick='_initSetHomeLocationHierarchyBrowser(); return false;'>".caNavIcon(__CA_NAV_ICON_HOME__, '20px', array('title' => _t('Set home location')))."</a></div></div>\n";
 

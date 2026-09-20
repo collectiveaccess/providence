@@ -1746,7 +1746,7 @@ html.safari span.form-button button:focus{
     outline:none;
 }
 
-#caTypeChangePanelControlButtons .saveButton, #caSetAccessForRelatedPanelControlButtons .saveButton {
+#caTypeChangePanelControlButtons .saveButton, #caSetAccessForRelatedPanelControlButtons .saveButton, #caDuplicationSettingsPanel .saveButtons {
 	width:100px;
 	float:left;
 	font-family: 'DIN-Regular';
@@ -6286,7 +6286,7 @@ table.caConfirmBatchExecutionPanelAlertControls {
 }
 
 /* Type change */
-#caTypeChangePanel, #caCreateChildPanel, #caSetAccessForRelatedPanel {
+#caTypeChangePanel, #caCreateChildPanel, #caSetAccessForRelatedPanel, #caDuplicationSettingsPanel {
     position: fixed;
     top: 0px;
     left: 0px;
@@ -6299,25 +6299,25 @@ table.caConfirmBatchExecutionPanelAlertControls {
 	border: 1px solid #aaa;
 }
 
-#caTypeChangePanel .close a, #caCreateChildPanel .close a, #caSetHomeLocationPanel .close a, #caSetAccessForRelatedPanel .close a {
+#caTypeChangePanel .close a, #caCreateChildPanel .close a, #caSetHomeLocationPanel .close a, #caSetAccessForRelatedPanel .close a, #caDuplicationSettingsPanel .close a {
     text-decoration:none;
     font-size:16px;
 }
 
-#caTypeChangePanelContentArea, #caCreateChildPanelContentArea, #caSetHomeLocationPanelContentArea, #caSetAccessForRelatedPanelContentArea {
+#caTypeChangePanelContentArea, #caCreateChildPanelContentArea, #caSetHomeLocationPanelContentArea, #caSetAccessForRelatedPanelContentArea, #caDuplicationSettingsPanelContentArea {
     position: relative;
     padding:10px;
 }
 
-#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons, #caSetHomeLocationPanelControlButtons, #caMediaBrowserPanelControlButtons, #caSetAccessForRelatedPanelControlButtons {
+#caTypeChangePanelControlButtons, #caCreateChildPanelControlButtons, #caSetHomeLocationPanelControlButtons, #caMediaBrowserPanelControlButtons, #caSetAccessForRelatedPanelControlButtons, #caDuplicationSettingsPanelControlButtons {
     width: 100%;
     text-align: center;
 }
 
-#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table, #caSetHomeLocationPanelControlButtons table, #caMediaBrowserPanelControlButtons table, #caSetAccessForRelatedPanelControlButtons table {
+#caTypeChangePanelControlButtons table, #caCreateChildPanelControlButtons table, #caSetHomeLocationPanelControlButtons table, #caMediaBrowserPanelControlButtons table, #caSetAccessForRelatedPanelControlButtons table, #caDuplicationSettingsPanelControlButtons table{
     width: 100%;
 }
-#caTypeChangePanelControlButtons img.form-button-left, #caCreateChildPanelControlButtons img.form-button-left, #caSetHomeLocationPanelControlButtons img.form-button-left, #caSetAccessForRelatedPanelControlButtons img.form-button-left {
+#caTypeChangePanelControlButtons img.form-button-left, #caCreateChildPanelControlButtons img.form-button-left, #caSetHomeLocationPanelControlButtons img.form-button-left, #caSetAccessForRelatedPanelControlButtons img.form-button-left, #caDuplicationSettingsPanelControlButtons img.form-button-left {
 	margin-top:-10px;
 }
 .addChild {
@@ -8375,4 +8375,9 @@ button.passwordView {
     width: 100% !important;
     height: 100% !important;
     object-fit: contain !important; /* Prevents image distortion */
+}
+
+
+.select2-container {
+    z-index: 44000;
 }

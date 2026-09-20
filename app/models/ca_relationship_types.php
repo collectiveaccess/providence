@@ -390,7 +390,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * @param array $pa_options Option are
+	 * @param array $pa_options Options are
 	 *		create = create relationship type using parameters if one with the specified type code or type_id doesn't exist already [default=false]
 	 *		cache = cache relationship types as they are referenced and return cached value if possible [default=true]
 	 *		matchOn = List of values to match on. Valid entries as "type_code", "typecode", "label", "label". [default=null]
@@ -446,7 +446,6 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		
 		if (isset($pa_options['create']) && $pa_options['create'] && $pn_locale_id && is_array($pa_values)) {
 			$t_rel = new ca_relationship_types();
-			$t_rel->setMode(ACCESS_WRITE);
 			$t_rel->set('type_code', $pm_type_code_or_id);
 			$t_rel->set('table_num', $vn_table_num);
 			$t_rel->set('sub_type_left_id', isset($pa_values['sub_type_left_id']) ? (int)$pa_values['sub_type_left_id'] : null);
@@ -483,6 +482,20 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 			return ca_relationship_types::$s_relationship_type_id_cache[$vn_table_num.'/'.$pm_type_code_or_id] = $t_rel->getPrimaryKey();
 		}
 		
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * @param array $pa_options Options are
+	 *		cache = cache relationship types as they are referenced and return cached value if possible [default=true]
+	 */
+	public function getDefaultRelationshipTypeID(mixed $table_name_or_num, ?array $options=null) : ?int {
+		$rel_types = $this->getRelationshipInfo($table_name_or_num, null, $options);	
+		foreach($rel_types as $rel_type) {
+			if($rel_type['is_default'] ?? false) {
+				return (int)$rel_type['type_id'];
+			}
+		}
 		return null;
 	}
 	# ------------------------------------------------------
