@@ -124,7 +124,7 @@ if (!$this->request->isAjax()) {
 					}
 ?>				</td>
 				<td>
-					<?= caGetLocalizedDate($importer['last_modified_on'], array('timeOmit' => false, 'dateFormat' => 'delimited')); ?>
+					<?= caGetLocalizedDate($importer['last_modified_on'], ['timeOmit' => false]); ?>
 				</td>
 				<td class="listtableEditDelete">
 					<?= caNavButton($this->request, __CA_NAV_ICON_GO__, _t("Import data"), '', 'batch', 'MetadataImport', 'Run', array('importer_id' => $importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>

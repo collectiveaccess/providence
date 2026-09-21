@@ -185,7 +185,7 @@ if (!$this->request->isAjax()) {
 					<div><?= $t_set->getChoiceListValue('access', $set['access']); ?></div>
 				</td>
 				<td>
-					<div><?= caGetLocalizedDate($set['created'], ['timeOmit' => true, 'dateFormat' => 'delimited']); ?></div>
+					<div><?= caGetLocalizedDate($set['created'], ['timeOmit' => true]); ?></div>
 				</td>
 				<td class="listtableEditDelete">
 					<?= caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/sets', 'SetEditor', 'Edit', array('set_id' => $set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>

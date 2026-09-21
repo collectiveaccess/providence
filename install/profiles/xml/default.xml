@@ -4205,8 +4205,7 @@
               <typename_reverse>était l\'artiste</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="curator" default="0">
           <labels>
@@ -4219,8 +4218,7 @@
               <typename_reverse>était le commissaire d\'exposition de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="moderator" default="0">
           <labels>
@@ -4233,8 +4231,7 @@
               <typename_reverse>était le modérateur de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="speaker" default="0">
           <labels>
@@ -4247,8 +4244,7 @@
               <typename_reverse>était l\'orateur de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="panelist" default="0">
           <labels>
@@ -4261,8 +4257,7 @@
               <typename_reverse>était le critique de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="documentarian" default="0">
           <labels>
@@ -4275,8 +4270,7 @@
               <typename_reverse>était le documentaliste de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="architect" default="0">
           <labels>
@@ -4289,8 +4283,7 @@
               <typename_reverse>était l\'architecte de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="designer" default="0">
           <labels>
@@ -4303,10 +4296,9 @@
               <typename_reverse>était le designer de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
-        <type code="author" default="0">
+        <type code="author" default="0" typeRestrictionLeft="interview">
           <labels>
             <label locale="en_US">
               <typename>has as author</typename>
@@ -4317,8 +4309,6 @@
               <typename_reverse>était l\'auteur</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>interview</subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
         <type code="performer" default="0">
           <labels>
@@ -4331,10 +4321,9 @@
               <typename_reverse>était performer dans</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
-        <type code="staff_member" default="0">
+        <type code="staff_member" default="0" typeRestrictionLeft="interview">
           <labels>
             <label locale="en_US">
               <typename>had as staff member</typename>
@@ -4345,8 +4334,6 @@
               <typename_reverse>faisait partie de l\'équipe de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>interview</subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
         <type code="consultant" default="0">
           <labels>
@@ -4359,8 +4346,7 @@
               <typename_reverse>était consultant pour</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="publisher" default="0">
           <labels>
@@ -4373,8 +4359,7 @@
               <typename_reverse>était l\'éditeur de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="sponsor" default="0">
           <labels>
@@ -4387,8 +4372,7 @@
               <typename_reverse>était le sponsor de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="partner_museum" default="0">
           <labels>
@@ -4401,8 +4385,7 @@
               <typename_reverse>était le partenaire de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
@@ -4419,8 +4402,7 @@
               <typename_reverse>contient</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
@@ -4437,10 +4419,9 @@
               <typename_reverse>était le lieu de création de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
-        <type code="located" default="0">
+        <type code="located" default="0" typeRestrictionLeft="image">
           <labels>
             <label locale="en_US">
               <typename>was located at</typename>
@@ -4451,8 +4432,6 @@
               <typename_reverse>était la localisation de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>image</subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
         <type code="depicts" default="1">
           <labels>
@@ -4465,8 +4444,7 @@
               <typename_reverse>est représenté dans</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="describes" default="0">
           <labels>
@@ -4479,8 +4457,7 @@
               <typename_reverse>est décrit dans</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
@@ -4497,8 +4474,7 @@
               <typename_reverse>est représenté dans</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="used" default="0">
           <labels>
@@ -4511,8 +4487,7 @@
               <typename_reverse>utilise</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="describes" default="0">
           <labels>
@@ -4525,8 +4500,7 @@
               <typename_reverse>est décrit dans</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
@@ -4543,8 +4517,7 @@
               <typename_reverse>est lié à</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="similar" default="0">
           <labels>
@@ -4557,8 +4530,7 @@
               <typename_reverse>est similaire à</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="duplicate" default="0">
           <labels>
@@ -4571,8 +4543,7 @@
               <typename_reverse>est un doublon de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="part_of" default="0">
           <labels>
@@ -4585,8 +4556,7 @@
               <typename_reverse>contient</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
@@ -4603,8 +4573,7 @@
               <typename_reverse>décrit</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="depicts" default="0">
           <labels>
@@ -4617,8 +4586,7 @@
               <typename_reverse>est représenté dans</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
@@ -4635,10 +4603,9 @@
               <typename_reverse>est lié à</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
-        <type code="child" default="1">
+        <type code="child" default="1" typeRestrictionLeft="individual" typeRestrictionRight="individual">
           <labels>
             <label locale="en_US">
               <typename>is child of</typename>
@@ -4649,10 +4616,8 @@
               <typename_reverse>est un parent de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>individual</subTypeLeft>
-          <subTypeRight>individual</subTypeRight>
         </type>
-        <type code="spouse" default="1">
+        <type code="spouse" default="1" typeRestrictionLeft="individual" typeRestrictionRight="individual">
           <labels>
             <label locale="en_US">
               <typename>is spouse of</typename>
@@ -4663,8 +4628,6 @@
               <typename_reverse>est l\'époux/l\'épouse de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>individual</subTypeLeft>
-          <subTypeRight>individual</subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -4681,8 +4644,7 @@
               <typename_reverse>est le lieu de naissance de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="residence" default="0">
           <labels>
@@ -4695,8 +4657,7 @@
               <typename_reverse>était le lieu de résidence de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="workplace" default="0">
           <labels>
@@ -4709,8 +4670,7 @@
               <typename_reverse>était le lieu de travail de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="ownership" default="0">
           <labels>
@@ -4723,8 +4683,7 @@
               <typename_reverse>appartenait à</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="built_by" default="0">
           <labels>
@@ -4737,8 +4696,7 @@
               <typename_reverse>a été construit par</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
@@ -4755,8 +4713,7 @@
               <typename_reverse>était l\'artiste de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="curator" default="0">
           <labels>
@@ -4769,8 +4726,7 @@
               <typename_reverse>était le commissaire d\'exposition de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="moderator" default="0">
           <labels>
@@ -4783,8 +4739,7 @@
               <typename_reverse>était le modérateur de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="panelist" default="0">
           <labels>
@@ -4797,8 +4752,7 @@
               <typename_reverse>était critique de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="speaker" default="0">
           <labels>
@@ -4811,8 +4765,7 @@
               <typename_reverse>était orateur dans</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="documentarian" default="0">
           <labels>
@@ -4825,8 +4778,7 @@
               <typename_reverse>était le documentaliste de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="architect" default="0">
           <labels>
@@ -4839,8 +4791,7 @@
               <typename_reverse>était l\'architecte de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="designer" default="0">
           <labels>
@@ -4853,10 +4804,9 @@
               <typename_reverse>était le designer de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
-        <type code="author" default="0">
+        <type code="author" default="0" typeRestrictionLeft="interview">
           <labels>
             <label locale="en_US">
               <typename>has as author</typename>
@@ -4867,8 +4817,6 @@
               <typename_reverse>était l\'auteur de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>interview</subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
         <type code="performer" default="0">
           <labels>
@@ -4881,10 +4829,9 @@
               <typename_reverse>était le performer de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
-        <type code="staff_member" default="0">
+        <type code="staff_member" default="0" typeRestrictionLeft="interview">
           <labels>
             <label locale="en_US">
               <typename>had as staff member</typename>
@@ -4895,8 +4842,6 @@
               <typename_reverse>faisait partie de l\'équipe de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>interview</subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
         <type code="consultant" default="0">
           <labels>
@@ -4909,8 +4854,7 @@
               <typename_reverse>était le consultant de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="publisher" default="0">
           <labels>
@@ -4923,8 +4867,7 @@
               <typename_reverse>était l\'éditeur de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="sponsor" default="0">
           <labels>
@@ -4937,8 +4880,7 @@
               <typename_reverse>était le sponsor de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="partner_museum" default="0">
           <labels>
@@ -4951,8 +4893,7 @@
               <typename_reverse>était le musée partenaire de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
@@ -4969,8 +4910,7 @@
               <typename_reverse>est le donateur de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="provider" default="0">
           <labels>
@@ -4983,8 +4923,7 @@
               <typename_reverse>est le fournisseur de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
@@ -5001,8 +4940,7 @@
               <typename_reverse>est la provenance de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
@@ -5019,8 +4957,7 @@
               <typename_reverse>contient</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
@@ -5037,8 +4974,7 @@
               <typename_reverse>est lié à</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
@@ -5055,8 +4991,7 @@
               <typename_reverse>décrit</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
@@ -5073,14 +5008,13 @@
               <typename_reverse>est lié à</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_occurrences_x_occurrences">
       <types>
-        <type code="related" default="1">
+        <type code="related" default="1" typeRestrictionLeft="event" typeRestrictionRight="event">
           <labels>
             <label locale="en_US">
               <typename>is related to</typename>
@@ -5091,8 +5025,6 @@
               <typename_reverse>est décrit par</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>event</subTypeLeft>
-          <subTypeRight>event</subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -5109,8 +5041,7 @@
               <typename_reverse>décrit</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
@@ -5127,14 +5058,13 @@
               <typename_reverse>est le sujet de</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_places_x_occurrences">
       <types>
-        <type code="location" default="1">
+        <type code="location" default="1" typeRestrictionRight="subject_program">
           <labels>
             <label locale="en_US">
               <typename>was location of</typename>
@@ -5145,8 +5075,6 @@
               <typename_reverse>a eu lieu à</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>subject_program</subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -5163,8 +5091,7 @@
               <typename_reverse>est lié à</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
@@ -5181,8 +5108,7 @@
               <typename_reverse>décrit</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
@@ -5199,8 +5125,7 @@
               <typename_reverse>a eu lieu à</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
@@ -5217,8 +5142,7 @@
               <typename_reverse>est lié à</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
@@ -5235,8 +5159,7 @@
               <typename_reverse>est représenté par</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="illustrated" default="1">
           <labels>
@@ -5249,8 +5172,7 @@
               <typename_reverse>illustre</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
@@ -5267,8 +5189,7 @@
               <typename_reverse>est représenté par</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="describes" default="1">
           <labels>
@@ -5281,8 +5202,7 @@
               <typename_reverse>est décrit par</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
@@ -5299,8 +5219,7 @@
               <typename_reverse>est représenté par</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
         <type code="describes" default="1">
           <labels>
@@ -5313,14 +5232,13 @@
               <typename_reverse>est décrit par</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_representation_annotations_x_occurrences">
       <types>
-        <type code="depicts" default="1">
+        <type code="depicts" default="1" typeRestrictionRight="event">
           <labels>
             <label locale="en_US">
               <typename>depicts</typename>
@@ -5331,10 +5249,8 @@
               <typename_reverse>est représenté par</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
         </type>
-        <type code="describes" default="1">
+        <type code="describes" default="1" typeRestrictionRight="event">
           <labels>
             <label locale="en_US">
               <typename>describes</typename>
@@ -5345,8 +5261,6 @@
               <typename_reverse>est décrit par</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -5363,8 +5277,7 @@
               <typename_reverse>est décrit par</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+
         </type>
       </types>
     </relationshipTable>

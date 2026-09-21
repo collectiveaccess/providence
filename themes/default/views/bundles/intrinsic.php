@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2024 Whirl-i-Gig
+ * Copyright 2010-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,7 +33,7 @@ $bundle_name 		= $this->getVar('bundle_name');
 $batch				= $this->getVar('batch');
 
 $objects_x_collections_hierarchy_enabled = (bool)$this->request->config->get('ca_objects_x_collections_hierarchy_enabled');
-$objects_x_collections_hierarchy_relationship_type = $this->request->config->get('ca_objects_x_collections_hierarchy_relationship_type');
+$objects_x_collections_hierarchy_relationship_types = caGetObjectCollectionHierarchyRelationshipTypes();
 
 // fetch data for bundle preview
 $bundle_preview = $t_instance->get($bundle_name, array('convertCodesToDisplayText' => true));
@@ -99,12 +99,15 @@ print caEditorBundleMetadataDictionary($this->request, "intrinsic_{$bundle_name}
 						(
 							($t_instance->get('parent_id') > 0)
 							||
+							($t_instance->tableName() === 'ca_object_representations')
+							||
 							(
-								$objects_x_collections_hierarchy_enabled && $objects_x_collections_hierarchy_relationship_type
+								$objects_x_collections_hierarchy_enabled && 
+								is_array($objects_x_collections_hierarchy_relationship_types) && sizeof($objects_x_collections_hierarchy_relationship_types)
 								&&
 								($t_instance->tableName() === 'ca_objects')
 								&&
-								($t_instance->getRelatedItems('ca_collections', ['returnAs' => 'count', 'restrictToRelationshipTypes' => $objects_x_collections_hierarchy_relationship_type]) > 0)
+								($t_instance->getRelatedItems('ca_collections', ['returnAs' => 'count', 'restrictToRelationshipTypes' => $objects_x_collections_hierarchy_relationship_types]) > 0)
 							)
 						)
 					) {

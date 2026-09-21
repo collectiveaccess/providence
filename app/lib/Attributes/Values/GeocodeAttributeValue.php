@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -276,7 +276,7 @@ $_ca_attribute_settings['GeocodeAttributeValue'] = array(		// global
 		'width' => 90, 'height' => 1,
 		'label' => _t('Tile server URL'),
 		'validForRootOnly' => 0,
-		'description' => _t('URL for tileserver to load custom tiles from, with placeholders for X, Y and Z values in the format <em>${x}</em>. Ex. http://tileserver.net/maps/${z}/${x}/${y}.png. Leave blank if you do not wish to use custom map tiles.')
+		'description' => _t('URL for tileserver to load custom tiles from, with placeholders for X, Y and Z values in the format <em>${x}</em>. Ex. %1. Leave blank if you do not wish to use custom map tiles.', 'http://tileserver.net/maps/${z}/${x}/${y}.png')
 	),
 	'tileLayerName' => array(
 		'formatType' => FT_TEXT,
@@ -406,6 +406,8 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 		);
 		
 		$point = $angle = null;
+		
+		$geocoder_type = caGetOption('geocoderType', $options, null);
 		
 		if (is_array($value) && ($value['_uploaded_file'] ?? null)) {		// KML file upload
 			$o_kml = new KmlParser($value['_uploaded_file']);
@@ -553,12 +555,22 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 				} catch(\Geocoder\Exception\CollectionIsEmpty $e) {
 					$this->postError(1970, _t('Could not geocode address "%1"', $value), 'GeocodeAttributeValue->parseValue()');
 					return false;
-				} catch(Exception $e) {
-					$this->postError(1970, _t('Could not geocode address "%1": %2', $value, $e->getMessage()), 'GeocodeAttributeValue->parseValue()');
-					return false;
 				}
+				
+				$uresult = null;
+				if($geocoder_type) {
+					foreach($result as $r) {
+						if($r->getType() === $geocoder_type) {
+							$uresult = $r;
+							break;
+						}
+					}
+				}
+				
+				if(!$uresult) { $uresult = $result->first(); }
+				$is_postcode = (($utype = $uresult->getType()) == 'postcode');
 	
-				$coords = $result->first()->getCoordinates();
+				$coords = $uresult->getCoordinates();
 				$lat = $coords->getLatitude();
 				$long = $coords->getLongitude();
 	
@@ -567,16 +579,24 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 						'value_longtext1' => $value,
 						'value_longtext2' => $lat.','.$long,
 						'value_decimal1' => $lat,
-						'value_decimal2' => $long
+						'value_decimal2' => $long,
+						'type' => $utype
 					];
-					if(caGetOption('returnBounds', $options, false)) {
-						if($bounds = $result->first()->getBounds()) {
+					if(caGetOption('returnBounds', $options, false) && !$is_postcode) {
+						if($bounds = $uresult->getBounds()) {
 							$res['bounds'] = [
 								'north' => $bounds->getNorth(),
 								'east' => $bounds->getEast(),
 								'south' => $bounds->getSouth(),
 								'west' => $bounds->getWest()
 							];
+							if(
+								(sprintf("%4.4f", abs($res['bounds']['north'] - $res['bounds']['south'])) <= 0.0001)
+								&&
+								(sprintf("%4.4f", abs($res['bounds']['east'] - $res['bounds']['west'])) <= 0.0001)
+							){
+								unset($res['bounds']);
+							}
 						}
 					} 
 					return $res;

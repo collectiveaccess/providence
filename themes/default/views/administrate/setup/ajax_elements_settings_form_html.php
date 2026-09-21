@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2011 Whirl-i-Gig
+ * Copyright 2010-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,22 +25,19 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$t_element = $this->getVar('t_element');
-	$vn_element_id = $t_element->getPrimaryKey();
-	
-	if(is_array($va_available_settings = $this->getVar('available_settings')) && sizeof($va_available_settings)) {
+$t_element = $this->getVar('t_element');
+$element_id = $t_element->getPrimaryKey();
+
+if(is_array($available_settings = $this->getVar('available_settings')) && sizeof($available_settings)) {
 ?>
-		<div class='formLabel'><span id="_ca_metadata_element_labels_"><?= _t("Datatype-specific options"); ?></span><br/></div>
-		<div style="margin-left: 20px;">
+	<div class='formLabel'><span id="_ca_metadata_element_labels_"><?= _t("Datatype-specific options"); ?></span><br/></div>
+	<div style="margin-left: 20px;">
 <?php
-		foreach($va_available_settings as $vs_code => $va_properties) {
-			print $t_element->settingHTMLFormElement($vs_code, array('label_id' => "setting_{$vs_code}_datatype_label_{$vn_element_id}"));
+		foreach($available_settings as $code => $properties) {
+			print $t_element->settingHTMLFormElement($code, ['label_id' => "setting_{$code}_datatype_label_{$element_id}"]);
 		}	
 ?>
 	</div>
 <?php
-	}
-	
-	print TooltipManager::getLoadHTML();
-?>
+}	
+print TooltipManager::getLoadHTML();

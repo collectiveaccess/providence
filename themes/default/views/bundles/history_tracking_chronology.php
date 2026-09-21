@@ -708,7 +708,7 @@ if($show_entity_controls) {
 </div>
 
 <div id="caRelationQuickAddPanel<?= $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
-	<div id="caRelationQuickAddPanel<?= $vs_id_prefix; ?>ContentArea">
+	<div id="caRelationQuickAddPanel<?= $vs_id_prefix; ?>ContentArea" data-relatedTable="<?= $t_subject->tableName(); ?>" data-relatedID="<?= $t_subject->getPrimaryKey(); ?>" data-relationshipType="" data-createRelationshipOnSave="<?= $this->getVar('quickadd_create_relationship_on_save'); ?>">
 	<div class='dialogHeader'><?= _t('Quick Add'); ?></div>
 		
 	</div>
@@ -719,10 +719,13 @@ if($show_entity_controls) {
 	</div>
 </div>
 
+<script type="text/javascript">
+<?php if($display_mode === 'tabs') { ?>
+		jQuery("#<?= $vs_id_prefix; ?>Tabs").tabs({ selected: 0 });	
+<?php } ?>	
 <?php
 	if (!$read_only) {
 ?>
-<script type="text/javascript">
 	var caRelationQuickAddPanel<?= $vs_id_prefix; ?>, caRelationInterstitialEditPanel<?= $vs_id_prefix; ?>;
 	jQuery(document).ready(function() {
 	
@@ -752,9 +755,7 @@ if($show_entity_controls) {
 			e.preventDefault();
 		});
 		
-	<?php if($display_mode === 'tabs') { ?>
-			jQuery("#<?= $vs_id_prefix; ?>Tabs").tabs({ selected: 0 });	
-	<?php } ?>	
+	
 	
 			if (caUI.initPanel) {
 				caRelationQuickAddPanel<?= $vs_id_prefix; ?> = caUI.initPanel({ 
@@ -1191,6 +1192,7 @@ if($show_entity_controls) {
 
 		});
 	});
-</script>
 <?php
 	}
+?>
+</script>

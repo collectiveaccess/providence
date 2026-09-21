@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -999,6 +999,34 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!is_array($pa_properties)) { $pa_properties = array(); }
 		return caHTMLImage($ps_url, array_merge($pa_options, $pa_properties));
+	}	
+	# ------------------------------------------------
+	/**
+	 * Merge multiple images into a single image.
+	 *
+	 * @param array $images Array of images to compose. Each image in list is represented by an array with three keys: "path" (file path of image, "x" (offset from left, in pixels), "y" (offset from top, in pixels)
+	 * @param string $filepath File path to write merged image to
+	 * @param int $width Width, in pixeels, of merged image
+	 * @param int $height Height, in pixeels, of merged image
+	 *
+	 * @return bool True on success, false on failure
+	 */
+	public function compose(array $images, string $filepath, int $width, int $height) :  bool {
+		$image_cmds = [];
+		foreach($images as $image) {
+			$image_cmds[] = "-page +{$image['x']}+{$image['y']} {$image['path']}";
+		}
+		
+		caExec( join( ' ', [
+			$this->ops_graphicsmagick_path, 'convert',
+			caEscapeShellArg("-size {$width}x{$height}"),
+			'xc:white',
+			caEscapeShellArg(join(' ', $image_cmds)),
+			'-mosaic',
+			caEscapeShellArg($filepath) . ( caIsPOSIX() ? ' 2> /dev/null' : '' )
+		]), $output, $return);
+	
+		return ($return == 0) ? true : false;	
 	}	
 	# ------------------------------------------------
 	# Command line wrappers

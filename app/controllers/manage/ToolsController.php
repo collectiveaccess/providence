@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2024 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -106,7 +106,7 @@ class ToolsController extends ActionController {
 				if(!isset($settings_visibility_map[$c])) { $settings_visibility_map[$c] = []; }
 			}
 		}
-		print_R($settings_visibility_map);
+		
 		$this->view->setVar('settings_visibility_map', $settings_visibility_map);
 		
 		if(!is_array($va_last_settings = $this->request->user->getVar("{$vs_tool_identifier}_last_settings"))) { $va_last_settings = array(); }

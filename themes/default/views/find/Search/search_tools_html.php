@@ -73,7 +73,7 @@ $table = $t_subject->tableName();
 	}
 ?>
 	<div class="col">
-		<?= _t("Download results using"); ?>: <br/>
+		<?= _t("Download results as"); ?>: <br/>
 		<?= caFormTag($this->request, 'export', 'caExportForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true)); ?>
 <?php
 			$options = [];

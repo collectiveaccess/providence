@@ -319,6 +319,7 @@ class SearchIndexer extends SearchBase {
 				print CLIProgressBar::finish();
 			}
 			$this->opo_engine->optimizeIndex($vn_table_num);
+			$this->opo_engine->flushContentBuffer();
 
 			$vn_tc++;
 		}
@@ -634,6 +635,7 @@ class SearchIndexer extends SearchBase {
 		$global_indexed_field_list = $this->getIndexedFieldsForTable($pn_subject_table_num);
 		
 		$t_subject = Datamodel::getInstanceByTableName($vs_subject_tablename, true);
+		if(!$t_subject) { return false; }
 		$t_subject->setDb($this->getDb());	// force the subject instance to use the same db connection as the indexer, in case we're operating in a transaction
 
 		// Prevent endless recursive reindexing
@@ -653,7 +655,7 @@ class SearchIndexer extends SearchBase {
 				'changed_fields' => $pa_changed_fields,
 				'options' => $pa_options
 			));
-			return;
+			return null;
 		}
 		if(!$force && !$pb_reindex_mode && !$for_current_value_reindex && !sizeof(array_intersect($global_indexed_field_list ?? [], array_keys($pa_changed_fields)))) { goto related_indexing; }		
 		

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -59,7 +59,7 @@ $_ca_attribute_settings['TextAttributeValue'] = array(		// global
 		'width' => 60, 'height' => 1,
 		'default' => '',
 		'label' => _t('Regular expression to validate input with'),
-		'description' => _t('A Perl-format regular expression with which to validate the input. Input not matching the expression will be rejected. Do not include the leading and trailling delimiter characters (typically "/") in your expression. Leave blank if you don\'t want to use regular expression-based validation.')
+		'description' => _t('A Perl-format regular expression with which to validate the input. Input not matching the expression will be rejected. Do not include the leading and trailing delimiter characters (typically "/") in your expression. Leave blank if you don\'t want to use regular expression-based validation.')
 	),
 	'fieldWidth' => array(
 		'formatType' => FT_NUMBER,
@@ -250,6 +250,16 @@ $_ca_attribute_settings['TextAttributeValue'] = array(		// global
 		'width' => "200px", 'height' => 1,
 		'label' => _t('Reference media in'),
 		'description' => _t('Allow in-line references in text to a media element.')
+	),
+	'expandSearchUsingList' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'showLists' => true,
+		'allowNull' => true,
+		'default' => '',
+		'width' => "200px", 'height' => 1,
+		'label' => _t('Expand searches using list'),
+		'description' => _t('Expand text searches on this element using the specified list.')
 	),
 	'moveArticles' => array(
 		'formatType' => FT_NUMBER,
@@ -446,6 +456,12 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									height: '{$height_w_suffix}',
 									minHeight: '50px',
 									maxHeight: '1500px'
+								},
+								htmlSupport: {
+									allow: [
+										{ name: 'details' },
+										{ name: 'summary' }
+									]
 								}
 							}).then(editor => {
 								// Add current instance to list of initialized editors

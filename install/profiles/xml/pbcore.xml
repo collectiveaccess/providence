@@ -11599,8 +11599,6 @@
               <typename_reverse>is creator</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
         <type code="publisher" default="1">
           <labels>
@@ -11609,8 +11607,6 @@
               <typename_reverse>is publisher</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
         <type code="contributor" default="1">
           <labels>
@@ -11619,22 +11615,18 @@
               <typename_reverse>is contributor</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_objects_x_occurrences">
       <types>
-        <type code="manifestation" default="1">
+        <type code="manifestation" default="1" typeRestrictionRight="event">
           <labels>
             <label locale="en_US">
               <typename>has as intellectual content</typename>
               <typename_reverse>is instantiation of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -11647,8 +11639,6 @@
               <typename_reverse>contains</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -11661,8 +11651,6 @@
               <typename_reverse>related to</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="image" default="0">
           <labels>
@@ -11671,8 +11659,6 @@
               <typename_reverse>image is</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="formerly" default="0">
           <labels>
@@ -11681,8 +11667,6 @@
               <typename_reverse>formerly larger context for</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="part_of" default="0">
           <labels>
@@ -11691,8 +11675,6 @@
               <typename_reverse>is part of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="component" default="0">
           <labels>
@@ -11701,8 +11683,6 @@
               <typename_reverse>component is</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="folder" default="0">
           <labels>
@@ -11711,8 +11691,6 @@
               <typename_reverse>in folder with</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="model" default="0">
           <labels>
@@ -11721,8 +11699,6 @@
               <typename_reverse>model is</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="plan" default="0">
           <labels>
@@ -11731,8 +11707,6 @@
               <typename_reverse>plan is</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="cloned" default="0">
           <labels>
@@ -11741,8 +11715,6 @@
               <typename_reverse>is clone of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="derived" default="0">
           <labels>
@@ -11751,8 +11723,6 @@
               <typename_reverse>is derivate of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="dubbed" default="0">
           <labels>
@@ -11761,8 +11731,6 @@
               <typename_reverse>is dub of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="fragmented" default="0">
           <labels>
@@ -11771,8 +11739,6 @@
               <typename_reverse>is fragment of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="format" default="0">
           <labels>
@@ -11781,8 +11747,6 @@
               <typename_reverse>is format of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="version" default="0">
           <labels>
@@ -11791,8 +11755,6 @@
               <typename_reverse>is version of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="referenced" default="0">
           <labels>
@@ -11801,8 +11763,6 @@
               <typename_reverse>references</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="replaced" default="0">
           <labels>
@@ -11811,8 +11771,6 @@
               <typename_reverse>replaces</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="required" default="0">
           <labels>
@@ -11821,8 +11779,6 @@
               <typename_reverse>requires</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -11835,8 +11791,6 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -11849,18 +11803,14 @@
               <typename_reverse>was creation location of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
-        <type code="located" default="0">
+        <type code="located" default="0" typeRestrictionLeft="image">
           <labels>
             <label locale="en_US">
               <typename>was located at</typename>
               <typename_reverse>was location of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>image</subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
         <type code="depicts" default="1">
           <labels>
@@ -11869,8 +11819,6 @@
               <typename_reverse>is depicted by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
         <type code="describes" default="0">
           <labels>
@@ -11879,8 +11827,6 @@
               <typename_reverse>is described by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -11893,8 +11839,6 @@
               <typename_reverse>describes</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
         <type code="depicts" default="0">
           <labels>
@@ -11903,8 +11847,6 @@
               <typename_reverse>is depicted by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -11917,28 +11859,22 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
-        <type code="child" default="1">
+        <type code="child" default="1" typeRestrictionLeft="individual" typeRestrictionRight="individual">
           <labels>
             <label locale="en_US">
               <typename>is child of</typename>
               <typename_reverse>is parent of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>individual</subTypeLeft>
-          <subTypeRight>individual</subTypeRight>
         </type>
-        <type code="spouse" default="1">
+        <type code="spouse" default="1" typeRestrictionLeft="individual" typeRestrictionRight="individual">
           <labels>
             <label locale="en_US">
               <typename>is spouse of</typename>
               <typename_reverse>is spouse of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>individual</subTypeLeft>
-          <subTypeRight>individual</subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -11951,8 +11887,6 @@
               <typename_reverse>was birthplace of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
         <type code="residence" default="0">
           <labels>
@@ -11961,8 +11895,6 @@
               <typename_reverse>was residence of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
         <type code="workplace" default="0">
           <labels>
@@ -11971,8 +11903,6 @@
               <typename_reverse>was workplace of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
         <type code="ownership" default="0">
           <labels>
@@ -11981,8 +11911,6 @@
               <typename_reverse>was owned by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
         <type code="built_by" default="0">
           <labels>
@@ -11991,8 +11919,6 @@
               <typename_reverse>was built by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -12006,8 +11932,6 @@
               <typename_reverse>has as architect</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="artist" default="0">
           <labels>
@@ -12016,8 +11940,6 @@
               <typename_reverse>has as artist</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="author" default="0">
           <labels>
@@ -12026,8 +11948,6 @@
               <typename_reverse>has as author</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="cartographer" default="0">
           <labels>
@@ -12036,8 +11956,6 @@
               <typename_reverse>has as cartographer</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="choreographer" default="0">
           <labels>
@@ -12046,8 +11964,6 @@
               <typename_reverse>has as choreographer</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="compiler" default="0">
           <labels>
@@ -12056,8 +11972,6 @@
               <typename_reverse>has as compiler</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="composer" default="0">
           <labels>
@@ -12066,8 +11980,6 @@
               <typename_reverse>has as composer</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="designer" default="0">
           <labels>
@@ -12076,8 +11988,6 @@
               <typename_reverse>has as designer</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="enacting_jurisdiction" default="0">
           <labels>
@@ -12086,8 +11996,6 @@
               <typename_reverse>has as enacting jurisdiction</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="filmmaker" default="0">
           <labels>
@@ -12096,8 +12004,6 @@
               <typename_reverse>has as filmmaker</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="interviewee" default="0">
           <labels>
@@ -12106,8 +12012,6 @@
               <typename_reverse>has as interviewee</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="interviewer" default="0">
           <labels>
@@ -12116,8 +12020,6 @@
               <typename_reverse>has as interviewer</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="inventor" default="0">
           <labels>
@@ -12126,8 +12028,6 @@
               <typename_reverse>has as inventor</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="librettist" default="0">
           <labels>
@@ -12136,8 +12036,6 @@
               <typename_reverse>has as librettist</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="lyricist" default="0">
           <labels>
@@ -12146,8 +12044,6 @@
               <typename_reverse>has as lyricist</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="photographer" default="0">
           <labels>
@@ -12156,8 +12052,6 @@
               <typename_reverse>has as photographer</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="praeses" default="0">
           <labels>
@@ -12166,8 +12060,6 @@
               <typename_reverse>has as praeses</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="programmer" default="0">
           <labels>
@@ -12176,8 +12068,6 @@
               <typename_reverse>has as programmer</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="respondent" default="0">
           <labels>
@@ -12186,8 +12076,6 @@
               <typename_reverse>has as respondent</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="screenwriter" default="0">
           <labels>
@@ -12196,8 +12084,6 @@
               <typename_reverse>has as screenwriter</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <!-- Non-creators -->
         <type code="addressee" default="0">
@@ -12207,8 +12093,6 @@
               <typename_reverse>has as addressee</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="appellant" default="0">
           <labels>
@@ -12217,8 +12101,6 @@
               <typename_reverse>has as appellant</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="appellee" default="0">
           <labels>
@@ -12227,8 +12109,6 @@
               <typename_reverse>has as appellee</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="court_governed" default="0">
           <labels>
@@ -12237,8 +12117,6 @@
               <typename_reverse>has as court governed</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="dedicator" default="0">
           <labels>
@@ -12247,8 +12125,6 @@
               <typename_reverse>has as dedicator</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="dedicatee" default="0">
           <labels>
@@ -12257,8 +12133,6 @@
               <typename_reverse>has as dedicatee</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="defendant" default="0">
           <labels>
@@ -12267,8 +12141,6 @@
               <typename_reverse>has as defendant</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="degree" default="0">
           <labels>
@@ -12277,8 +12149,6 @@
               <typename_reverse>has as degree granting institution</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="director" default="0">
           <labels>
@@ -12287,8 +12157,6 @@
               <typename_reverse>has as director</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="film_director" default="0">
           <labels>
@@ -12297,8 +12165,6 @@
               <typename_reverse>has as film director</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="radio_director" default="0">
           <labels>
@@ -12307,8 +12173,6 @@
               <typename_reverse>has as radio director</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="television_director" default="0">
           <labels>
@@ -12317,8 +12181,6 @@
               <typename_reverse>has as television director</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="director_photography" default="0">
           <labels>
@@ -12327,8 +12189,6 @@
               <typename_reverse>has as director of photography</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="honouree" default="0">
           <labels>
@@ -12337,8 +12197,6 @@
               <typename_reverse>has as honouree</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="host_institution" default="0">
           <labels>
@@ -12347,8 +12205,6 @@
               <typename_reverse>has as host institution</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="issuing_body" default="0">
           <labels>
@@ -12357,8 +12213,6 @@
               <typename_reverse>has as issuing body</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="judge" default="0">
           <labels>
@@ -12367,8 +12221,6 @@
               <typename_reverse>has as judge</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="jurisdiction_governed" default="0">
           <labels>
@@ -12377,8 +12229,6 @@
               <typename_reverse>has as jurisdiction governed</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="plaintiff" default="0">
           <labels>
@@ -12387,8 +12237,6 @@
               <typename_reverse>has as plaintiff</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="producer" default="0">
           <labels>
@@ -12397,8 +12245,6 @@
               <typename_reverse>has as producer</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="film_producer" default="0">
           <labels>
@@ -12407,8 +12253,6 @@
               <typename_reverse>has as film producer</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="radio_producer" default="0">
           <labels>
@@ -12417,8 +12261,6 @@
               <typename_reverse>has as radio producer</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="television_producer" default="0">
           <labels>
@@ -12427,8 +12269,6 @@
               <typename_reverse>has as television producer</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="production_company" default="0">
           <labels>
@@ -12437,8 +12277,6 @@
               <typename_reverse>has as production company</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="sponsoring_body" default="0">
           <labels>
@@ -12447,8 +12285,6 @@
               <typename_reverse>has as sponsoring body</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <!-- Contributors (RDA)-->
         <type code="abridger" default="0">
@@ -12458,8 +12294,6 @@
               <typename_reverse>has as abridger</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="animator" default="0">
           <labels>
@@ -12468,8 +12302,6 @@
               <typename_reverse>has as animator</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="arranger_music" default="0">
           <labels>
@@ -12478,8 +12310,6 @@
               <typename_reverse>has as arranger of music</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="art_director" default="0">
           <labels>
@@ -12488,8 +12318,6 @@
               <typename_reverse>has as art director</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="costume_designer" default="0">
           <labels>
@@ -12498,8 +12326,6 @@
               <typename_reverse>has as costume designer</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="court_reporter" default="0">
           <labels>
@@ -12508,8 +12334,6 @@
               <typename_reverse>has as court reporter</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="draftsman" default="0">
           <labels>
@@ -12518,8 +12342,6 @@
               <typename_reverse>has as draftsman</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="editor" default="0">
           <labels>
@@ -12528,8 +12350,6 @@
               <typename_reverse>has as editor</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="editor_compilation" default="0">
           <labels>
@@ -12538,8 +12358,6 @@
               <typename_reverse>has as editor of compilation</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="editor_moving_image" default="0">
           <labels>
@@ -12548,8 +12366,6 @@
               <typename_reverse>has as editor of moving image work</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="illustrator" default="0">
           <labels>
@@ -12558,8 +12374,6 @@
               <typename_reverse>has as illustrator</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="musical_director" default="0">
           <labels>
@@ -12568,8 +12382,6 @@
               <typename_reverse>has as musical director</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="performer" default="0">
           <labels>
@@ -12578,8 +12390,6 @@
               <typename_reverse>has as performer</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="actor" default="0">
           <labels>
@@ -12588,8 +12398,6 @@
               <typename_reverse>has as actor</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="commentator" default="0">
           <labels>
@@ -12598,8 +12406,6 @@
               <typename_reverse>has as commentator</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="conductor" default="0">
           <labels>
@@ -12608,8 +12414,6 @@
               <typename_reverse>has as conductor</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="dancer" default="0">
           <labels>
@@ -12618,8 +12422,6 @@
               <typename_reverse>has as dancer</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="host" default="0">
           <labels>
@@ -12628,8 +12430,6 @@
               <typename_reverse>has as host</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="instrumentalist" default="0">
           <labels>
@@ -12638,8 +12438,6 @@
               <typename_reverse>has as instrumentalist</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="moderator" default="0">
           <labels>
@@ -12648,8 +12446,6 @@
               <typename_reverse>has as moderator</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="narrator" default="0">
           <labels>
@@ -12658,8 +12454,6 @@
               <typename_reverse>has as narrator</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="onscreen_presenter" default="0">
           <labels>
@@ -12668,8 +12462,6 @@
               <typename_reverse>has as on-screen presenter</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="panelist" default="0">
           <labels>
@@ -12678,8 +12470,6 @@
               <typename_reverse>has as panelist</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="puppeteer" default="0">
           <labels>
@@ -12688,8 +12478,6 @@
               <typename_reverse>has as puppeteer</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="singer" default="0">
           <labels>
@@ -12698,8 +12486,6 @@
               <typename_reverse>has as singer</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="speaker" default="0">
           <labels>
@@ -12708,8 +12494,6 @@
               <typename_reverse>has as speaker</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="storyteller" default="0">
           <labels>
@@ -12718,8 +12502,6 @@
               <typename_reverse>has as storyteller</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="presenter" default="0">
           <labels>
@@ -12728,8 +12510,6 @@
               <typename_reverse>has as presenter</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="production_designer" default="0">
           <labels>
@@ -12738,8 +12518,6 @@
               <typename_reverse>has as production designer</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="recording_engineer" default="0">
           <labels>
@@ -12748,8 +12526,6 @@
               <typename_reverse>has as recording engineer</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="recordist" default="0">
           <labels>
@@ -12758,8 +12534,6 @@
               <typename_reverse>has as recordist</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="stage_director" default="0">
           <labels>
@@ -12768,8 +12542,6 @@
               <typename_reverse>has as stage director</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="surveyor" default="0">
           <labels>
@@ -12778,8 +12550,6 @@
               <typename_reverse>has as surveyor</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="transcriber" default="0">
           <labels>
@@ -12788,8 +12558,6 @@
               <typename_reverse>has as transcriber</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="translator" default="0">
           <labels>
@@ -12798,8 +12566,6 @@
               <typename_reverse>has as translator</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="writer_added_commentary" default="0">
           <labels>
@@ -12808,8 +12574,6 @@
               <typename_reverse>has as writer of added commentary</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="writer_added_text" default="0">
           <labels>
@@ -12818,8 +12582,6 @@
               <typename_reverse>has as writer of added text</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="writer_added_lyrics" default="0">
           <labels>
@@ -12828,8 +12590,6 @@
               <typename_reverse>has as writer of added lyrics</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <!-- General -->
         <type code="publisher" default="0">
@@ -12839,8 +12599,6 @@
               <typename_reverse>has as publisher</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="contributor" default="0">
           <labels>
@@ -12849,8 +12607,6 @@
               <typename_reverse>has as contributor</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="inscriber" default="0">
           <labels>
@@ -12859,8 +12615,6 @@
               <typename_reverse>has as inscribed by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="rights_holder" default="0">
           <labels>
@@ -12869,8 +12623,6 @@
               <typename_reverse>has as rights holder</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
         <type code="commissioner" default="0">
           <labels>
@@ -12879,8 +12631,6 @@
               <typename_reverse>has as commissioner</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -12893,8 +12643,6 @@
               <typename_reverse>is donor of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
         <type code="provider" default="0">
           <labels>
@@ -12903,8 +12651,6 @@
               <typename_reverse>is provider of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -12917,8 +12663,6 @@
               <typename_reverse>is origination location of</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -12931,8 +12675,6 @@
               <typename_reverse>contains</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -12945,8 +12687,6 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -12959,8 +12699,6 @@
               <typename_reverse>describes</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -12973,8 +12711,6 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -12987,22 +12723,18 @@
               <typename_reverse>describes</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_occurrences_x_collections">
       <types>
-        <type code="related" default="1">
+        <type code="related" default="1" typeRestrictionLeft="event" typeRestrictionRight="event">
           <labels>
             <label locale="en_US">
               <typename>is related to</typename>
               <typename_reverse>is related to</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>event</subTypeLeft>
-          <subTypeRight>event</subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -13015,8 +12747,6 @@
               <typename_reverse>describes</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
         <type code="subject" default="1">
           <labels>
@@ -13025,22 +12755,18 @@
               <typename_reverse>is subject</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_places_x_occurrences">
       <types>
-        <type code="site" default="1">
+        <type code="site" default="1" typeRestrictionRight="event">
           <labels>
             <label locale="en_US">
               <typename>was site of</typename>
               <typename_reverse>occurred at</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -13053,8 +12779,6 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -13067,8 +12791,6 @@
               <typename_reverse>describes</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -13081,8 +12803,6 @@
               <typename_reverse>is located in</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -13095,8 +12815,6 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -13109,8 +12827,6 @@
               <typename_reverse>is depicted by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
         <type code="illustrated" default="1">
           <labels>
@@ -13119,8 +12835,6 @@
               <typename_reverse>illustrates</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -13133,8 +12847,6 @@
               <typename_reverse>is depicted by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
         <type code="describes" default="1">
           <labels>
@@ -13143,8 +12855,6 @@
               <typename_reverse>is described by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -13157,8 +12867,6 @@
               <typename_reverse>is depicted by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
         <type code="describes" default="1">
           <labels>
@@ -13167,32 +12875,26 @@
               <typename_reverse>is described by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_representation_annotations_x_occurrences">
       <types>
-        <type code="depicts" default="1">
+        <type code="depicts" default="1" typeRestrictionRight="event">
           <labels>
             <label locale="en_US">
               <typename>depicts</typename>
               <typename_reverse>is depicted by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
         </type>
-        <type code="describes" default="1">
+        <type code="describes" default="1" typeRestrictionRight="event">
           <labels>
             <label locale="en_US">
               <typename>describes</typename>
               <typename_reverse>is described by</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -13205,8 +12907,6 @@
               <typename_reverse>describes</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
