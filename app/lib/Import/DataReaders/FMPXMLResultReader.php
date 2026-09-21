@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2022 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -132,7 +132,7 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 			// Normalize field names by replacing any run of characters that is not a letter, number,
 			// with a single underscore and forcing the name to lowercase. Non-alphanumeric characters at the
 			// beginning or end of the field name are removed.
-			$vs_field_name = trim(preg_replace("![^A-Za-z0-9]+!", "_", preg_replace("!['\"]+!", "", (string)strtolower(html_entity_decode($o_name->nodeValue)))), " \n\r\t\v\0_");
+			$vs_field_name = trim(preg_replace("![^A-Za-z0-9]+!", "_", preg_replace("!['\"]+!", "", (string)strtolower(html_entity_decode($o_name->nodeValue)))), " \n\r\t\v\0");
 			
 			$this->opa_metadata[$vn_index] = $vs_field_name;
 			

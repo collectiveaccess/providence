@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * themes/default/views/mediaViewers/QTVR.php :
+ * app/lib/Exceptions/LocalizationGetTextStringException.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,11 +24,10 @@
  * http://www.CollectiveAccess.org
  *
  * @package CollectiveAccess
- * @subpackage Media
+ * @subpackage Core
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- 
-	
-	print $this->getVar('viewerHTML');
+
+class LocalizationGetTextStringException extends ApplicationException {}

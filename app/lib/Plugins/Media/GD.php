@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2022 Whirl-i-Gig
+ * Copyright 2006-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
 /** 
  * Plugin for processing images using GD
  */
@@ -827,6 +822,51 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!is_array($pa_properties)) { $pa_properties = array(); }
 		return caHTMLImage($ps_url, array_merge($pa_options, $pa_properties));
+	}	
+	# ------------------------------------------------
+	/**
+	 * Merge multiple images into a single image.
+	 *
+	 * @param array $images Array of images to compose. Each image in list is represented by an array with three keys: "path" (file path of image, "x" (offset from left, in pixels), "y" (offset from top, in pixels)
+	 * @param string $filepath File path to write merged image to
+	 * @param int $width Width, in pixeels, of merged image
+	 * @param int $height Height, in pixeels, of merged image
+	 *
+	 * @return bool True on success, false on failure
+	 */
+	public function compose(array $images, string $filepath, int $width, int $height) :  bool {
+		$im = imagecreatetruecolor($width, $height);
+		$ext = pathinfo($filepath, PATHINFO_EXTENSION);
+		$im->newimage($width, $height, 'transparent', $ext);
+		foreach($images as $image) {
+			if(!$fdata = file_get_contents($image['path'])) { continue; }
+			$layer = imagecreatefromstring($fdata);
+			
+			list($lwidth, $lheight, $ltype, $lattr) = getimagesize($image['path']);
+			imagecopy($im, $layer, (int)$image['x'], (int)$image['y'], 0, 0, $lwidth, $lheight);
+			imagedestroy($layer);
+		}
+		
+		switch(strtolower($ext)) {
+			case 'webp':
+				$ret = imagewebp($im, $filepath);
+				break;
+			case 'png':
+				$ret = imagepng($im, $filepath);
+				break;
+			case 'jpg':
+			case 'jpeg':
+				$ret = imagejpeg($im, $filepath);
+				break;
+			case 'gif':
+				$ret = imagegif($im, $filepath);
+				break;
+			default:
+				$ret = false;
+		}
+		
+		imagedestroy($im);
+		return $ret;
 	}	
 	# ------------------------------------------------
 }

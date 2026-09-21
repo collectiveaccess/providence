@@ -75,16 +75,6 @@ class WLPlugInformationServiceTGN extends BaseGettyLODServicePlugin implements I
 		return 'tgn';
 	}
 	# ------------------------------------------------
-
-	/**
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return WLPlugInformationServiceTGN::$s_settings;
-	}
-	# ------------------------------------------------
 	# Data
 	# ------------------------------------------------
 	/**

@@ -117,6 +117,13 @@ BaseModel::$s_ca_models_definitions['ca_editor_uis'] = array(
 				'DEFAULT' => '',
 				"MEDIA_PROCESSING_SETTING" => 'ca_icons',
 				'LABEL' => _t('Icon'), 'DESCRIPTION' => _t('Optional icon to identify the editor UI with')
+		),
+		'settings' => array(
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Settings')
 		)
  	)
 );
@@ -804,6 +811,27 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		    $va_placements = array_map(function($v) use ($labels) { $v['screen_label'] = $labels[$v['screen_id']]; return $v; }, $va_placements);
 		}
 		return self::$s_screen_bundle_cache[$vs_cache_key] = $va_placements;
+	}
+	# ----------------------------------------
+	/**
+	 * Return all placements on all screens in the current UI
+	 *
+	 * @param mixed $type_id
+	 * @param array $options
+	 *
+	 * return array
+	 */
+	public function getPlacements(mixed $type_id=null, ?array $options=null) : ?array {
+		$screens = $this->getScreens($type_id, $options);
+		if(is_array($screens)) { 
+			$placements = [];
+			foreach($screens as $screen_id => $sinfo) {
+				$bv = $this->getScreenBundlePlacements($sinfo['screen_id'], $type_id, $options);
+				$placements = array_merge($placements, $bv);
+			}
+			return $placements;
+		}
+		return null;
 	}
 	# ----------------------------------------
 	/**

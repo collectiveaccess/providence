@@ -113,8 +113,7 @@ trait CLIUtilsMedia {
 			}
 
 			if ( $o_log ) {
-				$o_log->logDebug( _t( "[reprocess-media] Running query for '$sql_joins' and '$sql_where' with params '"
-									  . str_replace(array("\r", "\n"), '',var_export( $params, true ) . "'" )) );
+				$o_log->logDebug( _t( "[reprocess-media] Running query for '%1' and '%2' with params '%3'", $sql_joins, $sql_where,  str_replace(array("\r", "\n"), '',var_export($params, true))));
 			}
 
 			$qr_c = $o_db->query("
@@ -734,6 +733,8 @@ trait CLIUtilsMedia {
 		$mimetypes = caGetOption('mimetypes', $opts, null, ['delimiter' => [',', ';']]);
 		$skip_mimetypes = caGetOption('skip-mimetypes', $opts, null, ['delimiter' => [',', ';']]);
 		
+		$skip_transcribed = caGetOption('skip-transcribed', $opts, null);
+		
 		if (!($start = (int)$opts->getOption('start_id'))) { $start = null; }
 		if (!($end = (int)$opts->getOption('end_id'))) { $end = null; }
 
@@ -743,8 +744,8 @@ trait CLIUtilsMedia {
 		}
 
 		$ids = [];
-		if ($ids = (string)$opts->getOption('ids')) {
-			if (sizeof($tmp = explode(",", $ids))) {
+		if ($p_ids = (string)$opts->getOption('ids')) {
+			if (sizeof($tmp = explode(",", $p_ids))) {
 				foreach($tmp as $id) {
 					if ((int)$id > 0) {
 						$ids[] = (int)$id;
@@ -774,7 +775,11 @@ trait CLIUtilsMedia {
 		while($qr->nextHit()) {
 			$t_rep = $qr->getInstance();
 			if(!($input_mimetype = $t_rep->get('mimetype'))) { continue; }
-			if(caTranscribeAVMedia($input_mimetype) && ($t_rep->numCaptionFiles() == 0)) {
+			if(caTranscribeAVMedia($input_mimetype)) {
+				if(($t_rep->numCaptionFiles() >= 1)) { 
+					if($skip_transcribed) { continue; }
+					$t_rep->removeAllCaptionFiles();
+				}
 				if(is_array($mimetypes) && sizeof($mimetypes)) {
 					if(!caMimetypeIsValid($input_mimetype, $mimetypes)) { continue; }
 				}
@@ -801,6 +806,7 @@ trait CLIUtilsMedia {
 			print CLIProgressBar::finish();
 			CLIUtils::addMessage(_t('Complete'));
 		}
+		\CA\Process\Background::run('taskQueue');
 	}
 	# -------------------------------------------------------
 	/**
@@ -813,7 +819,8 @@ trait CLIUtilsMedia {
 			"start_id|s-n" => _t('Representation id to start reloading at'),
 			"end_id|e-n" => _t('Representation id to end reloading at'),
 			"id|i-n" => _t('Representation id to reload'),
-			"ids|l-s" => _t('Comma separated list of representation ids to reload')
+			"ids|l-s" => _t('Comma separated list of representation ids to reload'),
+			"skip-transcribed|k-n" => _t('Skip already transcribed media')
 		];
 	}
 	# -------------------------------------------------------

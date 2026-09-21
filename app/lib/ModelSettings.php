@@ -400,6 +400,7 @@ trait ModelSettings {
 					$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');	
 					$o_view->setVar('id', $vs_input_id);	
 					$o_view->setVar('defaultPath', $vs_value);
+					$o_view->setVar('allowFileSelection', (bool)($va_properties['allowFileSelection'] ?? false));
 					
 					$vs_return .= $o_view->render('settings_directory_browser_html.php');
 				}
@@ -592,7 +593,7 @@ trait ModelSettings {
 							if ($vb_show_lists) {
 								$t_list = new ca_lists();
 								$va_lists = caExtractValuesByUserLocale($t_list->getListOfLists());
-								
+								$va_lists = caSortArrayByKeyInValue($va_lists, ['name']);
 								$va_rel_opts = array();
 								if (isset($va_properties['allowNull']) && $va_properties['allowNull']) {
 									$va_rel_opts['-'] = null;

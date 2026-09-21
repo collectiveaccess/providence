@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -66,7 +66,7 @@ BaseModel::$s_ca_models_definitions['ca_collections'] =  array(
 			'IS_NULL' => false, 
 			'DEFAULT' => '',
 			'LIST_CODE' => 'collection_types',
-			'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the collection. In CollectiveAccess every collection has a single "instrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.')
+			'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the collection. In CollectiveAccess every collection has a single "intrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.')
 		),
 		'idno' => array(
 			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -83,7 +83,7 @@ BaseModel::$s_ca_models_definitions['ca_collections'] =  array(
 			'IS_NULL' => false, 
 			'DEFAULT' => '',
 			'LABEL' => 'Idno sort', 'DESCRIPTION' => 'Sortable version of value in idno',
-			'BOUNDS_LENGTH' => array(0,255)
+			'BOUNDS_LENGTH' => array(0, 768)
 		),
 		'idno_sort_num' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -251,12 +251,25 @@ BaseModel::$s_ca_models_definitions['ca_collections'] =  array(
 			'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false, 
 			'DEFAULT' => 0,
-			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
 			'BOUNDS_CHOICE_LIST' => array(
-				_t('Do not inherit item-level access settings from parents') => 0,
-				_t('Inherit item-level access settings from parents') => 1
+				_t('Do not inherit') => 0,
+				_t('Inherit') => 1
 			),
-			'LABEL' => _t('Inherit item-level access settings from parents?'), 'DESCRIPTION' => _t('Determines whether access settings set for parent collections are applied to this collection.')
+			'LABEL' => _t('Inherit item access control settings from parents?'), 'DESCRIPTION' => _t('Determines whether item access control settings set from parent objects are applied to this object.')
+		),
+		'access_inherit_from_parent' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+			'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false, 
+			'DEFAULT' => 0,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => false,
+			'DONT_ALLOW_IN_UI' => true,
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Do not inherit') => 0,
+				_t('Inherit') => 1
+			),
+			'LABEL' => _t('Inherit public access settings from parent?'), 'DESCRIPTION' => _t('Determines whether public access settings (used by Pawtucket-based sites) set for parent object is applied to this object.')
 		),
 		'view_count' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -537,12 +550,12 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
 		if (
 			$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && 
 			caGetOption('includeObjects', $pa_options, true) && 
-			($rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')) &&
+			($coll_rel_types = caGetObjectCollectionHierarchyRelationshipTypes()) &&
 			($ps_object_template = caGetOption('objectTemplate', $pa_options, $this->getAppConfig()->get('ca_objects_hierarchy_browser_display_settings')))
 		) {
 			$va_collection_ids = array_map(function($v) { return $v['id']; }, $va_vals);
 			
-			$qr = ca_objects_x_collections::find(['collection_id' => ['IN', $va_collection_ids], 'type_id' => $rel_type], ['returnAs' => 'searchResult']);
+			$qr = ca_objects_x_collections::find(['collection_id' => ['IN', $va_collection_ids], 'type_id' => ['IN', $coll_rel_types]], ['returnAs' => 'searchResult']);
 			$va_objects_by_collection = [];
 			while($qr->nextHit()) {
 				$va_objects_by_collection[$qr->get('ca_objects_x_collections.collection_id')][] = $qr->get('ca_objects_x_collections.object_id');
@@ -551,7 +564,7 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
  			$t_obj = new ca_objects();
  			$va_objects = [];
  			
- 			if ($this->getAppConfig()->get('ca_collections_hierarchy_summary_show_full_object_hierarachy')) {
+ 			if ($this->getAppConfig()->get('ca_collections_hierarchy_summary_show_full_object_hierarchy')) {
                 foreach($va_objects_by_collection as $vn_collection_id => $va_object_ids) {
                     foreach($va_object_ids as $vn_object_id) {
                         $va_objects[$vn_collection_id][$vn_object_id] = $t_obj->hierarchyWithTemplate($ps_object_template, ['object_id' => $vn_object_id, 'returnAsArray' => true, 'sort' => caGetHierarchyBrowserSortValues('ca_objects', new ca_objects($vn_object_id)), 'sortDirection' => $this->getAppConfig()->get('ca_objects_hierarchy_browser_sort_direction')]);

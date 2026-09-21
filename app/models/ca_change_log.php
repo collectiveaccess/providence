@@ -515,7 +515,7 @@ class ca_change_log extends BaseModel {
 								} elseif($t_instance instanceof BaseLabel) {
 									if (!($va_snapshot['type_code'] = caGetListItemIdno($vm_val)) && (!$t_instance->getFieldInfo('type_id', 'IS_NULL'))) { continue(2); }
 								} 
-							} elseif($t_instance && !is_a($t_instance, 'BaseLabel')) {	// it's ok for label type to be blank
+							} elseif($t_instance && !is_a($t_instance, 'BaseLabel') && !$t_instance->getFieldInfo('type_id', 'IS_NULL')) {	// it's ok for label type to be blank
 								$va_snapshot = array_merge($va_snapshot, ['SKIP' => true, 'SKIP_WHY' => 'type_id']);
 								continue(2);
 							}

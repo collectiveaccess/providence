@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,30 +38,30 @@ class ListItemController extends BaseLookupController {
 	/**
 	 *
 	 */
-	public function Get($pa_additional_query_params=null, $pa_options=null) {
-		if ($ps_list = $this->request->getParameter('list', pString)) {
-			if(!is_array($pa_additional_query_params)) { $pa_additional_query_params = array(); }
+	public function Get($additional_query_params=null, $options=null) {
+		if ($list = $this->request->getParameter('list', pString)) {
+			if(!is_array($additional_query_params)) { $additional_query_params = array(); }
 			
-			$pa_additional_query_params[] = "ca_lists.list_code:{$ps_list}";
+			$additional_query_params[] = "ca_lists.list_code:{$list}";
 		} else {
-			if ($ps_lists = $this->request->getParameter('lists', pString)) {
-				if(!is_array($pa_additional_query_params)) { $pa_additional_query_params = array(); }
+			if ($lists = $this->request->getParameter('lists', pString)) {
+				if(!is_array($additional_query_params)) { $additional_query_params = array(); }
 				
-				$va_lists = explode(";", $ps_lists);
+				$lists = explode(";", $lists);
 				
-				$pa_options['hier_id'] = caGetListID($va_lists[0]);
+				$options['hier_id'] = caGetListID($lists[0]);
 				
-				$va_tmp = array();
-				$pa_options['filters'] = array();
-				foreach($va_lists as $vs_list) {
-					if ($vs_list = trim($vs_list)) {
-						$va_tmp[] = "'".preg_replace("![\"']+!", "", $vs_list)."'";
+				$tmp = array();
+				$options['filters'] = array();
+				foreach($lists as $list) {
+					if ($list = trim($list)) {
+						$tmp[] = "'".preg_replace("![\"']+!", "", $list)."'";
 					}
 				}
-				$pa_options['filters'][] = array("ca_list_items.list_id", "IN", join(",", $va_tmp));
+				$options['filters'][] = array("ca_list_items.list_id", "IN", join(",", $tmp));
 			}
 		}
-		return parent::Get($pa_additional_query_params, $pa_options);
+		return parent::Get($additional_query_params, $options);
 	}
 	# -------------------------------------------------------
 	/**
@@ -69,121 +69,121 @@ class ListItemController extends BaseLookupController {
 	 * Returned data is JSON format
 	 */
 	public function GetHierarchyLevel() {
-		$ps_bundle = (string)$this->request->getParameter('bundle', pString);
-		$pa_ids = explode(";", $ps_ids = $this->request->getParameter('id', pString));
-		if (!sizeof($pa_ids)) { $pa_ids = array(null); }
+		$bundle = (string)$this->request->getParameter('bundle', pString);
+		$ids = explode(";", $ids = $this->request->getParameter('id', pString));
+		if (!sizeof($ids)) { $ids = array(null); }
 		
 		$t_item = $this->opo_item_instance;
 		
-		$vs_template = $t_item->getAppConfig()->get('ca_list_items_hierarchy_browser_display_settings');
+		$template = $t_item->getAppConfig()->get('ca_list_items_hierarchy_browser_display_settings');
 		
-		$va_lists = array();
-		if ($ps_lists = $this->request->getParameter('lists', pString)) {
-			$va_lists = explode(";", $ps_lists);
+		if ($lists = $this->request->getParameter('lists', pString)) {
+			$lists = explode(";", $lists);
+		}
+		if(!is_array($lists)) { $lists = []; }
+		
+		$max_items_per_page = $this->request->getParameter('max', pInteger);
+		if (($max_items_per_page > 1000) || ($max_items_per_page <= 0)) {
+			$max_items_per_page = 500;
 		}
 		
-		$vn_max_items_per_page = $this->request->getParameter('max', pInteger);
-		if (($vn_max_items_per_page > 1000) || ($vn_max_items_per_page <= 0)) {
-			$vn_max_items_per_page = 500;
-		}
+		$list_id = null;
+		$level_data = array();
 		
-		$vn_list_id = null;
-		$va_level_data = array();
-		
-		foreach($pa_ids as $pn_id) {
-			$va_tmp = explode(":", $pn_id);
-			$vn_id = $va_tmp[0] ?? null;
-			$vn_start = (int)($va_tmp[1] ?? 0);
-			if($vn_start < 0) { $vn_start = 0; }
+		foreach($ids as $pn_id) {
+			$tmp = explode(":", $pn_id);
+			$id = $tmp[0] ?? null;
+			$start = (int)($tmp[1] ?? 0);
+			if($start < 0) { $start = 0; }
 			
-			if (!$vn_id && method_exists($t_item, "getHierarchyList")) { 
+			if (!$id && method_exists($t_item, "getHierarchyList")) { 
 				if (!($pn_list_id = $this->request->getParameter('list_id', pInteger))) {
 					// no id so by default return list of available hierarchies
-					$va_list_items = $t_item->getHierarchyList();
+					$list_items = $t_item->getHierarchyList();
 					
-					if (sizeof($va_lists)) {
+					if (sizeof($lists)) {
 						// filter out lists that weren't specified
-						foreach($va_list_items as $item_list_id => $va_list) {
-							if (!in_array($item_list_id, $va_lists) && !in_array($va_list['list_code'] ?? null, $va_lists)) {
-								unset($va_list_items[$item_list_id]);
+						foreach($list_items as $item_list_id => $list) {
+							if (!in_array($item_list_id, $lists) && !in_array($list['list_code'] ?? null, $lists)) {
+								unset($list_items[$item_list_id]);
 							}
 						}
 					} else {
 						if ($this->request->getParameter('voc', pInteger)) {
 							// Only show vocabularies
-							foreach($va_list_items as $item_list_id => $va_list) {
-								if (!($va_list['use_as_vocabulary'] ?? false)) {
-									unset($va_list_items[$item_list_id]);
+							foreach($list_items as $item_list_id => $list) {
+								if (!($list['use_as_vocabulary'] ?? false)) {
+									unset($list_items[$item_list_id]);
 								}
 							}
 						}
 					}
 				}
 			} else {
-				if ($t_item->load($vn_id)) {		// id is the id of the parent for the level we're going to return
-					$vn_list_id = $t_item->get('list_id');
-					$t_list = new ca_lists($vn_list_id);
+				if ($t_item->load($id)) {		// id is the id of the parent for the level we're going to return
+					$list_id = $t_item->get('list_id');
+					$t_list = new ca_lists($list_id);
 				
-					$vs_label_table_name = $this->opo_item_instance->getLabelTableName();
-					$vs_label_display_field_name = $this->opo_item_instance->getLabelDisplayField();
+					$label_table_name = $this->opo_item_instance->getLabelTableName();
+					$label_display_field_name = $this->opo_item_instance->getLabelDisplayField();
 					
-					$va_list_items = $t_list->getItemsForList($vn_list_id, array('returnHierarchyLevels' => false, 'item_id' => $vn_id, 'extractValuesByUserLocale' => true, 'sort' => $t_list->get('sort_type'), 'directChildrenOnly' => true, 'limit' => $vn_max_items_per_page, 'start' => $vn_start));
+					$list_items = $t_list->getItemsForList($list_id, array('returnHierarchyLevels' => false, 'item_id' => $id, 'extractValuesByUserLocale' => true, 'sort' => $t_list->get('sort_type'), 'directChildrenOnly' => true, 'limit' => $max_items_per_page, 'start' => $start));
 		
 					// output
-					$va_display_values = caProcessTemplateForIDs($vs_template, 'ca_list_items', array_keys($va_list_items), array('requireLinkTags' => true, 'returnAsArray' => true));
+					$display_values = caProcessTemplateForIDs($template, 'ca_list_items', array_keys($list_items ?? []), array('requireLinkTags' => true, 'returnAsArray' => true, 'indexWithIDs' => true));
 					
-					$vn_c = 0;
-					foreach($va_list_items as $vn_item_id => $va_item) {
-						unset($va_item['description']);
-						unset($va_item['icon']);
+					$c = 0;
+					foreach($list_items as $item_id => $item) {
+						unset($item['description']);
+						unset($item['icon']);
 					
-						if (!trim($va_item[$vs_label_display_field_name] ?? null)) { $va_item[$vs_label_display_field_name] = $va_item['idno']; }
-						if (!trim($va_item[$vs_label_display_field_name] ?? null)) { $va_item[$vs_label_display_field_name] = '???'; }
+						if (!trim($item[$label_display_field_name] ?? null)) { $item[$label_display_field_name] = $item['idno']; }
+						if (!trim($item[$label_display_field_name] ?? null)) { $item[$label_display_field_name] = '???'; }
 					
-						$va_item['name'] = $va_display_values[$vn_c] ?? null;
-						if (!trim($va_item['name'])) { $va_item['name'] = '??? '.$vn_item_id; }
-						$va_item['table'] = 'ca_list_items';
+						$item['name'] = $display_values[$item_id] ?? null;
+						if (!trim($item['name'])) { $item['name'] = '??? '.$item_id; }
+						$item['table'] = 'ca_list_items';
 					
 						// Child count is only valid if has_children is not null
-						$va_item['children'] = 0;
-						$va_list_items[$vn_item_id] = $va_item;
-						$vn_c++;
+						$item['children'] = 0;
+						$list_items[$item_id] = $item;
+						$c++;
 						
-						if (!is_null($vn_max_items_per_page) && ($vn_c > ($vn_max_items_per_page))) { break; }
+						if (!is_null($max_items_per_page) && ($c > ($max_items_per_page))) { break; }
 					}
 					
-					if (sizeof($va_list_items)) {
+					if (is_array($list_items) && sizeof($list_items)) {
 						$o_db = new Db();
 						$qr_res = $o_db->query("
 							SELECT count(*) c, parent_id
 							FROM ca_list_items
 							WHERE 
-								parent_id IN (".join(",", array_keys($va_list_items)).") AND deleted = 0
+								parent_id IN (".join(",", array_keys($list_items)).") AND deleted = 0
 							GROUP BY parent_id
 						");	
 						while($qr_res->nextRow()) {
-							$va_list_items[$qr_res->get('parent_id')]['children'] = $qr_res->get('c');
+							$list_items[$qr_res->get('parent_id')]['children'] = $qr_res->get('c');
 						}
 					}
 				}
 			}
 		
-			$va_list_items_sortable = [];
-			foreach($va_list_items as $vn_item_id => $va_item) {
-				$va_list_items_sortable[caSortableValue(mb_strtolower(preg_replace('![^A-Za-z0-9]!', '_', caRemoveAccents($va_item['name'])))).'_'.$vn_item_id] = $va_item;
+			$list_items_sortable = [];
+			foreach($list_items ?? [] as $item_id => $item) {
+				$list_items_sortable[caSortableValue(mb_strtolower(preg_replace('![^A-Za-z0-9]!', '_', caRemoveAccents($item['name'])))).'_'.$item_id] = $item;
 			}
 			
 			// Sort list of lists alphabetically and case insensitively
 			// Items are already sorted using configured sort order
-			if(!$vn_id) { ksort($va_list_items_sortable); }
+			if(!$id) { ksort($list_items_sortable); }
 			
-			$va_list_items = $va_list_items_sortable;
-			$va_list_items['_sortOrder'] = array_keys($va_list_items);
+			$list_items = $list_items_sortable;
+			$list_items['_sortOrder'] = array_keys($list_items);
 
-			$va_list_items['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
-			$va_list_items['_itemCount'] = ca_list_items::find(['list_id' => $vn_list_id, 'parent_id' => $vn_id], ['returnAs' => 'count']); //sizeof($va_list_items); //$t_list ? $t_list->numItemsInList() : ($qr_res ? $qr_res->numRows() : 0);
+			$list_items['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
+			$list_items['_itemCount'] = ca_list_items::find(['list_id' => $list_id, 'parent_id' => $id], ['returnAs' => 'count']); //sizeof($list_items); //$t_list ? $t_list->numItemsInList() : ($qr_res ? $qr_res->numRows() : 0);
 		
-			$va_level_data[$pn_id] = $va_list_items;
+			$level_data[$pn_id] = $list_items;
 		}
 		if (!$this->request->getParameter('init', pInteger)) {
 			// only set remember "last viewed" if the load is done interactively
@@ -193,11 +193,11 @@ class ListItemController extends BaseLookupController {
 			//
 			// ... so the hierbrowser passes an extra 'init' parameters set to 1 if the GetHierarchyLevel() call
 			// is part of a browser initialization
-			Session::setVar($this->ops_table_name.'_'.$ps_bundle.'_browse_last_id', $pn_id);
+			Session::setVar($this->ops_table_name.'_'.$bundle.'_browse_last_id', $pn_id);
 		}
 		
 		$this->view->setVar('dontShowSymbols', (bool)$this->request->getParameter('noSymbols', pString));
-		$this->view->setVar('list_item_list', $va_level_data);
+		$this->view->setVar('list_item_list', $level_data);
 		
 		$this->response->setContentType('application/json');
 		return $this->render('list_item_hierarchy_level_json.php');

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -305,6 +305,7 @@ class ca_attribute_values extends BaseModel {
 		
 	
 			if (!$this->numErrors()) {
+				if(mb_strlen($sv = $this->get('value_sortable')) > 100) { $this->set('value_sortable', mb_substr(strip_tags($sv), 0, 100)); }
 				return $this->insert($pa_options);
 			} else {
 				return false;
@@ -346,13 +347,23 @@ class ca_attribute_values extends BaseModel {
 					if (substr($vs_key, 0, 1) === '_') { continue; }
 					if (($vs_key === 'value_blob') && (isset($va_values['_file']) && $va_values['_file'])) {
 						$this->useBlobAsFileField(true);	// force value_blob field to be treated as FT_FILE by BaseModel
-						$this->set($vs_key, $vs_val, array('original_filename' => $va_values['value_longtext2']));
-						$this->set('source_info', md5_file($vs_val));
+						
+						if($vs_val === '__CLEAR__') {
+							$this->clearFile($vs_key);
+						} else {
+							$this->set($vs_key, $vs_val, array('original_filename' => $va_values['value_longtext2']));
+							$this->set('source_info', md5_file($vs_val));
+						}
 					} else {
 						if (($vs_key === 'value_blob') && (isset($va_values['_media']) && $va_values['_media'])) {
 							$this->useBlobAsMediaField(true);	// force value_blob field to be treated as FT_MEDIA by BaseModel
-							$this->set($vs_key, $vs_val, array('original_filename' => $va_values['value_longtext2']));
-							$this->set('source_info', md5_file($vs_val));
+							
+							if($vs_val === '__CLEAR__') {
+								$this->clearMedia($vs_key);
+							} else {
+								$this->set($vs_key, $vs_val, array('original_filename' => $va_values['value_longtext2']));
+								$this->set('source_info', md5_file($vs_val));
+							}
 						} else {
 							$this->set($vs_key, $vs_val);
 						}
@@ -380,6 +391,7 @@ class ca_attribute_values extends BaseModel {
 			$vn_p++;
 		}
 		
+		if(mb_strlen($sv = $this->get('value_sortable')) > 100) { $this->set('value_sortable', mb_substr(strip_tags($sv), 0, 100)); }
 		$this->update();
 		
 		if ($this->numErrors()) {
