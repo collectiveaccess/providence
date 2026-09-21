@@ -87,6 +87,14 @@ class BaseEditorController extends ActionController {
 				throw new ApplicationException(_t('CSRF check failed'));
 				return;
 			}
+			
+			$dupe_mode = $this->request->getParameter('duplication_mode', pString);
+			if(!in_array($dupe_mode, ['create', 'pair'], true)) { $dupe_mode = 'create'; }
+			
+			$dupe_quantity = (int)$this->request->getParameter('duplication_quantity', pString);
+			if($dupe_quantity < 1) { $dupe_quantity = 1; }
+			if($dupe_quantity > 100) { $dupe_quantity = 100; }
+			
 			// Trigger "before duplicate" hook
 			$this->opo_app_plugin_manager->hookBeforeDuplicateItem(
 				[
@@ -97,38 +105,91 @@ class BaseEditorController extends ActionController {
 					'request' => $this->request
 				]
 			);
-
-			if ($t_dupe = $t_subject->duplicate(array(
-				'user_id' => $this->request->getUserID(),
-				'duplicate_nonpreferred_labels' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_nonpreferred_labels'),
-				'duplicate_attributes' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_attributes'),
-				'duplicate_relationships' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_relationships'),
-				'duplicate_current_relationships_only' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_current_relationships_only'),
-				'duplicate_relationship_attributes' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_relationship_attributes'),
-				'duplicate_media' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_media'),
-				'duplicate_subitems' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_subitems'),
-				'duplicate_element_settings' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_element_settings'),
-				'duplicate_children' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_children')
-			))) {
-				$this->notification->addNotification(_t('Duplicated %1 "%2" (%3)', $vs_type_name, $t_subject->getLabelForDisplay(), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
-				// Trigger duplicate hook
-				$this->opo_app_plugin_manager->hookDuplicateItem(
-					[
-						'id' => $vn_subject_id, 
-						'table_num' => $t_subject->tableNum(), 
-						'table_name' => $t_subject->tableName(), 
-						'instance' => $t_subject, 
-						'duplicate' => $t_dupe,
-						'request' => $this->request
-					]
-				);
+			
+			Session::setVar($t_subject->tableName().'_editor_last_duplication_mode', $dupe_mode);
+			
+			$rel_table = $rel_type = null;
+			if($dupe_mode == 'pair') {
+				$set_id = $this->request->getParameter('pair_with_set_id', pInteger);
+				if(!($t_set = ca_sets::findAsInstance($set_id))) {
+					$this->notification->addNotification(_t('Set does not exist'), __NOTIFICATION_TYPE_ERROR__);
+					$dupe_mode = null;
+				} else {
+					// Do we have access to this set?
+					if(!$t_set->haveAccessToSet($this->request->getUserID(), __CA_SET_READ_ACCESS__)) {
+						$this->notification->addNotification(_t('Set is not accessible'), __NOTIFICATION_TYPE_ERROR__);
+						$dupe_mode = null;
+					} else {
+						$set_item_ids = $t_set->getItems(['idsOnly' => true]);
+						$dupe_quantity = sizeof($set_item_ids);
+						$rel_table = Datamodel::getTableName($t_set->get('table_num'));
+						
+						$t_rel_types = new ca_relationship_types();
+						if(!($rel_linking_table = $t_rel_types->getRelationshipTypeTable($t_subject->tableName(), $rel_table))) {
+							$this->notification->addNotification(_t('Set contents cannot be paired'), __NOTIFICATION_TYPE_ERROR__);
+							$dupe_mode = null;
+						}
+						
+						// Use default relationship type
+						if(!($rel_type = $t_rel_types->getDefaultRelationshipTypeID($rel_linking_table))) {
+							$this->notification->addNotification(_t('Default relationship type is not set for this relationship'), __NOTIFICATION_TYPE_ERROR__);
+							$dupe_mode = null;	
+						}
+					}
+				}
+			}
+			
+			if($dupe_mode) {
+				$c = 0;
+				$t_first = null;
+				while($c < $dupe_quantity) {
+					if ($t_dupe = $t_subject->duplicate([
+						'user_id' => $this->request->getUserID(),
+						'duplicate_nonpreferred_labels' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_nonpreferred_labels'),
+						'duplicate_attributes' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_attributes'),
+						'duplicate_relationships' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_relationships'),
+						'duplicate_current_relationships_only' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_current_relationships_only'),
+						'duplicate_relationship_attributes' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_relationship_attributes'),
+						'duplicate_media' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_media'),
+						'duplicate_subitems' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_subitems'),
+						'duplicate_element_settings' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_element_settings'),
+						'duplicate_children' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_children')
+					])) {
+						// Trigger duplicate hook
+						$this->opo_app_plugin_manager->hookDuplicateItem(
+							[
+								'id' => $vn_subject_id, 
+								'table_num' => $t_subject->tableNum(), 
+								'table_name' => $t_subject->tableName(), 
+								'instance' => $t_subject, 
+								'duplicate' => $t_dupe,
+								'request' => $this->request
+							]
+						);
+						if(!$t_first) { $t_first = $t_dupe; }
+						
+						if($dupe_mode === 'pair') {
+							$related_item_id = array_shift($set_item_ids);
+							if(!$t_dupe->addRelationship($rel_table, $related_item_id, $rel_type)) {
+								$this->notification->addNotification(_t('Could not pair duplicate %1 with %2: %3', $vs_type_name, $rel_table, join('; ', $t_subject->getErrors())), __NOTIFICATION_TYPE_ERROR__);
+							}
+						}
+					} else {
+						$this->notification->addNotification(_t('Could not duplicate %1: %2', $vs_type_name, join('; ', $t_subject->getErrors())), __NOTIFICATION_TYPE_ERROR__);
+					}
+					$c++;
+				}
 				Session::save();
 				
-				// redirect to edit newly created dupe.
-				$this->response->setRedirect(caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), array($t_subject->primaryKey() => $t_dupe->getPrimaryKey())));
+				if($dupe_quantity > 1) {
+					$this->notification->addNotification(_t('Created %1 duplicates of %2 "%3" (%4)', $c, $vs_type_name, $t_subject->getLabelForDisplay(), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
+				} else {
+					$this->notification->addNotification(_t('Duplicated %1 "%2" (%3)', $vs_type_name, $t_subject->getLabelForDisplay(), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
+				}
+							
+				// Redirect to edit first newly created dupe.
+				$this->response->setRedirect(caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), [$t_subject->primaryKey() => $t_first->getPrimaryKey()]));
 				return;
-			} else {
-				$this->notification->addNotification(_t('Could not duplicate %1: %2', $vs_type_name, join('; ', $t_subject->getErrors())), __NOTIFICATION_TYPE_ERROR__);
 			}
 		}
 
