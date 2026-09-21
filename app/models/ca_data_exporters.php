@@ -439,7 +439,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param array $settings array of user settings
 	 * @return ca_data_exporter_items BaseModel representation of the new record
 	 */
-	public function addItem($parent_id=null, $element, $source, $settings=[]) {
+	public function addItem($parent_id, $element, $source, $settings=[]) {
 		if (!($exporter_id = $this->getPrimaryKey())) { return null; }
 
 		$t_item = new ca_data_exporter_items();

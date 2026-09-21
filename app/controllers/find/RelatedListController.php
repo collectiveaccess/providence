@@ -100,12 +100,12 @@ class RelatedListController extends BaseSearchController {
 			// For now support both placement_ids and passed ID lists
 			$placement = new ca_editor_ui_bundle_placements($placement_id);
 			if (!$placement->isLoaded()) {
-				throw new ApplicationException(_('Invalid placement_id'));
+				throw new ApplicationException(_t('Invalid placement_id'));
 			}
 			$t_instance = Datamodel::getInstance($placement->getEditorType(), true);
 			
 			if (!($t_instance->load($vn_primary_id))) { 
-				throw new ApplicationException(_('Invalid id'));
+				throw new ApplicationException(_t('Invalid id'));
 			}
 			
 			$settings = $placement->getSettings();

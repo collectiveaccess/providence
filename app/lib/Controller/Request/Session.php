@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2025 Whirl-i-Gig
+ * Copyright 2000-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -89,10 +89,10 @@ class Session {
 	# --- Constructor
 	# ----------------------------------------
 	/**
-	 * @param string $ps_app_name An app name to use if no app name is configured in the application configuration file.
-	 * @param bool $pb_dont_create_new_session No new session will be created if set to true. Default is false.
+	 * @param string $app_name An app name to use if no app name is configured in the application configuration file.
+	 * @param bool $dont_create_new_session No new session will be created if set to true. Default is false.
 	 */
-	public static function init($ps_app_name=null, $pb_dont_create_new_session=false) {
+	public static function init($app_name=null, $dont_create_new_session=false) {
  		$o_config = Configuration::load();
  		$service_config = Configuration::load('services.conf');
  		
@@ -110,13 +110,13 @@ class Session {
 		}
 		
 		# --- Read configuration
-		Session::$name = ($vs_app_name = $o_config->get("app_name")) ? $vs_app_name : $ps_app_name;
+		Session::$name = ($app_name = $o_config->get("app_name")) ? $app_name : $app_name;
 		Session::$domain = $o_config->get("session_domain");
 		Session::$lifetime = Session::lifetime();
 		Session::$api_session_lifetime = (int) $service_config->get("api_session_lifetime");
 		
 		$session_id = self::getSessionID();
-		if (!$pb_dont_create_new_session) {
+		if (!$dont_create_new_session) {
 			// try to get session ID from cookie. if that doesn't work, generate a new one
 			if (!$session_id) {
 				$cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
@@ -130,7 +130,7 @@ class Session {
 							'domain' => null, 
 							'secure' => $secure, 
 							'httponly' => true, 
-							'samesite' => 'Strict'
+							'samesite' => 'Lax'
 						]);
 				}
 		 	}
@@ -165,53 +165,53 @@ class Session {
 	/**
 	 * Return service authentication token for this session (and create it, if none exists yet).
 	 * These tokens usually have a much shorter lifetime than the session.
-	 * @param bool $pb_dont_create_new_token dont create new auth token
+	 * @param bool $dont_create_new_token dont create new auth token
 	 * @return string|bool The token, false if
 	 * @throws Exception
 	 */
-	static public function getServiceAuthToken($pb_dont_create_new_token=false) {
+	static public function getServiceAuthToken($dont_create_new_token=false) {
 		if(!($session_id = self::getSessionID())) { return false; }
 
 		if(self::$s_cache_type::contains($session_id, 'SessionIDToServiceAuthTokens')) {
 			return self::$s_cache_type::fetch($session_id, 'SessionIDToServiceAuthTokens');
 		}
 
-		if($pb_dont_create_new_token) { return false; }
+		if($dont_create_new_token) { return false; }
 
 		// generate new token
 		if(function_exists('mcrypt_create_iv')) {
-			$vs_token = hash('sha256', mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+			$token = hash('sha256', mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
 		} else if(function_exists('openssl_random_pseudo_bytes')) {
-			$vs_token = hash('sha256', openssl_random_pseudo_bytes(32));
+			$token = hash('sha256', openssl_random_pseudo_bytes(32));
 		} else {
 			throw new Exception('mcrypt or OpenSSL is required for CollectiveAccess to run');
 		}
 
 		// save mappings in both directions for easy lookup. they are valid for 2 hrs (@todo maybe make this configurable?)
-		self::$s_cache_type::save($session_id, $vs_token, 'SessionIDToServiceAuthTokens', Session::$api_session_lifetime);
-		self::$s_cache_type::save($vs_token, $session_id, 'ServiceAuthTokensToSessionID', Session::$api_session_lifetime);
+		self::$s_cache_type::save($session_id, $token, 'SessionIDToServiceAuthTokens', Session::$api_session_lifetime);
+		self::$s_cache_type::save($token, $session_id, 'ServiceAuthTokensToSessionID', Session::$api_session_lifetime);
 
-		return $vs_token;
+		return $token;
 	}
 	# ----------------------------------------
 	/**
 	 * Restore session form a temporary service auth token
-	 * @param string $ps_token
-	 * @param string|null $ps_name
+	 * @param string $token
+	 * @param string|null $name
 	 * @return Session|bool The restored session, false on failure
 	 */
-	public static function restoreFromServiceAuthToken($ps_token, $ps_name=null) {
+	public static function restoreFromServiceAuthToken($token, $name=null) {
 		$o_config = Configuration::load();
-		$vs_app_name = $o_config->get("app_name");
+		$app_name = $o_config->get("app_name");
 
-		if(!self::$s_cache_type::contains($ps_token, 'ServiceAuthTokensToSessionID')) {
+		if(!self::$s_cache_type::contains($token, 'ServiceAuthTokensToSessionID')) {
 			return false;
 		}
 
-		$vs_session_id = self::$s_cache_type::fetch($ps_token, 'ServiceAuthTokensToSessionID');
-		$_COOKIE[$vs_app_name] = $vs_session_id;
+		$session_id = self::$s_cache_type::fetch($token, 'ServiceAuthTokensToSessionID');
+		$_COOKIE[$app_name] = $session_id;
 
-		return Session::init($vs_app_name);
+		return Session::init($app_name);
 	}
 	# ----------------------------------------
 	# --- Methods
@@ -230,8 +230,8 @@ class Session {
 	 public static function deleteSession() {
 		if(!($session_id = self::getSessionID())) { return false; }
 		// nuke service token caches
-		if($vs_token = self::getServiceAuthToken(true)) {
-			self::$s_cache_type::delete($vs_token, 'ServiceAuthTokensToSessionID');
+		if($token = self::getServiceAuthToken(true)) {
+			self::$s_cache_type::delete($token, 'ServiceAuthTokensToSessionID');
 		}
 		self::$s_cache_type::delete($session_id, 'SessionIDToServiceAuthTokens');
 
@@ -245,7 +245,7 @@ class Session {
 							'domain' => null, 
 							'secure' => $secure, 
 							'httponly' => true, 
-							'samesite' => 'Strict'
+							'samesite' => 'Lax'
 						]);
 			@session_destroy();
 		}
@@ -258,39 +258,62 @@ class Session {
 							'domain' => null, 
 							'secure' => $secure, 
 							'httponly' => true, 
-							'samesite' => 'Strict'
+							'samesite' => 'Lax'
 						]);
 		self::$s_cache_type::delete($session_id, 'SessionVars');
 	}
 	# ----------------------------------------
 	/**
+	 * Invalidate all sessions other than the current one for the specified user
+	 *
+	 * @param int $user_id
+	 * @param array $options No options are currently supported.
+	 *
+	 * @return bool
+	 */
+	public static function invalidateSessionsForUser(int $user_id, ?array $options=null) {		
+ 		$config = Configuration::load();
+ 		$session_id = self::getSessionID();
+ 		$keys = self::$s_cache_type::fetch($user_id, 'SessionsByUser') ?? [];
+		if(is_array($keys)) {
+			foreach(array_keys($keys) as $session_key) {
+				if($session_key == $session_id) { continue; }
+				self::$s_cache_type::delete($session_key, 'SessionVars');
+			}
+		}
+		self::$s_cache_type::save($user_id, [$session_id], 'SessionsByUser', Session::$lifetime * 2);
+		
+		return true;
+	}
+	# ----------------------------------------
+	/**
 	 * Set session variable
-	 * @param string $ps_key variable key
-	 * @param mixed $pm_val Session var may be number, string or array
-	 * @param null|array $pa_options
+	 * @param string $key variable key
+	 * @param mixed $val Session var may be number, string or array
+	 * @param null|array $options
 	 * 		ENTITY_ENCODE_INPUT =
 	 * 		URL_ENCODE_INPUT =
 	 * @return bool
 	 */
-	public static function setVar($ps_key, $pm_val, $pa_options=null) {
-		if (!is_array($pa_options)) { $pa_options = array(); }
+	public static function setVar($key, $val, $options=null) {
+		if (!is_array($options)) { $options = array(); }
 		
-		if ($ps_key && self::getSessionID()) {
-			if (isset($pa_options["ENTITY_ENCODE_INPUT"]) && $pa_options["ENTITY_ENCODE_INPUT"]) {
-				if (is_string($pm_val)) {
-					$vm_val = html_entity_decode($pm_val);
+		if ($key && self::getSessionID()) {
+			if (isset($options["ENTITY_ENCODE_INPUT"]) && $options["ENTITY_ENCODE_INPUT"]) {
+				if (is_string($val)) {
+					$lval = html_entity_decode($val);
 				} else {
-					$vm_val = $pm_val;
+					$lval = $val;
 				}
 			} else {
-				if (isset($pa_options["URL_ENCODE_INPUT"]) && $pa_options["URL_ENCODE_INPUT"]) {
-					$vm_val = urlencode($pm_val);
+				if (isset($options["URL_ENCODE_INPUT"]) && $options["URL_ENCODE_INPUT"]) {
+					$lval = urlencode($val);
 				} else {
-					$vm_val = $pm_val;
+					$lval = $val;
 				}
 			}
-			Session::$s_changed_vars[$ps_key] = true;
-			Session::$s_session_vars[$ps_key] = $vm_val;
+			Session::$s_changed_vars[$key] = true;
+			Session::$s_session_vars[$key] = $lval;
 			return true;
 		}
 		return false;
@@ -298,20 +321,20 @@ class Session {
 	# ----------------------------------------
 	/**
 	 * Delete session variable
-	 * @param string $ps_key
+	 * @param string $key
 	 */
-	public static function delete($ps_key) {
-		Session::$s_changed_vars[$ps_key] = true;
-		unset(Session::$s_session_vars[$ps_key]);
+	public static function delete($key) {
+		Session::$s_changed_vars[$key] = true;
+		unset(Session::$s_session_vars[$key]);
 	}
 	# ----------------------------------------
 	/**
 	 * Get value of session variable. Var may be number, string or array.
 	 */
-	public static function getVar($ps_key) {
+	public static function getVar($key) {
 		if(!self::getSessionID()) { return null; }
 
-		return isset(Session::$s_session_vars[$ps_key]) ? Session::$s_session_vars[$ps_key] : null;
+		return isset(Session::$s_session_vars[$key]) ? Session::$s_session_vars[$key] : null;
 	}
 	# ----------------------------------------
 	/**
@@ -341,17 +364,17 @@ class Session {
 		
 		if(!($session_id = self::getSessionID())) { return false; }
 		if(isset(Session::$s_session_vars['session_end_timestamp'])) {
-			$vn_session_lifetime = abs(((int) Session::$s_session_vars['session_end_timestamp']) - time());
+			$session_lifetime = abs(((int) Session::$s_session_vars['session_end_timestamp']) - time());
 		} else {
-			$vn_session_lifetime = 86400;	// 24 hours
+			$session_lifetime = Session::$lifetime;
 		}
-		if ($vn_session_lifetime > (86400 * 30)) {		// max 30 days
-			$vn_session_lifetime = 86400 * 30;
+		if ($session_lifetime > (86400 * 30)) {		// max 30 days
+			$session_lifetime = 86400 * 30;
 		}
 		
 		// Get old vars
-		if (!self::$s_cache_type::fetch($session_id, 'SessionVars') || !is_array($va_current_values = self::$s_cache_type::fetch($session_id, 'SessionVars'))) {
-			$va_current_values = [];
+		if (!self::$s_cache_type::fetch($session_id, 'SessionVars') || !is_array($current_values = self::$s_cache_type::fetch($session_id, 'SessionVars'))) {
+			$current_values = [];
 		}
 		
 		// Only set changed vars
@@ -359,7 +382,25 @@ class Session {
 		foreach(Session::$s_changed_vars as $k => $v) {
 			$vars[$k] = Session::$s_session_vars[$k];
 		}
-		self::$s_cache_type::save($session_id, array_merge($va_current_values, $vars), 'SessionVars', $vn_session_lifetime);
+		
+ 		$config = Configuration::load();
+		$app_name = $config->get("app_name");
+		$user_id = Session::$s_session_vars["{$app_name}_user_id"];
+		
+		if($user_id) {
+			$keys = self::$s_cache_type::fetch($user_id, 'SessionsByUser') ?? [];
+			
+			if((bool)$config->get('session_do_not_allow_simultaneous_sessions') && is_array($keys)) {
+				foreach(array_keys($keys) as $session_key) {
+					if($session_key == $session_id) { continue; }
+					self::$s_cache_type::delete($session_key, 'SessionVars');
+				}
+				$keys = [];
+			} 
+			$keys[$session_id] = true;
+			self::$s_cache_type::save($user_id, $keys, 'SessionsByUser', $session_lifetime * 2);
+		}
+		self::$s_cache_type::save($session_id, array_merge($current_values, $vars), 'SessionVars', $session_lifetime);
 	}
 	# ----------------------------------------
 	/**
@@ -369,7 +410,13 @@ class Session {
 	 */
 	public static function lifetime():int {
  		$o_config = Configuration::load();
- 		if($l = (int) $o_config->get("session_lifetime")) { return $l; }
+ 		if($l = (int) $o_config->get("session_lifetime")) { 
+ 			if ($l > (86400 * 30)) {		// max 30 days
+				$l = 86400 * 30;
+			}
+			
+ 			return $l; 
+ 		}
 		
 		return 3600 * 24 * 7;
 	}
@@ -377,11 +424,11 @@ class Session {
 	# --- Page performance
 	# ----------------------------------------
 	# Return number of seconds since request processing began
-	public static function elapsedTime($pn_decimal_places=4) {
+	public static function elapsedTime($decimal_places=4) {
 		list($sm, $st) = explode(" ", Session::$start_time);
 		list($em, $et) = explode(" ",microtime());
 
-		return sprintf("%4.{$pn_decimal_places}f", (($et+$em) - ($st+$sm)));
+		return sprintf("%4.{$decimal_places}f", (($et+$em) - ($st+$sm)));
 	}
 	# ----------------------------------------
 	/**

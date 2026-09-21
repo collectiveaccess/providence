@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2025 Whirl-i-Gig
+ * Copyright 2012-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -112,7 +112,7 @@ class EditorController extends ActionController {
 				$va_last_settings,
 				["priority" => 100, "entity_key" => $vs_entity_key, "row_key" => $vs_row_key, 'user_id' => $this->request->getUserID()]))
 			{
-				//$this->postError(100, _t("Couldn't queue batch processing for"),"EditorContro->_processMedia()");
+				//$this->postError(100, _t("Couldn't queue batch processing for"),"EditorController->_processMedia()");
 				
 			}
 			$this->render('editor/batch_queued_html.php');
@@ -181,8 +181,7 @@ class EditorController extends ActionController {
 				array_merge($va_last_settings, array('isBatchTypeChange' => true, 'new_type_id' => $vn_new_type_id)),
 				array("priority" => 100, "entity_key" => $vs_entity_key, "row_key" => $vs_row_key, 'user_id' => $this->request->getUserID())))
 			{
-				//$this->postError(100, _t("Couldn't queue batch processing for"),"EditorContro->_processMedia()");
-				
+				//$this->postError(100, _t("Couldn't queue batch processing for"),"EditorController->_processMedia()");
 			}
 			$this->render('editor/batch_queued_html.php');
 		} else { 
@@ -193,6 +192,59 @@ class EditorController extends ActionController {
 		}
 		
 		$this->request->user->setVar('batch_editor_last_settings', $va_last_settings);
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 *
+	 * @param array $pa_options Array of options passed through to _initView
+	 */
+	public function Access(?array $options=null) {
+		AssetLoadManager::register('tableList');
+		if (!is_array($options)) { $options = []; }
+		list($rs, $t_subject, $t_ui) = $this->_initView($options);
+		
+		if(!caShowAccessControlScreen($t_subject, ['anywhere' => true])) { throw new ApplicationException(_t('ACL not enabled')); }
+		//if(!$this->verifyAccess($t_subject)) { return; }
+		
+		$this->view->setVar('rs', $rs);
+		$this->view->setVar('t_subject', $t_subject);
+
+		if ((!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) {
+			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2570?r='.urlencode($this->request->getFullUrlPath()));
+			return;
+		}
+
+		$this->render('editor/access_html.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 *
+	 * @param array $pa_options Array of options passed through to _initView
+	 */
+	public function SetAccess(?array $options=null) {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+	    	$this->Edit();
+	    	return;
+	    }
+		list($rs, $t_subject, $t_ui) = $this->_initView($options);
+		
+		$ids = $rs->getItemRowIDs();
+		
+		$qr = caMakeSearchResult($rs->tableName(), $ids);
+		while($qr->nextHit()) {
+			$t = $qr->getInstance();
+			if(!$t->setACLAccessFromForm($this->request, ['batch' => true]) && ($t->numErrors() > 0)) {
+				$error = array_shift($t_subject->errors);
+				$error_num = $error->getErrorNumber();
+				print "ERROR!";print_r($t->getErrors());
+				//$this->response->setRedirect($this->request->config->get('error_display_url')."/n/{$error_num}?r=".urlencode($this->request->getFullUrlPath()));
+			}
+		}
+		$this->notification->addNotification(_t('Saved settings'), __NOTIFICATION_TYPE_INFO__);
+		ca_acl::removeRedundantACLEntries($t_subject->getDb());
+		$this->Access();
 	}
 	# -------------------------------------------------------
 	/**
@@ -249,14 +301,27 @@ class EditorController extends ActionController {
 		
 		$t_ui = new ca_editor_uis();
 		if (!isset($options['ui']) || !$options['ui']) {
-			$t_ui->load($this->request->user->getPreference("batch_".$t_subject->tableName()."_editor_ui"));
-			$restrictions = $t_ui->getTypeRestrictions();
-			$type_ids = array_map(function($v) {
-				return $v['type_id'] ?? null;
-			}, $restrictions ?? []);
-			if(is_array($type_ids) && sizeof($type_ids) && !in_array($t_subject->getTypeID(), $type_ids)) {
-				$types_in_set = array_keys($t_set->getTypesForItems());
-				if(!($t_ui = ca_editor_uis::loadDefaultUI($t_subject->tableName(), $this->request, array_shift($types_in_set)))) {
+			$editors_by_type = $this->request->user->getPreference("batch_".$t_subject->tableName()."_editor_ui");
+			$table_num = $t_subject->tableNum();
+			$types_in_set = array_keys($t_set->getTypesForItems());
+			
+			if(is_array($editors_by_type)) { 
+				$ui_id = $editors_by_type[$t_subject->getTypeID()] ?? $editors_by_type['__all__'] ?? null;
+			} elseif(is_numeric($editors_by_type)) {
+				$ui_id = (int)$editors_by_type;
+			}
+			if($ui_id) { $t_ui->load($ui_id); }
+			
+			$restrictions = null;
+			if($t_ui->isLoaded()) {
+				$restrictions = array_map(function($v) use ($table_num) {
+					return $v['type_id'];
+				}, $j = array_filter($t_ui->getTypeRestrictions() ?? [], function($x) use ($table_num) {
+					return ($x['table_num'] == $table_num);
+				}));
+			}
+			if(!$t_ui->isLoaded() || (is_array($restrictions) && sizeof($restrictions) && !sizeof(array_intersect($restrictions, $types_in_set)))) {
+				if(!($t_ui = ca_editor_uis::loadDefaultUI($table_num, $this->request, array_shift($types_in_set)))) {
 					$t_ui = new ca_editor_uis();
 				}
 			}

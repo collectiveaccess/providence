@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,13 +28,13 @@
 AssetLoadManager::register('sortableUI');
 
 $id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-$t_instance 		= $this->getVar('t_instance');
-$t_item 			= $this->getVar('t_item');			// object representation
-$t_item_label		= $t_item->getLabelTableInstance();
-$t_item_rel 		= $this->getVar('t_item_rel');
-$t_subject 			= $this->getVar('t_subject');		// object
+
+$t_item 		= $this->getVar('t_item');			// object representation
+$t_item_label	= $t_item->getLabelTableInstance();
+$t_item_rel 	= $this->getVar('t_item_rel');
+$t_subject 		= $this->getVar('t_subject');		// object
 $add_label 		= $this->getVar('add_label');
-$settings 			= $this->getVar('settings');
+$settings 		= $this->getVar('settings');
 
 $read_only		=	(isset($settings['readonly']) && $settings['readonly']);
 $batch			=	$this->getVar('batch');
@@ -51,9 +51,9 @@ $loaded_sort 			= $this->getVar('sort');
 $loaded_sort_direction 	= $this->getVar('sortDirection');
 
 
-$rel_dir         = ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? 'ltol' : 'rtol';
-$left_sub_type_id = ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
-$right_sub_type_id = ($t_item_rel->getRightTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
+$rel_dir         	= ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? 'ltol' : 'rtol';
+$left_sub_type_id 	= ($t_item_rel->getLeftTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
+$right_sub_type_id 	= ($t_item_rel->getRightTableName() == $t_subject->tableName()) ? $t_subject->get('type_id') : null;
 $rel_types          = $t_item_rel->getRelationshipTypes($left_sub_type_id, $right_sub_type_id);
 
 $embedded_import_opts = (bool)$this->request->getAppConfig()->get('allow_user_selection_of_embedded_metadata_extraction_mapping') ? ca_data_importers::getImportersAsHTMLOptions(['formats' => ['exif', 'mediainfo'], 'tables' => [$t_instance->tableName(), 'ca_object_representations'], 'nullOption' => (bool)$this->request->getAppConfig()->get('allow_user_embedded_metadata_extraction_mapping_null_option') ? '-' : null]) : [];
@@ -533,7 +533,7 @@ print caEditorBundleMetadataDictionary($this->request, $id_prefix, $settings);
 	<div class="bundleContainer">
 	    <div class='bundleSubLabel'>
 <?php
-            print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), $t_instance->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
+            print caEditorBundleSortControls($this->request, $id_prefix, $t_item->tableName(), $t_subject->tableName(), array_merge($settings, ['sort' => $loaded_sort, 'sortDirection' => $loaded_sort_direction]));
 
 		    if (($rep_count > 1) && $this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
 			    print "<div style='float: right'>".caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1)." "._t('Download all'), 'button', '*', '*', 'DownloadMedia', [$t_subject->primaryKey() => $t_subject->getPrimaryKey()])."</div>";

@@ -89,7 +89,11 @@ final class Updater {
 		}
 		
 		// Clean cache
+		\MemoryCache::flush();
+		\ExternalCache::flush();
 		caRemoveDirectory(__CA_TEMP_DIR__, false);
+		
+		\ConfigurationCheck::htmlPurifierDirQuickCheck();
 		
 		return $messages;
 	}

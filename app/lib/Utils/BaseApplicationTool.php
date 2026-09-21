@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
 require_once(__CA_LIB_DIR__.'/Utils/IApplicationTool.php');
 require_once(__CA_LIB_DIR__.'/Utils/ApplicationToolSettings.php');
 require_once(__CA_LIB_DIR__.'/Logging/KLogger/KLogger.php');
@@ -144,7 +139,7 @@ abstract class BaseApplicationTool implements IApplicationTool {
 	/**
 	 *
 	 */
-	public function setJobID(string $job_id=null, ?array $options=null) {
+	public function setJobID(?string $job_id=null, ?array $options=null) {
 		$this->ops_job_id = ($job_id) ? $job_id : md5(caGetOption('data', $options, '').'_'.$this->getToolIdentifier().'_'.uniqid(rand(), true).'_'.microtime(true));
 		
 		return $this->ops_job_id;

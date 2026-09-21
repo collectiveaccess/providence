@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2023 Whirl-i-Gig
+ * Copyright 2012-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,7 @@ $t_subject 			= $this->getVar('t_subject');
 $rs	 				= $this->getVar('record_selection');
 $id	 				= $this->getVar('id');
 
-print $vs_control_box = caFormControlBox(
+print $control_box = caFormControlBox(
 	caFormJSButton($this->request, __CA_NAV_ICON_SAVE__, _t("Execute batch edit"), 'caBatchEditorFormButton', ['onclick' => 'caConfirmBatchExecutionPanel.showPanel(); return false;']).' '.
 	caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'batch', 'Editor', 'Edit/'.$this->request->getActionExtra(), ['id' => $id]),
 	'', 
@@ -40,8 +40,8 @@ print $vs_control_box = caFormControlBox(
 <?php
 	print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'caBatchEditorForm', null, 'POST', 'multipart/form-data', '_top', ['noTimestamp' => true]);
 	
-		$va_bundle_list = [];
-		$va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->request->getActionExtra(), [
+		$bundle_list = [];
+		$form_elements = $t_subject->getBundleFormHTMLForScreen($this->request->getActionExtra(), [
 								'request' => $this->request, 
 								'formName' => 'caBatchEditorForm',
 								'batch' => true,
@@ -49,10 +49,10 @@ print $vs_control_box = caFormControlBox(
 								'ui_instance' => $this->getVar('t_ui'),
 								'id' => $id,
 								'recordSet' => $this->getVar('recordSet')
-							], $va_bundle_list);
+							], $bundle_list);
 							
-		print join("\n", $va_form_elements);
-		print $vs_control_box; 
+		print join("\n", $form_elements);
+		print $control_box; 
 ?>
 		<?= caHTMLHiddenInput('id', ['value' => $id]); ?>
 		<?= $this->render("editor/confirm_html.php"); ?>
@@ -61,4 +61,4 @@ print $vs_control_box = caFormControlBox(
 
 <div class="editorBottomPadding"><!-- empty --></div>
 
-<?= caSetupEditorScreenOverlays($this->request, $t_subject, $va_bundle_list); ?>
+<?= caSetupEditorScreenOverlays($this->request, $t_subject, $bundle_list); ?>

@@ -2510,7 +2510,7 @@ if (!$pb_omit_editing_info) {
 				} else {
 					// resolve template relative to current record
 					$rtc = null;
-					if(!in_array($element_code, ['_generic_bundle_', 'history_tracking_current_value'], true)) {
+					if(!in_array($element_code, ['_generic_bundle_', 'history_tracking_current_value'], true) && !preg_match("!^\<unit!i", $vs_template)) {
 						// Set container context for all bundles except generic and current value bundles
 						// We skip current value bundles because some extant templates pull in data outside of the current value
 						// container for display, and as current value never repeats the utility of setting context here is limited

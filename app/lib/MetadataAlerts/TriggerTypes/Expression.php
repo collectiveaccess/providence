@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2033 Whirl-i-Gig
+ * Copyright 2023-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 namespace CA\MetadataAlerts\TriggerTypes;
 
 class Expression extends Base {
@@ -47,7 +46,6 @@ class Expression extends Base {
 				'width' => '670px', 'height' => 3,
 				'default' => '',
 				'label' => _t('Expression'),
-				'suffix' => _t(''),
 				'description' => _t('Expression to evaluate when record is saved.')
 			]
 		];

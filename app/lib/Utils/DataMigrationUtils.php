@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2025 Whirl-i-Gig
+ * Copyright 2010-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -553,6 +553,13 @@ class DataMigrationUtils {
 	static function splitEntityName($text, $options=null) {
 		global $g_ui_locale;
 		$text = $original_text = trim(preg_replace("![ ]+!", " ", $text));
+		
+		// Consolidate parenthesised names with incorrectly applied whitespace
+		// Eg. MARY( MARNER) LARSON
+		$text = preg_replace("!([A-Za-z0-9]+)\(!", "$1 (", $text);
+		$text = preg_replace("!\)([A-Za-z0-9]+)!", ") $1", $text);
+		$text = preg_replace("!\([ ]+([A-Za-z0-9]+)!", "($1", $text);
+		$text = preg_replace("!([A-Za-z0-9]+)[ ]+\)!", "$1)", $text);
 		
 		// check for trailing year or years
 		$date = null;
@@ -1123,7 +1130,6 @@ class DataMigrationUtils {
 	 */
 	private static function _getID($ps_table, $pa_label, $pn_parent_id, $pn_type_id, $locale_id, $pa_values=null, $options=null) {
 		if (!is_array($options)) { $options = array(); }
-		
 		/** @var KLogger $o_log */
 		$o_log = (isset($options['log']) && $options['log'] instanceof KLogger) ? $options['log'] : null;
 		
@@ -1349,7 +1355,7 @@ class DataMigrationUtils {
 						$v = $pa_values[$va_tmp[0]][$va_tmp[1]] ?? null;
 					} 
 					if(!strlen($v)) {
-						$v = $pa_values[$vs_match_on] ?? $pa_label[$vs_match_on] ?? $pa_label[$vs_label_display_fld];
+						$v = $pa_values[$vs_match_on] ?: $pa_label[$vs_match_on] ?: $pa_label[$vs_label_display_fld] ?: $pa_values[$vs_idno_fld] ?: null;
 					}
 					if(is_array($v)) { $v = array_shift($v); }
 					$vs_element = $va_params = null;

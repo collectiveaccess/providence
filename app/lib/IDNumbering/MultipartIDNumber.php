@@ -358,7 +358,7 @@ class MultipartIDNumber extends IDNumber {
 							if(($v < 0) || ($v > 99)){
 								$element_errors[$ename] = _t("%1 must be a valid two-digit year", $info['description']);
 							}
-						} elseif ((($v < 1000) || ($v > ($tmp['year'] + 10))) || ($v != intval($v))) {
+						} elseif (($v != 0) && ((($v < 1000) || ($v > ($tmp['year'] + 10))) || ($v != intval($v)))) {	// Zero is allowed for "uncertain" years
 							$element_errors[$ename] = _t("%1 must be a valid year", $info['description']);
 						}
 					}
@@ -1152,9 +1152,10 @@ class MultipartIDNumber extends IDNumber {
 	 * @return String Identifier from extracted from form and returned as string
 	 */
 	public function htmlFormValue($name, $value=null, $dont_mark_serial_value_as_used=false, $generate_for_search_form=false, $always_generate_serial_values=false) {
-		$tmp = $this->htmlFormValuesAsArray($name, $value, $dont_mark_serial_value_as_used, $generate_for_search_form, $always_generate_serial_values);
+		$tmp = $this->htmlFormValuesAsArray($name, $value, $dont_mark_serial_value_as_used, $generate_for_search_form, $always_generate_serial_values) ?? [];
 		if (!($separator = $this->getSeparator())) { $separator = ''; }
-
+		$last = end($tmp);
+		if(!strlen($last)) { array_pop($tmp); }
 		return (is_array($tmp)) ? join($separator, $tmp) : null;
 	}
 	# -------------------------------------------------------

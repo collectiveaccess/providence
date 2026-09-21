@@ -84,9 +84,9 @@
 		if ($pn_number_of_files <= 1) { print "jQuery('#batchProcessingTableProgressGroup').hide();"; }
 		print "jQuery('#progressbarFiles').progressbar('value',{$pn_file_percentage}); jQuery('#batchProcessingFileCount').html('{$ps_file_message}');";
 		print "jQuery('#progressbar').progressbar('value',{$pn_percentage}); jQuery('#batchProcessingRowProgressGroup').html('{$ps_message}');";
-		print "jQuery('#batchProcessingElapsedTime').html('".caFormatInterval($pn_elapsed_time)."/".sprintf("%4.2f mb", ($pn_memory_used/ 1048576))."');"; 
-		print "jQuery('#batchProcessingCounts').html('".addslashes(_t("%1 processed; %2 errors", $pn_num_processed, $pn_num_errors))."');"; 
-		
+		print "jQuery('#batchProcessingElapsedTime').html('".caFormatInterval($pn_elapsed_time)."/".sprintf("%4.2f mb", ($pn_memory_used/ 1048576))."');";
+		$pn_num_processed = max((int)$pn_num_processed, (int)$pn_rows_complete);
+		print "jQuery('#batchProcessingCounts').html('".addslashes(_t("%1 processed; %2 errors", $pn_num_processed, $pn_num_errors))."');";
 		print "</script>";
 		caFlushOutput();
 	}

@@ -121,15 +121,6 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 		$this->description = _t('Provides access to data services in remote CollectiveAccess databases');
 	}
 	# ------------------------------------------------
-	/**
-	 * Get all settings settings defined by this plugin as an array
-	 *
-	 * @return array
-	 */
-	public function getAvailableSettings() {
-		return WLPlugInformationServiceCollectiveAccess::$s_settings;
-	}
-	# ------------------------------------------------
 	# Data
 	# ------------------------------------------------
 	/**

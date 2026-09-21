@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -105,13 +105,13 @@ class ConfigurationCheckController extends ActionController {
 		$va_md_extraction_components = [
 			'EXIFTool' => [
 				'available' => false,
-				'description' => _t('A tool for extraction of embedded metadata in images, documents and other media. See https://exiftool.org for additional information.'),
+				'description' => _t('A tool for extraction of embedded metadata in images, documents and other media. See %1 for additional information.', 'https://exiftool.org'),
 				'warnings' => [],
 				'errors' => []
 			],
 			'MediaInfo' => [
 				'available' => false,
-				'description' => _t('A tool for extraction of embedded metadata from audio and video files. See https://mediaarea.net/en/MediaInfo for additional information.'),
+				'description' => _t('A tool for extraction of embedded metadata from audio and video files. See %1 for additional information.', 'https://mediaarea.net/en/MediaInfo'),
 				'warnings' => [],
 				'errors' => []
 			]

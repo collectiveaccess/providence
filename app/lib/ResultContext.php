@@ -1071,7 +1071,7 @@ class ResultContext {
 	 */ 
 	public function setSearchHistory($pn_hits) {
 		if ($pn_hits > 0) {
-			$va_history = $this->getSearchHistory();
+			$va_history = array_slice($this->getSearchHistory(),-99);
 			
 			if ($vs_search = $this->getSearchExpression()) {
 				$va_history[$vs_search] = array(

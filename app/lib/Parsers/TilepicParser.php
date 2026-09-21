@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2025 Whirl-i-Gig
+ * Copyright 2004-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1265,6 +1265,8 @@ class TilepicParser {
 			return false;
 		}
 		
+		$background = caGetOption('background', $pa_options ?? [], "#FFFFFF");
+		
 		#
 		# Open image
 		#
@@ -1275,6 +1277,20 @@ class TilepicParser {
 		} catch (Exception $e){
 			$this->error = "Couldn't open image $ps_filepath";
 			return false;
+		}
+		
+		// Set background color for transparent PNG, GIF or TIFF
+		$format = $h->getimageformat();
+		if ($background && in_array($format, ['PNG', 'GIF', 'TIFF'])) {
+			$geometry = $h->getimagegeometry();
+			$r = new Gmagick();
+			$r_new_image = $r->newimage($geometry['width'], $geometry['height'], $background, $format);
+			$r_new_image->setimagebackgroundcolor(new GmagickPixel($background));
+			$r_new_image->setimagecompose(Gmagick::COMPOSITE_DEFAULT);
+		
+			$r_new_image->compositeimage($h, Gmagick::COMPOSITE_DEFAULT, 0, 0 );
+			$h->destroy();
+			$h = $r_new_image;
 		}
 
 		$image_dimensions = $h->getimagegeometry();

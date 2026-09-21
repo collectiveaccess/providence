@@ -259,8 +259,6 @@ abstract class BaseInformationServicePlugin Extends WLPlug {
 						}
 					}
 				}
-				
-				
 				$parent_id = $t_parent->getPrimaryKey();
     		}
     	}

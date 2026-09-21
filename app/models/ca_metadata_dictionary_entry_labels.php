@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019 Whirl-i-Gig
+ * Copyright 2019-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,7 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__.'/BaseLabel.php');
-
 
 BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_entry_labels'] = array(
  	'NAME_SINGULAR' 	=> _t('data dictionary entry name'),

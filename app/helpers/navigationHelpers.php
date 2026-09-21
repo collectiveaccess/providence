@@ -1148,15 +1148,30 @@ function caEditorUrl($po_request, $ps_table, $pn_id=null, $pb_return_url_as_piec
 			$vs_module = 'editor/tour_stops';
 			$vs_controller = 'TourStopEditor';
 			break;
-		case 'ca_bundle_mappings':
-		case 128:
-			$vs_module = 'administrate/setup/bundle_mapping_editor';
-			$vs_controller = 'BundleMappingEditor';
+		case 'ca_editor_uis':
+		case 101:
+			$vs_module = 'administrate/setup/interface_editor';
+			$vs_controller = 'InterfaceEditor';
 			break;
-		case 'ca_bundle_mapping_groups':
-		case 130:
-			$vs_module = 'administrate/setup/bundle_mapping_group_editor';
-			$vs_controller = 'BundleMappingGroupEditor';
+		case 'ca_editor_ui_screens':
+		case 100:
+			$vs_module = 'administrate/setup/interface_screen_editor';
+			$vs_controller = 'InterfaceScreenEditor';
+			break;
+		case 'ca_metadata_dictionary_entries':
+		case 214:
+			$vs_module = 'administrate/setup/data_dictionary_entries';
+			$vs_controller = 'DataDictionaryEntryEditor';
+			break;
+		case 'ca_metadata_alert_rules':
+		case 238:
+			$vs_module = 'manage/metadata_alert_rules';
+			$vs_controller = 'MetadataAlertRuleEditor';
+			break;
+		case 'ca_site_pages':
+		case 235:
+			$vs_module = 'manage/site_pages';
+			$vs_controller = 'SitePageEditor';
 			break;
 		default:
 			return null;
