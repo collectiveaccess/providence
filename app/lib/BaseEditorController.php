@@ -188,8 +188,10 @@ class BaseEditorController extends ActionController {
 				}
 							
 				// Redirect to edit first newly created dupe.
-				$this->response->setRedirect(caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), [$t_subject->primaryKey() => $t_first->getPrimaryKey()]));
-				return;
+				if($t_first) {
+					$this->response->setRedirect(caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), [$t_subject->primaryKey() => $t_first->getPrimaryKey()]));
+					return;
+				}
 			}
 		}
 
