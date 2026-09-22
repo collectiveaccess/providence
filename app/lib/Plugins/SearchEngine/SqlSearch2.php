@@ -2736,9 +2736,9 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				foreach($dict as $n => $list) {
 					$dict[$n] = array_unique($dict[$n]);
 				}
-				CompositeCache::save($key, $dict, 'SqlSearch2SearchExpansionDict');
-				return $dict;
 			}
+			CompositeCache::save($key, $dict, 'SqlSearch2SearchExpansionDict');
+			return $dict;
 		}
 	}
 	# -------------------------------------------------------
