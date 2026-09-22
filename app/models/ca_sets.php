@@ -282,7 +282,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-		
+			"set_id"
 		),
 		"RELATED_TABLES" => array(
 			"ca_set_items"
