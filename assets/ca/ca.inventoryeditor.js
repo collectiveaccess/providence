@@ -347,7 +347,7 @@ var caUI = caUI || {};
 						}
 					});
 					
-					jQuery(editor).find("input,select,textarea").on("change", function(e) {
+					jQuery(editor).find("input,select,textarea").on("change caAuthorityItemSelected", function(e, d) {
 						const id = jQuery(this).attr('id');
 						const m = id.match(/^inventory_([\d]+)_(.*)$/);
 						const item_id = m[1];
@@ -356,7 +356,16 @@ var caUI = caUI || {};
 						
 						for(let i in that.items) {
 							if(that.items[i]['item_id'] == item_id) {
-								that.items[i][fld] = v;
+								if(fld.match(/_autocomplete$/)) {
+									let bfld = fld.replace(/_autocomplete$/, "_id");
+									let dfld = fld.replace(/_autocomplete$/, "_display");
+									that.items[i][dfld] = d['display']
+									that.items[i][bfld] = d['id'];
+									console.log("rewrite", fld, bfld, dfld, that.items[i]);
+								} else {
+									that.items[i][fld] = v;
+								}
+								
 								if(fld == that.inventoryFoundBundleProc) {
 									that.items[i]['_INVENTORY_STATUS_'] = that.inventoryFoundOptions[v] ?? 'NOT_CHECKED';
 									that.items[i]['_INVENTORY_STATUS_ICON_'] = that.inventoryFoundIcons[that.items[i]['_INVENTORY_STATUS_']] ?? that.inventoryFoundIcons['NOT_CHECKED'];

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -486,45 +486,48 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 				
 				$attr_val = $o_attr_value->getDisplayValue();
 				$attr_val_idno = $o_attr_value->getDisplayValue(['output' => 'idno']);
-				if (
-					(
-						array_key_exists($vn_element_id, $pa_values) && (!in_array($pa_values[$vn_element_id], [$attr_val, $attr_val_idno], true)) 
-						&& 
-						!(($pa_values[$vn_element_id] == "") && (is_null($attr_val)))
-						&& 
-						!(is_null($pa_values[$vn_element_id]) && is_null($attr_val))
-						&&
-						!in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
-					)
-					||
-					(
-						array_key_exists($vs_element_code, $pa_values) && (!in_array($pa_values[$vs_element_code], [$attr_val, $attr_val_idno], true)) 
-						&&
-						!(($pa_values[$vs_element_code] == "") && (is_null($attr_val_idno)))
-						&& 
-						!(is_null($pa_values[$vs_element_code]) && is_null($attr_val_idno))
-						&&
-						!in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
-					)
-					||
-					(
-						in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
-						&& 
-						array_key_exists($vs_element_code, $pa_values) && is_array($pa_values[$vs_element_code]) && sizeof($pa_values[$vs_element_code])
-						
-					)
-					||
-					(
-						in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
-						&& 
-						array_key_exists($vn_element_id, $pa_values) && is_array($pa_values[$vn_element_id]) && sizeof($pa_values[$vn_element_id])
-						
-					)
-				) {
-					$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id] = true;
-					$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_element_id] = true;
-					$is_changed = true;
-					break;
+				
+				foreach([$attr_val, $attr_val_idno] as $vv) {
+					if (
+						(
+							array_key_exists($vn_element_id, $pa_values) && (!in_array($pa_values[$vn_element_id], [$vv], true)) 
+							&& 
+							!(($pa_values[$vn_element_id] == "") && (is_null($vv)))
+							&& 
+							!(is_null($pa_values[$vn_element_id]) && is_null($vv))
+							&&
+							!in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
+						)
+						||
+						(
+							array_key_exists($vs_element_code, $pa_values) && (!in_array($pa_values[$vs_element_code], [$vv], true)) 
+							&&
+							!(($pa_values[$vs_element_code] == "") && (is_null($vv)))
+							&& 
+							!(is_null($pa_values[$vs_element_code]) && is_null($vv))
+							&&
+							!in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
+						)
+						||
+						(
+							in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
+							&& 
+							array_key_exists($vs_element_code, $pa_values) && is_array($pa_values[$vs_element_code]) && sizeof($pa_values[$vs_element_code])
+							
+						)
+						||
+						(
+							in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
+							&& 
+							array_key_exists($vn_element_id, $pa_values) && is_array($pa_values[$vn_element_id]) && sizeof($pa_values[$vn_element_id])
+							
+						)
+					) {
+						$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id] = true;
+						$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_element_id] = true;
+						$is_changed = true;
+						break(2);
+					}
 				}
 			}
 			

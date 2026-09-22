@@ -1100,7 +1100,7 @@ function caEditorInspector($view, $options=null) {
 		foreach($display_flags as $exp => $display_flag) {
 			if($qr = caMakeSearchResult($t_item->tableName(), [$t_item->getPrimaryKey()])) {
 				$qr->nextHit();
-				$exp_vars = DisplayTemplateParser::getValuesForTemplate($qr, $exp);
+				$exp_vars = DisplayTemplateParser::getValuesForTemplate($qr, $exp, ['convertCodesToIdno' => true]);
 				if (ExpressionParser::evaluate($exp, $exp_vars)) {
 					if(is_array($display_flag)) {
 						$m = $t_item->getWithTemplate($display_flag['message'] ?? '');
