@@ -465,8 +465,8 @@ class Installer {
 	                    $t_element->setSetting($setting_name, array_shift($setting_values));
 	                }
 	            }
+	      		$t_element->update();
 	        }
-	        $t_element->update();
 	    } 
 	    
 		// generate system GUID -- used to identify systems in data sync protocol
