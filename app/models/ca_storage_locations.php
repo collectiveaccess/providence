@@ -58,7 +58,7 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
 				'LIST_CODE' => 'storage_location_types',
-				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the storage location. In CollectiveAccess every storage location has a single "instrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.')
+				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the storage location. In CollectiveAccess every storage location has a single "intrinsic" type that determines the set of descriptive and administrative metadata that can be applied to it.')
 		),
 		'idno' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -75,7 +75,7 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Sortable location identifier', 'DESCRIPTION' => 'Value used for sorting locations on identifier value.',
-				'BOUNDS_LENGTH' => array(0,255)
+				'BOUNDS_LENGTH' => array(0, 768)
 		),
 		'idno_sort_num' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 

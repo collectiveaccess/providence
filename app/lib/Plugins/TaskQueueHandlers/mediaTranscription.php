@@ -122,8 +122,8 @@ class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlug
 			$whisper_output = caGetTempFileName('transcription', 'json', ['useAppTmpDir' => true]);
 			
 			if(!($app_path = caWhisperInstalled())) { 
-				$logger->logError(_t("[TaskQueue::mediaTranscription::process] Whisper is not installed (see https://github.com/openai/whisper)", $table, $id));
-				$this->error->setError(551, _t("Whisper is not installed (see https://github.com/openai/whisper)"),"mediaTranscription->process()");	
+				$logger->logError(_t("[TaskQueue::mediaTranscription::process] Whisper is not installed (see %1)", 'https://github.com/openai/whisper'));
+				$this->error->setError(551, _t("Whisper is not installed (see %1)", 'https://github.com/openai/whisper'),"mediaTranscription->process()");	
 				return false;
 			}
 			

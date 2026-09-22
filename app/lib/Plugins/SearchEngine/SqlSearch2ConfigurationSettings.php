@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021-2023 Whirl-i-Gig
+ * Copyright 2021-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,11 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
-
 # ------------------------------------------------
 define('__CA_SQLSEARCH_RUNNING_MYSQL__',4001);
 define('__CA_SQLSEARCH_TABLES_EXIST__',4002);
@@ -93,7 +88,7 @@ class SqlSearch2ConfigurationSettings extends ASearchConfigurationSettings {
 			case __CA_SQLSEARCH_TABLES_EXIST__:
 				return _t("The SqlSearch2 search engine requires that certain tables be present in your database. They are installed by default and should be present, but if they are not SqlSearch2 will not be able to operate.");
 			case __CA_SQLSEARCH_CHINESE_WORD_SEGMENTER_AVAILABLE__:
-				return _t("To fully index Chinese-language content the Jieba PHP word segmenter (https://github.com/binaryoung/jieba-php) should be installed.");
+				return _t("To fully index Chinese-language content the Jieba PHP word segmenter (%1) should be installed.", 'https://github.com/binaryoung/jieba-php');
 			default:
 				return null;
 		}
@@ -106,7 +101,7 @@ class SqlSearch2ConfigurationSettings extends ASearchConfigurationSettings {
 			case __CA_SQLSEARCH_TABLES_EXIST__:
 				return _t("Try reloading the definitions for these tables: ca_sql_search_words, ca_sql_search_word_index");
 			case __CA_SQLSEARCH_CHINESE_WORD_SEGMENTER_AVAILABLE__:
-				return _t("Try installing Jieba PHP. See See https://github.com/binaryoung/jieba-php");
+				return _t("Try installing Jieba PHP. See See %1", 'https://github.com/binaryoung/jieba-php');
 			default:
 				return null;
 		}

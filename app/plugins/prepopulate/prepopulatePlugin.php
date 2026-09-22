@@ -45,7 +45,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	var $opo_plugin_config = null;
 	# --------------------------------------------------------------------------------------------
 	public function __construct($ps_plugin_path) {
-		$this->description = _t('This plugin allows prepopulating field values based on display templates. See http://docs.collectiveaccess.org/wiki/Prepopulate for more info.');
+		$this->description = _t('This plugin allows prepopulating field values based on display templates. See %1 for more info.', 'http://docs.collectiveaccess.org/Prepopulate');
 		parent::__construct();
 		
 		$this->log = caGetLogger(['logLevel' => 'INFO']);

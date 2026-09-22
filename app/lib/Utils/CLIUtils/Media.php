@@ -113,8 +113,7 @@ trait CLIUtilsMedia {
 			}
 
 			if ( $o_log ) {
-				$o_log->logDebug( _t( "[reprocess-media] Running query for '$sql_joins' and '$sql_where' with params '"
-									  . str_replace(array("\r", "\n"), '',var_export( $params, true ) . "'" )) );
+				$o_log->logDebug( _t( "[reprocess-media] Running query for '%1' and '%2' with params '%3'", $sql_joins, $sql_where,  str_replace(array("\r", "\n"), '',var_export($params, true))));
 			}
 
 			$qr_c = $o_db->query("
@@ -745,8 +744,8 @@ trait CLIUtilsMedia {
 		}
 
 		$ids = [];
-		if ($ids = (string)$opts->getOption('ids')) {
-			if (sizeof($tmp = explode(",", $ids))) {
+		if ($p_ids = (string)$opts->getOption('ids')) {
+			if (sizeof($tmp = explode(",", $p_ids))) {
 				foreach($tmp as $id) {
 					if ((int)$id > 0) {
 						$ids[] = (int)$id;
@@ -807,6 +806,7 @@ trait CLIUtilsMedia {
 			print CLIProgressBar::finish();
 			CLIUtils::addMessage(_t('Complete'));
 		}
+		\CA\Process\Background::run('taskQueue');
 	}
 	# -------------------------------------------------------
 	/**

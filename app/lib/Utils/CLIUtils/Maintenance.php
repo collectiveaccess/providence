@@ -40,6 +40,9 @@ trait CLIUtilsMaintenance {
 		
 		$tables = $opts ? trim((string)$opts->getOption('table')) : null;
 		
+		$process_labels = $opts ? $opts->getOption('labels') : null;
+		$process_identifiers = $opts ? $opts->getOption('identifiers') : null;
+		
 		if($tables) {
 			$tables = preg_split('![,;]+!', $tables);
 		} else {
@@ -60,46 +63,50 @@ trait CLIUtilsMaintenance {
 			$pk = $t_table->primaryKey();
 			$qr_res = $o_db->query("SELECT t.{$pk} FROM {$table} t {$deleted_sql}");
 
-			if ($label_table_name = $t_table->getLabelTableName()) {
-				$t_label = new $label_table_name;
-				$label_pk = $t_label->primaryKey();
-				$qr_labels = $o_db->query("
-					SELECT l.{$label_pk} 
-					FROM {$label_table_name} l
-					INNER JOIN {$table} AS t ON t.{$pk} = l.{$pk}
-					{$deleted_sql}
-				");
-				
-				$table_name_display = $t_label->getProperty('NAME_PLURAL');
-
-				print CLIProgressBar::start($qr_labels->numRows(), _t('Processing %1', $t_label->getProperty('NAME_PLURAL')));
-				while($qr_labels->nextRow()) {
-					$label_pk_val = $qr_labels->get($label_pk);
+			if(!(!$process_labels && $process_identifiers)) {
+				if ($label_table_name = $t_table->getLabelTableName()) {
+					$t_label = new $label_table_name;
+					$label_pk = $t_label->primaryKey();
+					$qr_labels = $o_db->query("
+						SELECT l.{$label_pk} 
+						FROM {$label_table_name} l
+						INNER JOIN {$table} AS t ON t.{$pk} = l.{$pk}
+						{$deleted_sql}
+					");
 					
-					CLIProgressBar::setMessage(_t("[Sort: %1][Mem: %2]", $table_name_display, caGetMemoryUsage()));
+					$table_name_display = $t_label->getProperty('NAME_PLURAL');
+	
+					print CLIProgressBar::start($qr_labels->numRows(), _t('Processing %1', $t_label->getProperty('NAME_PLURAL')));
+					while($qr_labels->nextRow()) {
+						$label_pk_val = $qr_labels->get($label_pk);
+						
+						CLIProgressBar::setMessage(_t("[Sort: %1][Mem: %2]", $table_name_display, caGetMemoryUsage()));
+						print CLIProgressBar::next();
+						if ($t_label->load($label_pk_val)) {
+							$t_table->logChanges(false);
+							$t_label->update(['dontDoSearchIndexing' => true]);
+						}
+					}
+					print CLIProgressBar::finish();
+				}
+			}
+
+			if(!($process_labels && !$process_identifiers)) {
+				print CLIProgressBar::start($qr_res->numRows(), _t('Processing %1 identifiers', $t_table->getProperty('NAME_SINGULAR')));
+				
+				$table_name_display = $t_table->getProperty('NAME_PLURAL');
+				while($qr_res->nextRow()) {
+					$pk_val = $qr_res->get($pk);
+					
+					CLIProgressBar::setMessage(_t("[Sort: %1 identifiers][Mem: %2]", $table_name_display, caGetMemoryUsage()));
 					print CLIProgressBar::next();
-					if ($t_label->load($label_pk_val)) {
+					if ($t_table->load($pk_val)) {
 						$t_table->logChanges(false);
-						$t_label->update(['dontDoSearchIndexing' => true]);
+						$t_table->update(['dontDoSearchIndexing' => true]);
 					}
 				}
 				print CLIProgressBar::finish();
 			}
-
-			print CLIProgressBar::start($qr_res->numRows(), _t('Processing %1 identifiers', $t_table->getProperty('NAME_SINGULAR')));
-			
-			$table_name_display = $t_table->getProperty('NAME_PLURAL');
-			while($qr_res->nextRow()) {
-				$pk_val = $qr_res->get($pk);
-				
-				CLIProgressBar::setMessage(_t("[Sort: %1 identifiers][Mem: %2]", $table_name_display, caGetMemoryUsage()));
-				print CLIProgressBar::next();
-				if ($t_table->load($pk_val)) {
-					$t_table->logChanges(false);
-					$t_table->update(['dontDoSearchIndexing' => true]);
-				}
-			}
-			print CLIProgressBar::finish();
 		}
 		return true;
 	}
@@ -109,7 +116,9 @@ trait CLIUtilsMaintenance {
 	 */
 	public static function rebuild_sort_valuesParamList() {
 		return array(
-			"table|t=s" => _t('Restrict rebuilding to a comma-separated list of table names.')
+			"table|t=s" => _t('Restrict rebuilding to a comma-separated list of table names.'),
+			"labels|l=s" => _t('Restrict rebuilding to labels.'),
+			"identifiers|i=s" => _t('Restrict rebuilding to identifiers.')
 		);
 	}
 	# -------------------------------------------------------
@@ -507,7 +516,7 @@ trait CLIUtilsMaintenance {
 			chmod($path, 0775);
 		}
 
-		if (!$opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the HTMLPurifier definition cache directory " . Configuration::load()->get('purify_serializer_path') . " for ownership by \"%1\"...", $user)); }
+		if (!$opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the HTMLPurifier definition cache directory %2 for ownership by \"%1\"...", $user, Configuration::load()->get('purify_serializer_path'))); }
 		$files = caGetDirectoryContentsAsList(Configuration::load()->get('purify_serializer_path'), true, false, false, true, ['includeRoot' => true]);
 
 		foreach($files as $path) {
@@ -543,8 +552,8 @@ trait CLIUtilsMaintenance {
 	 */
 	public static function fix_permissionsParamList() {
 		return array(
-			"user|u=s" => _t("Set ownership of directories to specifed user. If not set, an attempt will be made to determine the name of the web server user automatically. If the web server user cannot be determined the current user will be used."),
-			"group|g=s" => _t("Set ownership of directories to specifed group. If not set, the current group will be used.")
+			"user|u=s" => _t("Set ownership of directories to specified user. If not set, an attempt will be made to determine the name of the web server user automatically. If the web server user cannot be determined the current user will be used."),
+			"group|g=s" => _t("Set ownership of directories to specified group. If not set, the current group will be used.")
 		);
 	}
 	# -------------------------------------------------------
@@ -1649,7 +1658,7 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function generate_missing_guidsHelp() {
-		return _t('Generates guids for all records that don\'t have one yet. This can be useful if you plan on using the data synchronization/replication feature in the future. For more info see here: http://docs.collectiveaccess.org/wiki/Replication');
+		return _t('Generates guids for all records that don\'t have one yet. This can be useful if you plan on using the data synchronization/replication feature in the future. For more info see here: %1', 'http://docs.collectiveaccess.org/wiki/Replication');
 	}
 	# -------------------------------------------------------
 	/**
@@ -1703,7 +1712,7 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function remove_unused_guidsHelp() {
-		return _t('Generates guids for all records that don\'t have one yet. This can be useful if you plan on using the data synchronization/replication feature in the future. For more info see here: http://docs.collectiveaccess.org/wiki/Replication');
+		return _t('Generates guids for all records that don\'t have one yet. This can be useful if you plan on using the data synchronization/replication feature in the future. For more info see here: %1', 'http://docs.collectiveaccess.org/wiki/Replication');
 	}
 	# -------------------------------------------------------
 	/**
@@ -1784,7 +1793,7 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function remove_duplicate_recordsHelp() {
-		return _t('Lists and optionally removed duplicate records. For more info on how the algorithm works see here: http://docs.collectiveaccess.org/wiki/Deduplication');
+		return _t('Lists and optionally removed duplicate records. For more info on how the algorithm works see here: %1', 'http://docs.collectiveaccess.org/wiki/Deduplication');
 	}
 	# -------------------------------------------------------
 	/**
@@ -1855,7 +1864,7 @@ trait CLIUtilsMaintenance {
 	# -------------------------------------------------------
 	public static function check_url_reference_integrityParamList() {
 		return [
-			"users|u=s" => _t('User names to notify if there are errors. Multiple entries are delimited by comma or semicolon. Invalid or non-existing user named will be ignored. [Optional]'),
+			"users|u=s" => _t('User names to notify if there are errors. Multiple entries are delimited by comma or semicolon. Invalid or non-existing user names will be ignored. [Optional]'),
 			"groups|g=s" => _t('Groups to notify if there are errors. They\'re identified by group code. Multiple entries are delimited by comma or semicolon. Invalid or non-existing groups will be ignored. [Optional]'),
 		];
 	}
@@ -1913,7 +1922,7 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function check_metadata_alertsHelp() {
-		return _t('This utility checks all periodic metadatadata alert triggers users have set up and, if they triggered, sends notifications to the recipients of these rules.');
+		return _t('This utility checks all periodic metadata alert triggers users have set up and, if they triggered, sends notifications to the recipients of these rules.');
 	}
 	
 	# -------------------------------------------------------
@@ -2211,7 +2220,7 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function check_future_values_for_history_tracking_policiesShortHelp() {
-		return _t('Updates current values for all records with tracking policies for which values with upcoming data have been set.');
+		return _t('Updates current values for all records with tracking policies for which values with upcoming dates have been set.');
 	}
 	# -------------------------------------------------------
 	/**
@@ -2442,17 +2451,11 @@ trait CLIUtilsMaintenance {
 						break;
 					default:
 						$v = $qr_res->get('value_longtext1');
-						if(!$v) { 
-							print CLIProgressBar::next();
-							continue(2); 
-						}
 						break;
 				}
 				$value_id = $qr_res->get('value_id');
-				if (strlen($v) > 0) {
-					$sv = ca_metadata_elements::getSortableValueForElement($qr_res->get('element_id'), $v);
-					$o_db->query("UPDATE ca_attribute_values SET value_sortable = ? WHERE value_id = ?", [$sv, $value_id]);
-				}
+				$sv = ca_metadata_elements::getSortableValueForElement($qr_res->get('element_id'), $v);
+				$o_db->query("UPDATE ca_attribute_values SET value_sortable = ? WHERE value_id = ?", [$sv, $value_id]);
 				print CLIProgressBar::next();
 				$c++;
 				$last_value_id = $value_id;
@@ -2581,7 +2584,7 @@ trait CLIUtilsMaintenance {
 	 *
 	 */
 	public static function check_representation_primary_valuesHelp() {
-		return _t('Every record with related representations must have at least one of those representation relationships marked as the primary relationship. The primary representation will be used as the default media for the record. In some situations it is possible that one or more representations can be related to a record without any having the "is primary" designation. Records without primary representations may dispaly oddly, or not at all. This command will check all representations relationships and ensure that all records with related representations have at least one marked as primary.');
+		return _t('Every record with related representations must have at least one of those representation relationships marked as the primary relationship. The primary representation will be used as the default media for the record. In some situations it is possible that one or more representations can be related to a record without any having the "is primary" designation. Records without primary representations may display oddly, or not at all. This command will check all representations relationships and ensure that all records with related representations have at least one marked as primary.');
 	}
 	# -------------------------------------------------------
 	/**
@@ -2597,8 +2600,8 @@ trait CLIUtilsMaintenance {
 			$tables = preg_split('![,;]+!', $tables);
 		} else {
 			$tables = [
-				'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_loans', 'ca_movements',
-				'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items'
+				'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_loans', 'ca_occurrences', 'ca_collections', 'ca_tour_stops',
+				'ca_relationship_types', 'ca_data_exporter_items', 'ca_metadata_elements', 'ca_sets'
 			];
 		}
 		
@@ -2611,6 +2614,11 @@ trait CLIUtilsMaintenance {
 			$name_plural = caUcFirstUTF8Safe($t_table->getProperty('NAME_PLURAL'));
 			$idno_fld = $t_table->getProperty('ID_NUMBERING_ID_FIELD');
 			$hier_id_fld = $t_table->getProperty('HIERARCHY_ID_FLD');
+			
+			if(!$hier_id_fld || !preg_match("!^hier_!", $hier_id_fld)) { 
+				CLIUtils::addError(_t("Skipping %1 because it does not use hierarchy ids", $table));
+				continue; 
+			}
 			
 			print CLIProgressBar::start($qr->numHits(), _t('[%1]', $name_plural));
 			
@@ -2633,7 +2641,7 @@ trait CLIUtilsMaintenance {
 					if($repair) {
 						$instance->set($hier_id_fld, $root_id);
 						$instance->update();
-						DataMigrationUtils::postError($instance, _t('While fixing hierarchy_id (%1) root value', $hier_id_fld));
+						DataMigrationUtils::postError($instance, _t('Fixed hierarchy_id (%1) root value', $hier_id_fld));
 					}
 					$c++;
 				}

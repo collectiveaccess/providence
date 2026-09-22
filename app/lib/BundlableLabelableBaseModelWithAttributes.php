@@ -1120,8 +1120,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			
 			if (($o_idno = $this->getIDNoPlugInInstance()) && (method_exists($o_idno, 'getSortableValue'))) {	// try to use plug-in's sort key generator if defined
 				$this->isChild();
-				$this->set($vs_idno_sort_field, $o_idno->getSortableValue($this->get($vs_idno_field)));
-				
+				$idno_sort = $o_idno->getSortableValue($this->get($vs_idno_field));
+				if(mb_strlen($idno_sort) > 768) { $idno_sort = mb_substr($idno_sort, 0, 768); }	// max sortable width is 768 characters
+				$this->set($vs_idno_sort_field, $idno_sort);
 				if($this->hasField("{$vs_idno_sort_field}_num") && (method_exists($o_idno, 'getSortableNumericValue'))) {
 					if(($n = $o_idno->getSortableNumericValue($this->get($vs_idno_field))) < 0) { return; } 
 					$this->set("{$vs_idno_sort_field}_num", $n);
@@ -1399,6 +1400,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		if($config->get("{$table}_disable_delete")) { return false; }
  		if($config->get("{$table}_".$this->getTypeCode()."_disable_delete")) { return false; }
  		
+ 		// Check actions
+ 		if (!$this->getPrimaryKey() || ($t_user->canDoAction("can_delete_{$table}") === false)) {
+ 			return false;
+ 		}
+ 		
  		// Check type restrictions
  		if ((bool)$config->get('perform_type_access_checking')) {
 			$vn_type_access = $t_user->getTypeAccessLevel($table, $this->getTypeID());
@@ -1422,11 +1428,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				return false;
 			}
 		}
-		
- 		// Check actions
- 		if (!$this->getPrimaryKey() || ($t_user->canDoAction("can_delete_{$table}") === false)) {
- 			return false;
- 		}
  		
 		if (!caACLIsEnabled($this) && (defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ == "PAWTUCKET") && ($this->hasField('access')))) {
 			$va_access = caGetUserAccessValues($po_request);
@@ -4658,6 +4659,7 @@ if (!$batch) {
 				) {
 					$this->set($this->HIERARCHY_PARENT_ID_FLD, null);
 					$this->set($this->HIERARCHY_ID_FLD, $this->getPrimaryKey());
+					$this->update();
 				
 					// Support for collection-object cross-table hierarchies
 					if ((bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($target_table == 'ca_objects') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')) && ($vn_parent_id == -1)) {	// -1 = extract from hierarchy
@@ -6461,6 +6463,7 @@ if (!$batch) {
 		
  		$va_rel_ids_sorted = $va_rel_sort_order = explode(';',$po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}BundleList", pString));
 		sort($va_rel_ids_sorted, SORT_NUMERIC);
+		$disable_sorts = caGetOption('disableSorts', $pa_settings, false);
 						
  		$va_rel_items = $this->getRelatedItems($ps_bundle_name, $pa_settings);
  		
@@ -6473,7 +6476,6 @@ if (!$batch) {
 			if ((($vn_rank_index = array_search($va_rel_item['relation_id'] ?? null, $va_rel_sort_order)) !== false) && (!isset($pa_settings['disableSorts']) || !$pa_settings['disableSorts'])) {
 				$vn_rank = $va_rel_ids_sorted[$vn_rank_index];
 			}
-			
 			$this->clearErrors();
 			$vn_id = $po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}_id".$va_rel_item[$vs_key], pString);
 			if ($vn_id) {
@@ -6485,17 +6487,17 @@ if (!$batch) {
 				}
 				
 				//$vs_effective_daterange = $po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}_effective_date".$va_rel_item[$vs_key], pString);
-				$this->editRelationship($ps_bundle_name, $va_rel_item[$vs_key], $vn_id, $vn_type_id, null, null, $vs_direction, $vn_rank);	
-					
+				$this->editRelationship($ps_bundle_name, $va_rel_item[$vs_key], $vn_id, $vn_type_id, null, null, $vs_direction, $disable_sorts ? null : $vn_rank, ['allowDuplicates' => true]);	
 				if ($this->numErrors()) {
 					$po_request->addActionErrors($this->errors(), $ps_bundle_name);
 				}
-			} else {
+			} elseif (($po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}_".$va_rel_item[$vs_key].'_delete', pInteger)) > 0) {
 				// is it a delete key?
 				$this->clearErrors();
-				if (($po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}_".$va_rel_item[$vs_key].'_delete', pInteger)) > 0) {
-					$va_rels_to_delete[] = array('bundle' => $ps_bundle_name, 'relation_id' => $va_rel_item[$vs_key]);
-				}
+				
+				$va_rels_to_delete[] = array('bundle' => $ps_bundle_name, 'relation_id' => $va_rel_item[$vs_key]);
+			} elseif(!$disable_sorts) {
+				$this->editRelationship($ps_bundle_name, $va_rel_item[$vs_key], $va_rel_item['row_id'], $va_rel_item['relationship_type_code'], null, null, $va_rel_item['direction'], $vn_rank, ['allowDuplicates' => true]);		
 			}
 		}
 }
@@ -8071,12 +8073,11 @@ $pa_options["display_form_field_tips"] = true;
 			
 			$vo_sort = new BaseFindEngine($this->getDb());
 			$va_ids = $vo_sort->sortHits($va_ids, $t_instance->tableName(), join(';', $pa_sort), caGetOption('sortDirection', $pa_options, 'asc'), $pa_options);
-		} else {
-			$start = caGetOption('start', $pa_options, 0);
-			$limit = caGetOption('limit', $pa_options, null);
-			if(($start > 0) || ($limit > 0)) {
-				$va_ids = array_slice($va_ids, $start, $limit);
-			}
+		} 
+		$start = caGetOption('start', $pa_options, 0);
+		$limit = caGetOption('limit', $pa_options, null);
+		if(($start > 0) || ($limit > 0)) {
+			$va_ids = array_slice($va_ids, $start, $limit);
 		}
 		
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
