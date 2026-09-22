@@ -6849,11 +6849,12 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 		global $g_change_log_batch_id;	// Log batch_id as set in global by ca_batch_log model (app/models/ca_batch_log.php)
 			
 		$is_metadata = $is_metadata_value = false;
-		if ($this->tableName() == 'ca_attributes') {
+		$subject_tablename = $this->tableName();
+		if ($subject_tablename == 'ca_attributes') {
 			$log_changes_to_self = false;
 			$subject_config = null;
 			$is_metadata = true;
-		} elseif($this->tableName() == 'ca_attribute_values') {
+		} elseif($subject_tablename == 'ca_attribute_values') {
 			$log_changes_to_self = false;
 			$subject_config = null;
 			$is_metadata_value = true;
@@ -6900,13 +6901,11 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 				$subject_config = $t->getProperty('LOG_CHANGES_USING_AS_SUBJECT');
 				$subject_tablename = $t->tableName();
 			}
-		} else {
-			$subject_tablename = $this->tableName();
 		}
 		if (is_array($subject_config)) {
 				if(is_array($subject_config['FOREIGN_KEYS']) && $subject_tablename) {
 					foreach($subject_config['FOREIGN_KEYS'] as $field) {
-						$relationships = Datamodel::getManyToOneRelations($this->tableName(), $field);
+						$relationships = Datamodel::getManyToOneRelations($subject_tablename, $field);
 						if ($relationships['one_table']) {
 							$table_num = Datamodel::getTableNum($relationships['one_table']);
 							if (!isset($subjects[$table_num]) || !is_array($subjects[$table_num])) { $subjects[$table_num] = []; }
