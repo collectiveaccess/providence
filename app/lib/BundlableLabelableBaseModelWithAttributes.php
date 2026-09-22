@@ -3457,8 +3457,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
-		if ($object_collections_hierarchy_enabled) {
-			
+		if ($object_collections_hierarchy_enabled && sizeof($object_collection_rel_types ?? [])) {
 			$type_selector 	= trim($this->getTypeListAsHTMLFormElement(
 				"{$placement_code}type_id", 
 				['id' => "{$placement_code}{$form_name}typeList"], 

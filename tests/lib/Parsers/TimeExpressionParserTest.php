@@ -2512,8 +2512,7 @@ class TimeExpressionParserTest extends TestCase {
  		$this->assertEquals($va_parse['end'], "2004.033123595900");
  		$this->assertEquals($va_parse[0], "2003.021600000000");
  		$this->assertEquals($va_parse[1], "2004.033123595900");	
- 		$this->assertEquals($o_tep->getText(), "February 16 2003 – March 31 2004");
- 
+ 		$this->assertEquals($o_tep->getText(), "February 16 2003 – March 31 2004"); 
 	}
 		
 	public function testCircaOnBothSidesOfRange() {
