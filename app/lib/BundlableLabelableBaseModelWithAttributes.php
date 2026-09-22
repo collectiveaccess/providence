@@ -8184,6 +8184,12 @@ $pa_options["display_form_field_tips"] = true;
 		if (!isset($pa_options['instance']) || !($t_instance = $pa_options['instance'])) {
 			if (!($t_instance = Datamodel::getInstance($pm_rel_table_name_or_num, true))) { return null; }
 		}
+		
+		$start = caGetOption('start', $pa_options, 0);
+		$limit = caGetOption('limit', $pa_options, null);
+		unset($pa_options['start']);
+		unset($pa_options['limit']);
+		
 		$va_ids = [];
 		foreach($pa_ids as $vn_k => $vn_id) {
 			if (is_numeric($vn_id)) { 
@@ -8204,8 +8210,6 @@ $pa_options["display_form_field_tips"] = true;
 			$vo_sort = new BaseFindEngine($this->getDb());
 			$va_ids = $vo_sort->sortHits($va_ids, $t_instance->tableName(), join(';', $pa_sort), caGetOption('sortDirection', $pa_options, 'asc'), $pa_options);
 		} 
-		$start = caGetOption('start', $pa_options, 0);
-		$limit = caGetOption('limit', $pa_options, null);
 		if(($start > 0) || ($limit > 0)) {
 			$va_ids = array_slice($va_ids, $start, $limit);
 		}
