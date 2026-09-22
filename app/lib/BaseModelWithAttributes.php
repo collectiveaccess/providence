@@ -2378,6 +2378,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 				'forSearch' => caGetOption('forSearch', $pa_options, true),
 				'textAreaTagName' => caGetOption('textAreaTagName', $pa_options, null),
 				'render' => $pa_options['render'] ?? $va_element['settings']['render'] ?? null,
+				'id' => $pa_options['id'] ?? null,
 				'attributes' => $attributes
 			], array_merge($pa_options, $va_override_options));
 			
