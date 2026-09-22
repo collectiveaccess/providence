@@ -64,6 +64,7 @@
 %token  times     \*|×
 // @todo figure out a way to make / work for both /regexes/ and divisions
 %token  div       ÷
+%token  mod       %
 
 // Regular expressions
 %token  regex     (?<![\\])/.+?(?<![\\])/[a-z]*
@@ -160,13 +161,16 @@ scalar:
   | <false>
 
 primary:
-    secondary() ( ::minus:: #substraction scalar() )?
+    secondary() ( ::minus:: #substraction scalar() )*
 
 secondary:
-    ternary() ( ::times:: #multiplication scalar() )?
+    ternary() ( ::times:: #multiplication scalar() )*
 
 ternary:
-    term() ( ::div:: #division scalar() )?
+    quartarnary() ( ::div:: #division scalar() )*
+    
+quartarnary:
+    term() ( ::mod:: #modulus scalar() )*
 
 
 term:
@@ -174,6 +178,7 @@ term:
   | number()
   | ( ::minus:: #negative | ::plus:: ) term()
   | function()
+  | <variable>
 
 number:
     <number>
