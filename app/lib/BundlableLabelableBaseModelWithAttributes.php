@@ -134,7 +134,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$this->initLabelDefinitions();
 		
 		if ($this->isHierarchical() && $this->opo_idno_plugin_instance) {
-			$this->opo_idno_plugin_instance->isChild($this->isChild());
+			$this->isChild();
 		}
 		return $vn_rc;
 	}
