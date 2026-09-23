@@ -124,12 +124,12 @@ define('__CA_NAV_ICON_ICON_POS_BOTTOM__', 3);
 /**
  * Return URL for given module/controller/action
  *
- * @param RequestHTTP $po_request
- * @param string $ps_module_path
- * @param string $ps_controller
- * @param string $ps_action
- * @param array $pa_other_params Array of additional parameters to include in URL
- * @param array $pa_options Options include:
+ * @param RequestHTTP $request
+ * @param string $module_path
+ * @param string $controller
+ * @param string $action
+ * @param array $other_params Array of additional parameters to include in URL
+ * @param array $options Options include:
  *		dontURLEncodeParameters = Don't apply url encoding to parameters in URL [Default is false]
  *		absolute = return absolute URL. [Default is to return relative URL]
  *      useQueryString = encode other parameters as query string rather than in url path [Default is false]
@@ -138,104 +138,116 @@ define('__CA_NAV_ICON_ICON_POS_BOTTOM__', 3);
  *
  * @return string
  */
-function caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_options=null) {
-	$is_service_url = caGetOption('isServiceUrl', $pa_options, false, ['castTo' => 'boolean']);
-	if(caUseCleanUrls()) {
-		$vs_url = $po_request->getBaseUrlPath();
-		if($is_service_url) { $vs_url .= '/service.php'; }
-	} elseif($is_service_url) {
-		$vs_url = $po_request->getBaseUrlPath().'/service.php';
-	} else {
-		$s = $po_request->getScriptName();
-		$vs_url = $po_request->getBaseUrlPath().'/'.(($s === 'service.php') ? 'index.php' : $s);
+function caNavUrl($request, $module_path, $controller, $action=null, $other_params=null, $options=null) {
+	global $g_request;
+	$args = func_get_args();
+	if(is_string($request)) {
+		$request = $g_request;
+		[0 => $module_path, 1 => $controller, 2 => $action, 3 => $other_params, 4 => $options] = $args;
 	}
-	if ($ps_module_path == '*') { $ps_module_path = $po_request->getModulePath(); }
-	if ($ps_controller == '*') { $ps_controller = $po_request->getController(); }
-	if ($ps_action == '*') { 
-		$ps_action = $po_request->getAction(); 
-		if ($vs_action_extra =  $po_request->getActionExtra()) { 
-			$ps_action .= "/{$vs_action_extra}";
+	
+	$is_service_url = caGetOption('isServiceUrl', $options, false, ['castTo' => 'boolean']);
+	if(caUseCleanUrls()) {
+		$url = $request->getBaseUrlPath();
+		if($is_service_url) { $url .= '/service.php'; }
+	} elseif($is_service_url) {
+		$url = $request->getBaseUrlPath().'/service.php';
+	} else {
+		$s = $request->getScriptName();
+		$url = $request->getBaseUrlPath().'/'.(($s === 'service.php') ? 'index.php' : $s);
+	}
+	if ($module_path == '*') { $module_path = $request->getModulePath(); }
+	if ($controller == '*') { $controller = $request->getController(); }
+	if ($action == '*') { 
+		$action = $request->getAction(); 
+		if ($action_extra =  $request->getActionExtra()) { 
+			$action .= "/{$action_extra}";
 		}
 	}
 	
-	if ($ps_module_path) {
-		$vs_url .= '/'.$ps_module_path;
+	if ($module_path) {
+		$url .= '/'.$module_path;
 	}
-	if ($ps_controller) {
-		$vs_url .= "/".$ps_controller;
+	if ($controller) {
+		$url .= "/".$controller;
 	}
-	if ($ps_action) {
-		$vs_url .= "/".$ps_action;
+	if ($action) {
+		$url .= "/".$action;
 	}
 	
-	if (is_array($pa_other_params) && sizeof($pa_other_params)) {
+	if (is_array($other_params) && sizeof($other_params)) {
 		$vn_i = 0;
 		
-		if (caIsAssociativeArray($pa_other_params)) {
-			$use_query_string = caGetOption('useQueryString', $pa_options, false);
+		if (caIsAssociativeArray($other_params)) {
+			$use_query_string = caGetOption('useQueryString', $options, false);
 			$query_params = [];
-			foreach($pa_other_params as $vs_name => $vs_value) {
-				if (in_array($vs_name, array('module', 'controller', 'action'))) { continue; }
-				if (is_array($vs_value)) { // is the value is array we need to serialize is... just treat it as a list of values which *should* be what it is.
-					$vs_value = join(";", $vs_value);
+			foreach($other_params as $name => $value) {
+				if (in_array($name, array('module', 'controller', 'action'))) { continue; }
+				if (is_array($value)) { // is the value is array we need to serialize is... just treat it as a list of values which *should* be what it is.
+					$value = join(";", $value);
 				}
 				
-				if((strlen($vs_value) === 0) && !caGetOption('allowEmptyParameters', $pa_options, false)) { continue; }	// Don't output null params - will break url
+				if((strlen($value) === 0) && !caGetOption('allowEmptyParameters', $options, false)) { continue; }	// Don't output null params - will break url
 				
 				if ($use_query_string) { 
-					$query_params[$vs_name] = $vs_value;
+					$query_params[$name] = $value;
 				} else {
-					$vs_url .= '/'.$vs_name."/".(caGetOption('dontURLEncodeParameters', $pa_options, false) ? $vs_value : rawurlencode($vs_value));
+					$url .= '/'.$name."/".(caGetOption('dontURLEncodeParameters', $options, false) ? $value : rawurlencode($value));
 				}
 				$vn_i++;
 			}
 			if ($use_query_string) {
-				$vs_url .= "?".http_build_query($query_params);
+				$url .= "?".http_build_query($query_params);
 			}
 		} else {
-			$vs_url .= "/".join("/", $pa_other_params);
+			$url .= "/".join("/", $other_params);
 		}
 	}
 	
-	if (caGetOption('absolute', $pa_options, false)) {
+	if (caGetOption('absolute', $options, false)) {
 		$o_config = Configuration::load();
-		$vs_url = $o_config->get('site_host').$vs_url;
+		$url = $o_config->get('site_host').$url;
 	}
 	
-	return $vs_url;
+	return $url;
 }
 # ------------------------------------------------------------------------------------------------
 /**
  * Return HTML link for given module/controller/action
  *
- * @param RequestHTTP $po_request
- * @param string $ps_content Link display content
- * @param string $ps_classname CSS class to apply to link
- * @param string $ps_module_path
- * @param string $ps_controller
- * @param string $ps_action
- * @param array $pa_other_params Array of additional parameters to include in URL
- * @param array $pa_options Options include:
+ * @param RequestHTTP $request
+ * @param string $content Link display content
+ * @param string $classname CSS class to apply to link
+ * @param string $module_path
+ * @param string $controller
+ * @param string $action
+ * @param array $other_params Array of additional parameters to include in URL
+ * @param array $options Options include:
  *		dontURLEncodeParameters = Don't apply url encoding to parameters in URL [Default is false]
  *
  * @return string
  */
-function caNavLink($po_request, $ps_content, $ps_classname, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_attributes=null, $pa_options=null) {
-	if (!($vs_url = caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params, $pa_options))) {
-		//return "<strong>Error: no url for navigation</strong>";
-		$vs_url = '/';
+function caNavLink($request, $content, $classname, $module_path, $controller, $action=null, $other_params=null, $attributes=null, $options=null) {
+	global $g_request;
+	$args = func_get_args();
+	if(is_string($request)) {
+		$request = $g_request;
+		[0 => $content, 1 => $classname, 2 => $module_path, 3 => $controller, 4 => $action, 5 => $other_params, 6 => $attributes, 7 => $options] = $args;
+	}
+	if (!($url = caNavUrl($request, $module_path, $controller, $action, $other_params, $options))) {
+		$url = '/';
 	}
 	
-	$vs_tag = "<a href='{$vs_url}'";
+	$tag = "<a href='{$url}'";
 	
-	if ($ps_classname) { $pa_attributes['class'] = $ps_classname; }
-	if (is_array($pa_attributes)) {
-		$vs_tag .= " "._caHTMLMakeAttributeString($pa_attributes);
+	if ($classname) { $attributes['class'] = $classname; }
+	if (is_array($attributes)) {
+		$tag .= " "._caHTMLMakeAttributeString($attributes);
 	}
 	
-	$vs_tag .= ">{$ps_content}</a>";
+	$tag .= ">{$content}</a>";
 	
-	return $vs_tag;
+	return $tag;
 }
 # ------------------------------------------------------------------------------------------------
 /**
