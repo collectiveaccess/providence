@@ -356,7 +356,7 @@ class AssetLoadManager {
 			$vs_buf .= "<script type='importmap'>\n".json_encode(['imports' => $map], JSON_UNESCAPED_SLASHES)."</script>\n";
 		}
 		
-		if($output_target === 'header') {
+		if(in_array($output_target, ['header', 'footer'],true)) {
 			if(caAppIsPawtucket() && is_array($analytics_values = caGetAnalyticsIntegrationValues()) && !$for_ajax) {
 				$vs_buf .= $analytics_values['head'] ?? null;
 			}
