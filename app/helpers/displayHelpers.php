@@ -1605,7 +1605,7 @@ function caEditorInspector($view, $options=null) {
 				if (method_exists($t_item, 'getComponentCount')) {
 					$component_count = $t_item->getComponentCount();
 					if ($t_ui && ($component_list_screen = $t_ui->getScreenWithBundle("ca_objects_components_list", $view->request)) && ($vs_component_list_screen !== $view->request->getActionExtra())) {
-						$component_count_link = caNavLink($view->request, $component_count, '', '*', '*', $view->request->getAction().'/'.$component_list_screen, [$t_item->primaryKey() => $t_item->getPrimaryKey()]);
+						$component_count_link = caEditorLink($view->request, $component_count, '', $t_item->tableName(), $t_item->getPrimaryKey(), [], [], ['bundle' => 'ca_objects_components_list']);
 					} else {
 						$component_count_link = $component_count;
 					}
