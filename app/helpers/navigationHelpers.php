@@ -1026,6 +1026,7 @@ function caDetailLink($po_request, $ps_content, $ps_classname, $ps_table, $pn_id
  *		action - if set, action of returned link will be set to the supplied value
  *		actionExtra - if set, action extra of returned link will be set to the supplied value
  *      quick_add - if set to true, returned link will point to the QuickAdd controller instead
+ *		bundle = link to screen with bundle, if possible. [Default is false]
  *
  * @return array|string
  */
