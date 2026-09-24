@@ -75,107 +75,107 @@ class AppNavigation extends BaseObject {
 	private function _genReverseNavTable() {
 		$this->opa_reverse_nav_table = array();
 		
-		$va_path = array();
-		$va_stack = array();
-		foreach(array_keys($this->nav_config) as $vs_key) {
-			$va_stack[] = array('key' => $vs_key, 'level' => 0, 'navnode' => $this->nav_config[$vs_key]);
+		$path = array();
+		$stack = array();
+		foreach(array_keys($this->nav_config) as $key) {
+			$stack[] = array('key' => $key, 'level' => 0, 'navnode' => $this->nav_config[$key]);
 		}
 		
-		$vn_level = 0;
-		$va_aliases_to_resolve = array();
-		while(sizeof($va_stack) > 0) {
-			$va_node = array_pop($va_stack);
+		$level = 0;
+		$aliases_to_resolve = array();
+		while(sizeof($stack) > 0) {
+			$node = array_pop($stack);
 			
-			if ($va_node['level'] < $vn_level) {
-				$vn_c = ($vn_level - $va_node['level']);
-				for($vn_i=0; $vn_i < $vn_c; $vn_i++) {
-					array_pop($va_path);
+			if ($node['level'] < $level) {
+				$c = ($level - $node['level']);
+				for($i=0; $i < $c; $i++) {
+					array_pop($path);
 				}
-				$vn_level = $va_node['level'];
+				$level = $node['level'];
 			}
 			
-			$va_action_info = $va_node['navnode']['default'] ?? null;
+			$action_info = $node['navnode']['default'] ?? null;
 			
-			$vs_controller_path = '/'.join('/', array($va_action_info['module'] ?? null, $va_action_info['controller'] ?? null));
-			$va_tmp = explode('/', $va_action_info['action'] ?? null);
-			$vs_action = array_shift($va_tmp);
-			if (isset($va_node['navnode']) && isset($va_node['navnode']['useActionInPath']) && intval($va_node['navnode']['useActionInPath'])) {
-				$vs_controller_path .= '/'.$vs_action;
+			$controller_path = '/'.join('/', array($action_info['module'] ?? null, $action_info['controller'] ?? null));
+			$tmp = explode('/', $action_info['action'] ?? null);
+			$action = array_shift($tmp);
+			if (isset($node['navnode']) && isset($node['navnode']['useActionInPath']) && intval($node['navnode']['useActionInPath'])) {
+				$controller_path .= '/'.$action;
 			} 
-			if (isset($va_node['navnode']) && isset($va_node['navnode']['useActionExtraInPath']) && intval($va_node['navnode']['useActionExtraInPath']) && (sizeof($va_tmp) > 0)) {
-				$vs_controller_path .= '/'.join('/', $va_tmp);
+			if (isset($node['navnode']) && isset($node['navnode']['useActionExtraInPath']) && intval($node['navnode']['useActionExtraInPath']) && (sizeof($tmp) > 0)) {
+				$controller_path .= '/'.join('/', $tmp);
 			} 
 			
 			// does this node have children?
-			if (isset($va_node['navnode']) && isset($va_node['navnode']['navigation']) && sizeof($va_node['navnode']['navigation']) > 0) {
+			if (isset($node['navnode']) && isset($node['navnode']['navigation']) && sizeof($node['navnode']['navigation']) > 0) {
 				// yes... push children onto stack
-				$vn_level++;
-				foreach($va_node['navnode']['navigation'] as $vs_key => $va_info) {
-					array_push($va_stack, array('key' => $vs_key, 'level' => $vn_level, 'navnode' => $va_node['navnode']['navigation'][$vs_key]));
+				$level++;
+				foreach($node['navnode']['navigation'] as $key => $info) {
+					array_push($stack, array('key' => $key, 'level' => $level, 'navnode' => $node['navnode']['navigation'][$key]));
 				}
-				$va_path[] = $va_node['key'];
+				$path[] = $node['key'];
 			} else {
 				// no
-				$this->opa_reverse_nav_table[$vs_controller_path] = join('/', array_merge(is_array($va_path) ? $va_path : array(), array($va_node['key'])));
+				$this->opa_reverse_nav_table[$controller_path] = join('/', array_merge(is_array($path) ? $path : array(), array($node['key'])));
 			}
-			if (isset($va_node['navnode']['aliased_actions'])) {
-				$vs_tmp = '/'.join('/', array($va_action_info['module'], $va_action_info['controller']));
-				foreach($va_node['navnode']['aliased_actions'] as $vs_aliased_action => $vs_action_alias) {
-					$va_aliases_to_resolve[$vs_tmp.'/'.$vs_aliased_action] = $vs_tmp.'/'.$vs_action_alias;
+			if (isset($node['navnode']['aliased_actions'])) {
+				$tmp = '/'.join('/', array($action_info['module'], $action_info['controller']));
+				foreach($node['navnode']['aliased_actions'] as $aliased_action => $action_alias) {
+					$aliases_to_resolve[$tmp.'/'.$aliased_action] = $tmp.'/'.$action_alias;
 				}
 			}
 		}
 		
-		foreach($va_aliases_to_resolve as $vs_alias_controller_path => $vs_alias_nav_path) {
-			$this->opa_reverse_nav_table[$vs_alias_controller_path] = $this->opa_reverse_nav_table[$vs_alias_nav_path] ?? null;
+		foreach($aliases_to_resolve as $alias_controller_path => $alias_nav_path) {
+			$this->opa_reverse_nav_table[$alias_controller_path] = $this->opa_reverse_nav_table[$alias_nav_path] ?? null;
 		}
 	}
 	# -------------------------------------------------------
-	public function setRequest($po_request) {
-		$this->opo_request = $po_request;
+	public function setRequest($request) {
+		$this->opo_request = $request;
 		return true;
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
-	public function setResponse($po_response) {
-		$this->opo_response = $po_response;
+	public function setResponse($response) {
+		$this->opo_response = $response;
 		return true;
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
-	public function getDestination($pb_include_action=false, $pb_include_action_extra=false) {
-		$vs_action = $this->opo_request->getAction();
-		$vs_action_extra = $this->opo_request->getActionExtra();
+	public function getDestination($include_action=false, $include_action_extra=false) {
+		$action = $this->opo_request->getAction();
+		$action_extra = $this->opo_request->getActionExtra();
 		
-		return '/'.$this->opo_request->getModulePath().'/'.$this->opo_request->getController().($pb_include_action ? '/'.$vs_action: '').($pb_include_action_extra ? '/'.$vs_action_extra: '');
+		return '/'.$this->opo_request->getModulePath().'/'.$this->opo_request->getController().($include_action ? '/'.$action: '').($include_action_extra ? '/'.$action_extra: '');
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
 	public function getDestinationAsNavigationPath() {
-		$vs_dest_path = $this->getDestination(true, false);
+		$dest_path = $this->getDestination(true, false);
 		
-		if (isset($this->opa_reverse_nav_table[$vs_dest_path])) {
-			return $this->opa_reverse_nav_table[$vs_dest_path];
+		if (isset($this->opa_reverse_nav_table[$dest_path])) {
+			return $this->opa_reverse_nav_table[$dest_path];
 		}
-		$vs_dest_path = $this->getDestination(true, true);
+		$dest_path = $this->getDestination(true, true);
 		
-		if (isset($this->opa_reverse_nav_table[$vs_dest_path])) {
-			return $this->opa_reverse_nav_table[$vs_dest_path];
+		if (isset($this->opa_reverse_nav_table[$dest_path])) {
+			return $this->opa_reverse_nav_table[$dest_path];
 		}
-		$vs_dest_path = $this->getDestination(false, true);
+		$dest_path = $this->getDestination(false, true);
 		
-		if (isset($this->opa_reverse_nav_table[$vs_dest_path])) {
-			return $this->opa_reverse_nav_table[$vs_dest_path];
+		if (isset($this->opa_reverse_nav_table[$dest_path])) {
+			return $this->opa_reverse_nav_table[$dest_path];
 		}
 		
-		$vs_dest = $this->getDestination();
-		return isset($this->opa_reverse_nav_table[$vs_dest]) ? $this->opa_reverse_nav_table[$vs_dest] : null;
+		$dest = $this->getDestination();
+		return isset($this->opa_reverse_nav_table[$dest]) ? $this->opa_reverse_nav_table[$dest] : null;
 	}
 	# -------------------------------------------------------
 	/**
@@ -184,54 +184,54 @@ class AppNavigation extends BaseObject {
 	 * reflect the user's current locale)
 	 */
 	public function getDestinationAsBreadCrumbTrail() {
-		$va_tmp = explode('/', $this->getDestinationAsNavigationPath());
+		$tmp = explode('/', $this->getDestinationAsNavigationPath());
 
-		$va_trail = array();
-		$va_node = $this->nav_config;
-		foreach($va_tmp as $vs_part) {
-			if ($va_node[$vs_part]) {
-				$va_node = $va_node[$vs_part];
-				if ($va_node['type'] == 'dynamic') {
-					if (is_array($va_dyn_menu = $this->getDynamicNavigation($va_node)) ) {
-						$va_trail[] = $va_dyn_menu[0]['displayName'];
+		$trail = array();
+		$node = $this->nav_config;
+		foreach($tmp as $part) {
+			if ($node[$part]) {
+				$node = $node[$part];
+				if ($node['type'] == 'dynamic') {
+					if (is_array($dyn_menu = $this->getDynamicNavigation($node)) ) {
+						$trail[] = $dyn_menu[0]['displayName'];
 					}
 				} else {
-					if ($vb_submenu_set = isset($va_node['submenu']) && $va_node['submenu']) {
-						if (isset($va_node['submenu']['requires'])) {
-							$vb_submenu_set = $this->_evaluateRequirements($va_node['submenu']['requires']);
+					if ($submenu_set = isset($node['submenu']) && $node['submenu']) {
+						if (isset($node['submenu']['requires'])) {
+							$submenu_set = $this->_evaluateRequirements($node['submenu']['requires']);
 						}
 					}
-					if ($vb_submenu_set) {
-						if (isset($va_node['submenu']['type']) && ($va_node['submenu']['type'] == 'dynamic') && is_array($va_sub_menu = $this->getDynamicSubmenu($va_node['submenu']))) {
-							if (isset($va_node['submenu']['breadcrumbHints']) && is_array($va_node['submenu']['breadcrumbHints'])) {
-								if ($vs_trail_item = $this->_getBreadcrumbHint($va_node['submenu']['breadcrumbHints'])) {
-									$va_trail[] = $vs_trail_item;
+					if ($submenu_set) {
+						if (isset($node['submenu']['type']) && ($node['submenu']['type'] == 'dynamic') && is_array($sub_menu = $this->getDynamicSubmenu($node['submenu']))) {
+							if (isset($node['submenu']['breadcrumbHints']) && is_array($node['submenu']['breadcrumbHints'])) {
+								if ($trail_item = $this->_getBreadcrumbHint($node['submenu']['breadcrumbHints'])) {
+									$trail[] = $trail_item;
 								} else {
-									$va_trail[] = $va_sub_menu[0]['displayName'];
+									$trail[] = $sub_menu[0]['displayName'];
 								}
 							} else {
-								$va_trail[] = $va_sub_menu[0]['displayName'];
+								$trail[] = $sub_menu[0]['displayName'];
 							}
 						}
 					} else {
-						if (isset($va_node['breadcrumbHints']) && is_array($va_node['breadcrumbHints'])) {
-							if ($vs_trail_item = $this->_getBreadcrumbHint($va_node['breadcrumbHints'])) {
-								$va_trail[] = $vs_trail_item;
+						if (isset($node['breadcrumbHints']) && is_array($node['breadcrumbHints'])) {
+							if ($trail_item = $this->_getBreadcrumbHint($node['breadcrumbHints'])) {
+								$trail[] = $trail_item;
 							} else {
-								$va_trail[] = $va_node['displayName'];
+								$trail[] = $node['displayName'];
 							}
 						} else {
-							$va_trail[] = $va_node['displayName'];
+							$trail[] = $node['displayName'];
 						}
 					}
 				}
-				$va_node = $va_node['navigation'];
+				$node = $node['navigation'];
 			} else {
-				if (is_array($va_node)) {
-					foreach($va_node as $vs_key => $va_menu) {
-						if (isset($va_menu['handler']) && isset($va_menu['type']) && $va_menu['handler'] && ($va_menu['type'] == 'dynamic')) {
-							if (is_array($va_dyn_menu = $this->getDynamicNavigation($va_menu)) ) {
-								$va_trail[] = $va_dyn_menu[$vs_part]['displayName'];
+				if (is_array($node)) {
+					foreach($node as $key => $menu) {
+						if (isset($menu['handler']) && isset($menu['type']) && $menu['handler'] && ($menu['type'] == 'dynamic')) {
+							if (is_array($dyn_menu = $this->getDynamicNavigation($menu)) ) {
+								$trail[] = $dyn_menu[$part]['displayName'];
 							}
 						}
 					}
@@ -239,7 +239,7 @@ class AppNavigation extends BaseObject {
 			}
 		}
 		
-		return $va_trail;
+		return $trail;
 	}
 	# -------------------------------------------------------
 	/** 
@@ -249,30 +249,30 @@ class AppNavigation extends BaseObject {
 	 * example). _getBreadcrumbHint() extracts relevant text based upon configuration and request
 	 * parameters and returns it. Will return null if there are no relevant breadcrumb hints.
 	 */
-	private function _getBreadcrumbHint($pa_hints) {
-		foreach($pa_hints as $vs_var => $vs_val) {
-			$va_tmp = explode(":", $vs_var);
+	private function _getBreadcrumbHint($hints) {
+		foreach($hints as $var => $val) {
+			$tmp = explode(":", $var);
 			
-			switch($va_tmp[0]) {
+			switch($tmp[0]) {
 				case 'parameter':
-					if (trim($vn_p = $this->opo_request->getParameter($va_tmp[1], pString))) {
-						$va_vtmp = explode(':', $vs_val);
-						if (sizeof($va_vtmp) == 1) { return $vs_val; }
+					if (trim($p = $this->opo_request->getParameter($tmp[1], pString))) {
+						$vtmp = explode(':', $val);
+						if (sizeof($vtmp) == 1) { return $val; }
 						
-						switch($va_vtmp[0]) {
+						switch($vtmp[0]) {
 							case 'method':
-								$va_tmp2 = explode('.', $va_vtmp[1]);
-								if ($t_instance = Datamodel::getInstanceByTableName($va_tmp2[0], true)) {
-									if ($t_instance->load($vn_p)) {
-										if (method_exists($t_instance, $va_tmp2[1])) {
-											return $t_instance->{$va_tmp2[1]}();
+								$tmp2 = explode('.', $vtmp[1]);
+								if ($t_instance = Datamodel::getInstanceByTableName($tmp2[0], true)) {
+									if ($t_instance->load($p)) {
+										if (method_exists($t_instance, $tmp2[1])) {
+											return $t_instance->{$tmp2[1]}();
 										}
 									}
 								}
 								break;
 						}
 						
-						return $vs_val;
+						return $val;
 					}
 					break;
 			}
@@ -286,28 +286,27 @@ class AppNavigation extends BaseObject {
 	 * This is "raw" data in the form of an associative array, extracted from the navigation configuration
 	 * file. This data can be used to generate navigation controls using various markup schemes (eg. HTML as done by getHTMLMenuBar())
 	 */
-	public function &getNavInfo($pn_level=0) {
-		$va_nav_info = $this->nav_config;
-		$vs_current_selection = $this->getDestinationAsNavigationPath();
-		$va_path = explode('/', $vs_current_selection);
+	public function &getNavInfo($level=0) {
+		$nav_info = $this->nav_config;
+		$current_selection = $this->getDestinationAsNavigationPath();
+		$path = explode('/', $current_selection);
 		
-		$vn_i = 0;
-		while(sizeof($va_path) && ($vn_i < $pn_level)) {
-			$vs_path_element = array_shift($va_path);
+		$i = 0;
+		while(sizeof($path) && ($i < $level)) {
+			$path_element = array_shift($path);
 			$n = null;
-			if (!$vs_path_element) { return $n; }							// don't try to return menu if none exists
-			$va_nav_info = isset($va_nav_info[$vs_path_element]['navigation']) ? $va_nav_info[$vs_path_element]['navigation'] : null;
+			if (!$path_element) { return $n; }							// don't try to return menu if none exists
+			$nav_info = isset($nav_info[$path_element]['navigation']) ? $nav_info[$path_element]['navigation'] : null;
 			
-			
-			$vn_i++;
+			$i++;
 		}
 		
-		$vs_selected_element = array_shift($va_path);
+		$selected_element = array_shift($path);
 	
 		$n = null;
-		if ((!is_array($va_nav_info)) || (!sizeof($va_nav_info))) { return $n; }
+		if ((!is_array($nav_info)) || (!sizeof($nav_info))) { return $n; }
 
-		return $va_nav_info;
+		return $nav_info;
 	}
 	# -------------------------------------------------------
 	/**
@@ -449,39 +448,38 @@ class AppNavigation extends BaseObject {
 	 *
 	 */
 	public function getHTMLWidgets() {
-		$vs_cur_selection = $this->getDestination();
-		$va_widgets_config = $this->opa_widgets_config;
+		$cur_selection = $this->getDestination();
+		$widgets_config = $this->opa_widgets_config;
 
 		// fire hook
 		$o_app_plugin_manager = new ApplicationPluginManager();
-		if ($va_revised_widgets_config = $o_app_plugin_manager->hookRenderWidgets($va_widgets_config)) {
-			$va_widgets_config = $va_revised_widgets_config;
+		if ($revised_widgets_config = $o_app_plugin_manager->hookRenderWidgets($widgets_config)) {
+			$widgets_config = $revised_widgets_config;
 		}
-		foreach($va_widgets_config as $vs_key => $va_info) {
-			if(preg_match('!^/'.$va_info['domain']['module'].'/'.$va_info['domain']['controller'].'$!i', $vs_cur_selection)) {
-				$va_params = $this->_parseAdditionalParameters($va_info['parameters']);
+		foreach($widgets_config as $key => $info) {
+			if(preg_match('!^/'.$info['domain']['module'].'/'.$info['domain']['controller'].'$!i', $cur_selection)) {
+				$params = $this->_parseAdditionalParameters($info['parameters']);
 				
 				// invoke controller method
-				$vs_classname = ucfirst($va_info['handler']['controller']).'Controller';
+				$classname = ucfirst($info['handler']['controller']).'Controller';
 
-
-				if (!($va_info['handler']['isplugin'] ?? false)) {
-					if (!include_once($this->ops_controller_path.'/'.$va_info['handler']['module'].'/'.$vs_classname.'.php')) {
+				if (!($info['handler']['isplugin'] ?? false)) {
+					if (!include_once($this->ops_controller_path.'/'.$info['handler']['module'].'/'.$classname.'.php')) {
 						// Invalid controller path
 						$this->postError(2300, _t("Invalid controller path"), "AppNavigation->getHTMLWidgets()");
 						return false;
 					}
 				} else {
-					if (!include_once($this->opo_config->get('application_plugins').'/'.$va_info['handler']['module'].'/controllers/'.$vs_classname.'.php')) {
+					if (!include_once($this->opo_config->get('application_plugins').'/'.$info['handler']['module'].'/controllers/'.$classname.'.php')) {
 						$this->postError(2300, _t("Invalid controller path"), "AppNavigation->getHTMLWidgets()");
 						return false;
 					}
 				}
 				
-				$o_action_controller = new $vs_classname($this->opo_request, $this->opo_response , $this->opo_request->config->get('views_directory').'/'.$va_info['handler']['module']);
+				$o_action_controller = new $classname($this->opo_request, $this->opo_response , $this->opo_request->config->get('views_directory').'/'.$info['handler']['module']);
 
 				try {
-					$vs_output = $o_action_controller->{$va_info['handler']['action']}($va_params);
+					$output = $o_action_controller->{$info['handler']['action']}($params);
 				} catch(Exception $e) {
 					// noop - any editor exception is handled in the direct editor request
 				}
@@ -489,7 +487,7 @@ class AppNavigation extends BaseObject {
 				if ($o_action_controller->numErrors()) {
 					return join('; ', $o_action_controller->getErrors());
 				}
-				return $vs_output;
+				return $output;
 			}
 		}
 		return '';
@@ -549,33 +547,33 @@ class AppNavigation extends BaseObject {
 	/**
 	 *
 	 */
-	public function addNavItem($ps_display_name, $ps_menu_name, $pa_defaults, $pa_requirements, $pn_insert_index=null, $pa_sub_navigation=null) {
-		$this->nav_config = $this->_addNavItem($this->nav_config, $ps_display_name, $ps_menu_name, $pa_defaults, $pa_requirements, $pn_insert_index, $pa_sub_navigation);
+	public function addNavItem($display_name, $menu_name, $defaults, $requirements, $insert_index=null, $sub_navigation=null) {
+		$this->nav_config = $this->_addNavItem($this->nav_config, $display_name, $menu_name, $defaults, $requirements, $insert_index, $sub_navigation);
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
-	private function _addNavItem(&$pa_menu_info, $ps_display_name, $ps_menu_name, $pa_defaults, $pa_requirements, $pn_insert_index=null, $pa_sub_navigation=null) {
-		if (isset($pn_insert_index) && ($pn_insert_index >= 0) && ($pn_insert_index < sizeof($pa_menu_info))) {
-			$va_tmp = array_slice($pa_menu_info, 0, $pn_insert_index, true);
+	private function _addNavItem(&$menu_info, $display_name, $menu_name, $defaults, $requirements, $insert_index=null, $sub_navigation=null) {
+		if (isset($insert_index) && ($insert_index >= 0) && ($insert_index < sizeof($menu_info))) {
+			$tmp = array_slice($menu_info, 0, $insert_index, true);
 		} else {
-			$va_tmp = $pa_menu_info;
+			$tmp = $menu_info;
 		}
-		$va_tmp[$ps_menu_name] = array(
-			'default' => $pa_defaults,
-			'requires' => $pa_requirements,
-			'navigation' => $pa_sub_navigation,
-			'displayName' => $ps_display_name
+		$tmp[$menu_name] = array(
+			'default' => $defaults,
+			'requires' => $requirements,
+			'navigation' => $sub_navigation,
+			'displayName' => $display_name
 		);
-		if (isset($pn_insert_index) && ($pn_insert_index >= 0) && ($pn_insert_index < sizeof($pa_menu_info))) {
-			if (sizeof($va_tmp) < (sizeof($pa_menu_info) + 1)) {
-				$va_tmp = array_merge($va_tmp, array_slice($pa_menu_info, $pn_insert_index, (sizeof($pa_menu_info) - $pn_insert_index), true));
+		if (isset($insert_index) && ($insert_index >= 0) && ($insert_index < sizeof($menu_info))) {
+			if (sizeof($tmp) < (sizeof($menu_info) + 1)) {
+				$tmp = array_merge($tmp, array_slice($menu_info, $insert_index, (sizeof($menu_info) - $insert_index), true));
 			}
 		}
-		$pa_menu_info =& $va_tmp;
+		$menu_info =& $tmp;
 		
-		return $pa_menu_info;
+		return $menu_info;
 	}
 	# -------------------------------------------------------
 	# Utilities
@@ -798,9 +796,9 @@ class AppNavigation extends BaseObject {
 					$result_expansion = false;
 				}
 			}
-			$vb_disabled = ((isset($submenu_item['is_enabled']) && $submenu_item['is_enabled']) || (is_array($defaults) && $defaults['module'] && $defaults['module'] == "find") && $result_expansion) ? false : true;
+			$disabled = ((isset($submenu_item['is_enabled']) && $submenu_item['is_enabled']) || (is_array($defaults) && $defaults['module'] && $defaults['module'] == "find") && $result_expansion) ? false : true;
 			
-			if ($vb_disabled) {
+			if ($disabled) {
 				$buf .= "<li>".caHTMLLink(caUcFirstUTF8Safe(isset($submenu_item['displayName']) ? $submenu_item['displayName'] : ''), ['href' => '#', 'class' => 'dropdown-item'.(($cur_selection == $base_path) ? ' disabled' : '')])."</li>";
 			} else {
 				$defaults_proc = $this->_rewriteDefaultsForFindMenuItems($submenu_item, $defaults);
@@ -865,54 +863,53 @@ class AppNavigation extends BaseObject {
 	/**
 	 *
 	 */
-	private function _parseAdditionalParameters($pa_defaults) {
-		if (!is_array($pa_defaults) || (!sizeof($pa_defaults))) { return []; }
-		$va_additional_params = array();
-		foreach($pa_defaults as $vs_param => $vs_value) {
-			
-			$va_tmp = explode(':', $vs_param);
-			if(count($va_tmp)==2) {
-				switch($va_tmp[0]) {
+	private function _parseAdditionalParameters($defaults) {
+		if (!is_array($defaults) || (!sizeof($defaults))) { return []; }
+		$additional_params = array();
+		foreach($defaults as $param => $value) {
+			$tmp = explode(':', $param);
+			if(count($tmp)==2) {
+				switch($tmp[0]) {
 					case 'session':
-						$vs_value = Session::getVar($va_tmp[1]);
+						$value = Session::getVar($tmp[1]);
 						break;
 					case 'parameter':
-						$vs_value = $this->opo_request->getParameter($va_tmp[1], pString);
+						$value = $this->opo_request->getParameter($tmp[1], pString);
 						break;
 					case 'preference':
 						if ($this->opo_request->isLoggedIn()){ 
-							$vs_value = $this->opo_request->user->getPreference($va_tmp[1]);
+							$value = $this->opo_request->user->getPreference($tmp[1]);
 						} else {
-							$vs_value = '';
+							$value = '';
 						}
 						break;
 					case 'global':
-						$vs_value = $GLOBALS[$va_tmp[1]];
+						$value = $GLOBALS[$tmp[1]];
 						break;
 					case 'constant':
-						$vs_value = constant($va_tmp[1]);
+						$value = constant($tmp[1]);
 						break;
 					default:
-						$vs_value = $this->_parseParameterValue($va_tmp[1]);
+						$value = $this->_parseParameterValue($tmp[1]);
 						break;
 				}
-				if ($vs_value == '') { continue; }
-				if ($va_tmp[1]) {
-					$va_additional_params[$va_tmp[1]] = $vs_value;
+				if ($value == '') { continue; }
+				if ($tmp[1]) {
+					$additional_params[$tmp[1]] = $value;
 				}
 			} else {
-				if ($va_tmp[0]) {
-					$va_additional_params[$va_tmp[0]] = ($v = $this->_parseParameterValue($vs_value)) ? $v : $vs_value;
+				if ($tmp[0]) {
+					$additional_params[$tmp[0]] = ($v = $this->_parseParameterValue($value)) ? $v : $value;
 				}
 			}
 		}
-		return $va_additional_params;
+		return $additional_params;
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
-	private function _parseParameterValue(string $value) {
+	private function _parseParameterValue(string $value) : mixed {
 		$ret_value = '';
 		$tmp = explode(':', $value);
 		if(count($tmp)==2) {
@@ -960,124 +957,130 @@ class AppNavigation extends BaseObject {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Evaluate navigation requirements rules
 	 *
+	 * @param array $requirements Array of requirement rulers
+	 * @param array $options Options include:
+	 *		type_id = Type id of currently evaluated record
+	 * 
+	 * @return bool
 	 */
-	private function _evaluateRequirements($pa_requirements, $options=null) {
-		if(!is_array($pa_requirements) || (is_array($pa_requirements) && (sizeof($pa_requirements) == 0))) { return true; }	// empty requirements means anyone may access the nav item
-		$vs_result = $vs_value = null;
+	private function _evaluateRequirements(?array $requirements, ?array $options=null) : bool {
+		if(!is_array($requirements) || (is_array($requirements) && (sizeof($requirements) == 0))) { return true; }	// empty requirements means anyone may access the nav item
+		$result = $value = null;
 		
-		foreach($pa_requirements as $vs_requirement => $vs_boolean) {
-			$vs_boolean = (strtoupper($vs_boolean) == "AND")  ? "AND" : "OR";
+		foreach($requirements as $requirement => $boolean) {
+			$boolean = (strtoupper($boolean) == "AND")  ? "AND" : "OR";
 			
-			$va_tmp = explode(':', $vs_requirement);
-			switch(strtolower($va_tmp[0])) {
+			$tmp = explode(':', $requirement);
+			switch(strtolower($tmp[0])) {
 				case 'availabletypes':
-					$vn_min_access = (sizeof($va_tmp) >= 3) ? constant($va_tmp[2]) : __CA_BUNDLE_ACCESS_EDIT__;
-					$vn_min_types = (sizeof($va_tmp) >= 4) ? (int)$va_tmp[3] : 1;
-					$va_types = caGetTypeListForUser($va_tmp[1], array('access' => $vn_min_access));
-					$vs_value = (sizeof($va_types) >= $vn_min_types) ? true : false;
+					$min_access = (sizeof($tmp) >= 3) ? constant($tmp[2]) : __CA_BUNDLE_ACCESS_EDIT__;
+					$min_types = (sizeof($tmp) >= 4) ? (int)$tmp[3] : 1;
+					$types = caGetTypeListForUser($tmp[1], array('access' => $min_access));
+					$value = (sizeof($types) >= $min_types) ? true : false;
 					break;
 				case 'session':
-					if (isset($va_tmp[2])) {
-						$vs_value = (Session::getVar($va_tmp[1]) == $va_tmp[2]) ? true : false;
+					if (isset($tmp[2])) {
+						$value = (Session::getVar($tmp[1]) == $tmp[2]) ? true : false;
 					} else {
-						$vs_value = Session::getVar($va_tmp[1]) ? true : false;
+						$value = Session::getVar($tmp[1]) ? true : false;
 					}
 					break;
 				case 'action':
-					if ($va_tmp[1]) {
-						$vs_value = $this->opo_request->user->canDoAction($va_tmp[1]) ? 1 : 0;
+					if ($tmp[1]) {
+						$value = $this->opo_request->user->canDoAction($tmp[1]) ? 1 : 0;
 					} else {
-						$vs_value = 1;
+						$value = 1;
 					}
 					break;
 				case 'parameter':
-					if (isset($va_tmp[2])) {
-						$vs_value = ($this->opo_request->getParameter($va_tmp[1], pString) == $va_tmp[2]) ? true : false;
+					if (isset($tmp[2])) {
+						$value = ($this->opo_request->getParameter($tmp[1], pString) == $tmp[2]) ? true : false;
 					} else {
-						$vs_value = $this->opo_request->getParameter($va_tmp[1], pString) ? true : false;
+						$value = $this->opo_request->getParameter($tmp[1], pString) ? true : false;
 					}
 					break;
 				case 'configuration':
-					$vs_pref = $va_tmp[1];
-					if ($vb_not = (substr($vs_pref, 0, 1) == '!') ? true : false) {
-						$vs_pref = substr($vs_pref, 1);
+					$pref = $tmp[1];
+					if ($not = (substr($pref, 0, 1) == '!') ? true : false) {
+						$pref = substr($pref, 1);
 					}
 					if (
-						($vb_not && !(bool)($this->opo_request->config->get($vs_pref)))
+						($not && !(bool)($this->opo_request->config->get($pref)))
 						||
-						(!$vb_not && (bool)($this->opo_request->config->get($vs_pref)))
+						(!$not && (bool)($this->opo_request->config->get($pref)))
 					) {
-						$vs_value = true;
+						$value = true;
 					} else {
-						$vs_value = false;
+						$value = false;
 					}
 					break;
 				case 'checktypelimitinconfig':
-					$vs_pref = $va_tmp[1];
-					if ($vb_not = (substr($vs_pref, 0, 1) == '!') ? true : false) {
-						$vs_pref = substr($vs_pref, 1);
+					$pref = $tmp[1];
+					if ($not = (substr($pref, 0, 1) == '!') ? true : false) {
+						$pref = substr($pref, 1);
 					}
 					
-					$vs_table = $va_tmp[2];
+					$table = $tmp[2];
 					
-					$l = caMakeTypeIDList($vs_table, $this->opo_request->config->get($vs_pref),['dontIncludeSubtypesInTypeRestriction' => true]);
-					$s = caGetOption('type_id', $options, (int)Session::getVar("{$vs_table}_type_id"));
-					$vs_value = in_array($s, $l, true);
-					if ($vb_not) { $vs_value = !$vs_value; }
+					$l = caMakeTypeIDList($table, $this->opo_request->config->get($pref),['dontIncludeSubtypesInTypeRestriction' => true]);
+					$s = caGetOption('type_id', $options, (int)Session::getVar("{$table}_type_id"));
+					$value = in_array($s, $l, true);
+					if ($not) { $value = !$value; }
 					break;
 				case 'global':
-					if (isset($va_tmp[2])) {
-						$vs_value = ($GLOBALS[$va_tmp[1]] == $va_tmp[2]) ? true : false;
+					if (isset($tmp[2])) {
+						$value = ($GLOBALS[$tmp[1]] == $tmp[2]) ? true : false;
 					} else {
-						$vs_value = $GLOBALS[$va_tmp[1]] ? true : false;
+						$value = $GLOBALS[$tmp[1]] ? true : false;
 					}
 					break;
 				case 'constant':
-					if ($vb_not = (substr($va_tmp[1], 0, 1) == '!') ? true : false) {
-						$va_tmp[1] = substr($va_tmp[1], 1);
+					if ($not = (substr($tmp[1], 0, 1) == '!') ? true : false) {
+						$tmp[1] = substr($tmp[1], 1);
 					}
-					if(!defined($va_tmp[1])) { 
-						$vs_value = false; 
-					} elseif (isset($va_tmp[2])) {
-						$vs_value = (constant($va_tmp[1]) == $va_tmp[2]) ? true : false;
+					if(!defined($tmp[1])) { 
+						$value = false; 
+					} elseif (isset($tmp[2])) {
+						$value = (constant($tmp[1]) == $tmp[2]) ? true : false;
 					} else {
-						$vs_value = constant($va_tmp[1]) ? true : false;
+						$value = constant($tmp[1]) ? true : false;
 					}
-					if($vb_not) { $vs_value = !$vs_value; }
+					if($not) { $value = !$value; }
 					break;
 				case 'function':
-					if ($vb_not = (substr($va_tmp[1], 0, 1) == '!') ? true : false) {
-						$va_tmp[1] = substr($va_tmp[1], 1);
+					if ($not = (substr($tmp[1], 0, 1) == '!') ? true : false) {
+						$tmp[1] = substr($tmp[1], 1);
 					}
-					$vs_value = call_user_func_array('caShowAccessControlScreen', array_slice($va_tmp, 2));
-					if($vb_not) { $vs_value = !$vs_value; }
+					$value = call_user_func_array('caShowAccessControlScreen', array_slice($tmp, 2));
+					if($not) { $value = !$value; }
 					break;
 				default:
-					$vs_value = $vs_value ? true : false;
+					$value = $value ? true : false;
 					break;
 			}
 			
-			if (is_null($vs_result)) {
-				$vs_result = $vs_value;
+			if (is_null($result)) {
+				$result = $value;
 			} else {
-				if ($vs_boolean == "AND") {
-					$vs_result = ($vs_result && $vs_value);
+				if ($boolean == "AND") {
+					$result = ($result && $value);
 				} else {
-					$vs_result = ($vs_result || $vs_value);
+					$result = ($result || $value);
 				}
 			}
 		}
 		
-		return $vs_result;
+		return $result;
 	}
 	# -------------------------------------------------------
 	# Caching
 	# -------------------------------------------------------
 	/**
-	 *
+	 * Clean caches
 	 */
-	static function clearMenuBarCache(RequestHTTP $request) {
+	static function clearMenuBarCache() {
 		Session::setVar('ca_nav_menubar_cache', null);
 		Session::setVar('ca_nav_sidebar_cache', null);
 	}
