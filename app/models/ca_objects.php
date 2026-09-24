@@ -751,7 +751,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 				$o_db = $this->getDb();
 				
 				$qr_res = $o_db->query("
-					SELECT *
+					SELECT object_id, representation_id, is_primary
 					FROM ca_objects_x_object_representations
 					WHERE object_id = ?
 				", (int)$this->getPrimaryKey());
@@ -763,7 +763,6 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 				
 				foreach($va_reps as $vn_representation_id => $va_rep) {
 					$va_rep['object_id'] = $t_dupe->getPrimaryKey();
-					
 					$t_object_x_rep = new ca_objects_x_object_representations();
 					$t_object_x_rep->setTransaction($o_t);
 					$t_object_x_rep->set($va_rep);

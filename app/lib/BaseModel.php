@@ -2365,21 +2365,29 @@ class BaseModel extends BaseObject {
 			case 1062:
 				$indices = $o_db->getIndices($this->tableName());	// try to get key info
 
-				if (preg_match("/for key [']{0,1}([\w]+)[']{0,1}$/", $e->getMessage(), $matches)) {
-					$field_labels = array();
-					foreach($indices[$matches[1]]['fields'] as $col_name) {
-						$tmp = $this->getFieldInfo($col_name);
-						$field_labels[] = $tmp['LABEL'];
+				if (preg_match("/for key [']{0,1}([\w_\\-]+)[\.]{0,1}([^']*)[']{0,1}$/", $e->getMessage(), $matches)) {					
+					$field_labels = [];
+					$mindex = $indices[$matches[1]] ?? $indices[$matches[2] ?? ''] ?? null;
+					
+					if($mindex) {
+						foreach($mindex['fields'] as $col_name) {
+							$tmp = $this->getFieldInfo($col_name);
+							$field_labels[] = $tmp['LABEL'];
+						}
 					}
+					
+					$ntable = Datamodel::tableExists($matches[1]) ? Datamodel::getTableProperty($matches[1], 'NAME_SINGULAR') : null;
 
 					$last_name = array_pop($field_labels);
 					if (sizeof($field_labels) > 0) {
-						$msg = _t("The combination of %1 and %2 must be unique", join(', ', $field_labels), $last_name);
-					} else {
-						$msg = _t("The value of %1 must be unique", $last_name);
-					}
+						$msg = _t("The combination of <em>%1</em> and <em>%2</em> for <em>%3</em> must be unique", join(', ', $field_labels), $last_name, $ntable);
+					} elseif($last_name) {
+						$msg = _t("The value of <em>%1</em> must be unique", $last_name);
+					} elseif($ntable) {
+						$msg = _t('The <em>%1</em> already exists', $ntable);
+					} 
 				} else {
-					$msg = _t('The value already exists');
+					$msg = _t('The value already exists %1', $m);
 				}
 				$this->postError($e->getNumber(), $msg, $context, $source);
 				$o_db->postError($e->getNumber(), $msg, $context, $source);

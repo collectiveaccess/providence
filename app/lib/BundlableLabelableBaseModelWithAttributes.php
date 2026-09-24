@@ -134,7 +134,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$this->initLabelDefinitions();
 		
 		if ($this->isHierarchical() && $this->opo_idno_plugin_instance) {
-			$this->opo_idno_plugin_instance->isChild($this->isChild());
+			$this->isChild();
 		}
 		return $vn_rc;
 	}
@@ -3451,8 +3451,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
-		if ($object_collections_hierarchy_enabled) {
-			
+		if ($object_collections_hierarchy_enabled && sizeof($object_collection_rel_types ?? [])) {
 			$type_selector 	= trim($this->getTypeListAsHTMLFormElement(
 				"{$placement_code}type_id", 
 				['id' => "{$placement_code}{$form_name}typeList"], 
@@ -8052,6 +8051,12 @@ $pa_options["display_form_field_tips"] = true;
 		if (!isset($pa_options['instance']) || !($t_instance = $pa_options['instance'])) {
 			if (!($t_instance = Datamodel::getInstance($pm_rel_table_name_or_num, true))) { return null; }
 		}
+		
+		$start = caGetOption('start', $pa_options, 0);
+		$limit = caGetOption('limit', $pa_options, null);
+		unset($pa_options['start']);
+		unset($pa_options['limit']);
+		
 		$va_ids = [];
 		foreach($pa_ids as $vn_k => $vn_id) {
 			if (is_numeric($vn_id)) { 
@@ -8072,8 +8077,6 @@ $pa_options["display_form_field_tips"] = true;
 			$vo_sort = new BaseFindEngine($this->getDb());
 			$va_ids = $vo_sort->sortHits($va_ids, $t_instance->tableName(), join(';', $pa_sort), caGetOption('sortDirection', $pa_options, 'asc'), $pa_options);
 		} 
-		$start = caGetOption('start', $pa_options, 0);
-		$limit = caGetOption('limit', $pa_options, null);
 		if(($start > 0) || ($limit > 0)) {
 			$va_ids = array_slice($va_ids, $start, $limit);
 		}
