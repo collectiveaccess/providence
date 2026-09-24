@@ -816,7 +816,7 @@ class AppNavigation extends BaseObject {
 	/**
 	 *
 	 */
-	private function _genMenuItem(array $iteminfo, string $key, string $base_path, array$cur_selection, ?string $css_id=null, ?array $options=null, ?array $attributes=null) {
+	private function _genMenuItem(array $iteminfo, string $key, string $base_path, ?string $cur_selection, ?string $css_id=null, ?array $options=null, ?array $attributes=null) {
 		$buf = '';
 		if (!is_array($options)) {$options = array(); }
 		if (!isset($options['has_children'])) { $options['has_children'] = false; }
