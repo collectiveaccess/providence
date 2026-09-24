@@ -41,11 +41,8 @@ $window_title = strip_tags($window_title);
 		<?= MetaTagManager::getHTML(); ?>
 		<?= AssetLoadManager::getLoadHTML($this->request); ?>
 		
-<?php
-		// @TODO: use relative paths 
-?>
-		<script type="text/javascript" src="/themes/default/dist/assets/main.js"></script>
-		<link rel='stylesheet' href='/themes/default/dist/assets/main.css' type='text/css' media='all'></link>
+		<script type="text/javascript" src="<?= __CA_URL_ROOT__; ?>/assets/main.js"></script>
+		<link rel='stylesheet' href='<?= __CA_URL_ROOT__; ?>/assets/main.css' type='text/css' media='all'></link>
 		
 		<title><?= (MetaTagManager::getWindowTitle()) ?: $this->request->config->get("app_display_name"); ?></title>
 </head>
@@ -59,12 +56,10 @@ $window_title = strip_tags($window_title);
 			</button>
 			<div class="collapse navbar-collapse" id="navbarSupportedContent">
 <?php
-			if($this->request->isLoggedIn() && $this->request->user->hasRole("admin")){
+			if($this->request->isLoggedIn()){
 ?>
-				<ul class="navbar-nav ms-auto mb-2 mb-lg-0 me-4">	
-<?php
-					// Menus here
-?>
+				<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+					<?= $this->getVar('nav')->getHTMLMenuBar('menuBar'); ?>
 				</ul>
 				<form action="<?= caNavUrl($this->request, '', 'Search', 'Objects'); ?>" role="search">
 					<div class="input-group">
@@ -82,3 +77,4 @@ $window_title = strip_tags($window_title);
 
 	<main <?= caGetPageCSSClasses(); ?>><a name="page-content"></a>
 	<div class='container-xl pt-4'>
+

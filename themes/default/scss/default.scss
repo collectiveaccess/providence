@@ -1,4 +1,68 @@
-@import "bootstrap/scss/bootstrap";
+
+/* ------------------------- Navbar ------------------------- */
+$navbar-menus-top-margin: 2.4em;
+div.navbar-brand{
+	width:200px;
+	font-family: helvetica;
+}
+@media(max-width:575px){
+	.navbar-expand-sm .dropdown-menu{
+		box-shadow: none;
+		border:0px;
+	}
+}
+@media(min-width:576px){
+	.navbar-expand-sm .dropdown-menu{
+		top: $navbar-menus-top-margin;
+	}
+}
+@media(max-width:767px){
+	.navbar-expand-md .dropdown-menu{
+		box-shadow: none;
+		border:0px;
+	}
+}
+@media(min-width:768px){
+	.navbar-expand-md .dropdown-menu{
+		top: $navbar-menus-top-margin;
+	}
+}
+@media(max-width:991px){
+	.navbar-expand-lg .dropdown-menu{
+		box-shadow: none;
+		border:0px;
+	}
+}
+@media(min-width:992px){
+	.navbar-expand-lg .dropdown-menu{
+		top: $navbar-menus-top-margin;
+	}
+}
+@media(max-width:1199px){
+	.navbar-expand-xl .dropdown-menu{
+		box-shadow: none;
+		border:0px;
+	}
+}
+@media(min-width:1200px){
+	.navbar-expand-xl .dropdown-menu{
+		top: $navbar-menus-top-margin;
+	}
+}
+/* -------------- Menus --------------- */
+@media (min-width: 992px) {
+  .navbar-nav .dropdown:hover > .dropdown-menu,
+  .navbar-nav .dropend:hover > .dropdown-menu {
+    display: block;
+    margin-top: 0;
+    margin-left: 0;
+  }
+  .navbar-nav .dropend:hover > .dropdown-menu {
+    position: absolute;
+    top: 0;
+    left: 100%;
+  }
+}
 
 
 .img-fluid img{
@@ -39,54 +103,6 @@ a.bg-body-tertiary:hover, a.bg-body-tertiary:focus, a.bg-body-tertiary:active {
   content: "Read Less";
 }
 
-/* ------------------------- Navbar ------------------------- */
-.navbar-brand{
-	width:300px;
-}
-@media(max-width:575px){
-	.navbar-expand-sm .dropdown-menu{
-		box-shadow: none;
-		border:0px;
-	}
-}
-@media(min-width:576px){
-	.navbar-expand-sm .dropdown-menu{
-		top:4.3em;
-	}
-}
-@media(max-width:767px){
-	.navbar-expand-md .dropdown-menu{
-		box-shadow: none;
-		border:0px;
-	}
-}
-@media(min-width:768px){
-	.navbar-expand-md .dropdown-menu{
-		top:4.3em;
-	}
-}
-@media(max-width:991px){
-	.navbar-expand-lg .dropdown-menu{
-		box-shadow: none;
-		border:0px;
-	}
-}
-@media(min-width:992px){
-	.navbar-expand-lg .dropdown-menu{
-		top:4.3em;
-	}
-}
-@media(max-width:1199px){
-	.navbar-expand-xl .dropdown-menu{
-		box-shadow: none;
-		border:0px;
-	}
-}
-@media(min-width:1200px){
-	.navbar-expand-xl .dropdown-menu{
-		top:4.3em;
-	}
-}
 /* ------------------------- browse results ------------------------- */
 #browseResultsContainer, .resultBlock{
 	.card{

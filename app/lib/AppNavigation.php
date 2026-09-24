@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2024 Whirl-i-Gig
+ * Copyright 2007-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -42,18 +42,21 @@ class AppNavigation extends BaseObject {
 	private $opo_response;
 	private $opo_config;
 	private $opo_nav_config;
-	private $opa_nav_config;
+	private $nav_config;
 	private $opa_widgets_config;
 	private $ops_controller_path;
 	
 	private $opa_reverse_nav_table;
 	# -------------------------------------------------------
-	public function __construct($po_request, $po_response) {
-		$this->setRequest($po_request);
-		$this->setResponse($po_response);
+	/**
+	 *
+	 */
+	public function __construct($request, $response) {
+		$this->setRequest($request);
+		$this->setResponse($response);
 		$this->opo_config = Configuration::load();
 		$this->opo_nav_config = Configuration::load('navigation.conf');
-		$this->opa_nav_config = $this->opo_nav_config->getAssoc('navigation');
+		$this->nav_config = $this->opo_nav_config->getAssoc('navigation');
 		$this->opa_widgets_config = $this->opo_nav_config->getAssoc('widgets');
 		$this->ops_controller_path = $this->opo_request->config->get('controllers_directory');
 		
@@ -74,8 +77,8 @@ class AppNavigation extends BaseObject {
 		
 		$va_path = array();
 		$va_stack = array();
-		foreach(array_keys($this->opa_nav_config) as $vs_key) {
-			$va_stack[] = array('key' => $vs_key, 'level' => 0, 'navnode' => $this->opa_nav_config[$vs_key]);
+		foreach(array_keys($this->nav_config) as $vs_key) {
+			$va_stack[] = array('key' => $vs_key, 'level' => 0, 'navnode' => $this->nav_config[$vs_key]);
 		}
 		
 		$vn_level = 0;
@@ -133,11 +136,17 @@ class AppNavigation extends BaseObject {
 		return true;
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function setResponse($po_response) {
 		$this->opo_response = $po_response;
 		return true;
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getDestination($pb_include_action=false, $pb_include_action_extra=false) {
 		$vs_action = $this->opo_request->getAction();
 		$vs_action_extra = $this->opo_request->getActionExtra();
@@ -145,6 +154,9 @@ class AppNavigation extends BaseObject {
 		return '/'.$this->opo_request->getModulePath().'/'.$this->opo_request->getController().($pb_include_action ? '/'.$vs_action: '').($pb_include_action_extra ? '/'.$vs_action_extra: '');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getDestinationAsNavigationPath() {
 		$vs_dest_path = $this->getDestination(true, false);
 		
@@ -175,7 +187,7 @@ class AppNavigation extends BaseObject {
 		$va_tmp = explode('/', $this->getDestinationAsNavigationPath());
 
 		$va_trail = array();
-		$va_node = $this->opa_nav_config;
+		$va_node = $this->nav_config;
 		foreach($va_tmp as $vs_part) {
 			if ($va_node[$vs_part]) {
 				$va_node = $va_node[$vs_part];
@@ -275,7 +287,7 @@ class AppNavigation extends BaseObject {
 	 * file. This data can be used to generate navigation controls using various markup schemes (eg. HTML as done by getHTMLMenuBar())
 	 */
 	public function &getNavInfo($pn_level=0) {
-		$va_nav_info = $this->opa_nav_config;
+		$va_nav_info = $this->nav_config;
 		$vs_current_selection = $this->getDestinationAsNavigationPath();
 		$va_path = explode('/', $vs_current_selection);
 		
@@ -299,140 +311,143 @@ class AppNavigation extends BaseObject {
 	}
 	# -------------------------------------------------------
 	/**
-	 *	Generates HTML for top-level menubar 
+	 *	Generates HTML for top-level menubar as string
 	 */
-	public function getHTMLMenuBar($ps_css_id) {
-		$va_nav_info = $this->getNavInfo(0);	// get top-level navigation
+	public function getHTMLMenuBar(string $css_id, ?array $options=null) {
+		$nav_info = $this->getNavInfo(0);	// get top-level navigation
 		
 		// fire hook
 		$o_app_plugin_manager = new ApplicationPluginManager();
-		if ($va_revised_nav_info = $o_app_plugin_manager->hookRenderMenuBar($va_nav_info)) {
-			$va_nav_info = $va_revised_nav_info;
+		if ($revised_nav_info = $o_app_plugin_manager->hookRenderMenuBar($nav_info)) {
+			$nav_info = $revised_nav_info;
 		}
 		
-		if (((time() - Session::getVar('ca_nav_menubar_cache_lasttime')) < 600) && (intval($this->opo_config->get('do_menu_bar_caching')) > 0) && ($vs_menu_cache = Session::getVar('ca_nav_menubar_cache'))) { return $vs_menu_cache; }
+		if (((time() - Session::getVar('ca_nav_menubar_cache_lasttime')) < 600) && (intval($this->opo_config->get('do_menu_bar_caching')) > 0) && ($menu_cache = Session::getVar('ca_nav_menubar_cache'))) { return $menu_cache; }
 		
-		$vs_buf = '';
-		$vs_cur_selection = $this->getDestinationAsNavigationPath();
+		$buf = '';
+		$cur_selection = $this->getDestinationAsNavigationPath();
 		
-		foreach($va_nav_info as $vs_key => $va_menu) {
-			if (!$this->_evaluateRequirements($va_menu['requires'])) { continue; }
-			$vs_buf .= "<li>\n";
-			$vs_buf .= "\t<a href='#'>".$va_menu['displayName']."</a>\n";
-			
-			if (is_array($va_menu['navigation'])) {
-				$vs_buf .= "\t<ul>\n";
-				$vs_buf .= $this->_genMenu($va_menu['navigation'], $vs_key, $vs_cur_selection);
-				$vs_buf .= "\t</ul>\n";
+		foreach($nav_info as $key => $menu) {
+			if (!$this->_evaluateRequirements($menu['requires'])) { continue; }
+			$buf .= "<li class=\"nav-item dropdown\">\n";
+			$buf .= caHTMLLink($menu['displayName'], ['href' => '#', 'class' => 'nav-link dropdown-toggle', 'role' => 'button', 'data-bs-auto-close' => 'outside', 'aria-expanded' => 'false']);
+			if (is_array($menu['navigation'])) {
+				$buf .= "\t<ul class=\"dropdown-menu\">\n";
+				$buf .= $this->_genMenu($menu['navigation'], $key, $cur_selection);
+				$buf .= "\t</ul>\n";
 			}
-			$vs_buf .= "</li>\n";
+			$buf .= "</li>\n";
 		}
-		Session::setVar('ca_nav_menubar_cache', $vs_buf); 
+		Session::setVar('ca_nav_menubar_cache', $buf); 
 		Session::setVar('ca_nav_menubar_cache_lasttime', time()); 
-		return $vs_buf;
+		return $buf;
 	}
 	# -------------------------------------------------------
 	/**
-	 *	Generates HTML for top-level menubar 
+	 *	Generates HTML for top-level menubar as array of links
 	 */
 	public function getHTMLMenuBarAsLinkArray() {
-		$va_nav_info = $this->getNavInfo(0);	// get top-level navigation
+		$nav_info = $this->getNavInfo(0);	// get top-level navigation
 		
 		// fire hook
 		$o_app_plugin_manager = new ApplicationPluginManager();
-		if ($va_revised_nav_info = $o_app_plugin_manager->hookRenderMenuBar($va_nav_info)) {
-			$va_nav_info = $va_revised_nav_info;
+		if ($revised_nav_info = $o_app_plugin_manager->hookRenderMenuBar($nav_info)) {
+			$nav_info = $revised_nav_info;
 		}
 		
-		if ((intval($this->opo_config->get('do_menu_bar_caching')) > 0) && ($va_menu_cache = Session::getVar('ca_nav_menubar_link_cache'))) { return $va_menu_cache; }
+		if ((intval($this->opo_config->get('do_menu_bar_caching')) > 0) && ($menu_cache = Session::getVar('ca_nav_menubar_link_cache'))) { return $menu_cache; }
 		
-		$vs_cur_selection = $this->getDestinationAsNavigationPath();
+		$cur_selection = $this->getDestinationAsNavigationPath();
 		
-		$va_links = array();
-		foreach($va_nav_info as $vs_key => $va_menu) {
-			if (!$this->_evaluateRequirements($va_menu['requires'])) { continue; }
+		$links = array();
+		foreach($nav_info as $key => $menu) {
+			if (!$this->_evaluateRequirements($menu['requires'])) { continue; }
 			
-			$va_links[] = caNavLink($this->opo_request, $va_menu['displayName'], '', trim($va_menu['default']['module']), trim($va_menu['default']['controller']), trim($va_menu['default']['action']));
+			$links[] = caNavLink($this->opo_request, $menu['displayName'], '', trim($menu['default']['module']), trim($menu['default']['controller']), trim($menu['default']['action']));
 		}
-		Session::setVar('ca_nav_menubar_link_cache', $va_links); 
-		return $va_links;
+		Session::setVar('ca_nav_menubar_link_cache', $links); 
+		
+		return $links;
 	}
 	# -------------------------------------------------------
 	/**
 	 *	Generates HTML for sidenav
 	 */
-	public function getHTMLSideNav($ps_css_id, ?array $options=null) {
-		$vs_dest = $this->getDestination();
+	public function getHTMLSideNav(string $css_id, ?array $options=null) {
+		$dest = $this->getDestination();
 		$hide_disabled = caGetOption('hideDisabled', $options, true);
 		
 		if (intval($this->opo_config->get('do_menu_bar_caching')) > 0) {
-			$va_sidebar_cache = Session::getVar('ca_nav_sidebar_cache');
-			if (isset($va_sidebar_cache[$vs_dest])) { return $va_sidebar_cache[$vs_dest]; }
+			$sidebar_cache = Session::getVar('ca_nav_sidebar_cache');
+			if (isset($sidebar_cache[$dest])) { return $sidebar_cache[$dest]; }
 		}
 		
-		$va_nav_info = $this->getNavInfo(2); // get third-level navigation (zero-indexed); first two levels are in top-level nav bar
-		$vs_buf = '';
-		if (is_array($va_nav_info)) {
-			$vs_cur_selection = $this->getDestinationAsNavigationPath();
-			$va_tmp = explode('/', $vs_cur_selection);
-			$vs_base_path = $va_tmp[0].'/'.$va_tmp[1];
-			$va_tmp = array();
-			foreach($va_nav_info as $vs_key => $va_menu) {
-				if (isset($va_menu['handler']) && isset($va_menu['type']) && $va_menu['handler'] && ($va_menu['type'] == 'dynamic')) {
-					if (is_array($va_dyn_menu = $this->getDynamicNavigation($va_menu)) ) {
-						foreach($va_dyn_menu as $vs_meow => $va_x) {	
-							$va_tmp[$vs_meow] = $va_x;	
-							$vs_path = '';
-							$va_path_tmp = array();
+		$nav_info = $this->getNavInfo(2); // get third-level navigation (zero-indexed); first two levels are in top-level nav bar
+		$buf = '';
+		if (is_array($nav_info)) {
+			$cur_selection = $this->getDestinationAsNavigationPath();
+			$tmp = explode('/', $cur_selection);
+			$base_path = $tmp[0].'/'.$tmp[1];
+			$tmp = array();
+			foreach($nav_info as $key => $menu) {
+				if (isset($menu['handler']) && isset($menu['type']) && $menu['handler'] && ($menu['type'] == 'dynamic')) {
+					if (is_array($dyn_menu = $this->getDynamicNavigation($menu)) ) {
+						foreach($dyn_menu as $meow => $x) {	
+							$tmp[$meow] = $x;	
+							$path = '';
+							$path_tmp = array();
 							
-							foreach(array('module', 'controller') as $vs_k) {
-								if ($va_x['default'][$vs_k]) { 
-									$va_path_tmp[] = $va_x['default'][$vs_k];
+							foreach(array('module', 'controller') as $k) {
+								if ($x['default'][$k]) { 
+									$path_tmp[] = $x['default'][$k];
 								}
 							}
 								
-							$va_action_tmp = explode('/', $va_x['default']['action']);
+							$action_tmp = explode('/', $x['default']['action']);
 							
-							$vs_action = array_shift($va_action_tmp);
-							if ($va_x['useActionInPath']) {
-								$va_path_tmp[] = $vs_action;
+							$action = array_shift($action_tmp);
+							if ($x['useActionInPath']) {
+								$path_tmp[] = $action;
 							}
-							if ($va_x['useActionExtraInPath'] && (sizeof($va_path_tmp) > 0)) {
-								$va_path_tmp[] = join('/', $va_action_tmp);
+							if ($x['useActionExtraInPath'] && (sizeof($path_tmp) > 0)) {
+								$path_tmp[] = join('/', $action_tmp);
 							}
 							
-							$vs_path = '/'.join('/', $va_path_tmp);
+							$path = '/'.join('/', $path_tmp);
 				
-							$this->opa_reverse_nav_table[$vs_path] = $vs_base_path.'/'.$vs_meow;
+							$this->opa_reverse_nav_table[$path] = $base_path.'/'.$meow;
 						}
 					}
 				} else {
-					$va_tmp[$vs_key] = $va_menu;
+					$tmp[$key] = $menu;
 				}
 			}
-			$vs_cur_selection = $this->getDestinationAsNavigationPath();
+			$cur_selection = $this->getDestinationAsNavigationPath();
 			
-			$va_nav_info = $va_tmp;
+			$nav_info = $tmp;
 			
-			foreach($va_nav_info as $vs_key => $va_menu) {
-				if (isset($va_menu['navigation']) && is_array($va_menu['navigation'])) {
-					if ($vs_menu_item = $this->_genMenuItem($va_menu, $vs_key, $vs_base_path, $vs_cur_selection, "nav_{$vs_key}", array('has_children' => true), array('onclick' => "$(\"#subNav_{$vs_key}\").slideToggle(350); return false;"))) {
-						$SELECTED = (in_array($vs_key, explode('/', $vs_cur_selection))) ? ' selected' : '';
+			foreach($nav_info as $key => $menu) {
+				if (isset($menu['navigation']) && is_array($menu['navigation'])) {
+					if ($menu_item = $this->_genMenuItem($menu, $key, $base_path, $cur_selection, "nav_{$key}", array('has_children' => true), array('onclick' => "$(\"#subNav_{$key}\").slideToggle(350); return false;"))) {
+						$SELECTED = (in_array($key, explode('/', $cur_selection))) ? ' selected' : '';
 						
-						$vs_buf .= "<h2>{$vs_menu_item}</h2>";
-						$vs_buf .= "<ul class='arrow{$SELECTED}' id='subNav_{$vs_key}'>\n";
-						$vs_buf .= $this->_genMenu($va_menu['navigation'], $vs_base_path, $vs_cur_selection);
-						$vs_buf .= "</ul>\n";
+						$buf .= "<h2>{$menu_item}</h2>";
+						$buf .= "<ul class='arrow{$SELECTED}' id='subNav_{$key}'>\n";
+						$buf .= $this->_genMenu($menu['navigation'], $base_path, $cur_selection);
+						$buf .= "</ul>\n";
 					}
-				} elseif ($vs_menu_item = $this->_genMenuItem($va_menu, $vs_key, $vs_base_path, $vs_cur_selection, "nav_{$vs_key}", ['hideDisabled' => $hide_disabled])) {
-					$vs_buf .= "<h2>{$vs_menu_item}</h2>\n";
+				} elseif ($menu_item = $this->_genMenuItem($menu, $key, $base_path, $cur_selection, "nav_{$key}", ['hideDisabled' => $hide_disabled])) {
+					$buf .= "<h2>{$menu_item}</h2>\n";
 				}
 			}
 		}
-		$va_sidebar_cache[$vs_dest] = $vs_buf;
-		return $vs_buf;
+		$sidebar_cache[$dest] = $buf;
+		return $buf;
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getHTMLWidgets() {
 		$vs_cur_selection = $this->getDestination();
 		$va_widgets_config = $this->opa_widgets_config;
@@ -480,55 +495,67 @@ class AppNavigation extends BaseObject {
 		return '';
 	}
 	# -------------------------------------------------------
-	public function getDynamicNavigation($va_info) {
-		$va_params = $va_info['parameters']; //$this->_parseAdditionalParameters($va_info['parameters']);
+	/**
+	 *
+	 */
+	public function getDynamicNavigation(array $info) {
+		$params = $info['parameters']; //$this->_parseAdditionalParameters($info['parameters']);
 	
 		// invoke controller method
-		$vs_classname = ucfirst($va_info['handler']['controller']).'Controller';
+		$classname = ucfirst($info['handler']['controller']).'Controller';
 	
-		if (!include_once($this->ops_controller_path.'/'.$va_info['handler']['module'].'/'.$vs_classname.'.php')) {
+		if (!include_once($this->ops_controller_path.'/'.$info['handler']['module'].'/'.$classname.'.php')) {
 			// Invalid controller path
 			$this->postError(2300, _t("Invalid controller path"), "AppNavigation->getDynamicNavigation()");
 			return false;
 		}
-		$o_action_controller = new $vs_classname($this->opo_request, $this->opo_response , $this->opo_request->config->get('views_directory').'/'.$va_info['handler']['module']);
+		$o_action_controller = new $classname($this->opo_request, $this->opo_response , $this->opo_request->config->get('views_directory').'/'.$info['handler']['module']);
 
-		$va_dyn_nav_info = $o_action_controller->{$va_info['handler']['action']}($va_info);
+		$dyn_nav_info = $o_action_controller->{$info['handler']['action']}($info);
 		
 		if ($o_action_controller->numErrors()) {
 			$this->postError(2300, _t("Controller error: %1", join('; ', $o_action_controller->getErrors())), "AppNavigation->getDynamicNavigation()");
 			return false;
 		}
-		return $va_dyn_nav_info;
+		return $dyn_nav_info;
 	}
 	# -------------------------------------------------------
-	public function getDynamicSubmenu($va_info) {
+	/**
+	 *
+	 */
+	public function getDynamicSubmenu(array $info) {
 		// invoke controller method
-		$vs_classname = ucfirst($va_info['handler']['controller']).'Controller';
+		$classname = ucfirst($info['handler']['controller']).'Controller';
 	
-		if (!include_once($this->ops_controller_path.'/'.$va_info['handler']['module'].'/'.$vs_classname.'.php')) {
+		if (!include_once($this->ops_controller_path.'/'.$info['handler']['module'].'/'.$classname.'.php')) {
 			// Invalid controller path
 			$this->postError(2300, _t("Invalid controller path"), "AppNavigation->getDynamicSubmenu()");
 			return false;
 		}
 	
-		$o_action_controller = new $vs_classname($this->opo_request, $this->opo_response , $this->opo_request->config->get('views_directory').'/'.$va_info['handler']['module']);
+		$o_action_controller = new $classname($this->opo_request, $this->opo_response , $this->opo_request->config->get('views_directory').'/'.$info['handler']['module']);
 
-		$va_submenu_nav_info = $o_action_controller->{$va_info['handler']['action']}($va_info);
+		$submenu_nav_info = $o_action_controller->{$info['handler']['action']}($info);
 	
 		if ($o_action_controller->numErrors()) {
 			$this->postError(2300, _t("Controller error: %1", join('; ', $o_action_controller->getErrors())), "AppNavigation->getDynamicSubmenu()");
 			return false;
 		}
-		return $va_submenu_nav_info;
+		return $submenu_nav_info;
 	}
 	# -------------------------------------------------------
 	# Run-time addition of menus
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function addNavItem($ps_display_name, $ps_menu_name, $pa_defaults, $pa_requirements, $pn_insert_index=null, $pa_sub_navigation=null) {
-		$this->opa_nav_config = $this->_addNavItem($this->opa_nav_config, $ps_display_name, $ps_menu_name, $pa_defaults, $pa_requirements, $pn_insert_index, $pa_sub_navigation);
+		$this->nav_config = $this->_addNavItem($this->nav_config, $ps_display_name, $ps_menu_name, $pa_defaults, $pa_requirements, $pn_insert_index, $pa_sub_navigation);
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	private function _addNavItem(&$pa_menu_info, $ps_display_name, $ps_menu_name, $pa_defaults, $pa_requirements, $pn_insert_index=null, $pa_sub_navigation=null) {
 		if (isset($pn_insert_index) && ($pn_insert_index >= 0) && ($pn_insert_index < sizeof($pa_menu_info))) {
 			$va_tmp = array_slice($pa_menu_info, 0, $pn_insert_index, true);
@@ -553,109 +580,117 @@ class AppNavigation extends BaseObject {
 	# -------------------------------------------------------
 	# Utilities
 	# -------------------------------------------------------
-	private function getPathStub($ps_path, $pn_levels) {
-		$va_tmp = explode('/', $ps_path);
-		$va_tmp2 = array_slice($va_tmp, 0, $pn_levels);
+	/**
+	 *
+	 */
+	private function getPathStub(?string $path=null, ?int $levels=0) {
+		$tmp = explode('/', $path);
+		$tmp2 = array_slice($tmp, 0, $levels);
 		
-		return join('/', $va_tmp2);
+		return join('/', $tmp2);
 	}
 	# -------------------------------------------------------
-	private function &_genMenu(&$pa_navinfo, $ps_base_path, $ps_cur_selection) {
-		$vs_buf = '';
-		$vs_cur_selection = $this->getPathStub($ps_cur_selection, 2);
+	/**
+	 *
+	 */
+	private function _genMenu(array $navinfo, string $base_path, ?string $cur_selection=null) : ?string {
+		$buf = '';
+		$cur_selection = $this->getPathStub($cur_selection, 2);
 		
-		$va_cur_selection = explode('/', $ps_cur_selection);
-		$vs_last_selected_path_item = array_pop($va_cur_selection);
+		$cur_selection = explode('/', $cur_selection);
+		$last_selected_path_item = array_pop($cur_selection);
 		
-		foreach($pa_navinfo as $vs_nav => $va_nav_info) {
-			if (isset($va_nav_info['hide']) && $va_nav_info['hide']) { continue; }
+		foreach($navinfo as $nav => $nav_info) {
+			if (isset($nav_info['hide']) && $nav_info['hide']) { continue; }
 			
-			if (is_array($va_requirements = ($pa_navinfo[$vs_nav]['requires'] ?? null))) {
+			if (is_array($requirements = ($navinfo[$nav]['requires'] ?? null))) {
 				// DOES THIS USER HAVE PRIVS FOR THIS MENU ITEM?
-				if (!$this->_evaluateRequirements($va_requirements)) { continue; }
+				if (!$this->_evaluateRequirements($requirements)) { continue; }
 			}
 			
-			$va_defaults = $pa_navinfo[$vs_nav]['default'] ?? null;
-			if (!isset($pa_navinfo[$vs_nav]['displayName']) || (!$vs_display_name = $pa_navinfo[$vs_nav]['displayName'])) { $vs_display_name = $vs_nav; }
-			$va_additional_params = $this->_parseAdditionalParameters((isset($pa_navinfo[$vs_nav]) && (isset($pa_navinfo[$vs_nav]['parameters']))) ? $pa_navinfo[$vs_nav]['parameters']: null);
+			$defaults = $navinfo[$nav]['default'] ?? null;
+			if (!isset($navinfo[$nav]['displayName']) || (!$display_name = $navinfo[$nav]['displayName'])) { $display_name = $nav; }
+			$additional_params = $this->_parseAdditionalParameters((isset($navinfo[$nav]) && (isset($navinfo[$nav]['parameters']))) ? $navinfo[$nav]['parameters']: null);
 			
 			//
 			// If 'remember_last_used_navigation' is set then we set the default destination of the
 			// menu item to the last used navigation item for the menu item
 			//
-			if (isset($pa_navinfo[$vs_nav]['remember_last_used_navigation']) && $pa_navinfo[$vs_nav]['remember_last_used_navigation']) {
-				$va_nav_defaults = Session::getVar('ca_app_nav_defaults');	// get stored defaults - contains the last used navigation items keyed by base path
+			if (isset($navinfo[$nav]['remember_last_used_navigation']) && $navinfo[$nav]['remember_last_used_navigation']) {
+				$nav_defaults = Session::getVar('ca_app_nav_defaults');	// get stored defaults - contains the last used navigation items keyed by base path
 				$navs = [];
-				if($pa_navinfo[$vs_nav]['altLabel'] ?? null) { $navs[] = $pa_navinfo[$vs_nav]['altLabel']; }
-				$navs[] = $vs_nav;
+				if($navinfo[$nav]['altLabel'] ?? null) { $navs[] = $navinfo[$nav]['altLabel']; }
+				$navs[] = $nav;
 				foreach($navs as $n) {
-					if (isset($va_nav_defaults[$ps_base_path.'/'.$n])) {
-						$va_tmp = explode('/', $ps_base_path);		// get components of base path
-						array_push($va_tmp, $n);				// add on current nav location
-						$va_top_level_nav_info = $this->getNavInfo(0);
+					if (isset($nav_defaults[$base_path.'/'.$n])) {
+						$tmp = explode('/', $base_path);		// get components of base path
+						array_push($tmp, $n);				// add on current nav location
+						$top_level_nav_info = $this->getNavInfo(0);
 					
-						foreach($va_tmp as $vs_t) {
-							if (isset($va_top_level_nav_info[$vs_t]['navigation'])) {
-								$va_top_level_nav_info = $va_top_level_nav_info[$vs_t]['navigation'];
+						foreach($tmp as $t) {
+							if (isset($top_level_nav_info[$t]['navigation'])) {
+								$top_level_nav_info = $top_level_nav_info[$t]['navigation'];
 							}
 					
 						}
-						$va_defaults = $va_top_level_nav_info[$va_nav_defaults[$ps_base_path.'/'.$n]]['default'];
+						$defaults = $top_level_nav_info[$nav_defaults[$base_path.'/'.$n]]['default'];
 						break;
 					}
 				}
 			} 
 			
-			$va_defaults = $this->_getFirstAccessibleItem($pa_navinfo[$vs_nav], $va_defaults);
+			$defaults = $this->_getFirstAccessibleItem($navinfo[$nav], $defaults);
 			
-			if (!isset($pa_navinfo)) { $pa_navinfo[$vs_nav] = array(); }
-			if (isset($pa_navinfo[$vs_nav]['type']) && ($pa_navinfo[$vs_nav]['type'] == 'dynamic')) {
-				$va_submenu_nav = $this->getDynamicSubmenu($pa_navinfo[$vs_nav]);
-				if (sizeof($va_submenu_nav)) {
-					$vs_buf .= $this->_genDynamicTopLevelMenuItems($va_submenu_nav, $vs_cur_selection, $va_additional_params, $ps_base_path, $va_defaults);
+			if (!isset($navinfo)) { $navinfo[$nav] = array(); }
+			if (isset($navinfo[$nav]['type']) && ($navinfo[$nav]['type'] == 'dynamic')) {
+				$submenu_nav = $this->getDynamicSubmenu($navinfo[$nav]);
+				if (sizeof($submenu_nav)) {
+					$buf .= $this->_genDynamicTopLevelMenuItems($submenu_nav, $cur_selection, $additional_params, $base_path, $defaults);
 				}
 			} else {
-				$va_req = $pa_navinfo[$vs_nav]['submenu']['requires'] ?? null;
-				$vb_submenu_set = $this->_evaluateRequirements($va_req);
-				if ($vb_submenu_set && isset($pa_navinfo[$vs_nav]) && isset($pa_navinfo[$vs_nav]['submenu']) && $pa_navinfo[$vs_nav]['submenu']) {
-					if (($pa_navinfo[$vs_nav]['submenu']['type'] ?? null) == 'dynamic') {
-						$va_submenu_nav = $this->getDynamicSubmenu($pa_navinfo[$vs_nav]['submenu']);
-						if (sizeof($va_submenu_nav)) {
+				$req = $navinfo[$nav]['submenu']['requires'] ?? null;
+				$submenu_set = $this->_evaluateRequirements($req);
+				if ($submenu_set && isset($navinfo[$nav]) && isset($navinfo[$nav]['submenu']) && $navinfo[$nav]['submenu']) {
+					if (($navinfo[$nav]['submenu']['type'] ?? null) == 'dynamic') {
+						$submenu_nav = $this->getDynamicSubmenu($navinfo[$nav]['submenu']);
+						if (sizeof($submenu_nav)) {
 							$table = null;
 							
-							$is_link = (is_array($va_defaults) && $va_defaults['module'] && $va_defaults['module'] == "find");
-							if(is_array($pa_navinfo[$vs_nav]['requires'])) {
-								$table = array_shift(array_filter(array_values(array_map(function($v) { return preg_match("!^action:can_search_([a-z_]+)$!", $v, $m) ? $m[1] : null; }, array_keys($pa_navinfo[$vs_nav]['requires']))), function($v) { return $v;}));
+							$is_link = (is_array($defaults) && $defaults['module'] && $defaults['module'] == "find");
+							if(is_array($navinfo[$nav]['requires'])) {
+								$table = array_shift(array_filter(array_values(array_map(function($v) { return preg_match("!^action:can_search_([a-z_]+)$!", $v, $m) ? $m[1] : null; }, array_keys($navinfo[$nav]['requires']))), function($v) { return $v;}));
 								if ($this->opo_config->get("{$table}_find_dont_allow_non_type_restricted")) { 
 									$is_link = false; 
 								}
 							}
-							$va_additional_params['type_id'] = -1;  // force type restriction to be disabled
-							
-							$vs_buf .= "<li>".($is_link ? caNavLink($this->opo_request, $vs_display_name, (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), $va_defaults['module'] ?? null, $va_defaults['controller'] ?? null, $va_defaults['action'] ?? null, $va_additional_params) : caHTMLLink($vs_display_name, array('class' => (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), 'href' => '#')));
-							$vs_buf .= $this->_genSubMenu($va_submenu_nav, $vs_cur_selection, $va_additional_params, $ps_base_path, $va_defaults);
-							$vs_buf .= "</li>\n";
+							$additional_params['type_id'] = -1;  // force type restriction to be disabled
+							$buf .= "<li class=\"dropend\">".($is_link ? caNavLink($this->opo_request, $display_name, 'dropdown-item'.(($cur_selection == $base_path.'/'.$nav) ? ' active' : ''), $defaults['module'] ?? null, $defaults['controller'] ?? null, $defaults['action'] ?? null,  $additional_params, ["data-bs-auto-close" => "outside", "aria-expanded" => "false"]) : caHTMLLink($display_name, ['href' => '#', 'class' => 'dropdown-item dropdown-toggle'.(($cur_selection == $base_path.'/'.$nav) ? ' active' : ''), "data-bs-auto-close" => "outside", "aria-expanded" => "false"]));
+							$buf .= $this->_genSubMenu($submenu_nav, $cur_selection, $additional_params, $base_path, $defaults);
+							$buf .= "</li>\n";
 						}
 					} else {
-						$vs_link = (is_array($va_defaults) && $va_defaults['module']) ? caNavLink($this->opo_request, $vs_display_name, (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), $va_defaults['module'] ?? null, $va_defaults['controller'] ?? null, $va_defaults['action'] ?? null, $va_additional_params) : "<a href='#'>{$vs_display_name}</a>";
-						$vs_buf .= "<li>{$vs_link}\n";
-						$vs_buf .= $this->_genSubMenu($pa_navinfo[$vs_nav]['submenu']['navigation'], $vs_cur_selection, $va_additional_params, $ps_base_path, $va_defaults);
-						$vs_buf .= "</li>\n";
+						$link = (is_array($defaults) && $defaults['module']) ? 
+							caNavLink($this->opo_request, $display_name, 'dropdown-item dropdown-toggle'.(($cur_selection == $base_path.'/'.$nav) ? ' active' : ''), $defaults['module'] ?? null, $defaults['controller'] ?? null, $defaults['action'] ?? null, $additional_params, ["data-bs-auto-close" => "outside", "aria-expanded" => "false"]) 
+							: 
+							caHTMLLink($display_name, ['href' => '#', 'class' => 'dropdown-item dropdown-toggle', 'data-bs-auto-close' => 'outside', 'aria-expanded' => 'false']);
+						$buf .= "<li class=\"dropend\">{$link}\n";
+						$buf .= $this->_genSubMenu($navinfo[$nav]['submenu']['navigation'], $cur_selection, $additional_params, $base_path, $defaults);
+						$buf .= "</li>\n";
 					}
 				} else {
-					if(is_array($va_defaults) && (sizeof($va_defaults) == 0)) { 
-						$vs_buf .= "<li class='disabled'>".$vs_display_name."<li>\n";
-					} elseif($vs_nav === 'spacer') {
-						$vs_buf .= "<li><a href='#' class='spacer'>{$vs_display_name}</a></li>";
-					} elseif(is_array($va_defaults)) {
-						$vs_buf .= "<li ".(($vs_last_selected_path_item == $vs_nav) ? 'class="sf-menu-selected"' : '').">".caNavLink($this->opo_request, $vs_display_name, (($vs_last_selected_path_item == $vs_nav) ? 'sf-menu-selected' : ''), $va_defaults['module'] ?? null, $va_defaults['controller'] ?? null, $va_defaults['action'] ?? null, $va_additional_params)."<li>\n";
+					if(is_array($defaults) && (sizeof($defaults) == 0)) { 
+						$buf .= "<li class='disabled'>".caHTMLLink($display_name, ['href' => '#', 'class' => 'dropdown-item disabled'])."<li>\n";
+					} elseif($nav === 'spacer') {
+						$buf .= "<li class=\"dropdown-divider\"></li>";
+					} elseif(is_array($defaults)) {
+						$buf .= "<li >".caNavLink($this->opo_request, $display_name, 'dropdown-item'.(($last_selected_path_item == $nav) ? ' active' : ''), $defaults['module'] ?? null, $defaults['controller'] ?? null, $defaults['action'] ?? null, $additional_params)."<li>\n";
 					}
 				}
 			}
 		
 		}
 		
-		return $vs_buf;
+		return $buf;
 	}
 	# -------------------------------------------------------
 	/**
@@ -694,134 +729,145 @@ class AppNavigation extends BaseObject {
 	/**
 	 * Rewrite "find" menu item defaults to honor settings in app.conf <table>_no_search_for_types, <table>_no_advanced_search_for_types and <table>_no_browse_for_types
 	 */
-	private function _rewriteDefaultsForFindMenuItems($pa_submenu_item, $pa_defaults) {
-		if(($type_id = (int)caGetOption('type_id', $pa_submenu_item['parameters'], null)) && preg_match("!^([A-Z]{1}[a-z]+)(.*)$!", $pa_defaults['controller'], $m) && (in_array($m[1], ['Search', 'Browse']) && is_array($info = caFindControllerNameInfo($pa_defaults['controller'])))) {
+	private function _rewriteDefaultsForFindMenuItems(array $submenu_item, array $defaults) : ?array {
+		if(($type_id = (int)caGetOption('type_id', $submenu_item['parameters'], null)) && preg_match("!^([A-Z]{1}[a-z]+)(.*)$!", $defaults['controller'], $m) && (in_array($m[1], ['Search', 'Browse']) && is_array($info = caFindControllerNameInfo($defaults['controller'])))) {
 			$type_map = $info['find_interface_restriction_configuration'];
 			
 			if(!in_array($type_id, $type_map[$info['find_type']], true)) {
-				$pa_defaults['controller'] = $info['controller_names'][$info['find_type']];
+				$defaults['controller'] = $info['controller_names'][$info['find_type']];
 			} else {
 				unset($type_map[$info['find_type']]);
 				foreach($type_map as $k => $t) {
 					if(!in_array($type_id, $t, true)) {
-						$pa_defaults['controller'] = $info['controller_names'][$k];
+						$defaults['controller'] = $info['controller_names'][$k];
 						break;
 					}
 				}
 			}
 		}
 		
-		return $pa_defaults;
+		return $defaults;
 	}
 	# -------------------------------------------------------
-	private function _genSubMenu($pa_submenu_nav, $ps_cur_selection, $pa_additional_params, $ps_base_path, $pa_defaults) {
-		$vs_buf = '<ul class="sf-menu">';
-		foreach($pa_submenu_nav as $va_submenu_item) {
-			if (is_array($va_requirements = ($va_submenu_item['requires'] ?? null))) {
+	/**
+	 *
+	 */
+	private function _genSubMenu(array $submenu_nav, array $cur_selection, array $additional_params, string $base_path, array $defaults) {
+		$buf = '<ul class="dropdown-menu">';
+		foreach($submenu_nav as $submenu_item) {
+			if (is_array($requirements = ($submenu_item['requires'] ?? null))) {
 				// DOES THIS USER HAVE PRIVS FOR THIS MENU ITEM?
-				if (!$this->_evaluateRequirements($va_requirements, $va_submenu_item['parameters'])) { continue; }
+				if (!$this->_evaluateRequirements($requirements, $submenu_item['parameters'])) { continue; }
 			}
-			$vs_buf .= "<li class=\"sf-menu\">";
-			if (isset($va_submenu_item) && isset($va_submenu_item['default']) && is_array($va_submenu_item['default'])) { $pa_defaults = (isset($va_submenu_item['default']) ? $va_submenu_item['default'] : null); }
-			if (!isset($va_submenu_item['parameters']) || !is_array($va_submenu_item['parameters'])) { $va_submenu_item['parameters'] = array(); }
+			if (isset($submenu_item) && isset($submenu_item['default']) && is_array($submenu_item['default'])) { $defaults = (isset($submenu_item['default']) ? $submenu_item['default'] : null); }
+			if (!isset($submenu_item['parameters']) || !is_array($submenu_item['parameters'])) { $submenu_item['parameters'] = array(); }
 			// only check is_enabled setting for new menu - link to default find for types even if they have subtypes
-			if (isset($va_submenu_item) && ((isset($va_submenu_item['is_enabled']) && intval($va_submenu_item['is_enabled'])) || (is_array($pa_defaults) && $pa_defaults['module'] && $pa_defaults['module'] == "find"))) {
-				$defaults_proc = $this->_rewriteDefaultsForFindMenuItems($va_submenu_item, $pa_defaults);
-				$vs_buf .= caNavLink($this->opo_request, $va_submenu_item['displayName'], (($ps_cur_selection == $ps_base_path) ? 'sf-menu-selected' : ''), $defaults_proc['module'], $defaults_proc['controller'], $defaults_proc['action'], array_merge($pa_additional_params, $this->_parseAdditionalParameters($va_submenu_item['parameters'])));
+			if (isset($submenu_item['navigation']) && $submenu_item['navigation']) {
+				$buf .= "<li class=\"dropend\">";
+				$buf .= caNavLink($this->opo_request, $submenu_item['displayName'], 'dropdown-item dropdown-toggle'.(($cur_selection == $base_path) ? ' active' : ''), $defaults_proc['module'], $defaults_proc['controller'], $defaults_proc['action'], array_merge($additional_params, $this->_parseAdditionalParameters($submenu_item['parameters'])), ["data-bs-auto-close" => "outside", 'aria-expanded' => 'false']);
+				$buf .= $this->_genSubMenu($submenu_item['navigation'], $cur_selection, $additional_params, $base_path, $defaults);
+				$buf .= "</li>";
+			} elseif (isset($submenu_item) && ((isset($submenu_item['is_enabled']) && intval($submenu_item['is_enabled'])) || (is_array($defaults) && $defaults['module'] && $defaults['module'] == "find"))) {
+				$defaults_proc = $this->_rewriteDefaultsForFindMenuItems($submenu_item, $defaults);
+				$buf .= "<li>".caNavLink($this->opo_request, $submenu_item['displayName'], 'dropdown-item'.(($cur_selection == $base_path) ? ' active' : ''), $defaults_proc['module'], $defaults_proc['controller'], $defaults_proc['action'], array_merge($additional_params, $this->_parseAdditionalParameters($submenu_item['parameters'])))."</li>";
 			} else {
-				$vs_buf .= "<a href='#'>".$va_submenu_item['displayName']."</a>";
+				$buf .= "<li>".caHTMLLink($submenu_item['displayName'], ['href' => '#', 'class' => 'dropdown-item'])."</li>";
 			}
-			if (isset($va_submenu_item['navigation']) && $va_submenu_item['navigation']) {
-				$vs_buf .= $this->_genSubMenu($va_submenu_item['navigation'], $ps_cur_selection, $pa_additional_params, $ps_base_path, $pa_defaults);
-			}
-			$vs_buf .= "</li>\n";
+			
 		}
-		$vs_buf .= '</ul>';
+		$buf .= '</ul>';
 		
-		return $vs_buf."\n";
+		return $buf."\n";
 	}
 	# -------------------------------------------------------
-	private function _genDynamicTopLevelMenuItems($pa_menu_nav, $ps_cur_selection, $pa_additional_params, $ps_base_path, $pa_defaults) {
-		if (!is_array($pa_menu_nav)) { return ''; }
-		$vs_buf = '';
-		foreach($pa_menu_nav as $va_submenu_item) {
-			$vs_buf .= "<li>";
-			
+	/**
+	 *
+	 */
+	private function _genDynamicTopLevelMenuItems(array$menu_nav, array $cur_selection, array $additional_params, string $base_path, array $defaults) {
+		if (!is_array($menu_nav)) { return ''; }
+		$buf = '';
+		foreach($menu_nav as $submenu_item) {
+
 			// Only force "find" items to be links if hierarchical results expansion is enabled, otherwise you
 			// end up with menu items that return nothing. No one likes that.
 			$result_expansion = true;
-			$info = caFindControllerNameInfo($pa_defaults['controller']);
-			if (($type_id = isset($va_submenu_item['parameters']['type_id']) ? $va_submenu_item['parameters']['type_id'] : null) && isset($info['table'])) {
+			$info = caFindControllerNameInfo($defaults['controller']);
+			if (($type_id = isset($submenu_item['parameters']['type_id']) ? $submenu_item['parameters']['type_id'] : null) && isset($info['table'])) {
 				$dont_expand_types = caMakeTypeIDList($info['table'], $this->opo_config->get($info['table'].'_find_dont_expand_hierarchically'));
 				if (is_array($dont_expand_types) && in_array($type_id, $dont_expand_types)) {
 					$result_expansion = false;
 				}
 			}
-			$vb_disabled = ((isset($va_submenu_item['is_enabled']) && $va_submenu_item['is_enabled']) || (is_array($pa_defaults) && $pa_defaults['module'] && $pa_defaults['module'] == "find") && $result_expansion) ? false : true;
+			$vb_disabled = ((isset($submenu_item['is_enabled']) && $submenu_item['is_enabled']) || (is_array($defaults) && $defaults['module'] && $defaults['module'] == "find") && $result_expansion) ? false : true;
 			
 			if ($vb_disabled) {
-				$vs_buf .= caHTMLLink(caUcFirstUTF8Safe(isset($va_submenu_item['displayName']) ? $va_submenu_item['displayName'] : ''), array('href' => '#', 'class' => (($ps_cur_selection == $ps_base_path) ? 'sf-menu-disabled-selected' : '')));
+				$buf .= "<li>".caHTMLLink(caUcFirstUTF8Safe(isset($submenu_item['displayName']) ? $submenu_item['displayName'] : ''), ['href' => '#', 'class' => 'dropdown-item'.(($cur_selection == $base_path) ? ' disabled' : '')])."</li>";
 			} else {
-				$defaults_proc = $this->_rewriteDefaultsForFindMenuItems($va_submenu_item, $pa_defaults);
-				$vs_buf .= caNavLink($this->opo_request, caUcFirstUTF8Safe(isset($va_submenu_item['displayName']) ? $va_submenu_item['displayName'] : ''), (($ps_cur_selection == $ps_base_path) ? 'sf-menu-selected' : ''), $defaults_proc['module'], $defaults_proc['controller'], $defaults_proc['action'], array_merge($pa_additional_params, $va_submenu_item['parameters']));
+				$defaults_proc = $this->_rewriteDefaultsForFindMenuItems($submenu_item, $defaults);
+				$buf .= "<li>".caNavLink($this->opo_request, caUcFirstUTF8Safe(isset($submenu_item['displayName']) ? $submenu_item['displayName'] : ''), 'dropdown-menu'.(($cur_selection == $base_path) ? ' active' : ''), $defaults_proc['module'], $defaults_proc['controller'], $defaults_proc['action'], array_merge($additional_params, $submenu_item['parameters']))."</li>";
 			}
-			if (isset($va_submenu_item['navigation']) && $va_submenu_item['navigation']) {
-				$vs_buf .= $this->_genSubMenu($va_submenu_item['navigation'], $ps_cur_selection, $pa_additional_params, $ps_base_path, $pa_defaults);
+			if (isset($submenu_item['navigation']) && $submenu_item['navigation']) {
+				$buf .= $this->_genSubMenu($submenu_item['navigation'], $cur_selection, $additional_params, $base_path, $defaults);
 			}
-			$vs_buf .= "</li>\n";
 		}
 		
-		return $vs_buf."\n";
+		return $buf."\n";
 	}
 	# -------------------------------------------------------
-	private function _genMenuItem(&$pa_iteminfo, $ps_key, $ps_base_path, $ps_cur_selection, $ps_css_id='', $pa_options=null, $pa_attributes=null) {
-		$vs_buf = '';
-		if (!is_array($pa_options)) {$pa_options = array(); }
-		if (!isset($pa_options['has_children'])) { $pa_options['has_children'] = false; }
-		if (!is_array($pa_attributes)) { $pa_attributes = array(); }
-		$pa_attributes['id'] = $ps_css_id;
+	/**
+	 *
+	 */
+	private function _genMenuItem(array $iteminfo, string $key, string $base_path, array$cur_selection, ?string $css_id=null, ?array $options=null, ?array $attributes=null) {
+		$buf = '';
+		if (!is_array($options)) {$options = array(); }
+		if (!isset($options['has_children'])) { $options['has_children'] = false; }
+		if (!is_array($attributes)) { $attributes = array(); }
+		$attributes['id'] = $css_id;
 		
-		$vb_no_access = false;
-		if (!($vb_disabled = (isset($pa_iteminfo['disabled']) && $pa_iteminfo['disabled']) ? true : false)) {			
-			if (is_array($va_requirements = $pa_iteminfo['requires'])) {
+		$no_access = false;
+		if (!($disabled = (isset($iteminfo['disabled']) && $iteminfo['disabled']) ? true : false)) {			
+			if (is_array($requirements = $iteminfo['requires'])) {
 				// DOES THIS USER HAVE PRIVS FOR THIS MENU ITEM?
-				if (!$this->_evaluateRequirements($va_requirements)) { $vb_disabled = $vb_no_access = true; }
+				if (!$this->_evaluateRequirements($requirements)) { $disabled = $no_access = true; }
 			}
 		}
 			
-		$va_defaults = $pa_iteminfo['default'];
-		if (!$vs_display_name = $pa_iteminfo['displayName']) { $vs_display_name = $ps_key; }
-		if ($pa_options['has_children']) { $vs_display_name .= ' &rsaquo;'; }
+		$defaults = $iteminfo['default'];
+		if (!$display_name = $iteminfo['displayName']) { $display_name = $key; }
+		if ($options['has_children']) { $display_name .= ' &rsaquo;'; }
 		
-		$va_additional_params = $this->_parseAdditionalParameters(isset($pa_iteminfo['parameters']) ? $pa_iteminfo['parameters'] : null);
+		$additional_params = $this->_parseAdditionalParameters(isset($iteminfo['parameters']) ? $iteminfo['parameters'] : null);
 		
-		if ($vb_disabled) {
-			if(!caGetOption('hideDisabled', $pa_options, false)) {
-				if (!($vb_no_access && (isset($pa_iteminfo['hideIfNoAccess']) && $pa_iteminfo['hideIfNoAccess']))) {
-					$vs_buf .= caHTMLLink($vs_display_name, array('href' => '#', 'class' => (($ps_cur_selection == $ps_base_path.'/'.$ps_key) ? 'sf-menu-disabled-selected' : 'sf-menu-disabled'), 'title' => _t('Disabled')));
+		if ($disabled) {
+			if(!caGetOption('hideDisabled', $options, false)) {
+				if (!($no_access && (isset($iteminfo['hideIfNoAccess']) && $iteminfo['hideIfNoAccess']))) {
+					$buf .= "<li>".caHTMLLink($display_name, ['href' => '#', 'class' => 'dropdown-item'.(($cur_selection == $base_path.'/'.$key) ? ' active' : ' disabled'), 'title' => _t('Disabled')])."</li>";
 				}
 			}
 		} else {
 			if($this->opo_request->getParameter('rel', pInteger)) { // if rel parameter is set, keep it
-				$va_additional_params['rel'] = true;
+				$additional_params['rel'] = true;
 			}
-			$vs_buf .= caNavLink($this->opo_request, $vs_display_name, (($ps_cur_selection == $ps_base_path.'/'.$ps_key) ? 'sf-menu-selected' : ''), $va_defaults['module'], $va_defaults['controller'], $va_defaults['action'], $va_additional_params, $pa_attributes)."\n";
-			if (isset($pa_iteminfo['typeRestrictions']) && is_array($pa_iteminfo['typeRestrictions']) && $pa_iteminfo['typeRestrictions']) {
-				TooltipManager::add("#".$pa_attributes['id'], (sizeof($pa_iteminfo['typeRestrictions']) == 1) ? _t("For type <em>%1</em>", join(", ", $pa_iteminfo['typeRestrictions'])) : _t("For types <em>%1</em>", join(", ", $pa_iteminfo['typeRestrictions'])));
+			$buf .= "<li>".caNavLink($this->opo_request, $display_name, 'dropdown-item'.(($cur_selection == $base_path.'/'.$key) ? ' active' : ''), $defaults['module'], $defaults['controller'], $defaults['action'], $additional_params, $attributes)."</li>\n";
+			if (isset($iteminfo['typeRestrictions']) && is_array($iteminfo['typeRestrictions']) && $iteminfo['typeRestrictions']) {
+				TooltipManager::add("#".$attributes['id'], (sizeof($iteminfo['typeRestrictions']) == 1) ? _t("For type <em>%1</em>", join(", ", $iteminfo['typeRestrictions'])) : _t("For types <em>%1</em>", join(", ", $iteminfo['typeRestrictions'])));
 			}
-			if ($ps_cur_selection == $ps_base_path.'/'.$ps_key) {
-				if (!is_array($va_nav_defaults = Session::getVar('ca_app_nav_defaults'))) {
-					$va_nav_defaults = array();
+			if ($cur_selection == $base_path.'/'.$key) {
+				if (!is_array($nav_defaults = Session::getVar('ca_app_nav_defaults'))) {
+					$nav_defaults = [];
 				}
-				$va_nav_defaults[$ps_base_path] = $ps_key;
-				Session::setVar('ca_app_nav_defaults', $va_nav_defaults);
+				$nav_defaults[$base_path] = $key;
+				Session::setVar('ca_app_nav_defaults', $nav_defaults);
 			}
 		}
-		return $vs_buf;
+		return $buf;
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	private function _parseAdditionalParameters($pa_defaults) {
-		if (!is_array($pa_defaults) || (!sizeof($pa_defaults))) { return array(); }
+		if (!is_array($pa_defaults) || (!sizeof($pa_defaults))) { return []; }
 		$va_additional_params = array();
 		foreach($pa_defaults as $vs_param => $vs_value) {
 			
@@ -864,54 +910,59 @@ class AppNavigation extends BaseObject {
 		return $va_additional_params;
 	}
 	# -------------------------------------------------------
-	private function _parseParameterValue($ps_value) {
-			
-		$vs_value = '';
-		$va_tmp = explode(':', $ps_value);
-		if(count($va_tmp)==2) {
-			switch($va_tmp[0]) {
+	/**
+	 *
+	 */
+	private function _parseParameterValue(string $value) {
+		$ret_value = '';
+		$tmp = explode(':', $value);
+		if(count($tmp)==2) {
+			switch($tmp[0]) {
 				case 'session':
-					$vs_value = Session::getVar($va_tmp[1]);
+					$ret_value = Session::getVar($tmp[1]);
 					break;
 				case 'parameter':
-					$vs_value = $this->opo_request->getParameter($va_tmp[1], pString);
+					$ret_value = $this->opo_request->getParameter($tmp[1], pString);
 					break;
 				case 'preference':
 					if ($this->opo_request->isLoggedIn()){ 
-						$vs_value = $this->opo_request->user->getPreference($va_tmp[1]);
+						$ret_value = $this->opo_request->user->getPreference($tmp[1]);
 					} else {
-						$vs_value = '';
+						$ret_value = '';
 					}
 					break;
 				case 'string':
-					$vs_value = $va_tmp[1];
+					$ret_value = $tmp[1];
 					break;
 				case 'global':
-					$vs_value = $GLOBALS[$va_tmp[1]];
+					$ret_value = $GLOBALS[$tmp[1]];
 					break;
 				case 'constant':
-					$vs_value = constant($va_tmp[1]);
+					$ret_value = constant($tmp[1]);
 					break;
 				case 'configuration':
 				case 'config':
-					$vs_value = $this->opo_request->config->getScalar($va_tmp[1]);
+					$ret_value = $this->opo_request->config->getScalar($tmp[1]);
 					break;
 				default:
-					$vs_value = '';
+					$ret_value = '';
 					break;
 			}
-			if ($va_tmp[1]) {
-				return $vs_value;
+			if ($tmp[1]) {
+				return $ret_value;
 			}
 			return '';
 		} else {
-			if ($va_tmp[0]) {
-				return $vs_value;
+			if ($tmp[0]) {
+				return $ret_value;
 			}
 		}
-		return $ps_value;
+		return $value;
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	private function _evaluateRequirements($pa_requirements, $options=null) {
 		if(!is_array($pa_requirements) || (is_array($pa_requirements) && (sizeof($pa_requirements) == 0))) { return true; }	// empty requirements means anyone may access the nav item
 		$vs_result = $vs_value = null;
@@ -1024,7 +1075,10 @@ class AppNavigation extends BaseObject {
 	# -------------------------------------------------------
 	# Caching
 	# -------------------------------------------------------
-	static function clearMenuBarCache($po_request) {
+	/**
+	 *
+	 */
+	static function clearMenuBarCache(RequestHTTP $request) {
 		Session::setVar('ca_nav_menubar_cache', null);
 		Session::setVar('ca_nav_sidebar_cache', null);
 	}

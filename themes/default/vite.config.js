@@ -1,11 +1,12 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path'
+import path from 'path'
 
 export default defineConfig({
-  input: 'js/main.js',
   root: resolve(import.meta.dirname, '.'),
+  input: './js/main.js',
   build: {
-    outDir: './dist',rollupOptions: {
+    outDir: '../..', rollupOptions: {
       output: {
         // Removes hash from the main entry file (e.g., assets/index.js)
         entryFileNames: 'assets/[name].js',
@@ -14,7 +15,12 @@ export default defineConfig({
         chunkFileNames: 'assets/[name].js',
         
         // Removes hash from assets like CSS, images, and fonts (e.g., assets/index.css)
-        assetFileNames: 'assets/[name].[ext]'
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name && assetInfo.name.endsWith('.css')) {
+            return 'assets/[name].[ext]'; 
+          }
+          return 'assets/[name].[ext]'; 
+        },
       }
     }
   },
