@@ -783,7 +783,7 @@ class AppNavigation extends BaseObject {
 	/**
 	 *
 	 */
-	private function _genDynamicTopLevelMenuItems(array$menu_nav, array $cur_selection, array $additional_params, string $base_path, array $defaults) {
+	private function _genDynamicTopLevelMenuItems(array $menu_nav, array $cur_selection, array $additional_params, string $base_path, array $defaults) {
 		if (!is_array($menu_nav)) { return ''; }
 		$buf = '';
 		foreach($menu_nav as $submenu_item) {
@@ -804,13 +804,12 @@ class AppNavigation extends BaseObject {
 				$buf .= "<li>".caHTMLLink(caUcFirstUTF8Safe(isset($submenu_item['displayName']) ? $submenu_item['displayName'] : ''), ['href' => '#', 'class' => 'dropdown-item'.(($cur_selection == $base_path) ? ' disabled' : '')])."</li>";
 			} else {
 				$defaults_proc = $this->_rewriteDefaultsForFindMenuItems($submenu_item, $defaults);
-				$buf .= "<li>".caNavLink($this->opo_request, caUcFirstUTF8Safe(isset($submenu_item['displayName']) ? $submenu_item['displayName'] : ''), 'dropdown-menu'.(($cur_selection == $base_path) ? ' active' : ''), $defaults_proc['module'], $defaults_proc['controller'], $defaults_proc['action'], array_merge($additional_params, $submenu_item['parameters']))."</li>";
+				$buf .= "<li>".caNavLink($this->opo_request, caUcFirstUTF8Safe(isset($submenu_item['displayName']) ? $submenu_item['displayName'] : ''), 'dropdown-item'.(($cur_selection == $base_path) ? ' active' : ''), $defaults_proc['module'], $defaults_proc['controller'], $defaults_proc['action'], array_merge($additional_params, $submenu_item['parameters']))."</li>";
 			}
 			if (isset($submenu_item['navigation']) && $submenu_item['navigation']) {
 				$buf .= $this->_genSubMenu($submenu_item['navigation'], $cur_selection, $additional_params, $base_path, $defaults);
 			}
 		}
-		
 		return $buf."\n";
 	}
 	# -------------------------------------------------------
