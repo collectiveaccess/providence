@@ -321,9 +321,9 @@ class ApplicationChangeLog {
 						//
 						$o_tep->setUnixTimestamps($va_log_entry['log_datetime'], $va_log_entry['log_datetime']);
 						if($this->opb_dont_show_timestamp_in_change_log) {
-							$vs_datetime = $o_tep->getText(array('timeOmit' => true));
+							$vs_datetime = $o_tep->getText(['timeOmit' => true]);
 						} else {
-							$vs_datetime = $o_tep->getText();
+							$vs_datetime = $o_tep->getText(['timeOmit' => false]);
 						}
 						
 						//
@@ -1204,9 +1204,9 @@ class ApplicationChangeLog {
 						//
 						$o_tep->setUnixTimestamps($va_log_entry['log_datetime'], $va_log_entry['log_datetime']);
 						if($dont_show_timestamp_in_change_log) {
-							$vs_datetime = $o_tep->getText(array('timeOmit' => true));
+							$vs_datetime = $o_tep->getText(['timeOmit' => true]);
 						} else {
-							$vs_datetime = $o_tep->getText();
+							$vs_datetime = $o_tep->getText(['timeOmit' => false]);
 						}
 						
 						//
