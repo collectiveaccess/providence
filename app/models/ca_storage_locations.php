@@ -527,26 +527,27 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 			$we_set_transaction = true;
 		}
 		if (($rc = parent::saveBundlesForScreen($screen, $request, $options)) && $parent_changed) {
-			$new_parent_id = (int)$this->get('ca_storage_locations.parent_id');
-			
-			if ($old_parent_id === $new_parent_id) { return $rc; }	// don't track if there's no actual movement
-				
+			$new_parent_id = $old_parent_id;	// safe default if no movement form is found below
+
 			unset($options['ui_instance']);
-	
+
 			// Get list of policies that involve movements – we'll  need to generate movement records for these policies if they are so configured.
 			if (!is_array($policies = ca_movements::getDependentHistoryTrackingCurrentValuePolicies('ca_movements'))) { return $rc; }
-			
+
 			// Look for incoming movement form attached to hierarcy_location bundle
 			$movement_form_name = $movemenr_form_screen = null;
 			foreach($_REQUEST as $key => $val) {
 				if (preg_match('!^(.*)_movement_form_name$!', $key, $matches)) {
 					$movement_form_name = $request->getParameter($matches[1].'_movement_form_name', pString);
-					$movement_form_screen = $request->getParameter($matches[1].'_movement_screen', pString); 					
-				
+					$movement_form_screen = $request->getParameter($matches[1].'_movement_screen', pString);
+					$new_parent_id = $request->getParameter($matches[1].'_new_parent_id', pInteger);
+
 					break;
 				}
 			}
-			
+
+			if ($old_parent_id === $new_parent_id) { return $rc; }	// don't track if there's no actual movement
+
 			if ($movement_form_name && $movement_form_screen) {
 				foreach($policies as $policy_code => $policy) {
 					if (!is_array($policy_elements = caGetOption('elements', $policy, null))) { continue; }
