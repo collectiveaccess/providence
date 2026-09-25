@@ -1069,10 +1069,11 @@ function caEditorInspector($view, $options=null) {
 	$component_count = 0;
 
 	$item_id 			= $t_item->getPrimaryKey();
-	$o_result_context		= $view->getVar('result_context');
-	$t_ui 					= $view->getVar('t_ui');
-	$t_type 				= method_exists($t_item, "getTypeInstance") ? $t_item->getTypeInstance() : null;
+	$o_result_context	= $view->getVar('result_context');
+	$t_ui 				= $view->getVar('t_ui');
+	$t_type 			= method_exists($t_item, "getTypeInstance") ? $t_item->getTypeInstance() : null;
 	$type_name			= method_exists($t_item, "getTypeName") ? $t_item->getTypeName() : '';
+	$type_code			= method_exists($t_item, "getTypeCode") ? $t_item->getTypeCode() : '';
 	if (!$type_name) { $type_name = $t_item->getProperty('NAME_SINGULAR'); }
 
 	if (!is_array($va_reps = $view->getVar('representations'))) { $va_reps = []; }
@@ -1176,7 +1177,7 @@ function caEditorInspector($view, $options=null) {
 			$label = '';
 			$dont_use_labels_for_ca_objects = (bool)$t_item->getAppConfig()->get('ca_objects_dont_use_labels');
 			if(!(($table_name === 'ca_objects') && $dont_use_labels_for_ca_objects)){
-				if ($vs_get_spec = $view->request->config->get("{$table_name}_inspector_display_title")) {
+				if ($vs_get_spec = $view->request->config->get(["{$table_name}_{$type_code}_inspector_display_title", "{$table_name}_inspector_display_title"])) {
 					$label = caProcessTemplateForIDs($vs_get_spec, $table_name, array($t_item->getPrimaryKey()));
 				} else {
 					$va_object_collection_collection_ancestors = $view->getVar('object_collection_collection_ancestors');
@@ -1609,7 +1610,7 @@ function caEditorInspector($view, $options=null) {
 					} else {
 						$component_count_link = $component_count;
 					}
-					$components_tools[] = "<div><strong>"._t('Components').":</strong> {$component_count_link}</div>";
+					$components_tools[] = "<div><strong>".($view->request->config->get(['ca_objects_'.$t_item->getTypeCode().'_component_count_label', 'ca_objects_component_count_label']) ?? _t('Components')).":</strong> {$component_count_link}</div>";
 				}
 
 				// Component hierarchy tools
@@ -1627,7 +1628,7 @@ function caEditorInspector($view, $options=null) {
 				}
 			}
 			if ($can_add_component) {
-				$label = $view->request->config->get('ca_objects_component_add_button_text');
+				$label = $view->request->config->get(['ca_objects_'.$t_item->getTypeCode().'_component_add_button_text', 'ca_objects_component_add_button_text']);
 				$components_tools[] = '<div><a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($view->request, '*', 'ObjectComponent', 'Form', ['parent_id' => $t_item->getPrimaryKey()]).'"); return false;\')>'.caNavIcon(__CA_NAV_ICON_ADD__, '12px').($label ? " {$label}" : '').'</a></div>';
 
 				$change_type_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
