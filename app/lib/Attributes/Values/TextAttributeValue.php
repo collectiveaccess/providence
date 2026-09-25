@@ -229,7 +229,7 @@ $_ca_attribute_settings['TextAttributeValue'] = array(		// global
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
 		'default' => '',
-		'width' => 90, 'height' => 4,
+		'width' => '670px', 'height' => 12,
 		'label' => _t('Dependent value template'),
 		'validForNonRootOnly' => 1,
 		'description' => _t('Template to be used to format content for dependent values. Template should reference container values using their bare element code prefixed with a caret (^). Do not include the table or container codes.')
