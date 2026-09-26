@@ -1701,11 +1701,11 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		} else {
 			if (!($vn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD))) { return null; }
 		}
-		if (MemoryCache::contains($vn_type_id, 'baseModelTypeInstances')) {
-			return MemoryCache::fetch($vn_type_id, 'baseModelTypeInstances');
+		$key = $this->tableName()."::{$vn_type_id}}";
+		if (MemoryCache::contains($key, 'baseModelTypeInstances')) {
+			return MemoryCache::fetch($key, 'baseModelTypeInstances');
 		}
-		
-		MemoryCache::save($vn_type_id, $t_list_item = new ca_list_items($vn_type_id), 'baseModelTypeInstances');
+		MemoryCache::save($key, $t_list_item = new ca_list_items($vn_type_id), 'baseModelTypeInstances');
 		return ($t_list_item->getPrimaryKey()) ? $t_list_item : null;
 	}
 	# ------------------------------------------------------------------
@@ -1777,6 +1777,46 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		}
 		
 		return $t_list->getListAsHTMLFormElement($this->getTypeListCode(), $ps_name, $pa_attributes, array_merge($pa_options ?? [], ['value' => caGetOption('value', $pa_options, $this->get($this->getTypeFieldName()))]));
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Return list of valid child types for currently loaded row (or for the type_id specified in the first parameter).
+	 * List of child types is generated with respect to *_enforce_strict_type_hierarchy settings (strict, semi-strict and none)
+	 * and, if the "components" option is set, object component configuration.
+	 *
+	 * @param mixed $type_id
+	 * @param array $options Options include:
+	 *		components = for object types, return list including only child types that are configured as component types. [Default is false]
+	 *
+	 * @return array
+	 */ 
+	public function getValidChildTypes(mixed $type_id=null, ?array $options=null) : ?array {
+		$for_components = (bool)caGetOption('components', $options, false);
+		if(is_null($type_id)) { $type_id = $this->get('type_id'); }
+		
+		if ($t_type = $this->getTypeInstance($type_id)) {
+			$type_hierarchy_enforcement = $this->getAppConfig()->get($this->tableName().'_enforce_strict_type_hierarchy');
+						
+			switch($type_hierarchy_enforcement) {
+				case 0:
+				default:
+					$idnos = $this->getTypeList(['idnosOnly' => true]);
+					break;
+				case 1:
+					$idnos = $t_type->get('ca_list_items.children.idno', ['returnAsArray' => true]);
+					break;
+				case '~':
+					$idnos = $t_type->get('ca_list_items.descendants.idno', ['returnAsArray' => true]);
+					break;
+			}
+			
+			if($for_components && method_exists($this, 'getComponentTypes')) {
+				$component_types = $this->getComponentTypes();
+				$idnos = array_intersect($idnos, $component_types);
+			}
+			return $idnos;
+		}
+		return null;
 	}
 	# ------------------------------------------------------------------
 	// --- Forms
