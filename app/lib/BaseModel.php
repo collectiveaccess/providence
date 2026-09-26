@@ -375,7 +375,15 @@ class BaseModel extends BaseObject {
 	 */
 	protected $opn_instantiated_at = 0;
 	
+	/**
+	 * Conversion table for virtual fields => underlying SQL fields
+	 */
 	static $field_list_for_load = [];
+	
+	/**
+	 * Unique guid for instance; useful for debugging
+	 */
+	public $guid = null;
 	
 	/**
 	 * Constructor
@@ -389,6 +397,7 @@ class BaseModel extends BaseObject {
 	public function __construct($id=null, ?array $options=null) {
 		$this->opn_instantiated_at = time();
 		$table_name = $this->tableName();
+		$this->guid = caGenerateGUID();
 		
 		if (!$this->FIELDS =& BaseModel::$s_ca_models_definitions[$table_name]['FIELDS']) {
 			die("Field definitions not found for {$table_name}");
