@@ -457,8 +457,8 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	 * @return array List of entry_ids for the specified bundle if it exists. These can be plugged into the ca_metadata_dictionary_entries::$s_definition_cache cache array to get entry data. Returns false if the bundle does not exist.
 	 */
 	public static function entryExists($bundle_name, $options=null) {
-		if (caGetOption('noCache', $options, false) || (array_key_exists($bundle_name, ca_metadata_dictionary_entries::$s_definition_cache_index ?? []) && is_null(ca_metadata_dictionary_entries::$s_definition_cache_index[$bundle_name]))) {
-			ca_metadata_dictionary_entries::preloadDefinitions(array($bundle_name));
+		if (caGetOption('noCache', $options, false) || (!array_key_exists($bundle_name, ca_metadata_dictionary_entries::$s_definition_cache_index ?? []))) {
+			ca_metadata_dictionary_entries::preloadDefinitions([$bundle_name]);
 		}
 		
 		if (
@@ -490,7 +490,6 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 	public static function getEntry($bundle_name, $t_subject, $settings=null, $options=null) {
 		$subject_table_name = $t_subject->tableName();
 		$subject_table_num = $t_subject->tableNum();
-		
 		if(!is_array($types = caGetOption(['restrict_to_types', 'restrictToTypes'], $settings, null)) && $types) {
 			$types = [$types];
 		}
@@ -506,9 +505,9 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 		if (sizeof($relationship_types = array_filter($relationship_types, 'strlen'))) {
 			$relationship_types = array_merge($relationship_types, ca_relationship_types::relationshipTypeIDsToTypeCodes($relationship_types) ?? []);
 		}
+		
 		if ($entry_list = ca_metadata_dictionary_entries::entryExists($bundle_name)) {
 			$entry_id = null;
-			
 			foreach(array_keys($entry_list) as $id) {
 				$entry = ca_metadata_dictionary_entries::$s_definition_cache[$id];
 				
@@ -534,7 +533,13 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 				$entry_relationship_types = array_filter($rel_types, 'strlen');
 		
 				if($entry_id) {
-					if ((sizeof($types) || sizeof($relationship_types))) {
+					if((sizeof($types) && !sizeof($entry_types)) || (!sizeof($types) && sizeof($entry_types))) {
+						$entry_id = null;
+						continue;
+					} elseif((sizeof($relationship_types) && !sizeof($entry_relationship_types)) || (!sizeof($relationship_types) && sizeof($entry_relationship_types))) {
+						$entry_id = null;
+						continue;
+					} elseif ((sizeof($types) || sizeof($relationship_types))) {
 						if (sizeof($relationship_types)) {
 							if(is_array($entry_relationship_types) && sizeof($entry_relationship_types)) {
 								if (sizeof(array_intersect($relationship_types, $entry_relationship_types))) {
@@ -555,11 +560,7 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 								}
 							}
 						}
-					} elseif((sizeof($types) && !sizeof($entry_types)) || (!sizeof($types) && sizeof($entry_types))) {
-						$entry_id = null;
-					} elseif((sizeof($relationship_types) && !sizeof($entry_relationship_types)) || (!sizeof($relationship_types) && sizeof($entry_relationship_types))) {
-						$entry_id = null;
-					}
+					} 
 				}
 				if ($entry_id) { break; }
 			}
