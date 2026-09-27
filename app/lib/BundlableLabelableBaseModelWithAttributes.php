@@ -1677,7 +1677,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if (
 			($dictionary_entry = ca_metadata_dictionary_entries::getEntry($dict_bundle_spec = $bundle_name_proc, $this, $bundle_settings))
 			||
-			($dictionary_entry = ca_metadata_dictionary_entries::getEntry($dict_bundle_spec = $this->tableName().'.'.$bundle_name_proc, $this, $bundle_settings))
+			(
+				!Datamodel::tableExists($bundle_name_proc) 
+				&&
+				($dictionary_entry = ca_metadata_dictionary_entries::getEntry($dict_bundle_spec = $this->tableName().'.'.$bundle_name_proc, $this, $bundle_settings))
+			)
 		) {
 			# Grab definition out of dictionary entry settings: if it was created in a system with multiple locales the available definitions 
 			# will be key'ed by locale code or locale_id (argh). If it was created in an older system with only a single active locale it may
