@@ -32,9 +32,6 @@ class AuthController extends ActionController {
 	# -------------------------------------------------------
 	
 	# -------------------------------------------------------
-	/**
-	 *
-	 */
 	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
 		parent::__construct($po_request, $po_response, $pa_view_paths);
 		if (AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__) && !in_array($this->request->getAction(), ['logout', 'callback'])) {
@@ -44,9 +41,6 @@ class AuthController extends ActionController {
 		}
 	}
 	# -------------------------------------------------------
-	/**
-	 *
-	 */
 	public function Login() {
 		global $g_ui_locale;
 		if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
@@ -59,9 +53,6 @@ class AuthController extends ActionController {
 		$this->render('login_html.php');
 	}
 	# -------------------------------------------------------
-	/**
-	 *
-	 */
 	public function DoLogin() {
 		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
 			$this->view->setVar('notifications', $this->notification->getNotifications());
@@ -101,18 +92,12 @@ class AuthController extends ActionController {
 		}
 	}
 	# -------------------------------------------------------
-	/**
-	 *
-	 */
 	public function Welcome() {
 		AppNavigation::clearMenuBarCache($this->request);	// clear menu bar cache on welcome (stealth debugging tool)
 		
 		$this->render('welcome_html.php');
 	}
 	# -------------------------------------------------------
-	/**
-	 *
-	 */
 	public function Logout() {
 		$this->request->deauthenticate();
 		
@@ -122,18 +107,12 @@ class AuthController extends ActionController {
 		$this->render('logged_out_html.php');
 	}
 	# -------------------------------------------------------
-	/**
-	 *
-	 */
 	public function Forgot() {
 		if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
 
 		$this->render('forgot_password_html.php');
 	}
 	# -------------------------------------------------------
-	/**
-	 *
-	 */
 	public function RequestPassword() {
 		if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
 		if (caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
@@ -151,9 +130,6 @@ class AuthController extends ActionController {
 		$this->render('password_reset_instructions_html.php');
 	}
 	# -------------------------------------------------------
-	/**
-	 *
-	 */
 	public function InitReset() {
 		if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
 
@@ -175,9 +151,6 @@ class AuthController extends ActionController {
 		$this->render('password_reset_form_html.php');
 	}
 	# -------------------------------------------------------
-	/**
-	 *
-	 */
 	public function DoReset() {
 		if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
 		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
