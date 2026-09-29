@@ -343,76 +343,78 @@ class ExitManager {
 	private function _getAttributes(string $table, array $attributes, \SearchResult $qr, ?array $options=null) : array {
 		$acc = [];
 		foreach($attributes as $mdcode => $e) {
-			$d = $qr->get("{$table}.{$mdcode}", ['returnWithStructure' => true]);
-			
+			$d = $qr->get("{$table}.{$mdcode}", ['returnWithStructure' => true, 'returnAllLocales' => true]);
+		
 			// @TODO: add source info
 			$d_acc = [];
 			if(is_array($d)) {
-				foreach($d as $locale_id => $values) {
-					if((int)$e['datatype'] === __CA_ATTRIBUTE_VALUE_LIST__) {
-						foreach($values as $vx) {
-							$vx = [
-								'_id' => $vx[$mdcode],
-								'_idno' => caGetListItemIdno($vx[$mdcode]),
-								'_source' => $vx['__source__'] ?? null
-							];
-							$d_acc[] = array_merge([
-								'_datatype' => $e['datatype'],
-								'locale' => \ca_locales::IDToCode($locale_id)
-							], $vx);
-						}
-					} elseif((int)$e['datatype'] === __CA_ATTRIBUTE_VALUE_CONTAINER__) {
-						foreach($values as $vx) {
-							foreach($vx as $sf => $sv) {
-								if(preg_match("!_sort_$!", $sf)) { unset($vx[$sf]); continue; }
-								$sdt = \ca_metadata_elements::getElementDatatype($sf);
-								$is_authority = \ca_metadata_elements::isAuthorityDatatype($sf);
-								if($sdt == __CA_ATTRIBUTE_VALUE_LIST__) {
-									$vx[$sf] = [
-										'_id' => $sv,
-										'_idno' => caGetListItemIdno($vx[$sf]),
-										'__source__' => $vx['__source__']
-									];
-								} elseif($is_authority && ($t = \AuthorityAttributeValue::elementTypeToInstance($sdt))) {
-									$labels = $t->getPreferredDisplayLabelsForIDs([$vx[$sf]]);
-									$vx[$sf] = [
-										'_id' => $vx[$sf],
-										'_idno' => array_shift($labels),
-										'__source__' => $vx['__source__']
-									];
-								}
+				foreach($d as $id => $by_locale) {
+					foreach($by_locale as $locale_id => $values) {
+						if((int)$e['datatype'] === __CA_ATTRIBUTE_VALUE_LIST__) {
+							foreach($values as $vx) {
+								$vx = [
+									'_id' => $vx[$mdcode],
+									'_idno' => caGetListItemIdno($vx[$mdcode]),
+									'_source' => $vx['__source__'] ?? null
+								];
+								$d_acc[] = array_merge([
+									'_datatype' => $e['datatype'],
+									'locale' => \ca_locales::IDToCode($locale_id)
+								], $vx);
 							}
-						
-							$d_acc[] = array_merge([
-								'_datatype' => $e['datatype'],
-								'locale' => \ca_locales::IDToCode($locale_id),
-							], $vx);
-						}
-					} else {
-						$is_authority = \ca_metadata_elements::isAuthorityDatatype($mdcode);
-						foreach($values as $vx) {
-							foreach($vx as $sf => $sv) {
-								if(preg_match("!_sort_$!", $sf)) { unset($vx[$sf]); }
-								if($sf === '__source__') { continue; }
-								
-								if($is_authority && ($t = \AuthorityAttributeValue::elementTypeToInstance($e['datatype']))) {
-									$labels = $t->getPreferredDisplayLabelsForIDs([$sv]);
-									$vx[$sf] = [
-										'_id' => $sv,
-										'_idno' => array_shift($labels),
-										'__source__' => $vx['__source__']
-									];
-									$d_acc[] = array_merge([
-										'_datatype' => $e['datatype'],
-										'locale' => \ca_locales::IDToCode($locale_id)
-									], $vx[$sf]);
-								} else {									
-									$d_acc[] = [
-										'_datatype' => $e['datatype'],
-										'locale' => \ca_locales::IDToCode($locale_id),
-										'__source__' => $vx['__source__'],
-										$sf => $vx[$sf]
-									];
+						} elseif((int)$e['datatype'] === __CA_ATTRIBUTE_VALUE_CONTAINER__) {
+							foreach($values as $vx) {
+								foreach($vx as $sf => $sv) {
+									if(preg_match("!_sort_$!", $sf)) { unset($vx[$sf]); continue; }
+									$sdt = \ca_metadata_elements::getElementDatatype($sf);
+									$is_authority = \ca_metadata_elements::isAuthorityDatatype($sf);
+									if($sdt == __CA_ATTRIBUTE_VALUE_LIST__) {
+										$vx[$sf] = [
+											'_id' => $sv,
+											'_idno' => caGetListItemIdno($vx[$sf]),
+											'__source__' => $vx['__source__']
+										];
+									} elseif($is_authority && ($t = \AuthorityAttributeValue::elementTypeToInstance($sdt))) {
+										$labels = $t->getPreferredDisplayLabelsForIDs([$vx[$sf]]);
+										$vx[$sf] = [
+											'_id' => $vx[$sf],
+											'_idno' => array_shift($labels),
+											'__source__' => $vx['__source__']
+										];
+									}
+								}
+							
+								$d_acc[] = array_merge([
+									'_datatype' => $e['datatype'],
+									'locale' => \ca_locales::IDToCode($locale_id),
+								], $vx);
+							}
+						} else {
+							$is_authority = \ca_metadata_elements::isAuthorityDatatype($mdcode);
+							foreach($values as $vx) {
+								foreach($vx as $sf => $sv) {
+									if(preg_match("!_sort_$!", $sf)) { unset($vx[$sf]); }
+									if($sf === '__source__') { continue; }
+									
+									if($is_authority && ($t = \AuthorityAttributeValue::elementTypeToInstance($e['datatype']))) {
+										$labels = $t->getPreferredDisplayLabelsForIDs([$sv]);
+										$vx[$sf] = [
+											'_id' => $sv,
+											'_idno' => array_shift($labels),
+											'__source__' => $vx['__source__']
+										];
+										$d_acc[] = array_merge([
+											'_datatype' => $e['datatype'],
+											'locale' => \ca_locales::IDToCode($locale_id)
+										], $vx[$sf]);
+									} else {									
+										$d_acc[] = [
+											'_datatype' => $e['datatype'],
+											'locale' => \ca_locales::IDToCode($locale_id),
+											'__source__' => $vx['__source__'],
+											$sf => $vx[$sf]
+										];
+									}
 								}
 							}
 						}
