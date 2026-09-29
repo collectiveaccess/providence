@@ -6354,7 +6354,7 @@ function caGetFindViewList($table_name_or_num) : ?array {
 				'list' => _t('list'),
 				'full' => _t('full'),
 				'thumbnail' => _t('thumbnails'),
-				'list_with_thumbnail' => _t('list + thumbnails'),
+				'list_with_thumbnail' => _t('list').' + '._t('thumbnails'),
 			];
 			break;
 		case 'ca_object_representations':
