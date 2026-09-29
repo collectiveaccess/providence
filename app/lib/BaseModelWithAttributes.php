@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -3868,29 +3868,31 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	 * We changed the name instead of overriding it so that we don't have to run
 	 * every single changed() call on a Bundlable through this function. Turns out it gets called a lot.
 	 *
-	 * @param $pm_element_code_or_id
+	 * @param mixed $element_code_or_id
 	 * @return bool
 	 */
-	public function attributeDidChange($pm_element_code_or_id) : ?bool {
-		$vs_code = ca_metadata_elements::getElementCodeForId($pm_element_code_or_id);
-		$vn_id = ca_metadata_elements::getElementID($pm_element_code_or_id);
+	public function attributeDidChange(mixed $element_code_or_id, ?array $options=null) : ?bool {
+		$code = ca_metadata_elements::getElementCodeForId($element_code_or_id);
+		$id = ca_metadata_elements::getElementID($element_code_or_id);
 
 		// not an element?
-		if(!$vs_code || (!$this->hasElement($vs_code, null, true))) { return null; }
+		if(!$code || (!$this->hasElement($code, null, true))) { return null; }
 
-		return isset($this->_FIELD_VALUE_DID_CHANGE['_ca_attribute_'.$vn_id]) ? $this->_FIELD_VALUE_DID_CHANGE['_ca_attribute_'.$vn_id] : false;
+		return $this->didChange('_ca_attribute_'.$id, $options);
 	}
 	# ------------------------------------------------------------------
 	/**
 	 * Did any attributes changed on this row, even if already saved?
 	 *
-	 * @param $pm_element_code_or_id
 	 * @return bool
 	 */
 	public function attributesDidChange() {
 		if(!is_array($cf = $this->_FIELD_VALUE_DID_CHANGE)) { return false; }
 		if(sizeof($cf) === 0) { return false; }
-		if (sizeof(array_filter(array_keys($cf), function($v) { return substr($v, 0, 14) === '_ca_attribute_'; })) > 0) { return true; }
+		
+		foreach($cf as $b) {
+			if (sizeof(array_filter(array_keys($b), function($v) { return substr($v, 0, 14) === '_ca_attribute_'; })) > 0) { return true; }
+		}
 		return false;
 	}
 	# -------------------------------------------------------
@@ -3900,11 +3902,11 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	 * @param string $bundle
 	 * @return bool
 	 */
-	public function valueDidChange(string $bundle) : ?bool {
-		if(!is_null($ret = self::attributeDidChange($bundle))) {
+	public function valueDidChange(string $bundle, ?array $options=null) : ?bool {
+		if(!is_null($ret = self::attributeDidChange($bundle, $options))) {
 			return $ret;
 		}
-		return parent::valueDidChange($bundle);
+		return parent::valueDidChange($bundle, $options);
 	}
 	# --------------------------------------------------------------------------------
 	/**

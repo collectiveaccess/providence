@@ -10327,9 +10327,9 @@ side. For many self-relations the direction determines the nature and display te
 	 * @param string $bundle
 	 * @return bool
 	 */
-	public function valueDidChange(string $bundle) : ?bool {
+	public function valueDidChange(string $bundle, ?array $options=null) : ?bool {
 		// TODO: handle changes on relationship?
-		return parent::valueDidChange($bundle);
+		return parent::valueDidChange($bundle, $options );
 	}
 	# -------------------------------------------------------
 }
