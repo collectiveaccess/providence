@@ -533,10 +533,10 @@ class ca_metadata_dictionary_entries extends BundlableLabelableBaseModelWithAttr
 				$entry_relationship_types = array_filter($rel_types, 'strlen');
 		
 				if($entry_id) {
-					if((sizeof($types) && !sizeof($entry_types)) || (!sizeof($types) && sizeof($entry_types))) {
+					if(!sizeof($types) && sizeof($entry_types)) {
 						$entry_id = null;
 						continue;
-					} elseif((sizeof($relationship_types) && !sizeof($entry_relationship_types)) || (!sizeof($relationship_types) && sizeof($entry_relationship_types))) {
+					} elseif(!sizeof($relationship_types) && sizeof($entry_relationship_types)) {
 						$entry_id = null;
 						continue;
 					} elseif ((sizeof($types) || sizeof($relationship_types))) {
