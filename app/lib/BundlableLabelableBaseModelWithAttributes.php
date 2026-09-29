@@ -2122,6 +2122,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'ca_editor_ui_screen_type_restrictions':
 					case 'ca_editor_ui_type_restrictions':
 					case 'ca_relationship_type_restrictions':
+					case 'ca_set_type_restrictions':
 						$element .= $this->getTypeRestrictionsHTMLFormBundle($options['request'], $options['formName'], $placement_code, $options);
 						break;
 					# -------------------------------

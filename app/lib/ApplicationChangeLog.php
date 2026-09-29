@@ -1166,7 +1166,7 @@ class ApplicationChangeLog {
 			$label_cache = [];
 			foreach($ids_by_table as $table_num => $row_ids) {
 				$t = Datamodel::getInstanceByTableNum($table_num, true);
-				if (!method_exists($t, 'getLabelTableName') || !$t->getLabelTableName()) { continue; }
+				if (!$t || !method_exists($t, 'getLabelTableName') || !$t->getLabelTableName()) { continue; }
 				$label_cache[$table_num] = $t->getPreferredDisplayLabelsForIDs($row_ids);
 			}
 			
