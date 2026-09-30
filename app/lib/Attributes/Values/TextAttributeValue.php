@@ -447,6 +447,20 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText, Strikethrough, 
 									Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage, ResizableHeight
 								],
+								htmlSupport: {
+									allow: [
+										{
+											name: 'a',
+											attributes: ['name', 'id'] 
+										},
+										{
+											name: /(div|p|h[1-6])/,
+											attributes: ['id', 'class']
+										},
+										{ name: 'details' },
+										{ name: 'summary' }
+									]
+								},
 								toolbar: {
 									items: ".json_encode(caGetCK5Toolbar()).",
 									shouldNotGroupWhenFull: true
@@ -456,12 +470,6 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									height: '{$height_w_suffix}',
 									minHeight: '50px',
 									maxHeight: '1500px'
-								},
-								htmlSupport: {
-									allow: [
-										{ name: 'details' },
-										{ name: 'summary' }
-									]
 								}
 							}).then(editor => {
 								// Add current instance to list of initialized editors

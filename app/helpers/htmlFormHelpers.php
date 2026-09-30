@@ -233,15 +233,23 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 								SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText, Strikethrough, 
 								Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage
 							],
-							toolbar: {
-								items: ".json_encode($toolbar).",
-								shouldNotGroupWhenFull: true
-							},
 							htmlSupport: {
 								allow: [
+									{
+										name: 'a',
+										attributes: ['name', 'id'] 
+									},
+									{
+										name: /(div|p|h[1-6])/,
+										attributes: ['id', 'class']
+									},
 									{ name: 'details' },
 									{ name: 'summary' }
 								]
+							},
+							toolbar: {
+								items: ".json_encode($toolbar).",
+								shouldNotGroupWhenFull: true
 							}
 						} ).then(editor => {
 								// Add current instance to list of initialized editors
