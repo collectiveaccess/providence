@@ -479,9 +479,13 @@ function caHTMLImage($ps_url, $pa_options=null) {
 		}
 
 		$vn_layers = 						(int)$pa_options["layers"];
-		
+
 		if (!($vs_id_name = (string)($pa_options["idname"] ?? null))) {
 			$vs_id_name = (string)($pa_options["id"] ?? null);
+		}
+
+		if (!$vs_id_name) {
+			$vs_id_name = uniqid('caTileViewer_');
 		}
 
 		$vn_viewer_width = 				$pa_options["viewer_width"];
