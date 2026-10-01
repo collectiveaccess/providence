@@ -6468,6 +6468,7 @@ if (!$batch) {
 		$disable_sorts = caGetOption('disableSorts', $pa_settings, false);
 						
  		$va_rel_items = $this->getRelatedItems($ps_bundle_name, $pa_settings);
+ 		$rel_pk = Datamodel::primaryKey($ps_bundle_name);
  		
  		$va_rels_to_add = $va_rels_to_delete = [];
  if(!$batch) {	
@@ -6499,7 +6500,7 @@ if (!$batch) {
 				
 				$va_rels_to_delete[] = array('bundle' => $ps_bundle_name, 'relation_id' => $va_rel_item[$vs_key]);
 			} elseif(!$disable_sorts) {
-				$this->editRelationship($ps_bundle_name, $va_rel_item[$vs_key], $va_rel_item['row_id'], $va_rel_item['relationship_type_code'], null, null, $va_rel_item['direction'], $vn_rank, ['allowDuplicates' => true]);		
+				$this->editRelationship($ps_bundle_name, $va_rel_item[$vs_key], $va_rel_item[$rel_pk], $va_rel_item['relationship_type_code'], null, null, $va_rel_item['direction'], $vn_rank, ['allowDuplicates' => true]);		
 			}
 		}
 }
