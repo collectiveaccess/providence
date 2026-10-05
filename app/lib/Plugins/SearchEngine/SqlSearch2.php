@@ -1995,7 +1995,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if(is_array($indexing_info = $this->search_indexing_config->get(Datamodel::getTableName($subject_tablenum)))) {
 			$indexing_info = $indexing_info[$table]['fields'][$field] ?? null;
 		}
-		if (strtolower($field) == 'count') {
+		if((strtolower($field) == 'count') && !$t_table->hasElement($field)) {
 			if (!is_array($rel_type_ids) || !sizeof($rel_type_ids)) { $rel_type_ids = [0]; }	// for counts must pass "0" as relationship type to pull count for all reltypes in aggregate
 			return array(
 				'access_point' => "{$table}.{$field}",
@@ -2042,7 +2042,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$t_element = new ca_metadata_elements();
 			
 			$vb_is_count = false;
-			if(strtolower($subfield) == 'count') {
+			if((strtolower($subfield) == 'count') && !$t_table->hasElement($subfield)) {
 				$subfield = null;
 				$vb_is_count = true;
 				if (!is_array($rel_type_ids) || !sizeof($rel_type_ids)) { $rel_type_ids = [0]; }
