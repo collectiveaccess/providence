@@ -77,12 +77,22 @@ class FileUploadController extends BaseServiceController {
 				if(!$t_instance->isSaveable(new ca_users($u['id']), 'ca_object_representations')) {
 					throw new ApplicationException(_t('Access denied'));
 				}
-				$type_id = $request->getParameter('type_id', pString);
-				$locale_id = $request->getParameter('locale_id', pString);
-				$status = $request->getParameter('status', pString);
-				$access = $request->getParameter('access', pString);
-				$idno = $request->getParameter('idno', pString);
-				$label = $request->getParameter('label', pString);
+				if(!($type_id = $request->getParameter('type_id', pString))) {
+					$type_id = caGetDefaultItemID('object_representation_types');
+				}
+				if(!($locale_id = $request->getParameter('locale_id', pString))) {
+					$locale_id = defined('__CA_DEFAULT_LOCALE__') ? __CA_DEFAULT_LOCALE__ : 'en_US';
+				}
+				$status = $request->getParameter('status', pInteger) ?? 0;
+				$access = $request->getParameter('access', pInteger) ?? 0;
+				$idno = $request->getParameter('idno', pString) ?? '%';
+				$label = $request->getParameter('label', pString) ?? _t('Uploaded media');
+				
+				$rpath = Datamodel::getPath($table, 'ca_object_representations');
+				$rpath = array_keys($rpath);
+				if(!($rel_type_id = $request->getParameter('rel_type_id', pString))) {
+					$rel_type_id = ca_relationship_types::getDefaultRelationshipTypeID($rpath[1]);
+				}
 			}
 			
 			$errors = $notices = $copied = [];
@@ -113,7 +123,7 @@ class FileUploadController extends BaseServiceController {
 					$copied[$rpath] = filesize("{$path}/{$name}");
 					
 					if($t_instance) {
-						if($t_instance->addRepresentation("{$path}/{$name}", $type_id, $locale_id, $status, $access, $is_primary, ['idno' => $idno, 'preferred_labels' => $label], ['original_filename' => $n])) {
+						if($t_instance->addRepresentation("{$path}/{$name}", $type_id, $locale_id, $status, $access, $is_primary, ['idno' => $idno, 'preferred_labels' => $label], ['original_filename' => $n, 'type_id' => $rel_type_id])) {
 							$is_primary = false;
 							$notices[$rpath] = _t('Added uploaded file as representation for %1 with id %2 (%3)', $table, $id, $t_instance->get('idno'));
 						} else {
