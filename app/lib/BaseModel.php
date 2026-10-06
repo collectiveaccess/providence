@@ -1565,14 +1565,14 @@ class BaseModel extends BaseObject {
 										if(!($item = $t_list->getItemFromListByItemValue($vs_list_code, $vm_value))) {
 											$item = $t_list->getItemFromListByItemID($vs_list_code, (int)$vm_value);
 										}
+										// De-nest
+										if(is_array($item)) { $item = array_shift($item); }
+										if(is_array($item)) { $item = array_shift($item); }
 									}
 									if(!$item) {
 										$item = $t_list->getItemFromList($vs_list_code, $vm_value);
 									}
 									
-									// De-nest
-									if(is_array($item)) { $item = array_shift($item); }
-									if(is_array($item)) { $item = array_shift($item); }
 									$vm_value = is_numeric($item['item_value'] ?? null) ? $item['item_value'] : 0;
 								} else {
 									$vm_orig_value = $vm_value;
