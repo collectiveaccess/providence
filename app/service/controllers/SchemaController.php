@@ -185,6 +185,8 @@ class SchemaController extends \GraphQLServices\GraphQLServiceController {
 						
 						$t = Datamodel::getInstance($table, true);
 						
+						$locale = __CA_DEFAULT_LOCALE__;
+						
 						$bundles = $t->getBundleList(['includeBundleInfo' => true, 'rewriteKeys' => true]);
 						if($ui) {
 							$t_ui = \ca_editor_uis::findAsInstance(['editor_code' => $ui]);
@@ -196,13 +198,13 @@ class SchemaController extends \GraphQLServices\GraphQLServiceController {
 								$bits = explode('.', $bn);
 								
 								if(sizeof($bits) > 1) {
-									$blist[$bits[1]] = true;
+									$blist[$bits[1]] = $p['settings'];
 								} else{ 
-									$blist[$bn] = true;
+									$blist[$bn] = $p['settings'];
 								}
 							}
 							$mbundles = [];
-							foreach($blist as $bn => $dummy) {
+							foreach($blist as $bn => $bsettings) {
 								if(!isset($bundles[$bn])) { continue; }
 								$mbundles[$bn] = $bundles[$bn];
 							}
@@ -217,21 +219,24 @@ class SchemaController extends \GraphQLServices\GraphQLServiceController {
 							return true;
 						}, ARRAY_FILTER_USE_BOTH);
 						
-						$bundles = array_map(function($code, $info) use ($t) {
-							
+						$bundles = array_map(function($code, $info) use ($t, $blist, $locale) {
 							$desc = $t->getDisplayDescription(($table = $t->tableName()).'.'.$code);
 							$info['type'] = strtoupper($info['type']);
 							
+							
+							$placement_settings = [];
+							foreach($blist[$code] ?? [] as $k => $v) {
+								$placement_settings[] = ['name' => $k, 'value' => $v];
+							}
+							
 							$tr = null;
 							if($info['type'] === 'ATTRIBUTE') {
-								
 								// type restrictions
 								$tr = \ca_metadata_elements::getTypeRestrictionsAsList($code, ['returnAll' => true]);
 								$tr = isset($tr[$code][$table]) ? $tr[$code][$table] : null;
 							}
 							
 							$dt = \GraphQLServices\Helpers\Schema\bundleDataType($t, $code);
-							
 							$subelements = null;
 							if($dt === 'CONTAINER') {
 								if(is_array($subelements = \ca_metadata_elements::getElementsForSet($code))) {
@@ -239,29 +244,32 @@ class SchemaController extends \GraphQLServices\GraphQLServiceController {
 									array_shift($subelements); // get rid of root
 									$subelements = array_filter($subelements, function($v) { return ($v['datatype'] !== 0); }); // filter containers
 								
+									$label = (caExtractSettingValueByLocale($blist[$code] ?? null, 'label', $locale)) ?: $v['display_label'];
+									
 									$subelements = array_map(function($v) use ($t, $code) {
 										return [
-											'name' => $v['display_label'],
+											'name' => $label,
 											'code' => $v['element_code'],
 											'type' => 'ATTRIBUTE',
 											'list' => caGetListCode(\ca_metadata_elements::getElementListID($v['element_code'])),
 											'dataType' => \GraphQLServices\Helpers\Schema\bundleDataType($t, $t->tableName().'.'.$code.'.'.$v['element_code']),
 											'description' => $t->getDisplayDescription(($table = $t->tableName()).'.'.$code.'.'.$v['element_code']),
-											'settings' => \GraphQLServices\Helpers\Schema\formatSettings(\ca_metadata_elements::getElementSettingsForId($v['element_code'])),
+											'settings' => \GraphQLServices\Helpers\Schema\formatSettings(array_merge(\ca_metadata_elements::getElementSettingsForId($v['element_code']) ?? [], $placement_settings ?? [])),
 										];
 									}, $subelements);
 								}
 							}
-							//print_R($subelements);
+							$label = (caExtractSettingValueByLocale($blist[$code] ?? null, 'label', $locale)) ?: $t->getDisplayLabel($t->tableName().'.'.$code);
+
 							return [
-								'name' => $t->getDisplayLabel($t->tableName().'.'.$code),
+								'name' => $label,
 								'code' => $code,
 								'type' => $info['type'],
 								'list' => caGetListCode(\ca_metadata_elements::getElementListID($code)),
 								'dataType' => $dt,
 								'description' => $desc,
 								'typeRestrictions' => $tr,
-								'settings' => \GraphQLServices\Helpers\Schema\formatSettings(\ca_metadata_elements::getElementSettingsForId($code)),
+								'settings' => \GraphQLServices\Helpers\Schema\formatSettings(array_merge(\ca_metadata_elements::getElementSettingsForId($code) ?? [], $placement_settings ?? [])),
 								'subelements' => $subelements
 							];
 						}, array_keys($bundles), $bundles);
