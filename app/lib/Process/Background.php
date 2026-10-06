@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2024 Whirl-i-Gig
+ * Copyright 2024-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -66,7 +66,7 @@ class Background {
         					$params = [__CA_BASE_DIR__.'/support/bin/caUtils', 'process-indexing-queue'];
         					if($o_config->get('background_include_hostname_for_cautils') && defined('__CA_SITE_HOSTNAME__')) { $params[] = '--hostname='.__CA_SITE_HOSTNAME__; }
 							$log->logDebug(_t('[Background] Running search indexing queue in background using CLI::%1', $mode));
-							$ret = $cli->run('php', $params, true);
+							$ret = $cli->run('php', $params, ['async' => true]);
 							break;
 						case 'socket':
 							$log->logDebug(_t('[Background] Running search indexing queue in background using socket'));
@@ -84,7 +84,7 @@ class Background {
 						$params = [__CA_BASE_DIR__.'/support/bin/caUtils', 'process-task-queue'];
 						if($o_config->get('background_include_hostname_for_cautils') && defined('__CA_SITE_HOSTNAME__')) { $params[] = '--hostname='.__CA_SITE_HOSTNAME__; }
 							
-						$ret = $cli->run('php', $params, true);
+						$ret = $cli->run('php', $params, ['async' => true]);
 						break;
 					case 'socket':
 						$log->logDebug(_t('[Background] Running task queue in background using socket'));

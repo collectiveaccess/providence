@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -233,6 +233,20 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 								SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText, Strikethrough, 
 								Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage
 							],
+							htmlSupport: {
+								allow: [
+									{
+										name: 'a',
+										attributes: ['name', 'id'] 
+									},
+									{
+										name: /(div|p|h[1-6])/,
+										attributes: ['id', 'class']
+									},
+									{ name: 'details' },
+									{ name: 'summary' }
+								]
+							},
 							toolbar: {
 								items: ".json_encode($toolbar).",
 								shouldNotGroupWhenFull: true

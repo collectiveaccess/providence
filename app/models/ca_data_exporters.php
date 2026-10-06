@@ -1532,13 +1532,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					'text' => trim($matches[1]),
 					'element' => $element,
 				];
-			} else if($template) {
-				$proc_template = caProcessTemplateForIDs($template, $table_num, [$record_id], []);
-				$item_info[] = [
-					'text' => $proc_template,
-					'element' => $element,
-				];
-			} else if(in_array($source, ["relationship_type_id", "relationship_type_code", "relationship_typename"])) {
+			}
+			else if(in_array($source, ["relationship_type_id", "relationship_type_code", "relationship_typename"])) {
 				// Relationship type
 				if(isset($options[$source]) && strlen($options[$source])>0) {							
 					$o_log->logDebug(_t("Source refers to relationship type information. Value for this mapping is '%1'", $options[$source]));
@@ -1553,12 +1548,18 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				}
 			} else {
 				// Values
-				$values = $t_instance->get($source, array_merge(
-					$get_options, 
-					['returnAsArray' => true]
-				));
-				$values_raw = $return_raw_data ? $t_instance->get($source, ['returnAsArray' => true]) : [];
-				
+				if($template) {//string or array
+					$values = caProcessTemplateForIDs($template, $table_num, [$record_id], []);
+					$delimiter = $settings['delimiter'] ?? null;
+					if($is_repeat && $delimiter) $values = explode($delimiter, $values);
+				}else {
+					$values = $t_instance->get($source, array_merge(
+						$get_options,
+						['returnAsArray' => true]
+					));
+					$values_raw = $return_raw_data ? $t_instance->get($source, ['returnAsArray' => true]) : [];
+				}
+
 				// TODO: handle this more centrally?
 				if($omit_if_empty) {
 					$values = array_filter($values, 'strlen');

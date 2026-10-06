@@ -86,7 +86,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 			'IS_NULL' => false, 
 			'DEFAULT' => '',
 			'LABEL' => 'Sortable representation identifier', 'DESCRIPTION' => 'Value used for sorting representations on identifier value.',
-			'BOUNDS_LENGTH' => array(0,255)
+			'BOUNDS_LENGTH' => array(0, 768)
 		),
 		'idno_sort_num' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -1703,7 +1703,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		$t_caption->set('caption_file', $ps_filepath, array('original_filename' => caGetOption('originalFilename', $options, array_pop($va_tmp))));
  		$t_caption->set('locale_id', $pn_locale_id);
  		
- 		$t_caption->insert();
+ 		$t_caption->insert(['content' => caGetOption('content', $options, null)]);
  		
  		if ($t_caption->numErrors()) {
  			$this->errors = array_merge($this->errors, $t_caption->errors);

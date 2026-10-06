@@ -635,6 +635,7 @@ class SearchIndexer extends SearchBase {
 		$global_indexed_field_list = $this->getIndexedFieldsForTable($pn_subject_table_num);
 		
 		$t_subject = Datamodel::getInstanceByTableName($vs_subject_tablename, true);
+		if(!$t_subject) { return false; }
 		$t_subject->setDb($this->getDb());	// force the subject instance to use the same db connection as the indexer, in case we're operating in a transaction
 
 		// Prevent endless recursive reindexing
@@ -654,7 +655,7 @@ class SearchIndexer extends SearchBase {
 				'changed_fields' => $pa_changed_fields,
 				'options' => $pa_options
 			));
-			return;
+			return null;
 		}
 		if(!$force && !$pb_reindex_mode && !$for_current_value_reindex && !sizeof(array_intersect($global_indexed_field_list ?? [], array_keys($pa_changed_fields)))) { goto related_indexing; }		
 		
@@ -1113,7 +1114,7 @@ if (!$for_current_value_reindex) {
 										//
 										// Hierarchical indexing in related tables
 										//
-										if (((isset($va_rel_field_info['INDEX_ANCESTORS']) && $va_rel_field_info['INDEX_ANCESTORS']) || in_array('INDEX_ANCESTORS', $va_rel_field_info, true))) {
+										if (((is_array($va_rel_field_info) && ($va_rel_field_info['INDEX_ANCESTORS'] ?? null)) || (is_array($va_rel_field_info) && in_array('INDEX_ANCESTORS', $va_rel_field_info ?? [], true)))) {
 											// is this current field a label?
 											$t_hier_rel = $t_rel;
 											$vn_fn = $t_rel->fieldNum($vs_rel_field);

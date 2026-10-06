@@ -45,7 +45,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	var $opo_plugin_config = null;
 	# --------------------------------------------------------------------------------------------
 	public function __construct($ps_plugin_path) {
-		$this->description = _t('This plugin allows prepopulating field values based on display templates. See http://docs.collectiveaccess.org/wiki/Prepopulate for more info.');
+		$this->description = _t('This plugin allows prepopulating field values based on display templates. See %1 for more info.', 'http://docs.collectiveaccess.org/Prepopulate');
 		parent::__construct();
 		
 		$this->log = caGetLogger(['logLevel' => 'INFO']);
@@ -259,11 +259,13 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 				$va_tags = caGetTemplateTags($va_rule['skipIfExpression']);
 
 				foreach($va_tags as $vs_tag) {
+					$tinfo = caParseTagOptions($vs_tag);
+					$tag_proc = $tinfo['tag'];
 					if(!isset($va_expression_vars[$vs_tag])) {
-						$va_expression_vars[$vs_tag] = $t_instance->get($vs_tag, array('returnIdno' => true, 'delimiter' => ';'));
+						$va_expression_vars[$vs_tag] = $t_instance->get($tag_proc, array_merge(['returnIdno' => true, 'delimiter' => ';'], $tinfo['options'] ?? []));
 					}
 				}
-
+				
 				if(ExpressionParser::evaluate($va_rule['skipIfExpression'] ?? null, $va_expression_vars)) {
 					$this->log->logDebug("[prepopulateFields()] skipping rule $vs_rule_key because skipIfExpression evaluated true");
 					continue;
@@ -272,10 +274,10 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			
 			if(is_array($va_rule['onChange'] ?? null)) {
 				foreach($va_rule['onChange'] as $bundle => $cinfo) {
-					if($t_instance->valueDidChange($bundle)) {
+					if($t_instance->valueDidChange($bundle, ['when' => 'anytime'])) {
 						$old_value = $t_instance->get($bundle, ['modifier' => 'previousvalue', 'convertCodesToIdno' => true]);
 						$cur_value = $t_instance->get($bundle, ['convertCodesToIdno' => true]);
-						if($old_value != $cur_value) {
+					 	if($old_value != $cur_value) {
 							if(is_array($cinfo['originalValues']) && sizeof($cinfo['originalValues'])) {
 								if(!in_array($old_value, $cinfo['originalValues'], true)) {
 									$this->log->logDebug("[prepopulateFields()] skipping rule {$vs_rule_key} because onChange originalValues list for bundle {$bundle} did not contain value '{$old_value}'");
@@ -289,6 +291,8 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 								}
 							}
 						}
+					} else {
+						continue(2);
 					}
 				}
 			}

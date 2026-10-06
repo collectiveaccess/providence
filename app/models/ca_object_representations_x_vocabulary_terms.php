@@ -89,7 +89,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representations_x_vocabulary_term
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Is primary?'), 'DESCRIPTION' => _t('Indicates that the representation should be used to depict the list item is situations where only a single representation can be displayed (eg. search results).')
+				'LABEL' => _t('Is primary?'), 'DESCRIPTION' => _t('Indicates that the representation should be used to depict the list item in situations where only a single representation can be displayed (eg. search results).')
 		),
 		'rank' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 

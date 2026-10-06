@@ -92,7 +92,7 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 			'IS_NULL' => false, 
 			'DEFAULT' => '',
 			'LIST_CODE' => 'object_types',
-			'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the object. In CollectiveAccess every object has a single "instrinsic" type that determines the set of descriptive, technical and administrative metadata that can be applied to it. As such this type is "low-level" and directly tied to the form of the object - eg. photograph, book, analog video recording, etc.')
+			'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the object. In CollectiveAccess every object has a single "intrinsic" type that determines the set of descriptive, technical and administrative metadata that can be applied to it. As such this type is "low-level" and directly tied to the form of the object - eg. photograph, book, analog video recording, etc.')
 		),
 		'idno' => array(
 			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -109,7 +109,7 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 			'IS_NULL' => false, 
 			'DEFAULT' => '',
 			'LABEL' => 'Sortable object identifier', 'DESCRIPTION' => 'Value used for sorting objects on identifier value.',
-			'BOUNDS_LENGTH' => array(0,255)
+			'BOUNDS_LENGTH' => array(0,768)
 		),
 		'idno_sort_num' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -751,7 +751,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 				$o_db = $this->getDb();
 				
 				$qr_res = $o_db->query("
-					SELECT *
+					SELECT object_id, representation_id, is_primary
 					FROM ca_objects_x_object_representations
 					WHERE object_id = ?
 				", (int)$this->getPrimaryKey());
@@ -763,7 +763,6 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 				
 				foreach($va_reps as $vn_representation_id => $va_rep) {
 					$va_rep['object_id'] = $t_dupe->getPrimaryKey();
-					
 					$t_object_x_rep = new ca_objects_x_object_representations();
 					$t_object_x_rep->setTransaction($o_t);
 					$t_object_x_rep->set($va_rep);

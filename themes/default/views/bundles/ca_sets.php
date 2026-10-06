@@ -38,6 +38,8 @@ $vb_batch			= $this->getVar('batch');
 
 $vs_sort			=	((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
 $vb_read_only		=	((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_subject->tableName(), 'ca_sets') == __CA_BUNDLE_ACCESS_READONLY__));
+
+$dont_show_add	=caGetOption('dontShowAddButton', $settings, false);
 $vb_dont_show_del	=	((isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton'])) ? true : false;
 
 $vs_color 			= 	((isset($settings['colorItem']) && $settings['colorItem'])) ? $settings['colorItem'] : '';
@@ -177,7 +179,7 @@ foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) 
 		<input type="hidden" name="<?= $vs_id_prefix; ?>BundleList" id="<?= $vs_id_prefix; ?>BundleList" value=""/>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 <?php
-	if (!$vb_read_only) {
+	if (!$vb_read_only && !$dont_show_add) {
 ?>	
 		<div class='button labelInfo caAddItemButton'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $vs_add_label ? $vs_add_label : _t("Add relationship"); ?></a></div>
 <?php

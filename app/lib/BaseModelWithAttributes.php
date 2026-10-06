@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1669,6 +1669,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	public function getTypeList($pa_options=null) {
 		if(!is_array($pa_options)) { $pa_options = []; }
 		$ids_only = $pa_options['idsOnly'] ?? false;
+		$idnos_only = $pa_options['idnosOnly'] ?? false;
 		if (isset($pa_options['childrenOfCurrentTypeOnly']) && $pa_options['childrenOfCurrentTypeOnly']) {
 			$pa_options['item_id'] = $this->get('type_id');
 		}
@@ -1681,7 +1682,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		$t_list = new ca_lists();
 		
 		$va_list = $t_list->getItemsForList($type_list_code, $pa_options);
-		if ($ids_only) { 
+		if ($ids_only || $idnos_only) { 
 			CompositeCache::save($key, $va_list, 'typeListCodes');
 			return $va_list; 
 		}
@@ -1700,11 +1701,11 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		} else {
 			if (!($vn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD))) { return null; }
 		}
-		if (MemoryCache::contains($vn_type_id, 'baseModelTypeInstances')) {
-			return MemoryCache::fetch($vn_type_id, 'baseModelTypeInstances');
+		$key = $this->tableName()."::{$vn_type_id}}";
+		if (MemoryCache::contains($key, 'baseModelTypeInstances')) {
+			return MemoryCache::fetch($key, 'baseModelTypeInstances');
 		}
-		
-		MemoryCache::save($vn_type_id, $t_list_item = new ca_list_items($vn_type_id), 'baseModelTypeInstances');
+		MemoryCache::save($key, $t_list_item = new ca_list_items($vn_type_id), 'baseModelTypeInstances');
 		return ($t_list_item->getPrimaryKey()) ? $t_list_item : null;
 	}
 	# ------------------------------------------------------------------
@@ -1776,6 +1777,46 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		}
 		
 		return $t_list->getListAsHTMLFormElement($this->getTypeListCode(), $ps_name, $pa_attributes, array_merge($pa_options ?? [], ['value' => caGetOption('value', $pa_options, $this->get($this->getTypeFieldName()))]));
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Return list of valid child types for currently loaded row (or for the type_id specified in the first parameter).
+	 * List of child types is generated with respect to *_enforce_strict_type_hierarchy settings (strict, semi-strict and none)
+	 * and, if the "components" option is set, object component configuration.
+	 *
+	 * @param mixed $type_id
+	 * @param array $options Options include:
+	 *		components = for object types, return list including only child types that are configured as component types. [Default is false]
+	 *
+	 * @return array
+	 */ 
+	public function getValidChildTypes(mixed $type_id=null, ?array $options=null) : ?array {
+		$for_components = (bool)caGetOption('components', $options, false);
+		if(is_null($type_id)) { $type_id = $this->get('type_id'); }
+		
+		if ($t_type = $this->getTypeInstance($type_id)) {
+			$type_hierarchy_enforcement = $this->getAppConfig()->get($this->tableName().'_enforce_strict_type_hierarchy');
+						
+			switch($type_hierarchy_enforcement) {
+				case 0:
+				default:
+					$idnos = $this->getTypeList(['idnosOnly' => true]);
+					break;
+				case 1:
+					$idnos = $t_type->get('ca_list_items.children.idno', ['returnAsArray' => true]);
+					break;
+				case '~':
+					$idnos = $t_type->get('ca_list_items.descendants.idno', ['returnAsArray' => true]);
+					break;
+			}
+			
+			if($for_components && method_exists($this, 'getComponentTypes')) {
+				$component_types = $this->getComponentTypes();
+				$idnos = array_intersect($idnos, $component_types);
+			}
+			return $idnos;
+		}
+		return null;
 	}
 	# ------------------------------------------------------------------
 	// --- Forms
@@ -3827,29 +3868,31 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	 * We changed the name instead of overriding it so that we don't have to run
 	 * every single changed() call on a Bundlable through this function. Turns out it gets called a lot.
 	 *
-	 * @param $pm_element_code_or_id
+	 * @param mixed $element_code_or_id
 	 * @return bool
 	 */
-	public function attributeDidChange($pm_element_code_or_id) : ?bool {
-		$vs_code = ca_metadata_elements::getElementCodeForId($pm_element_code_or_id);
-		$vn_id = ca_metadata_elements::getElementID($pm_element_code_or_id);
+	public function attributeDidChange(mixed $element_code_or_id, ?array $options=null) : ?bool {
+		$code = ca_metadata_elements::getElementCodeForId($element_code_or_id);
+		$id = ca_metadata_elements::getElementID($element_code_or_id);
 
 		// not an element?
-		if(!$vs_code || (!$this->hasElement($vs_code, null, true))) { return null; }
+		if(!$code || (!$this->hasElement($code, null, true))) { return null; }
 
-		return isset($this->_FIELD_VALUE_DID_CHANGE['_ca_attribute_'.$vn_id]) ? $this->_FIELD_VALUE_DID_CHANGE['_ca_attribute_'.$vn_id] : false;
+		return $this->didChange('_ca_attribute_'.$id, $options);
 	}
 	# ------------------------------------------------------------------
 	/**
 	 * Did any attributes changed on this row, even if already saved?
 	 *
-	 * @param $pm_element_code_or_id
 	 * @return bool
 	 */
 	public function attributesDidChange() {
 		if(!is_array($cf = $this->_FIELD_VALUE_DID_CHANGE)) { return false; }
 		if(sizeof($cf) === 0) { return false; }
-		if (sizeof(array_filter(array_keys($cf), function($v) { return substr($v, 0, 14) === '_ca_attribute_'; })) > 0) { return true; }
+		
+		foreach($cf as $b) {
+			if (sizeof(array_filter(array_keys($b), function($v) { return substr($v, 0, 14) === '_ca_attribute_'; })) > 0) { return true; }
+		}
 		return false;
 	}
 	# -------------------------------------------------------
@@ -3859,11 +3902,11 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 	 * @param string $bundle
 	 * @return bool
 	 */
-	public function valueDidChange(string $bundle) : ?bool {
-		if(!is_null($ret = self::attributeDidChange($bundle))) {
+	public function valueDidChange(string $bundle, ?array $options=null) : ?bool {
+		if(!is_null($ret = self::attributeDidChange($bundle, $options))) {
 			return $ret;
 		}
-		return parent::valueDidChange($bundle);
+		return parent::valueDidChange($bundle, $options);
 	}
 	# --------------------------------------------------------------------------------
 	/**

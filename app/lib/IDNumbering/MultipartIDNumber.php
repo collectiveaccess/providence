@@ -358,7 +358,7 @@ class MultipartIDNumber extends IDNumber {
 							if(($v < 0) || ($v > 99)){
 								$element_errors[$ename] = _t("%1 must be a valid two-digit year", $info['description']);
 							}
-						} elseif ((($v < 1000) || ($v > ($tmp['year'] + 10))) || ($v != intval($v))) {
+						} elseif (($v != 0) && ((($v < 1000) || ($v > ($tmp['year'] + 10))) || ($v != intval($v)))) {	// Zero is allowed for "uncertain" years
 							$element_errors[$ename] = _t("%1 must be a valid year", $info['description']);
 						}
 					}

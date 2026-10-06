@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2019 Whirl-i-Gig
+ * Copyright 2019-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,10 +28,6 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
- */
-
-/**
- *
  */
 require_once(__CA_LIB_DIR__.'/Import/BaseDataReader.php');
 
@@ -63,11 +59,9 @@ class iDigBioDataReader extends BaseDataReader {
 		
 		$this->ops_title = _t('iDigBio data reader');
 		$this->ops_display_name = _t('iDigBio');
-		$this->ops_description = _t('Reads data from the iDigBio data service (http://idigbio.org) using the version 2 API');
+		$this->ops_description = _t('Reads data from the iDigBio data service (%1) using the version 2 API', 'http://idigbio.org');
 		
 		$this->opa_formats = array('idigbio');	// must be all lowercase to allow for case-insensitive matching
-		
-		
 	}
 	# -------------------------------------------------------
 	/**

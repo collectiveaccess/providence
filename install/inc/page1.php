@@ -93,7 +93,7 @@ $o_config = Configuration::load();
 ?>
 					<div class='profileNotes'>
 <?php
-						_p('More information about standard installation profiles is available in the CollectiveAccess <a href="https://docs.collectiveaccess.org" target="_blank">manual</a>.');
+						_p('More information about standard installation profiles is available in the CollectiveAccess <a href="%1" target="_blank">manual</a>.', 'https://docs.collectiveaccess.org');
 ?>
 					</div>
 				</div>

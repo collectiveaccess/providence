@@ -75,7 +75,7 @@ $_ca_attribute_settings['NumericAttributeValue'] = array(		// global
 		'width' => 60, 'height' => 1,
 		'default' => '',
 		'label' => _t('Regular expression to validate input with'),
-		'description' => _t('A Perl-format regular expression with which to validate the input. Input not matching the expression will be rejected. Do not include the leading and trailling delimiter characters (typically "/") in your expression. Leave blank if you don\'t want to use regular expression-based validation.')
+		'description' => _t('A Perl-format regular expression with which to validate the input. Input not matching the expression will be rejected. Do not include the leading and trailing delimiter characters (typically "/") in your expression. Leave blank if you don\'t want to use regular expression-based validation.')
 	),
 	'fieldWidth' => array(
 		'formatType' => FT_NUMBER,

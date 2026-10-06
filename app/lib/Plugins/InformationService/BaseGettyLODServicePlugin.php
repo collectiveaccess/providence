@@ -269,6 +269,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		$pb_recursive              = (bool) caGetOption( 'recursive', $pa_options, false );
 
 		if ( ! ( $o_graph = self::getURIAsRDFGraph( $ps_base_node ) ) ) {
+			CompositeCache::save( $vs_cache_key, null, 'GettyRDFLiterals', 60 * 60 * 2 );	// failed; wait 2 hours and hope Getty fixed it
 			return false;
 		}
 
@@ -282,6 +283,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		}
 
 		if ( ! is_array( $va_pull_graphs ) ) {
+			CompositeCache::save( $vs_cache_key, null, 'GettyRDFLiterals', 60 * 60 * 2 );	// failed; wait 2 hours and hope Getty fixed it
 			return false;
 		}
 

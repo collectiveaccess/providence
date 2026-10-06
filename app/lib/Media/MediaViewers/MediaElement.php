@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2025 Whirl-i-Gig
+ * Copyright 2016-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -78,7 +78,7 @@ class MediaElement extends BaseMediaViewer implements IMediaViewer {
 				
 				// Image above 
 				$viewer_image = null;
-				if ($image_version = caGetOption('show_image_in_viewer', $pa_data['display'], null)) {
+				if ($image_version = caGetOption('show_image_in_viewer', $pa_data['display'], null) && method_exists($t_subject, 'findRepresentations')) {
 					$image_reps = $t_subject->findRepresentations(['class' => 'image', 'version' => $image_version, 'checkAccess' => $pa_options['checkAccess']]);
 					
 					$rep = array_filter($image_reps, function($v) { return isset($v['is_primary']) && (bool)$v['is_primary']; });

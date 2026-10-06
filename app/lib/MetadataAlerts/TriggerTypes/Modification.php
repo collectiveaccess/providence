@@ -29,7 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
-
 namespace CA\MetadataAlerts\TriggerTypes;
 
 class Modification extends Base {
@@ -46,7 +45,6 @@ class Modification extends Base {
 				'width' => '670px', 'height' => 3,
 				'default' => '',
 				'label' => _t('Expression'),
-				'suffix' => _t(''),
 				'description' => _t('Expression to evaluate when record is saved.')
 			]
 		];
@@ -166,7 +164,7 @@ class Modification extends Base {
 		return [
 			'_preferred_labels' => _t('Preferred labels'),
 			'_nonpreferred_labels' => _t('Non-preferred labels'),
-			'_intrinsic_idno' => _t('Identifer (idno)')
+			'_intrinsic_idno' => _t('Identifier (idno)')
 		];
 	}
 }

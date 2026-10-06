@@ -340,7 +340,7 @@ class ca_data_exporter_items extends BaseModel {
 				_t('no') => 0
 			),
 			'label' => _t('Convert codes to display text'),
-			'description' => _t('If set, id values refering to foreign keys are returned as preferred label text in the current locale.')
+			'description' => _t('If set, id values referring to foreign keys are returned as preferred label text in the current locale.')
 		);
 
 		$va_settings['convertCodesToIdno'] = array(
@@ -354,7 +354,7 @@ class ca_data_exporter_items extends BaseModel {
 				_t('no') => 0
 			),
 			'label' => _t('Convert codes to idno'),
-			'description' => _t('If set, id values refering to foreign keys are returned as idno.')
+			'description' => _t('If set, id values referring to foreign keys are returned as idno.')
 		);
 
 		$va_settings['returnIdno'] = array(
@@ -533,7 +533,7 @@ class ca_data_exporter_items extends BaseModel {
 			'multiple' => 1,
 			'default' => '',
 			'label' => _t('Filter types'),
-			'description' => _t('Filter returned list item hierarachy returning only items with the specified types. Only valid for export of list item attributes.')
+			'description' => _t('Filter returned list item hierarchy returning only items with the specified types. Only valid for export of list item attributes.')
 		);
 
 		$va_settings['restrictToRelationshipTypes'] = array(

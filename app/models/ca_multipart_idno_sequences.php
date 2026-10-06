@@ -44,7 +44,7 @@ BaseModel::$s_ca_models_definitions['ca_multipart_idno_sequences'] = array(
 				'DISPLAY_WIDTH' => 255, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'Identifer stub', 'DESCRIPTION' => 'Stub of identifier to use as basis of sequence (eg. if you are generating accession numbers 2008.004.001, 2008.004.002, 2008.004.003, etc. then the stub value is 2008.004)',
+				'LABEL' => 'Identifier stub', 'DESCRIPTION' => 'Stub of identifier to use as basis of sequence (eg. if you are generating accession numbers 2008.004.001, 2008.004.002, 2008.004.003, etc. then the stub value is 2008.004)',
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'format' => array(

@@ -365,7 +365,7 @@ class ExternalExportManager {
 		
 			try {
 				$plugin->process($destination, $files, ['logLevel' => caGetOption('logLevel', $options, null)]);
-				$this->log->logDebug(_t('Sent %1 files for for target %2 via %3', sizeof($files), $target, $transport));
+				$this->log->logDebug(_t('Sent %1 files for target %2 via %3', sizeof($files), $target, $transport));
 			} catch (Exception $e) {
 				$this->log->logError(_t('Could not send %1 files for target %2 via %3: %4', sizeof($files), $target, $transport, $e->getMessage()));	
 				return false;

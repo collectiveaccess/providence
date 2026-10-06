@@ -806,7 +806,7 @@ function caEditorPrintSetItemsControls($view) {
 	// Generate print options overlay
 	$buf = $view->render('set_download_options_html.php');    
 	$buf .= "<div id='printButton'>
-		<a href='#' onclick='return caShowSummaryDownloadOptionsPanel();'>".caNavIcon(__CA_NAV_ICON_PDF__, 2)."</a>
+		<a href='#' onclick='return caShowSummaryDownloadOptionsPanel();'>".caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 2)."</a>
 			<script type='text/javascript'>
 					function caShowSummaryDownloadOptionsPanel() {
 						caSummaryDownloadOptionsPanel.showPanel();

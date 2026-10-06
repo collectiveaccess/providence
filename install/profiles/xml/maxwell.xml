@@ -34884,7 +34884,7 @@ A Closed loan is completed and inactive.</setting>
             <placement code="idno1">
               <bundle>idno</bundle>
               <settings>
-                <setting name="label" locale="en_US">Identifer</setting>
+                <setting name="label" locale="en_US">Identifier</setting>
               </settings>
             </placement>
             <placement code="project_number">

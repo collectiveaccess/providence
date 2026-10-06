@@ -188,7 +188,7 @@ class ca_data_importer_items extends BaseModel {
 			'default' => '',
 			'options' => ca_data_importer_items::getAvailableRefineries(),
 			'label' => _t('Refineries'),
-			'description' => _t('Select the refinery that preforms the correct function to alter your data source as it maps to CollectiveAccess.')
+			'description' => _t('Select the refinery that performs the correct function to alter your data source as it maps to CollectiveAccess.')
 		);
 		$settings['original_values'] = array(
 			'formatType' => FT_TEXT,
@@ -344,7 +344,7 @@ class ca_data_importer_items extends BaseModel {
 			'takesLocale' => false,
 			'default' => 0,
 			'label' => _t('Skip group if not value'),
-			'description' => _t('Skip all of the elements in the group if value for this element is not equal to any of the specified values(s).')
+			'description' => _t('Skip all of the elements in the group if value for this element is not equal to any of the specified value(s).')
 		);
 		$settings['skipGroupIfExpression'] = array(
 			'formatType' => FT_TEXT,
@@ -555,7 +555,7 @@ class ca_data_importer_items extends BaseModel {
 			'width' => 40, 'height' => 4,
 			'takesLocale' => false,
 			'default' => '',
-			'label' => _t('Apply one or more tranformations a source value prior to import.'),
+			'label' => _t('Apply one or more transformations to a source value prior to import.'),
 			'description' => _t('A list of data transformations, each with a list of transformation-specific options.')
 		);
 		$settings['maxLength'] = array(

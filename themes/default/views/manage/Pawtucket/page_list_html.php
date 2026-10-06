@@ -43,7 +43,7 @@ $site_page_template_menu = $page_select ? '<div class="sf-small-menu form-header
 	});
 	
 	function _navigateToNewForm(template_id) {
-		document.location = '<?= caNavUrl($this->request, 'manage/site_pages', 'SitePageEditor', 'Edit', array('page_id' => 0, 'template_id' => '')); ?>' + template_id;
+		document.location = '<?= caNavUrl($this->request, 'manage/site_pages', 'SitePageEditor', 'Edit', array('page_id' => 0, 'template_id' => ''), ['allowEmptyParameters' => true]); ?>' + template_id;
 	}
 </script>
 <div class="sectionBox">

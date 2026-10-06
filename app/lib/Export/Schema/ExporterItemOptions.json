@@ -132,7 +132,7 @@
             }
         },
         "filterTypes": {
-            "description": "Filter returned list item hierarachy returning only items with the specified types. Only valid for export of list item attributes.",
+            "description": "Filter returned list item hierarchy returning only items with the specified types. Only valid for export of list item attributes.",
             "type": "array",
             "items": {
                 "type": "string"
