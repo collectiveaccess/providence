@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021-2025 Whirl-i-Gig
+ * Copyright 2021-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -87,6 +87,11 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 							'description' => _t('Record identifier. Either a integer primary key or alphanumeric idno value.')
 						],
 						[
+							'name' => 'filterNonPrimaryRepresentations',
+							'type' => Type::boolean(),
+							'description' => _t('Only return primary media.')
+						],
+						[
 							'name' => 'bundles',
 							'type' => Type::listOf(Type::string()),
 							'description' => _t('Bundles to return.')
@@ -100,7 +105,7 @@ class ItemController extends \GraphQLServices\GraphQLServiceController {
 						$rec_pk = $rec->primaryKey();
 						
 						$bundles = \GraphQLServices\Helpers\extractBundleNames($rec, $args);
-						$data = \GraphQLServices\Helpers\fetchDataForBundles($rec, $bundles, []);
+						$data = \GraphQLServices\Helpers\fetchDataForBundles($rec, $bundles, ['filterNonPrimaryRepresentations' => $args['filterNonPrimaryRepresentations'] ?? false]);
 						
 						return [
 							'table' => $rec->tableName(), 

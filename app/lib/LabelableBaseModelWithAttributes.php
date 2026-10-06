@@ -3794,9 +3794,9 @@ class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implement
 	 * @param string $bundle
 	 * @return bool
 	 */
-	public function valueDidChange(string $bundle) : ?bool {
+	public function valueDidChange(string $bundle, ?array $options=null) : ?bool {
 		// TODO: handle changes on labels?
-		return parent::valueDidChange($bundle);
+		return parent::valueDidChange($bundle, $options);
 	}
 	# ------------------------------------------------------------------	
 }

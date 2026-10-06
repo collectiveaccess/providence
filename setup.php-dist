@@ -195,16 +195,15 @@ if (!defined("__CA_HC_INFO_KEY__")) {
 # __CA_CACHE_BACKEND__ = caching method to use
 # 
 # The default file-based caching should work acceptably in many setups.
-# Alternate schema may be used, including redis, sqlite, memcached or php APC. All require
+# Alternate schema may be used, including redis, memcached or php APC. All require
 # additional software be present on your server, and in general all will provide 
 # better performance than file-based caching.
 
-# Options are: 'file', 'memcached', 'redis', 'apc' and 'sqlite'
+# Options are: 'file', 'memcached', 'redis', 'apc'
 # memcached, redis and apc require PHP extensions that are not
 # part of the standard CollectiveAccess configuration check. If you do
 # configure them here and your PHP installation doesn't have the required extension you
-# may see critical errors. sqlite requires the PHP PDO extension and a working install
-# of sqlite. This is not guaranteed to be present on your server, but often is.
+# may see critical errors. This is not guaranteed to be present on your server, but often is.
 if (!defined('__CA_CACHE_BACKEND__')) { 
 	define('__CA_CACHE_BACKEND__', 'file');
 }

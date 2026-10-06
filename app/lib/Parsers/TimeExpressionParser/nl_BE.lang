@@ -86,14 +86,17 @@ bornQualifier = [born, b, b.]
 # Text to indicate century (as in "20th century")
 centuryIndicator = [eeuw]
 
-# Text to indicate decdae (as in "1920s")
+# Text to indicate decade (as in "1920s")
 decadeIndicator = [s]
 
 # list of numeric suffixes, starting with the one for zero
 # (eg. 0th, 1st, 2nd, 3rd would be a list like so: [th, st, nd, rd])
-# NL: irregular up until 20 - afterwards the default is "ste"
-ordinalSuffixes = [de, ste, de, de, de, de, de, de, ste, de, de, de, de, de, de, de, de, de, de, de, ste]
+# NL: irregular up until 20 - afterwards the default is "ste" - highjacked zero because recurring zeros follow ste, only first 'zero' zero has 'de'
+ordinalSuffixes = [ste, ste, de, de, de, de, de, de, ste, de, de, de, de, de, de, de, de, de, de, de, ste]
 ordinalSuffixDefault = ste
+#ordinalSuffixExceptions = {18=de,24=ste}
+ordinalSuffixLiteralExceptions = {0=de}
+ordinalSuffixRecycleBase=100
 
 # in delimited dates (ex. 12/10/2009) is the first number a month or a day?
 # set to "0" for European style dates (day comes first); "1" for American-style dates (month comes first)
@@ -101,7 +104,7 @@ monthComesFirstInDelimitedDate = 0
 
 # character(s) to append to day in full (not delimited) date
 # eg. in the date "1. February 2009", "." is the daySuffix
-# Note: you can put arbitrary text here - only punctuation
+# Note: you cannot put arbitrary text here - only punctuation
 daySuffix =
 
 # Definite articles

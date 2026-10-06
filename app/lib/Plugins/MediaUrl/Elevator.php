@@ -38,7 +38,7 @@ class Elevator Extends BaseMediaUrlPlugin {
 	 *
 	 */
 	public function __construct() {
-		$this->description = _t('Parses Elevator URLs (https://it.umn.edu/services-technologies/elevator)');
+		$this->description = _t('Parses Elevator URLs (%1)', 'https://it.umn.edu/services-technologies/elevator');
 	}
 	# ------------------------------------------------
 	/**

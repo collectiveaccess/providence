@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2023 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,15 +36,15 @@ $read_only				= (isset($settings['readonly']) && $settings['readonly']);
 if (!($add_label 		= $this->getVar('add_label'))) { $add_label = _t('Add component'); }
 
 $container_template		= caGetOption('containerTemplate', $settings, null);
-if(!$container_template) { $container_template = $t_subject->getAppConfig()->get('ca_objects_component_container_template'); }
+if(!$container_template) { $container_template = $t_subject->getAppConfig()->get(['ca_objects_'.$t_instance->getTypeCode().'_component_container_template', 'ca_objects_'.$t_subject->getTypeCode().'_component_container_template', 'ca_objects_component_container_template']); }
 
 $display_template		= caGetOption('displayTemplate', $settings, null);
-if(!$display_template) { $display_template = $t_subject->getAppConfig()->get('ca_objects_component_display_template'); }
+if(!$display_template) { $display_template = $t_subject->getAppConfig()->get(['ca_objects_'.$t_instance->getTypeCode().'_component_display_template', 'ca_objects_'.$t_subject->getTypeCode().'_component_display_template', 'ca_objects_component_display_template']); }
 
 $current_display_template		= caGetOption('currentDisplayTemplate', $settings, null);
-if(!$current_display_template) { $current_display_template = $t_subject->getAppConfig()->get('ca_objects_component_current_display_template'); }
+if(!$current_display_template) { $current_display_template = $t_subject->getAppConfig()->get(['ca_objects_'.$t_instance->getTypeCode().'_component_current_display_template', 'ca_objects_'.$t_subject->getTypeCode().'_component_current_display_template', 'ca_objects_component_current_display_template']); }
 
-$num_columns			= caGetOption('numColumns', $settings, $t_subject->getAppConfig()->get('ca_objects_component_num_columns'));
+$num_columns			= caGetOption('numColumns', $settings, $t_subject->getAppConfig()->get(['ca_objects_c'.$t_instance->getTypeCode().'_omponent_num_columns', 'ca_objects_'.$t_subject->getTypeCode().'_component_num_columns', 'ca_objects_component_num_columns']));
 if(!$num_columns) { $num_columns = 1; }
 
 $component_list  		= $this->getVar('component_list');

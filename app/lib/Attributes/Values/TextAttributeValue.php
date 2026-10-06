@@ -59,7 +59,7 @@ $_ca_attribute_settings['TextAttributeValue'] = array(		// global
 		'width' => 60, 'height' => 1,
 		'default' => '',
 		'label' => _t('Regular expression to validate input with'),
-		'description' => _t('A Perl-format regular expression with which to validate the input. Input not matching the expression will be rejected. Do not include the leading and trailling delimiter characters (typically "/") in your expression. Leave blank if you don\'t want to use regular expression-based validation.')
+		'description' => _t('A Perl-format regular expression with which to validate the input. Input not matching the expression will be rejected. Do not include the leading and trailing delimiter characters (typically "/") in your expression. Leave blank if you don\'t want to use regular expression-based validation.')
 	),
 	'fieldWidth' => array(
 		'formatType' => FT_NUMBER,
@@ -229,7 +229,7 @@ $_ca_attribute_settings['TextAttributeValue'] = array(		// global
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
 		'default' => '',
-		'width' => 90, 'height' => 4,
+		'width' => '670px', 'height' => 12,
 		'label' => _t('Dependent value template'),
 		'validForNonRootOnly' => 1,
 		'description' => _t('Template to be used to format content for dependent values. Template should reference container values using their bare element code prefixed with a caret (^). Do not include the table or container codes.')
@@ -447,6 +447,20 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText, Strikethrough, 
 									Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage, ResizableHeight
 								],
+								htmlSupport: {
+									allow: [
+										{
+											name: 'a',
+											attributes: ['name', 'id'] 
+										},
+										{
+											name: /(div|p|h[1-6])/,
+											attributes: ['id', 'class']
+										},
+										{ name: 'details' },
+										{ name: 'summary' }
+									]
+								},
 								toolbar: {
 									items: ".json_encode(caGetCK5Toolbar()).",
 									shouldNotGroupWhenFull: true

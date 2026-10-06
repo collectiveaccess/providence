@@ -178,7 +178,7 @@ trait CLIUtilsConfiguration {
 		return array(
 			"profile-name|n=s" => _t('Name of the profile to install (filename in profiles directory, minus the .xml extension).'),
 			"profile-directory|p=s" => _t('Directory to get profile. Default is: "%1". This directory must contain the profile.xsd schema so that the installer can validate the installation profile.', __CA_BASE_DIR__ . '/install/profiles/xml'),
-			"admin-email|e=s" => _t('Email address of the system administrator (user@domain.tld).'),
+			"admin-email|e=s" => _t('Email address of the system administrator (%1).', 'user@domain.tld'),
 			"overwrite" => _t('Flag must be set in order to overwrite an existing installation.  Also, the __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ global must be set to a true value.'),
 			"debug|d" => _t('Debug flag for installer.'),
 			"skip-roles|s" => _t('Skip Roles. Default is false, but if you have many roles and access control enabled then install may take some time')

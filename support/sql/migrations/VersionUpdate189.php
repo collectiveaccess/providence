@@ -74,7 +74,7 @@ class VersionUpdate189 extends BaseVersionUpdater
 	 */
 	public function getPostupdateMessage()
 	{
-		return _t("Sucessfully synchronized database schema");
+		return _t("Successfully synchronized database schema");
 	}
 	# -------------------------------------------------------
 

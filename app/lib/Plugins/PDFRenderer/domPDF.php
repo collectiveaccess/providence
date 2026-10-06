@@ -92,7 +92,7 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugin Implements IWLPlugPD
 			$this->renderer->render();
 		} catch(TypeError $e) {
 			$log = caGetLogger();
-			$log->logError(_('[domPDF] PDF rendering failed. Is font directory writeable?'));
+			$log->logError(_t('[domPDF] PDF rendering failed. Is the font directory writeable?'));
 			return null;
 		}
 		
@@ -127,7 +127,7 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugin Implements IWLPlugPD
 			$this->renderer->render();
 		} catch(TypeError $e) {
 			$log = caGetLogger();
-			$log->logError(_('[domPDF] PDF rendering failed. Is font directory writeable?'));
+			$log->logError(_t('[domPDF] PDF rendering failed. Is the font directory writeable?'));
 			return null;
 		}
 		

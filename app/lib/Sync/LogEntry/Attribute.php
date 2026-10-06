@@ -69,7 +69,7 @@ class Attribute extends Base {
 
 			$vs_attribute_guid = $va_snapshot['attribute_guid'];
 			if(!($va_guid_info = \ca_guids::getInfoForGUID($vs_attribute_guid))) {
-				throw new InvalidLogEntryException(_t("Couldnt find ca_attributes record for guid %1.", $vs_attribute_guid));
+				throw new InvalidLogEntryException(_t("Couldn't find ca_attributes record for guid %1.", $vs_attribute_guid));
 			}
 		}
 	}

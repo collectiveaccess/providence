@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2023-2025 Whirl-i-Gig
+ * Copyright 2023-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,16 +37,33 @@ trait CLIUtilsReplication {
 	 */
 	public static function replicate_data($po_opts=null) {
 		require_once(__CA_LIB_DIR__.'/Sync/Replicator.php');
+		
+		$source = $po_opts->getOption('source');
+		$processes = (int)$po_opts->getOption('processes');
+		$multiple = (bool)$po_opts->getOption('multiple');
 
 		$o_replicator = new Replicator();
-		$o_replicator->replicate();
+		
+		$options = [];
+		if($multiple) { $options['multiple'] = true; }
+		if($source) { $options['source'] = $source; }
+		if($processes > 1) {
+			$options['processes'] = $processes; 
+			$o_replicator->replicateMultiple($options);
+		} else {
+			$o_replicator->replicate($options);
+		}
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
 	public static function replicate_dataParamList() {
-		return array();
+		return [
+			"source|s=s" => _t('Source system'),
+			"processes|b=s" => _t('Run replication using multiple processes. Value is the maximum number of processes to run simultaneously.'),
+			"multiple|m=s" => _t('Allow multiple replication processes to run'),
+		];
 	}
 	# -------------------------------------------------------
 	/**

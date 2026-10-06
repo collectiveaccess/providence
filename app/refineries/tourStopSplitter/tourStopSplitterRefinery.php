@@ -33,7 +33,7 @@ class tourStopSplitterRefinery extends BaseRefinery {
 	public function __construct() {
 		$this->ops_name = 'tourStopSplitter';
 		$this->ops_title = _t('Tour stop splitter');
-		$this->ops_description = _t('Provides several tourstop location-related import functions.');
+		$this->ops_description = _t('Provides several tour stop location-related import functions.');
 		
 		$this->opb_returns_multiple_values = true;
 		$this->opb_supports_relationships = true;

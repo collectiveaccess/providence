@@ -153,12 +153,12 @@ create table ca_list_items
    list_id                        smallint unsigned              not null,
    type_id                        int unsigned                   null,
    idno                           varchar(255)                   not null,
-   idno_sort                      varchar(255)                   not null,
+   idno_sort                      varchar(768)                   not null default '',
    idno_sort_num                  bigint                         not null default 0,
    item_value                     varchar(255)                   not null,
-   `rank`                           int unsigned              not null default 0,
-   acl_inherit_from_parent         tinyint unsigned              not null default 0,
-   access_inherit_from_parent      tinyint unsigned              not null default 0,
+   `rank`                         int unsigned                   not null default 0,
+   acl_inherit_from_parent        tinyint unsigned               not null default 0,
+   access_inherit_from_parent     tinyint unsigned               not null default 0,
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
    is_enabled                     tinyint unsigned               not null default 0,
@@ -393,7 +393,7 @@ create table ca_entities
    source_id                      int unsigned,
    type_id                        int unsigned                   not null,
    idno                           varchar(255)                   not null,
-   idno_sort                      varchar(255)                   not null,
+   idno_sort                      varchar(768)                   not null default '',
    idno_sort_num                  bigint                         not null default 0,
    is_template                    tinyint unsigned               not null default 0,
    commenting_status              tinyint unsigned               not null default 0,
@@ -566,7 +566,7 @@ create table ca_storage_locations
    parent_id                      int unsigned,
    type_id                        int unsigned,
    idno                           varchar(255)                   not null,
-   idno_sort                      varchar(255)                   not null,
+   idno_sort                      varchar(768)                   not null default '',
    idno_sort_num                  bigint                         not null default 0,
    is_template                    tinyint unsigned               not null default 0,
    view_count                     int unsigned                   not null default 0,
@@ -642,7 +642,7 @@ create table ca_object_lots
    parent_id                      int unsigned,
    lot_status_id                  int unsigned                   not null,
    idno_stub                      varchar(255)                   not null,
-   idno_stub_sort                 varchar(255)                   not null,
+   idno_stub_sort                 varchar(768)                   not null default '',
    idno_stub_sort_num             bigint                         not null default 0,
    is_template                    tinyint unsigned               not null default 0,
    commenting_status              tinyint unsigned               not null default 0,
@@ -745,7 +745,7 @@ create table ca_object_representations
    locale_id                      smallint unsigned,
    type_id                        int unsigned                   not null,
    idno                           varchar(255)                   not null,
-   idno_sort                      varchar(255)                   not null,
+   idno_sort                      varchar(768)                   not null default '',
    idno_sort_num                  bigint                         not null default 0,
    md5                            varchar(32)                    not null,
    mimetype                       varchar(255)                   null,
@@ -943,7 +943,7 @@ create table ca_occurrences
    locale_id                      smallint unsigned,
    type_id                        int unsigned                   not null,
    idno                           varchar(255)                   not null,
-   idno_sort                      varchar(255)                   not null,
+   idno_sort                      varchar(768)                   not null default '',
    idno_sort_num                  bigint                         not null default 0,
    is_template                    tinyint unsigned               not null default 0,
    commenting_status              tinyint unsigned               not null default 0,
@@ -1059,7 +1059,7 @@ create table ca_collections
    locale_id                      smallint unsigned,
    type_id                        int unsigned                   not null,
    idno                           varchar(255)                   not null,
-   idno_sort                      varchar(255)                   not null,
+   idno_sort                      varchar(768)                   not null default '',
    idno_sort_num                  bigint                         not null default 0,
    is_template                    tinyint unsigned               not null default 0,
    commenting_status              tinyint unsigned               not null default 0,
@@ -1206,7 +1206,7 @@ create table ca_places
    source_id                      int unsigned,
    hierarchy_id                   int unsigned                   not null,
    idno                           varchar(255)                   not null,
-   idno_sort                      varchar(255)                   not null,
+   idno_sort                      varchar(768)                   not null default '',
    idno_sort_num                  bigint                         not null default 0,
    is_template                    tinyint unsigned               not null default 0,
    commenting_status              tinyint unsigned               not null default 0,
@@ -1368,7 +1368,7 @@ create table ca_loans (
    type_id                        int unsigned                   not null,
    locale_id                      smallint unsigned              null,
    idno                           varchar(255)                   not null,
-   idno_sort                      varchar(255)                   not null,
+   idno_sort                      varchar(768)                   not null default '',
    idno_sort_num                  bigint                         not null default 0,
    is_template                    tinyint unsigned               not null default 0,
    view_count                     int unsigned                   not null default 0,
@@ -1477,7 +1477,7 @@ create table ca_movements (
    type_id                        int unsigned                   not null,
    locale_id                      smallint unsigned              null,
    idno                           varchar(255)                   not null,
-   idno_sort                      varchar(255)                   not null,
+   idno_sort                      varchar(768)                   not null default '',
    idno_sort_num                  bigint                         not null default 0,
    is_template                    tinyint unsigned               not null default 0,
    view_count                     int unsigned                   not null default 0,
@@ -2079,7 +2079,7 @@ create table ca_objects
    view_count                     int unsigned                   not null default 0,
    type_id                        int unsigned                   not null,
    idno                           varchar(255)                   not null,
-   idno_sort                      varchar(255)                   not null,
+   idno_sort                      varchar(768)                   not null default '',
    idno_sort_num                  bigint                         not null default 0,
    acquisition_type_id            int unsigned,
    item_status_id                 int unsigned,
@@ -4757,6 +4757,7 @@ create table ca_editor_uis (
 	editor_code varchar(100) null,
 	color char(6) null,
 	icon longblob not null,
+    settings longtext not null,
 	
 	primary key 				(ui_id),
 	index i_user_id				(user_id),
@@ -5015,7 +5016,7 @@ create table ca_sets (
     tagging_status tinyint unsigned not null default 0,
     rating_status tinyint unsigned not null default 0,
 	set_code    varchar(100) null,
-	set_code_sort varchar(100) null,
+	set_code_sort varchar(768) null,
 	table_num	tinyint unsigned not null,
 	access		tinyint unsigned not null default 0,	
 	status		tinyint unsigned not null default 0,
@@ -5191,6 +5192,24 @@ create table ca_sets_x_anonymous_access (
 	unique index u_name				(set_id, name),
 	
    constraint fk_ca_sets_x_anonymous_access_set_id foreign key (set_id)
+      references ca_sets (set_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+
+/*==========================================================================*/
+create table ca_set_type_restrictions (
+   restriction_id                 int unsigned                   not null AUTO_INCREMENT,
+   table_num                      tinyint unsigned               not null,
+   type_id                        int unsigned,
+   set_id                          int unsigned                   not null,
+   include_subtypes               tinyint unsigned               not null default 0,
+   settings                       longtext                       not null,
+   `rank`                           smallint unsigned              not null default 0,
+   primary key (restriction_id),
+   
+   index i_set_id				(set_id),
+   index i_type_id				(type_id),
+   constraint fk_ca_set_type_restrictions_set_id foreign key (set_id)
       references ca_sets (set_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
@@ -5662,9 +5681,9 @@ create table ca_tour_stops
    tour_id                        int unsigned              not null,
    type_id                        int unsigned              null,
    idno                           varchar(255)              not null,
-   idno_sort                      varchar(255)              not null,
-   idno_sort_num                  bigint                         not null default 0,
-   `rank`                           int unsigned              not null default 0,
+   idno_sort                      varchar(768)              not null default '',
+   idno_sort_num                  bigint                    not null default 0,
+   `rank`                           int unsigned            not null default 0,
    view_count                     int unsigned              not null default 0,
    hier_left                      decimal(30,20)            not null,
    hier_right                     decimal(30,20)            not null,
@@ -7084,9 +7103,11 @@ create table ca_sql_search_word_index (
   word_id int(10) unsigned not null,
   boost tinyint unsigned not null default 1,
   access tinyint unsigned not null default 1,
-  word_index tinyint unsigned not null default 0,
-  word_count tinyint unsigned not null default 0,
-  field_index tinyint unsigned not null default 0,
+  word_index mediumint unsigned not null default 0,
+  word_count mediumint unsigned not null default 0,
+  field_index mediumint unsigned not null default 0,
+  timecode_start decimal(10,3) not null default 0,
+  timecode_end decimal(10,3) not null default 0,
   primary key (index_id)
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
@@ -7102,6 +7123,8 @@ CREATE index i_index_field_num on ca_sql_search_word_index(word_id, table_num, f
 CREATE index i_index_delete ON ca_sql_search_word_index(table_num, row_id, field_table_num, field_num);
 CREATE INDEX i_index_field_num_container on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, field_container_id, rel_type_id, row_id, access, boost, field_index);
 CREATE INDEX i_field_word on ca_sql_search_word_index(field_num, field_table_num, table_num, word_id, row_id);
+CREATE INDEX i_timecode_start on ca_sql_search_word_index(timecode_start, timecode_end);
+CREATE INDEX i_timecode_end on ca_sql_search_word_index(timecode_end);
 
 /*==========================================================================*/
 create table ca_sql_search_ngrams (
@@ -7802,8 +7825,8 @@ create table ca_site_page_media (
   title					varchar(255)		not null,
   caption			    text				not null,
   idno                  varchar(255)        not null,
-  idno_sort             varchar(255)        not null,
-  idno_sort_num                  bigint                         not null default 0,
+  idno_sort             varchar(768)        not null default '',
+  idno_sort_num         bigint              not null default 0,
   media        			longblob            not null,
   media_metadata        longblob            not null,
   media_content			longtext			not null,
@@ -8022,4 +8045,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (211, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (215, unix_timestamp());

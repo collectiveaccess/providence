@@ -454,7 +454,7 @@ class Installer {
 	    // (Eg. those for hideIfSelected_*)
 	    if (sizeof($this->metadata_element_deferred_settings_processing)) {
 	        foreach($this->metadata_element_deferred_settings_processing as $element_code => $settings) {
-	            if (!($t_element = \ca_metadata_elements::getInstance($element_code))) { continue; }
+	            if (!($t_element = \ca_metadata_elements::getInstance($element_code, ['noCache' => true]))) { continue; }
 	            $available_settings = $t_element->getAvailableSettings();
 	            foreach($settings as $setting_name => $setting_values) {
 	                if (!isset($available_settings[$setting_name])) { continue; }
@@ -465,8 +465,8 @@ class Installer {
 	                    $t_element->setSetting($setting_name, array_shift($setting_values));
 	                }
 	            }
+	      		$t_element->update();
 	        }
-	        $t_element->update();
 	    } 
 	    
 		// generate system GUID -- used to identify systems in data sync protocol
@@ -675,7 +675,7 @@ class Installer {
 				}
 				if($list['items']) {
 					if(!$this->processListItems($t_list, $list['items'], null)) {
-						return false;
+						continue;
 					}
 				}
 			}
@@ -788,7 +788,7 @@ class Installer {
 
 					if (!($table_num = \Datamodel::getTableNum($restriction['table']))) {
 						$this->addError('processMetadataElements', _t("Invalid table %1 specified for restriction %2 in element %3", $restriction['table'], $restriction_code, $element_code));
-						return false;
+						continue;
 					}
 					$t_instance = \Datamodel::getInstance((string)$restriction['table']);
 					$type_id = null;
@@ -823,6 +823,8 @@ class Installer {
 				}
 			}
 		}
+		\MemoryCache::flush('ElementInstances');
+		\CompositeCache::flush('metadataElements');
 		return true;
 	}
 	# --------------------------------------------------
@@ -835,7 +837,7 @@ class Installer {
 		$this->logStatus(_t('Processing metadata element with code %1', $element_code));
 
 		// try to load element by code for potential update. codes are unique, globally
-		if(!($t_md_element = \ca_metadata_elements::getInstance($element_code))) {
+		if(!($t_md_element = \ca_metadata_elements::getInstance($element_code, ['noCache' => true]))) {
 			$t_md_element = new \ca_metadata_elements();
 		}
 
@@ -1267,7 +1269,8 @@ class Installer {
 					
 					$this->logStatus(_t('Adding bundle %1 with code %2 for screen with code %3 and user interface with code %4', $bundle, $placement_code, $screen_idno, $ui_code));
 
-					if (!($t_placement = $t_ui_screens->addPlacement($bundle, $placement_code, [], null, ['additional_settings' => $available_bundles[$bundle_proc]['settings'], 'returnInstance' => true]))) {
+					$abundles = $available_bundles[$bundle_proc]['settings'] ?? $available_bundles[$bundle]['settings'] ?? null;
+					if (!($t_placement = $t_ui_screens->addPlacement($bundle, $placement_code, [], null, ['additional_settings' => $abundles, 'returnInstance' => true]))) {
 						$this->logStatus(join("; ", $t_ui_screens->getErrors()));
 					} else {
 						$settings = $this->_processSettings($t_placement, $placement['settings'], [
@@ -2523,9 +2526,7 @@ class Installer {
 					}
 
 					if (is_object($t_instance)) {
-						foreach($settings_list as $setting_name => $setting_value) {
-							$t_instance->setSetting($setting_name, $setting_value);
-						}
+						$t_instance->setSettings($settings_list);
 					}
 				}
 			}

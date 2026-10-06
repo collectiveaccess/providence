@@ -311,6 +311,7 @@ class BaseSettings {
 					$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');	
 					$o_view->setVar('id', $vs_input_id);	
 					$o_view->setVar('defaultPath', $vs_value);
+					$o_view->setVar('allowFileSelection', (bool)($va_properties['allowFileSelection'] ?? false));
 					
 					$vs_return .= $o_view->render('settings_directory_browser_html.php');
 				}

@@ -253,7 +253,7 @@ var caUI = caUI || {};
 				// set locale_id for new bundles
 				// find unused locale
 				let localeList = jQuery.makeArray(jQuery(that.container + " select." + that.localeClassName + ":first option"));
-				for(i=0; i < localeList.length; i++) {
+				for(let i=0; i < localeList.length; i++) {
 					if (jQuery(that.container + " select." + that.localeClassName + " option:selected[value=" + localeList[i].value + "]").length > 0) {
 						continue;
 					}

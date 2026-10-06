@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-/**
- *
- */ 
 require_once(__CA_LIB_DIR__.'/ApplicationVars.php'); 	
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 require_once(__CA_APP_DIR__.'/helpers/importHelpers.php');
@@ -146,12 +142,12 @@ abstract class BaseRefinery {
 	 * @param string $placeholder An expression with at least one placeholder. (Eg. "^1"). Can also be a text expression with embedded placeholders (Eg. "This is ^1 and this is ^2). The placeholders are valid specifiers for the data reader being used prefixed with a caret ("^"). For flat formats like Excel, they will look like ^1, ^2, etc. For XML formats they will be Xpath. Eg. ^/teiHeader/encodingDesc/projectDesc
 	 * @param array $source_data An array of data to use in substitutions. Array is indexed by placeholder name *without* the leading caret.
 	 * @param array $item The mapping item information array containing settings for the current mapping.
-	 * @param int $index The index of the value to return. For non-repeating values this should be omitted or set to zero. For repeating values, this is a zero-based index indicating which value is returned. If a value for the specified index does not exist null will be returned. If the index is set to null then an array with all values is returned.
+	 * @param int $value_index The index of the value to return. For non-repeating values this should be omitted or set to zero. For repeating values, this is a zero-based index indicating which value is returned. If a value for the specified index does not exist null will be returned. If the index is set to null then an array with all values is returned.
 	 * @param array $options An array of options. Options include:
 	 *		reader = An instance of BaseDataReader. Will be used to pull values for placeholders that are not defined in $source_data. This is useful for formats like XML where placeholders may be arbitrary XPath expressions that must be executed rather than parsed. [Default is null]
 	 *		returnAsString = Return array of repeating values as string using delimiter. Has effect only is $index parameter is set to null. [Default is false]
 	 *		delimiter = Delimiter to join array values with when returnAsString option is set; or the delimiter to use when breaking apart a value for return via the returnDelimitedValueAt option. Multiple delimiters may be passed in an array. When an array is used the first delimiter will be used to join values for return as a string. [Default is ";"]
-	 *		returnDelimitedValueAt = Return a specific part of a value delimited by the "delimiter" option when $index is set to a non-null value. The option value is a zero-based index. [Default is null – return entire value]
+	 *		returnDelimitedValueAt = Return a specific part of a value delimited by the "delimiter" option when $index is set to a non-null value. The option value is a zero-based index. [Default is null; return entire value]
 	 *		applyImportItemSettings = Apply mapping options such as applyRegularExpressions to value. [Default is true]
 	 *		ignoreIndexForNonRepeatingValues = If value is non-repeating (has only one value) then assume it is constant across all value indices (Eg. return the single value regardless of specified index) [Default is false]
 	 *
@@ -172,12 +168,14 @@ abstract class BaseRefinery {
 		if(!sizeof($delimiters)) { $delimiters = [';']; }
 		$delimiter = $delimiters[0];
 		
-		if ($reader && !$reader->valuesCanRepeat()) {
+		// Keep the first flat-source cell intact when selecting a delimited part;
+		// expanding it here would discard the later parts before selection.
+		if ($reader && !$reader->valuesCanRepeat() && (is_null($get_at_index) || $value_index !== 0)) {
 			// Expand delimited values in non-repeating sources to simulate repeats
 			foreach($source_data as $k => $v) {
 				if (!is_array($source_data[$k])) {
 				   $source_data[$k] = is_array($delimiters) ? 
-				   	array_filter(preg_split('!'.preg_quote(join('|', $delimiters), '!').'!', $source_data[$k]), "strlen")
+				   	preg_split('!'.preg_quote(join('|', $delimiters), '!').'!', $source_data[$k])
 				   	:
 				   	[0 => $source_data[$k]];
 				}
@@ -234,14 +232,21 @@ abstract class BaseRefinery {
 					if(!is_null($value_index)) { 
 						$mval = [$mval[$value_index]] ?? [];
 					}
-					
+			
 					foreach($mval as $i => $v) {
+						if($get_at_index !== null) {
+							$vals = preg_split('!'.preg_quote(join('|', $delimiters)).'!', $v);
+							$v = $vals[$get_at_index] ?? null;
+						}
 						$extracted_data[$i][$tag[0]] = $v;
 					}
 				}
 				$mval = [];
 				foreach($extracted_data as $i => $iteration) {
 					$mval[] = caProcessTemplate($placeholder, $iteration);
+				}
+				if(!is_null($value_index)) { 
+					$mval = array_shift($mval);
 				}
 			} else {
 				// Is plain text
