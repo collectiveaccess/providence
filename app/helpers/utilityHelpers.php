@@ -260,6 +260,7 @@ function caFileIsIncludable($ps_file) {
 		if(caGetOption('includeRoot', $pa_options, false)) {
 			$va_file_list[$dir] = true;
 		}
+		$pa_options['includeRoot'] = false;
 		$limit = caGetOption('limit', $pa_options, null);
 		
 		if($va_paths = @scandir($dir, 0)) {
@@ -289,7 +290,9 @@ function caFileIsIncludable($ps_file) {
 						$va_file_list["{$dir}/{$item}"] = true;
 					}
 					if ($pb_recursive && $vb_is_dir) {
-						$va_file_list = array_merge($va_file_list, array_flip(caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files, false, $pb_include_directories)));
+						foreach(caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files, false, $pb_include_directories, $pa_options) as $path) {
+							$va_file_list[$path] = true;
+						}
 					} else {
 						if (!$vb_is_dir) {
 							$va_file_list["{$dir}/{$item}"] = true;
@@ -373,7 +376,9 @@ function caFileIsIncludable($ps_file) {
 			while (false !== ($item = readdir($handle))) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 					if (is_dir("{$dir}/{$item}")) {
-						$va_dir_list = array_merge($va_dir_list, caGetSubDirectoryList("{$dir}/{$item}", true, $pb_include_hidden_files));
+						foreach(caGetSubDirectoryList("{$dir}/{$item}", true, $pb_include_hidden_files) as $path => $count) {
+							$va_dir_list[$path] = $count;
+						}
 					}  else {
 						$vn_file_count++;
 					}
