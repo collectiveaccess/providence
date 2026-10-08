@@ -69,13 +69,19 @@ class GeoNamesController extends ActionController {
 				'fuzzy' => 1
 			];
 			if($mode === 'name' ) { $params["name"] = $query; } else { $params['q'] = $query; }
-			if(is_array($country) && sizeof($country)) {
-				$params['country'] = $country; 
-			}
-			if(is_array($feature_class) && sizeof($feature_class)) { 
-				$params['featureClass'] = $feature_class; 
+			// Country
+			$country = array_filter($country, static fn($value) => $value !== '');
+
+			if (!empty($country)) {
+				$params['country'] = array_values($country);
 			}
 
+			// Feature class
+			$feature_class = array_filter($feature_class, static fn($value) => $value !== '');
+
+			if (!empty($feature_class)) {
+				$params['featureClass'] = array_values($feature_class);
+			}
 			$query_string = '';
 			foreach ($params as $key => $val) {
 				if(is_array($val)) {
