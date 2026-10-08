@@ -375,7 +375,15 @@ class BaseModel extends BaseObject {
 	 */
 	protected $opn_instantiated_at = 0;
 	
+	/**
+	 * Conversion table for virtual fields => underlying SQL fields
+	 */
 	static $field_list_for_load = [];
+	
+	/**
+	 * Unique guid for instance; useful for debugging
+	 */
+	public $guid = null;
 	
 	/**
 	 * Constructor
@@ -389,6 +397,7 @@ class BaseModel extends BaseObject {
 	public function __construct($id=null, ?array $options=null) {
 		$this->opn_instantiated_at = time();
 		$table_name = $this->tableName();
+		$this->guid = caGenerateGUID();
 		
 		if (!$this->FIELDS =& BaseModel::$s_ca_models_definitions[$table_name]['FIELDS']) {
 			die("Field definitions not found for {$table_name}");
@@ -419,7 +428,7 @@ class BaseModel extends BaseObject {
 		$this->_SET_FILES = array();
 		$this->_MEDIA_VOLUMES = MediaVolumes::load();
 		$this->_FILE_VOLUMES = FileVolumes::load();
-		$this->_FIELD_VALUE_CHANGED = $this->_FIELD_VALUE_DID_CHANGE = array();
+		$this->_FIELD_VALUE_CHANGED = $this->_FIELD_VALUE_DID_CHANGE = [];
 
 		if ($locale = $this->_CONFIG->get("locale")) {
 			$this->ops_locale = $locale;
@@ -670,11 +679,31 @@ class BaseModel extends BaseObject {
 	/**
 	 * Check if the content of a field changed prior to the last insert or update.
 	 *
-	 * @param string $ps_field field name
-	 * @return bool
+	 * @param string $field field name
+	 * @param array $options Options include:
+	 *		when = Restrict check to changes made prior to last update/insert of record ("last") or changes made at any point for the current instance. [Default is last]
+	 * @return bool Returns true if value changed, false if value has not changed, null if no changes have been recorded for the current instance.
 	 */
-	public function didChange($ps_field) {
-		return isset($this->_FIELD_VALUE_DID_CHANGE[$ps_field]) ? $this->_FIELD_VALUE_DID_CHANGE[$ps_field] : null;
+	public function didChange(string $field, ?array $options=null) : ?bool {
+		$when = caGetOption('when', $options, 'last');
+		
+		if(!is_array($this->_FIELD_VALUE_DID_CHANGE) || !sizeof($this->_FIELD_VALUE_DID_CHANGE)) { return null; }
+		switch($when) {
+			default:
+			case 'last':
+				$l = array_key_last($this->_FIELD_VALUE_DID_CHANGE);
+				$b = $this->_FIELD_VALUE_DID_CHANGE[$l];
+				
+				return $b[$field] ?? false;
+				break;
+			case 'anytime':
+				foreach(array_reverse($this->_FIELD_VALUE_DID_CHANGE) as $b) {
+					if(isset($b[$field])) { return $b[$field]; }
+				}
+				return false;
+				break;
+		}
+		return null;
 	}
 	# -------------------------------------------------------
 	/**
@@ -683,8 +712,8 @@ class BaseModel extends BaseObject {
 	 * @param string $bundle
 	 * @return bool
 	 */
-	public function valueDidChange(string $bundle) : ?bool {
-		if(!is_null($ret = self::didChange($bundle))) {
+	public function valueDidChange(string $bundle, ?array $options=null) : ?bool {
+		if(!is_null($ret = self::didChange($bundle, $options))) {
 			return $ret;
 		}
 		return null;
@@ -1536,14 +1565,14 @@ class BaseModel extends BaseObject {
 										if(!($item = $t_list->getItemFromListByItemValue($vs_list_code, $vm_value))) {
 											$item = $t_list->getItemFromListByItemID($vs_list_code, (int)$vm_value);
 										}
+										// De-nest
+										if(is_array($item)) { $item = array_shift($item); }
+										if(is_array($item)) { $item = array_shift($item); }
 									}
 									if(!$item) {
 										$item = $t_list->getItemFromList($vs_list_code, $vm_value);
 									}
 									
-									// De-nest
-									if(is_array($item)) { $item = array_shift($item); }
-									if(is_array($item)) { $item = array_shift($item); }
 									$vm_value = is_numeric($item['item_value'] ?? null) ? $item['item_value'] : 0;
 								} else {
 									$vm_orig_value = $vm_value;
@@ -2890,8 +2919,8 @@ class BaseModel extends BaseObject {
 				if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 				if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 				
-				$this->_FIELD_VALUE_DID_CHANGE = $this->_FIELD_VALUE_CHANGED;
-				$this->_FIELD_VALUE_CHANGED = array();					
+				$this->_FIELD_VALUE_DID_CHANGE[] = $this->_FIELD_VALUE_CHANGED;
+				$this->_FIELD_VALUE_CHANGED = [];					
 					
 				if (is_array(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()] ?? null) && (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100)) { 	// Limit cache to 100 instances per table
 					BaseModel::$s_instance_cache[$vs_table_name] = array_slice(BaseModel::$s_instance_cache[$vs_table_name], 0, 50, true);
@@ -3450,8 +3479,8 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 			if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 			if ($we_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 			
-			$this->_FIELD_VALUE_DID_CHANGE = $this->_FIELD_VALUE_CHANGED;
-			$this->_FIELD_VALUE_CHANGED = array();
+			$this->_FIELD_VALUE_DID_CHANGE[] = $this->_FIELD_VALUE_CHANGED;
+			$this->_FIELD_VALUE_CHANGED = [];
 			
 			// Update instance cache
 			if (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()] ?? []) > 100) { 	// Limit cache to 100 instances per table

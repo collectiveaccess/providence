@@ -1677,7 +1677,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if (
 			($dictionary_entry = ca_metadata_dictionary_entries::getEntry($dict_bundle_spec = $bundle_name_proc, $this, $bundle_settings))
 			||
-			($dictionary_entry = ca_metadata_dictionary_entries::getEntry($dict_bundle_spec = $this->tableName().'.'.$bundle_name_proc, $this, $bundle_settings))
+			(
+				!Datamodel::tableExists($bundle_name_proc) 
+				&&
+				($dictionary_entry = ca_metadata_dictionary_entries::getEntry($dict_bundle_spec = $this->tableName().'.'.$bundle_name_proc, $this, $bundle_settings))
+			)
 		) {
 			# Grab definition out of dictionary entry settings: if it was created in a system with multiple locales the available definitions 
 			# will be key'ed by locale code or locale_id (argh). If it was created in an older system with only a single active locale it may
@@ -2118,6 +2122,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'ca_editor_ui_screen_type_restrictions':
 					case 'ca_editor_ui_type_restrictions':
 					case 'ca_relationship_type_restrictions':
+					case 'ca_set_type_restrictions':
 						$element .= $this->getTypeRestrictionsHTMLFormBundle($options['request'], $options['formName'], $placement_code, $options);
 						break;
 					# -------------------------------
@@ -6463,6 +6468,7 @@ if (!$batch) {
 		$disable_sorts = caGetOption('disableSorts', $pa_settings, false);
 						
  		$va_rel_items = $this->getRelatedItems($ps_bundle_name, $pa_settings);
+ 		$rel_pk = Datamodel::primaryKey($ps_bundle_name);
  		
  		$va_rels_to_add = $va_rels_to_delete = [];
  if(!$batch) {	
@@ -6494,7 +6500,7 @@ if (!$batch) {
 				
 				$va_rels_to_delete[] = array('bundle' => $ps_bundle_name, 'relation_id' => $va_rel_item[$vs_key]);
 			} elseif(!$disable_sorts) {
-				$this->editRelationship($ps_bundle_name, $va_rel_item[$vs_key], $va_rel_item['row_id'], $va_rel_item['relationship_type_code'], null, null, $va_rel_item['direction'], $vn_rank, ['allowDuplicates' => true]);		
+				$this->editRelationship($ps_bundle_name, $va_rel_item[$vs_key], $va_rel_item[$rel_pk], $va_rel_item['relationship_type_code'], null, null, $va_rel_item['direction'], $vn_rank, ['allowDuplicates' => true]);		
 			}
 		}
 }
@@ -10323,9 +10329,9 @@ side. For many self-relations the direction determines the nature and display te
 	 * @param string $bundle
 	 * @return bool
 	 */
-	public function valueDidChange(string $bundle) : ?bool {
+	public function valueDidChange(string $bundle, ?array $options=null) : ?bool {
 		// TODO: handle changes on relationship?
-		return parent::valueDidChange($bundle);
+		return parent::valueDidChange($bundle, $options );
 	}
 	# -------------------------------------------------------
 }

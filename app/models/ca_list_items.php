@@ -895,8 +895,11 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	
 
 	# ------------------------------------------------------
-	protected function initLabelDefinitions($pa_options=null) {
-		parent::initLabelDefinitions($pa_options);
+	/**
+	 *
+	 */
+	protected function initLabelDefinitions($options=null) {
+		parent::initLabelDefinitions($options);
 		$this->BUNDLES['ca_object_representations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Media representations'));
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
 		$this->BUNDLES['ca_objects_table'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects list'));
@@ -933,24 +936,9 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		$this->BUNDLES['settings'] = array('type' => 'special', 'repeating' => false, 'label' => _t('List item settings'));
 	}
 	# ------------------------------------------------------
-	public function load($pm_id=null, $pb_use_cache=true) {
-		$key = md5(serialize($pm_id));
-		if(CompositeCache::contains($key, 'listItem')) { 
-			$this->_FIELD_VALUES = CompositeCache::fetch($key, 'listItem');
-			
-			if(!is_array($this->_FIELD_VALUES) || !sizeof($this->_FIELD_VALUES)) { return false; }
-			return true;
-		}
-		if ($vn_rc = parent::load($pm_id, $pb_use_cache)) {
-			$this->_setSettingsForList();
-			CompositeCache::save($key, $this->_FIELD_VALUES, 'listItem');
-		} else {
-			CompositeCache::save($key, null, 'listItem');
-		}
-
-		return $vn_rc;
-	}
-	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	private function _setSettingsForList() {
 		global $_ca_list_items_settings;
 		if (isset($_ca_list_items_settings[$vs_list_code = caGetListCode($this->get('list_id'))])) {
@@ -958,8 +946,11 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		}
 	}
  	# ------------------------------------------------------
-	public function insert($pa_options=null) {
-		if(!is_array($pa_options)) { $pa_options = []; }
+ 	/**
+	 *
+	 */
+	public function insert($options=null) {
+		if(!is_array($options)) { $options = []; }
 		
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
@@ -981,7 +972,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 				WHERE list_id = ?
 			", (int)$this->get('list_id'));
 		}
-		$vn_rc = parent::insert(array_merge($pa_options, ['validateAllIdnos' => true]));
+		$vn_rc = parent::insert(array_merge($options, ['validateAllIdnos' => true]));
 		
 		if ($this->getPrimaryKey()) {
 			$t_list = new ca_lists();
@@ -1039,7 +1030,10 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
-	public function update($pa_options=null) {
+	/**
+	 *
+	 */
+	public function update($options=null) {
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
 			$vb_we_set_transaction = true;
@@ -1055,7 +1049,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 				WHERE list_id = ? AND item_id <> ?
 			", (int)$this->get('list_id'), $this->getPrimaryKey());
 		}
-		$vn_rc = parent::update($pa_options);
+		$vn_rc = parent::update($options);
 		
 		if ($this->numErrors()) {
 			if ($vb_we_set_transaction) { $this->getTransaction()->rollback(); } 
@@ -1073,17 +1067,17 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	/**
 	 *
 	 */
-	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+	public function delete($pb_delete_related=false, $options=null, $pa_fields=null, $pa_table_list=null) {
 		$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
 		
 		if (!$this->inTransaction()) {
 			$o_trans = new Transaction($this->getDb());
 			$this->setTransaction($o_trans);
 		}
-		if (!is_array($pa_options)) { $pa_options = array(); }
+		if (!is_array($options)) { $options = array(); }
 		
 		$vn_id = $this->getPrimaryKey();
-		if(parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
+		if(parent::delete($pb_delete_related, $options, $pa_fields, $pa_table_list)) {
 			ExternalCache::flush('listItems');
 			CompositeCache::flush('BaseModelWithAttributesTypeIDs');
 			// Delete any associated attribute values that use this list item
@@ -1202,7 +1196,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	 * Set field value(s) for the table row represented by this object
 	 *
 	 */
-	public function set($pa_fields, $pm_value="", $pa_options=null) {
+	public function set($pa_fields, $pm_value="", $options=null) {
 		if(!is_array($pa_fields)) {
 			$pa_fields = array($pa_fields => $pm_value);
 		}
@@ -1213,7 +1207,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			}
 		}
 
-		return parent::set($pa_fields, null, $pa_options);
+		return parent::set($pa_fields, null, $options);
 	}
 	 # ------------------------------------------------------
 	 /**
@@ -1235,11 +1229,11 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	 * Override standard implementation to insert list_code for current list_id into returned data. The list_code is required for consumers of export data
 	 * when dealing with lists. 
 	 *
-	 * @param array $pa_options Array of options for BaseModel::getValuesForExport(). No additional options are defined by this subclass.
+	 * @param array $options Array of options for BaseModel::getValuesForExport(). No additional options are defined by this subclass.
 	 * @return array Array of data as returned by BaseModel::getValuesForExport() except for added list_code value
 	 */
-	public function getValuesForExport($pa_options=null) {
-		$va_data = parent::getValuesForExport($pa_options);
+	public function getValuesForExport($options=null) {
+		$va_data = parent::getValuesForExport($options);
 		
 		$t_list = new ca_lists($this->get('list_id'));
 		$va_data['list_code'] = $t_list->get('list_code');

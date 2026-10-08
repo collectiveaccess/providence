@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * views/editor/object_representations/ajax_representation_annotation_list_json.php : 
+ * bundles/ca_set_type_restrictions.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2026 Whirl-i-Gig
+ * Copyright 2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,4 +25,31 @@
  *
  * ----------------------------------------------------------------------
  */
-print json_encode($this->getVar('annotation_list'));
+$id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
+$element 			= $this->getVar('type_restrictions');
+
+$errors = array();
+if(is_array($action_errors = $this->getVar('errors'))) {
+	foreach($action_errors as $o_error) {
+		$errors[] = $o_error->getErrorDescription();
+	}
+}
+
+print caEditorBundleShowHideControl($this->request, $id_prefix);
+?>
+<div id="<?= $id_prefix; ?>">
+	<div class="bundleContainer">
+		<div class="caItemList">
+			<div class="labelInfo">	
+<?php
+				if (is_array($errors) && sizeof($errors)) {
+?>
+					<span class="formLabelError"><?= join('; ', $errors); ?></span>
+<?php
+				}
+?>
+				<?= $element; ?>
+			</div>
+		</div>
+	</div>
+</div>
