@@ -615,6 +615,7 @@ final class ConfigurationCheck {
 		$qr_res = self::$opo_db->query('
 			SELECT max(version_num) n
 			FROM ca_schema_updates
+			WHERE schema_name = "CORE"
 		');
 		if ($qr_res->nextRow()) {
 			return $qr_res->get('n');
