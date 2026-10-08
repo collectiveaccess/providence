@@ -51,6 +51,8 @@ require_once(__CA_LIB_DIR__.'/Attributes/Values/InformationServiceAttributeValue
 require_once(__CA_LIB_DIR__.'/Attributes/Values/FloorplanAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/ColorAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/Attributes/Values/FilesizeAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/ExternalMediaAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/Attributes/Values/EncryptedTextAttributeValue.php');
  
 define("__CA_ATTRIBUTE_VALUE_OBJECTREPRESENTATIONS__", 21);
 define("__CA_ATTRIBUTE_VALUE_ENTITIES__", 22);
