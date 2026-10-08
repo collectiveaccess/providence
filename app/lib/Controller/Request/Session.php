@@ -278,6 +278,7 @@ class Session {
 		if(is_array($keys)) {
 			foreach(array_keys($keys) as $session_key) {
 				if($session_key == $session_id) { continue; }
+				if(!strlen($session_key ?? '')) { continue; }
 				self::$s_cache_type::delete($session_key, 'SessionVars');
 			}
 		}
