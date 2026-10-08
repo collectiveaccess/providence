@@ -8039,10 +8039,13 @@ create table ca_user_export_downloads (
 /*==========================================================================*/
 create table ca_schema_updates (
 	version_num		int unsigned not null,
+	modifier        int unsigned not null default 0,
 	datetime		int unsigned not null,
+	schema_name     char(20) not null default 'CORE',
 	
-	UNIQUE KEY u_version_num (version_num)
+	UNIQUE KEY u_version_num (schema_name, version_num, modifier),
+	KEY i_schema_name (schema_name)
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (215, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, modifier, datetime, schema_name) VALUES (216, 0, unix_timestamp(), 'CORE');
