@@ -243,8 +243,8 @@ class SchemaController extends \GraphQLServices\GraphQLServiceController {
 								
 									array_shift($subelements); // get rid of root
 									$subelements = array_filter($subelements, function($v) { return ($v['datatype'] !== 0); }); // filter containers
-								
-									$label = (caExtractSettingValueByLocale($blist[$code] ?? null, 'label', $locale)) ?: $v['display_label'];
+							
+									$label = (caExtractSettingValueByLocale($blist[$code] ?? null, 'label', $locale)) ?: $t->getDisplayLabel($t->tableName().'.'.$code);
 									
 									$subelements = array_map(function($v) use ($t, $code) {
 										return [
