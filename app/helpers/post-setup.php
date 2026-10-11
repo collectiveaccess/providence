@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2025 Whirl-i-Gig
+ * Copyright 2018-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -390,7 +390,8 @@ if (!defined("__CA_SMTP_XOAUTH_REFRESH_TOKEN__")) {
 #
 define('__CA_BUNDLE_ACCESS_NONE__', 0);
 define('__CA_BUNDLE_ACCESS_READONLY__', 1);
-define('__CA_BUNDLE_ACCESS_EDIT__', 2);
+define('__CA_BUNDLE_ACCESS_EDIT__', 3);
+define('__CA_BUNDLE_ACCESS_EDIT_DELETE__', 2);
 
 define('__CA_ACL_NO_ACCESS__', 0);
 define('__CA_ACL_READONLY_ACCESS__', 1);

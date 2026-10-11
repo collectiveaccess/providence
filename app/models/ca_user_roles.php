@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -452,15 +452,15 @@ class ca_user_roles extends BaseModel {
 	/**
 	 * Get type access settings for current role
 	 */
-	public function getTypeAccessSettings() {
-		if(!$this->getPrimaryKey()) { return array(); }
-		if(!$this->getAppConfig()->get('perform_type_access_checking')) { array(); }
+	public function getTypeAccessSettings() : array {
+		if(!$this->getPrimaryKey()) { return []; }
+		if(!$this->getAppConfig()->get('perform_type_access_checking')) { return []; }
 
 		$va_vars = $this->get('vars');
- 		if(isset($va_vars['type_access_settings'])){
+ 		if(is_array($va_vars['type_access_settings'] ?? null)){
  			return $va_vars['type_access_settings'];
  		} else {
- 			return array();
+ 			return [];
  		}
 	}
 	# ------------------------------------------------------
@@ -556,7 +556,7 @@ class ca_user_roles extends BaseModel {
 	public function setAccessSettingForType($table, $type_id_or_code, $access) {
 		if(!in_array($access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
 		if(!$this->getPrimaryKey()) { return false; }
-		//if(!$this->getAppConfig()->get('perform_type_access_checking')) { return false; }
+		if(!$this->getAppConfig()->get('perform_type_access_checking')) { return false; }
 		$t_list = new ca_lists();	
 
 		$vars = $this->get('vars');
