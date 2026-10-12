@@ -505,20 +505,6 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * @param array $pa_options Options are
-	 *		cache = cache relationship types as they are referenced and return cached value if possible [default=true]
-	 */
-	public function getDefaultRelationshipTypeID(mixed $table_name_or_num, ?array $options=null) : ?int {
-		$rel_types = $this->getRelationshipInfo($table_name_or_num, null, $options);	
-		foreach($rel_types as $rel_type) {
-			if($rel_type['is_default'] ?? false) {
-				return (int)$rel_type['type_id'];
-			}
-		}
-		return null;
-	}
-	# ------------------------------------------------------
-	/**
 	 * Returns array of tables that use relationship types
 	 *
 	 * @return array List of tables that use relationship types
