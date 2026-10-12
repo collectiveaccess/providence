@@ -163,10 +163,10 @@ $table_names = $this->getVar('table_display_names');
 			print "<tr><td colspan='4'><h1>".$table_names[$table]."</h1></td></tr>\n";	
 			print "<tr align='center' valign='middle'>
 				<th width='180' align='left'>"._t('Type')."</th>
-				<th width='180'>"._t('No access')."</th>
-				<th width='180'>"._t('Read-only access')."</th>
-				<th width='180'>"._t('Edit access')."</th>
-				<th width='180'>"._t('Edit/delete access')."</th>
+				<th width='180'><a href='#' onclick='jQuery(\".{$table}_types_bundle_access_none\").prop(\"checked\", 1); return false;'>"._t('No access')."</a></th>
+				<th width='180'><a href='#' onclick='jQuery(\".{$table}_types_bundle_access_readonly\").prop(\"checked\", 1); return false;'>"._t('Read-only access')."</a></th>
+				<th width='180'><a href='#' onclick='jQuery(\".{$table}_types_bundle_access_edit\").prop(\"checked\", 1); return false;'>"._t('Edit access')."</a></th>
+				<th width='180'><a href='#' onclick='jQuery(\".{$table}_types_bundle_access_edit_delete\").prop(\"checked\", 1); return false;'>"._t('Edit/delete access')."</a></th>
 			</tr>\n";
 			
 			$t_instance = Datamodel::getInstanceByTableName($table, true);
@@ -180,10 +180,10 @@ $table_names = $this->getVar('table_display_names');
 				
 				$access = $type['access'];
 				
-				print "<td>".caHTMLRadioButtonInput($table.'_type_'.$type['type_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_NONE__), array('checked' => ($access == __CA_BUNDLE_ACCESS_NONE__)))."</td>\n";
-				print "<td>".caHTMLRadioButtonInput($table.'_type_'.$type['type_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_READONLY__), array('checked' => ($access == __CA_BUNDLE_ACCESS_READONLY__)))."</td>\n";
-				print "<td>".caHTMLRadioButtonInput($table.'_type_'.$type['type_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_EDIT__), array('checked' => ($access == __CA_BUNDLE_ACCESS_EDIT__)))."</td>\n";
-				print "<td>".caHTMLRadioButtonInput($table.'_type_'.$type['type_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_EDIT_DELETE__), array('checked' => ($access == __CA_BUNDLE_ACCESS_EDIT_DELETE__)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput($table.'_type_'.$type['type_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_NONE__, 'class' => "{$table}_types_bundle_access_none"), array('checked' => ($access == __CA_BUNDLE_ACCESS_NONE__)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput($table.'_type_'.$type['type_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_READONLY__, 'class' => "{$table}_types_bundle_access_readonly"), array('checked' => ($access == __CA_BUNDLE_ACCESS_READONLY__)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput($table.'_type_'.$type['type_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_EDIT__, 'class' => "{$table}_types_bundle_access_edit"), array('checked' => ($access == __CA_BUNDLE_ACCESS_EDIT__)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput($table.'_type_'.$type['type_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_EDIT_DELETE__, 'class' => "{$table}_types_bundle_access_edit_delete"), array('checked' => ($access == __CA_BUNDLE_ACCESS_EDIT_DELETE__)))."</td>\n";
 	
 			}
 			
@@ -206,10 +206,10 @@ $table_names = $this->getVar('table_display_names');
 			print "<tr><td colspan='4'><h1>".$table_names[$table]."</h1></td></tr>\n";	
 			print "<tr align='center' valign='middle'>
 				<th>"._t('Default')."</th><th width='180' align='left'>"._t('Source')."</th>
-				<th width='180'>"._t('No access')."</th>
-				<th width='180'>"._t('Read-only access')."</th>
-				<th width='180'>"._t('Edit access')."</th>
-				<th width='180'>"._t('Edit/delete access')."</th>
+				<th width='180'><a href='#' onclick='jQuery(\".{$table}_sources_bundle_access_none\").prop(\"checked\", 1); return false;'>"._t('No access')."</a></th>
+				<th width='180'><a href='#' onclick='jQuery(\".{$table}_sources_bundle_access_readonly\").prop(\"checked\", 1); return false;'>"._t('Read-only access')."</a></th>
+				<th width='180'><a href='#' onclick='jQuery(\".{$table}_sources_bundle_access_edit\").prop(\"checked\", 1); return false;'>"._t('Edit access')."</a></th>
+				<th width='180'><a href='#' onclick='jQuery(\".{$table}_sources_bundle_access_edit_delete\").prop(\"checked\", 1); return false;'>"._t('Edit/delete access')."</a></th>
 			</tr>\n";
 			
 			$t_instance = Datamodel::getInstanceByTableName($table, true);
@@ -228,10 +228,10 @@ $table_names = $this->getVar('table_display_names');
 				
 				$access = $source['access'];
 				
-				print "<td>".caHTMLRadioButtonInput($table.'_source_'.$source['source_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_NONE__), array('checked' => ($access == __CA_BUNDLE_ACCESS_NONE__)))."</td>\n";
-				print "<td>".caHTMLRadioButtonInput($table.'_source_'.$source['source_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_READONLY__), array('checked' => ($access == __CA_BUNDLE_ACCESS_READONLY__)))."</td>\n";
-				print "<td>".caHTMLRadioButtonInput($table.'_source_'.$source['source_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_EDIT__), array('checked' => ($access == __CA_BUNDLE_ACCESS_EDIT__)))."</td>\n";
-				print "<td>".caHTMLRadioButtonInput($table.'_source_'.$source['source_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_EDIT_DELETE__), array('checked' => ($access == __CA_BUNDLE_ACCESS_EDIT_DELETE__)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput($table.'_source_'.$source['source_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_NONE__, 'class' => "{$table}_sources_bundle_access_none"), array('checked' => ($access == __CA_BUNDLE_ACCESS_NONE__)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput($table.'_source_'.$source['source_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_READONLY__, 'class' => "{$table}_sources_bundle_access_readonly"), array('checked' => ($access == __CA_BUNDLE_ACCESS_READONLY__)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput($table.'_source_'.$source['source_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_EDIT__, 'class' => "{$table}_sources_bundle_access_edit"), array('checked' => ($access == __CA_BUNDLE_ACCESS_EDIT__)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput($table.'_source_'.$source['source_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_EDIT_DELETE__, 'class' => "{$table}_sources_bundle_access_edit_delete"), array('checked' => ($access == __CA_BUNDLE_ACCESS_EDIT_DELETE__)))."</td>\n";
 	
 			}
 			
@@ -248,7 +248,12 @@ $table_names = $this->getVar('table_display_names');
 	print "<p>"._t('Access values are used to control if and to whom a record should be displayed in a public-facing Pawtucket-based interface. Users logged into the Pawtucket interface will be given the levels of access specified here. If you wish to use the default Pawtucket access policy for an access value set the level to "Use Pawtucket default."')."</p>\n";
 ?>
 			<table width='100%'>
-				<tr align='center' valign='middle'><th width='180' align='left'><?= _t('Access status'); ?></th><th width='180'><?= _t('No access'); ?></th><th width='180'><?= _t('Read access'); ?></th><th><?= _t('Use Pawtucket default'); ?></th></tr>
+				<tr align='center' valign='middle'>
+					<th width='180' align='left'><?= _t('Access status'); ?></th>
+					<th width='180'><a href='#' onclick='jQuery(".pawtucket_bundle_access_none").prop("checked", 1); return false;'><?= _t('No access'); ?></a></th>
+					<th width='180'><a href='#' onclick='jQuery(".pawtucket_bundle_access_read").prop("checked", 1); return false;'><?= _t('Read access'); ?></a></th>
+					<th><a href='#' onclick='jQuery(".pawtucket_bundle_access_default").prop("checked", 1); return false;'><?= _t('Use Pawtucket default'); ?></a></th>
+				</tr>
 <?php
 			foreach($access_status_list as $id => $access_status) {
 				print "<tr align='center' valign='middle'>";
@@ -256,9 +261,9 @@ $table_names = $this->getVar('table_display_names');
 				print "<td align='left'>".str_repeat("&nbsp;", $indent).($access_status['access_status_info']['name_plural'] ?? null)."</td>";
 				
 				$access = !strlen($access_status['access']) ? null : (int)$access_status['access'];
-				print "<td>".caHTMLRadioButtonInput('access_status_'.$access_status['access_status_info']['item_id'] ?? null, array('value' => 0), array('checked' => ($access === 0)))."</td>\n";
-				print "<td>".caHTMLRadioButtonInput('access_status_'.$access_status['access_status_info']['item_id'] ?? null, array('value' => 1), array('checked' => ($access === 1)))."</td>\n";
-				print "<td>".caHTMLRadioButtonInput('access_status_'.$access_status['access_status_info']['item_id'] ?? null, array('value' => null), array('checked' => (is_null($access))))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput('access_status_'.$access_status['access_status_info']['item_id'] ?? null, array('value' => 0, 'class' => "pawtucket_bundle_access_none"), array('checked' => ($access === 0)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput('access_status_'.$access_status['access_status_info']['item_id'] ?? null, array('value' => 1, 'class' => "pawtucket_bundle_access_read"), array('checked' => ($access === 1)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput('access_status_'.$access_status['access_status_info']['item_id'] ?? null, array('value' => null, 'class' => "pawtucket_bundle_access_default"), array('checked' => (is_null($access))))."</td>\n";
 			}
 ?>			
 				</tr>
