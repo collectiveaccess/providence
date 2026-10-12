@@ -395,6 +395,25 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 *		cache = cache relationship types as they are referenced and return cached value if possible [default=true]
 	 *		matchOn = List of values to match on. Valid entries as "type_code", "typecode", "label", "label". [default=null]
 	 */
+	public static function getDefaultRelationshipTypeID(mixed $pm_table_name_or_num, ?array $options=null) {
+		if (!is_numeric($pm_table_name_or_num)) {
+			$vn_table_num = Datamodel::getTableNum($pm_table_name_or_num);
+		} else {
+			$vn_table_num = $pm_table_name_or_num;
+		}
+
+		if($r = ca_relationship_types::find(['table_num' => $vn_table_num, 'is_default' => 1], ['returnAs' => 'array'])) {
+			return $r[0] ?? null;
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * @param array $pa_options Option are
+	 *		create = create relationship type using parameters if one with the specified type code or type_id doesn't exist already [default=false]
+	 *		cache = cache relationship types as they are referenced and return cached value if possible [default=true]
+	 *		matchOn = List of values to match on. Valid entries as "type_code", "typecode", "label", "label". [default=null]
+	 */
 	public function getRelationshipTypeID($pm_table_name_or_num, $pm_type_code_or_id, $pn_locale_id=null, $pa_values=null, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!isset($pa_options['create'])) { $pa_options['create'] = false; }

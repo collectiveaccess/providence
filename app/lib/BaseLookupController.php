@@ -124,20 +124,8 @@ class BaseLookupController extends ActionController {
 				// Get type_ids
 				$ids = [];
 				if (sizeof($restrict_to_types)) {
-					$type_list = $this->opo_item_instance->getTypeList();
-					$type_list_proc = array();
-					foreach($type_list as $vn_type_id => $va_type) {
-						$type_list_proc[$vn_type_id] = $type_list_proc[$va_type['idno']] = $vn_type_id;
-					}
-					foreach($restrict_to_types as $rtype) {
-						if (isset($type_list_proc[$rtype])) {
-							$ids[$type_list_proc[$rtype]] = true;
-						} elseif (is_numeric($rtype)) {
-							$ids[(int)$rtype] = true;
-						}
-					}
-					$ids = array_keys($ids);
-				
+					$ids = caMakeTypeIDList($this->ops_table_name, $restrict_to_types, ['dontIncludeSubtypesInTypeRestriction' => false]);
+					
 					if (sizeof($ids) > 0) {
 						$t_list = new ca_lists();
 					

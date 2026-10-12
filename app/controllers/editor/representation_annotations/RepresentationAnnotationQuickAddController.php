@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,33 +32,46 @@ class RepresentationAnnotationQuickAddController extends BaseQuickAddController 
 	# -------------------------------------------------------
 	protected $ops_table_name = 'ca_representation_annotations';		// name of "subject" table (what we're editing)
 	# -------------------------------------------------------
-	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-		parent::__construct($po_request, $po_response, $pa_view_paths);
+	/**
+	 * 
+	 */
+	public function __construct(&$request, &$response, $view_paths=null) {
+		parent::__construct($request, $response, $view_paths);
 	}
 	# -------------------------------------------------------
-	public function Form($pa_values=null, $pa_options=null) {
-		$vn_representation_id = $this->request->getParameter('representation_id', pInteger);
+	/**
+	 * 
+	 */
+	public function Form($values=null, $options=null) {
+		$representation_id = $this->request->getParameter('representation_id', pInteger);
+		$anno_id = $this->request->getParameter('annotation_id', pInteger);
 		
 		$t_annotation = new ca_representation_annotations();
-		$vs_type = $t_annotation->getAnnotationType($vn_representation_id);
+		$type = $t_annotation->getAnnotationType($representation_id);
 		
 		parent::Form(null, array(
 			'loadSubject' => true,
 			'dontCheckQuickAddAction' => true,
-			'forceSubjectValues' => array('representation_id' => $vn_representation_id, 'type_code' => $vs_type)
+			'forceSubjectValues' => ['representation_id' => $representation_id, 'type_code' => $type]
 		));
 	}
 	# -------------------------------------------------------
-	public function Save($pa_options=null) {
-		if (!($vn_rc = parent::Save(array('loadSubject' => true, 'dontCheckQuickAddAction' => true)))) {
+	/**
+	 * 
+	 */
+	public function Save($options=null) {
+		if (!($rc = parent::Save(array('loadSubject' => true, 'dontCheckQuickAddAction' => true)))) {
 			$this->notification->addNotification(_t('Saved annotation.'), __NOTIFICATION_TYPE_INFO__);
 		}
-		return $vn_rc;
+		return $rc;
 	}
 	# -------------------------------------------------------
-	protected function _initView($pa_options=null) {
-		list($t_subject, $t_ui) = parent::_initView($pa_options);
-		$t_subject->loadProperties($pa_options['forceSubjectValues']['type_code']);
+	/**
+	 * 
+	 */
+	protected function _initView($options=null) {
+		list($t_subject, $t_ui) = parent::_initView($options);
+		$t_subject->loadProperties($options['forceSubjectValues']['type_code']);
 		
 		return array($t_subject, $t_ui);
 	}
@@ -67,17 +80,16 @@ class RepresentationAnnotationQuickAddController extends BaseQuickAddController 
 	 * 
 	 */
 	public function deleteAnnotation() {
-		$vn_annotation_id = $this->request->getParameter('annotation_id', pInteger);
+		$annotation_id = $this->request->getParameter('annotation_id', pInteger);
 		
-		$va_response = array('code' => 0, 'id' => $vn_annotation_id, 'errors' => []);
+		$va_response = array('code' => 0, 'id' => $annotation_id, 'errors' => []);
 		$t_annotation = new ca_representation_annotations();
-		if ($t_annotation->load($vn_annotation_id)) {
-			$t_annotation->setMode(ACCESS_WRITE);
+		if ($t_annotation->load($annotation_id)) {
 			$t_annotation->delete(true);
 			if ($t_annotation->numErrors()) {
 				$va_response = array(
 					'code' => 10,
-					'id' => $vn_annotation_id, 
+					'id' => $annotation_id, 
 					'errors' => $t_annotation->getErrors()
 				);
 			}

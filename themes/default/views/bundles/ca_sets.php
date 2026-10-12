@@ -34,11 +34,13 @@ $t_subject 			= $this->getVar('t_subject');
 $settings 			= $this->getVar('settings');
 $add_label 			= $this->getVar('add_label');
 $placement_code 	= $this->getVar('placement_code');
-$placement_id	= (int)$settings['placement_id'];
+$placement_id		= (int)$settings['placement_id'];
 $batch				= $this->getVar('batch');
 
 $sort				= ((isset($settings['sort']) && $settings['sort'])) ? $settings['sort'] : '';
 $read_only			= ((isset($settings['readonly']) && $settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_subject->tableName(), 'ca_sets') == __CA_BUNDLE_ACCESS_READONLY__));
+
+$dont_show_add		= caGetOption('dontShowAddButton', $settings, false);
 $dont_show_del		= ((isset($settings['dontShowDeleteButton']) && $settings['dontShowDeleteButton'])) ? true : false;
 
 $color 				= ((isset($settings['colorItem']) && $settings['colorItem'])) ? $settings['colorItem'] : '';
@@ -180,7 +182,7 @@ foreach($action_errors = $this->request->getActionErrors($placement_code) as $o_
 		<input type="hidden" name="<?= $id_prefix; ?>BundleList" id="<?= $id_prefix; ?>BundleList" value=""/>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 <?php
-	if (!$read_only) {
+	if (!$read_only && !$dont_show_add) {
 ?>	
 		<div class='button labelInfo caAddItemButton'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $add_label ? $add_label : _t("Add relationship"); ?></a></div>
 <?php

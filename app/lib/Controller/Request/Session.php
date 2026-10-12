@@ -98,7 +98,7 @@ class Session {
  		
  		// Use persistent (SQL-based) cache when cache back-end is file-based as Stash 
  		// tends to invalidate keys early in some enviroments causing forced logouts
- 		if(!defined('__CA_IS_SERVICE_REQUEST__') && defined('__CA_CACHE_BACKEND__') && (strtolower(__CA_CACHE_BACKEND__) === 'file')) {
+ 		if(defined('__CA_CACHE_BACKEND__') && (strtolower(__CA_CACHE_BACKEND__) === 'file')) {
  			self::$s_cache_type = 'PersistentCache';
  		}
 
@@ -278,10 +278,11 @@ class Session {
 		if(is_array($keys)) {
 			foreach(array_keys($keys) as $session_key) {
 				if($session_key == $session_id) { continue; }
+				if(!caIsGuid($session_key ?? '')) { continue; }
 				self::$s_cache_type::delete($session_key, 'SessionVars');
 			}
 		}
-		self::$s_cache_type::save($user_id, [$session_id], 'SessionsByUser', Session::$lifetime * 2);
+		self::$s_cache_type::save($user_id, [$session_id => true], 'SessionsByUser', Session::$lifetime * 2);
 		
 		return true;
 	}

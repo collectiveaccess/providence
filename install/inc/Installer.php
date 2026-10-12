@@ -675,7 +675,7 @@ class Installer {
 				}
 				if($list['items']) {
 					if(!$this->processListItems($t_list, $list['items'], null)) {
-						return false;
+						continue;
 					}
 				}
 			}
@@ -788,7 +788,7 @@ class Installer {
 
 					if (!($table_num = \Datamodel::getTableNum($restriction['table']))) {
 						$this->addError('processMetadataElements', _t("Invalid table %1 specified for restriction %2 in element %3", $restriction['table'], $restriction_code, $element_code));
-						return false;
+						continue;
 					}
 					$t_instance = \Datamodel::getInstance((string)$restriction['table']);
 					$type_id = null;

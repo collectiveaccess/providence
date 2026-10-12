@@ -225,8 +225,7 @@ class BaseQuickAddController extends ActionController {
 		
 		$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $vn_type_id, array('editorPref' => 'quickadd'));
 		if (!$t_ui) {
-			$this->postError(1100, _t('No interface defined for %1', $this->ops_table_name), 'BaseQuickAddController->Form');
-			return;
+			throw new ApplicationException( _t('No interface defined for %1', $this->ops_table_name));
 		}
 		// Get default screen (this is all we show in quickadd, even if the UI has multiple screens)
 		$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
