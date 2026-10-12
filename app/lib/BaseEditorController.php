@@ -1917,14 +1917,14 @@ class BaseEditorController extends ActionController {
 		$access = caGetOption('access', $options, __CA_BUNDLE_ACCESS_READONLY__);
 		switch($access) {
 			case __CA_BUNDLE_ACCESS_READONLY__:
-				$ret = $t_subject->isReadable($this->request);
+				$ret = method_exists($t_subject, 'isReadable') ? $t_subject->isReadable($this->request) : true;
 				break;
 			case __CA_BUNDLE_ACCESS_EDIT__:
-				$ret = $t_subject->isSaveable($this->request);
+				$ret = method_exists($t_subject, 'isSaveable') ? $t_subject->isSaveable($this->request) : true;
 				break;
 			case __CA_BUNDLE_ACCESS_EDIT_DELETE__:
 			default:
-				$ret = $t_subject->isDeletable($this->request);
+				$ret = method_exists($t_subject, 'isDeletable') ? $t_subject->isDeletable($this->request) : true;
 				break;
 		}
 			
