@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,23 +24,17 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 	
- 	$t_item = $this->getVar('t_item');
- 	
- 	if (!$t_item->getPrimaryKey()) {
- 		$vn_interface_count = ca_editor_uis::getUICount();
+ */ 	
+$t_item = $this->getVar('t_item');
+
+if (!$t_item->getPrimaryKey()) {
+	$interface_count = ca_editor_uis::getUICount();
 ?>
 <h3 class='metalist'><?= _t('Editing user interfaces'); ?>:
-<div><?php
-	if ($vn_interface_count == 1) {
-		print _t("1 user interface is defined");
-	} else {
-		print _t("%1 user interfaces are defined", $vn_interface_count);
-	}
-?></div>
+<div>
+	<?= ($interface_count == 1) ? _t("1 user interface is defined") : _t("%1 user interfaces are defined", $interface_count);?>
+</div>
 </h3><?php
- 	} else {
-	 	print caEditorInspector($this, array('backText' => _t('Back to list')));
-	 }
- ?>
+} else {
+	print caEditorInspector($this, ['backText' => _t('Back to list')]);
+}
