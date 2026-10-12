@@ -1057,8 +1057,8 @@ function caEditorInspector($view, $options=null) {
 	$idno               = null;
 	$num_objects		= 0;
 
-	$t_item 				= $view->getVar('t_item');
-	$table_name = $t_item->tableName();
+	$t_item 			= $view->getVar('t_item');
+	$table_name 		= $t_item->tableName();
 	if (($priv_table_name = $table_name) == 'ca_list_items') {
 		$priv_table_name = 'ca_lists';
 		$style = "style='padding-top:10px;'";

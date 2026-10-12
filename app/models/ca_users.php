@@ -3810,6 +3810,7 @@ class ca_users extends BaseModel {
 	/**
 	 * Returns the type of access the user has to the specified type.
 	 * Types of access are:
+	 *		__CA_BUNDLE_ACCESS_EDIT_DELETE__ (implies ability to view change and delete content)
 	 *		__CA_BUNDLE_ACCESS_EDIT__ (implies ability to view and change bundle content)
 	 *		__CA_BUNDLE_ACCESS_READONLY__ (implies ability to view bundle content only)
 	 *		__CA_BUNDLE_ACCESS_NONE__ (indicates that the user has no access to bundle)
@@ -3827,10 +3828,10 @@ class ca_users extends BaseModel {
 			} else {
 				$t_list = new ca_lists();
 				$t_instance = Datamodel::getInstanceByTableName($ps_table_name, true);
-				if(!($vs_type_list_code = $t_instance->getTypeListCode())) { return __CA_BUNDLE_ACCESS_EDIT__; } // no type-level acces control for tables without type lists (like ca_lists)
+				if(!($vs_type_list_code = $t_instance->getTypeListCode())) { return __CA_BUNDLE_ACCESS_EDIT_DELETE__; } // no type-level acces control for tables without type lists (like ca_lists)
 				$vn_type_id = (int)$t_list->getItemIDFromList($vs_type_list_code, $pm_type_code_or_id);
 			}
-			if($vn_type_id === 0) { return __CA_BUNDLE_ACCESS_EDIT__; }
+			if($vn_type_id === 0) { return __CA_BUNDLE_ACCESS_EDIT_DELETE__; }
 			$vn_access = -1;
 			foreach($va_roles as $vn_role_id => $va_role_info) {
 				$va_vars = $va_role_info['vars'];
@@ -3839,7 +3840,7 @@ class ca_users extends BaseModel {
 					if (isset($va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id]) && ((int)$va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id] > $vn_access)) {
 						$vn_access = (int)$va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id];
 						
-						if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
+						if ($vn_access == __CA_BUNDLE_ACCESS_EDIT_DELETE__) { break; }	// already at max
 					}
 				} else {
 					// for roles that don't have 'type_access_settings' set, use default.
@@ -3847,7 +3848,7 @@ class ca_users extends BaseModel {
 					// access settings set in the profile and haven't been saved through the UI
 					$vn_access = $this->getAppConfig()->get('default_type_access_level');
 
-					if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
+					if ($vn_access == __CA_BUNDLE_ACCESS_EDIT_DELETE__) { break; }	// already at max
 				}
 			}
 			
@@ -3860,13 +3861,14 @@ class ca_users extends BaseModel {
 		} else {
 			// no type level access control for tables not explicitly listed in $s_bundlable_tables
 			ca_users::$s_user_type_access_cache[$ps_table_name.'/'.$vn_type_id."/".$this->getPrimaryKey()] = ca_users::$s_user_type_access_cache[$vs_cache_key] = __CA_BUNDLE_ACCESS_EDIT__;
-			return __CA_BUNDLE_ACCESS_EDIT__;
+			return __CA_BUNDLE_ACCESS_EDIT_DELETE__;
 		}
 	}
 	# ----------------------------------------
 	/**
 	 * Returns list of type_ids for specified table for which user has at least the specified access
 	 * Types of access are:
+	 *		__CA_BUNDLE_ACCESS_EDIT_DELETE__ (implies ability to view change and delete content)
 	 *		__CA_BUNDLE_ACCESS_EDIT__ (implies ability to view and change bundle content)
 	 *		__CA_BUNDLE_ACCESS_READONLY__ (implies ability to view bundle content only)
 	 *		__CA_BUNDLE_ACCESS_NONE__ (indicates that the user has no access to bundle)
@@ -3912,6 +3914,7 @@ class ca_users extends BaseModel {
 	/**
 	 * Returns the type of access the user has to the specified source.
 	 * Types of access are:
+	 *		__CA_BUNDLE_ACCESS_EDIT_DELETE__ (implies ability to view change and delete content)
 	 *		__CA_BUNDLE_ACCESS_EDIT__ (implies ability to view and change bundle content)
 	 *		__CA_BUNDLE_ACCESS_READONLY__ (implies ability to view bundle content only)
 	 *		__CA_BUNDLE_ACCESS_NONE__ (indicates that the user has no access to bundle)
@@ -3939,7 +3942,7 @@ class ca_users extends BaseModel {
 					if (isset($va_vars['source_access_settings'][$ps_table_name.'.'.$vn_source_id]) && ((int)$va_vars['source_access_settings'][$ps_table_name.'.'.$vn_source_id] > $vn_access)) {
 						$vn_access = (int)$va_vars['source_access_settings'][$ps_table_name.'.'.$vn_source_id];
 						
-						if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
+						if ($vn_access == __CA_BUNDLE_ACCESS_EDIT_DELETE__) { break; }	// already at max
 					}
 				} else {
 					// for roles that don't have 'source_access_settings' set, use default.
@@ -3947,7 +3950,7 @@ class ca_users extends BaseModel {
 					// access settings set in the profile and haven't been saved through the UI
 					$vn_access = $this->getAppConfig()->get('default_source_access_level');
 
-					if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
+					if ($vn_access == __CA_BUNDLE_ACCESS_EDIT_DELETE__) { break; }	// already at max
 				}
 			}
 			
@@ -3959,14 +3962,15 @@ class ca_users extends BaseModel {
 			return $vn_access;
 		} else {
 			// no source level access control for tables not explicitly listed in $s_bundlable_tables
-			ca_users::$s_user_source_access_cache[$ps_table_name.'/'.$vn_source_id."/".$this->getPrimaryKey()] = ca_users::$s_user_source_access_cache[$vs_cache_key] = __CA_BUNDLE_ACCESS_EDIT__;
-			return __CA_BUNDLE_ACCESS_EDIT__;
+			ca_users::$s_user_source_access_cache[$ps_table_name.'/'.$vn_source_id."/".$this->getPrimaryKey()] = ca_users::$s_user_source_access_cache[$vs_cache_key] = __CA_BUNDLE_ACCESS_EDIT_DELETE__;
+			return __CA_BUNDLE_ACCESS_EDIT_DELETE__;
 		}
 	}
 	# ----------------------------------------
 	/**
 	 * Returns list of source_ids for specified table for which user has at least the specified access
 	 * Types of access are:
+	 *		__CA_BUNDLE_ACCESS_EDIT_DELETE__ (implies ability to view change and delete content)
 	 *		__CA_BUNDLE_ACCESS_EDIT__ (implies ability to view and change bundle content)
 	 *		__CA_BUNDLE_ACCESS_READONLY__ (implies ability to view bundle content only)
 	 *		__CA_BUNDLE_ACCESS_NONE__ (indicates that the user has no access to bundle)

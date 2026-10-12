@@ -9073,7 +9073,7 @@ $pa_options["display_form_field_tips"] = true;
 							//if ($vn_max_pixel_width) { $va_list_attrs['style'] = $vs_width_style; }
 
 							if(method_exists($this, 'getTypeFieldName') && ($ps_field == $this->getTypeFieldName())) {
-								$va_limit_list = caGetTypeListForUser($this->tableName(), array('access' => __CA_BUNDLE_ACCESS_EDIT__));
+								$va_limit_list = caGetTypeListForUser($this->tableName(), ['access' => __CA_BUNDLE_ACCESS_EDIT__]);
 							}
 							
 							// NOTE: "raw" field value (value passed into method, before the model default value is applied) is used so as to allow the list default to be used if needed
