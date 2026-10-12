@@ -2691,7 +2691,9 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if(!$lists) { return null; }
 		if(!is_array($lists)) { $lists = [$lists]; }
 		$key = join('-', $lists);
-		if(CompositeCache::contains($key, 'SqlSearch2SearchExpansionDict')) {
+		
+		$cache_timeout = caGetSearchConfig()->get('expand_search_using_lists_cache_timeout');
+		if(($cache_timeout > 0) && CompositeCache::contains($key, 'SqlSearch2SearchExpansionDict')) {
 			return CompositeCache::fetch($key, 'SqlSearch2SearchExpansionDict');
 		} else {
 			$t_list = new ca_lists();
@@ -2737,7 +2739,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 					$dict[$n] = array_unique($dict[$n]);
 				}
 			}
-			CompositeCache::save($key, $dict, 'SqlSearch2SearchExpansionDict');
+			CompositeCache::save($key, $dict, 'SqlSearch2SearchExpansionDict', $cache_timeout);
 			return $dict;
 		}
 	}
