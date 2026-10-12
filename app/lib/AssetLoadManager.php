@@ -266,7 +266,7 @@ class AssetLoadManager {
 		$vs_default_theme_directory_path = $po_request->getDefaultThemeDirectoryPath();
 		
 		if($asset_suffix = Configuration::load('assets.conf')->get('asset_suffix')) {
-			$asset_suffix = "?rev=".urlencode($suffix);
+			$asset_suffix = "?rev=".urlencode($asset_suffix);
 		}
 		
 		if (!$g_asset_config) { AssetLoadManager::init(); }

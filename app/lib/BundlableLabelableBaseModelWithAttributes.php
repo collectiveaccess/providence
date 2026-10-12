@@ -134,7 +134,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$this->initLabelDefinitions();
 		
 		if ($this->isHierarchical() && $this->opo_idno_plugin_instance) {
-			$this->opo_idno_plugin_instance->isChild($this->isChild());
+			$this->isChild();
 		}
 		return $vn_rc;
 	}
@@ -1297,7 +1297,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// Check item level restrictions
-		if (caACLIsEnabled($this)) {
+		if (caACLIsEnabled($this) && (method_exists($this, 'checkACLAccessForUser'))) {
 			$vn_item_access = $this->checkACLAccessForUser($t_user);
 			if ($vn_item_access < __CA_ACL_READONLY_ACCESS__) {
 				return false;
@@ -1334,16 +1334,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		
  		// Check type restrictions
  		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
-			$vn_type_access = $t_user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
-			if ($vn_type_access != __CA_BUNDLE_ACCESS_EDIT__) {
+			$vn_type_access = (int)$t_user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
+			if (!in_array($vn_type_access, [__CA_BUNDLE_ACCESS_EDIT__, __CA_BUNDLE_ACCESS_EDIT_DELETE__], true)) {
 				return false;
 			}
 		}
 		
 		// Check source restrictions
  		if (caSourceAccessControlIsEnabled($this)) {
-			$vn_source_access = $t_user->getSourceAccessLevel($this->tableName(), $this->getSourceID());
-			if ($vn_source_access < __CA_BUNDLE_ACCESS_EDIT__) {
+			$vn_source_access = (int)$t_user->getSourceAccessLevel($this->tableName(), $this->getSourceID());
+			if (!in_array($vn_source_access, [__CA_BUNDLE_ACCESS_EDIT__, __CA_BUNDLE_ACCESS_EDIT_DELETE__], true)) {
 				return false;
 			}
 		}
@@ -1407,16 +1407,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		
  		// Check type restrictions
  		if ((bool)$config->get('perform_type_access_checking')) {
-			$vn_type_access = $t_user->getTypeAccessLevel($table, $this->getTypeID());
-			if ($vn_type_access != __CA_BUNDLE_ACCESS_EDIT__) {
+			$vn_type_access = (int)$t_user->getTypeAccessLevel($table, $this->getTypeID());
+			if (!in_array($vn_type_access, [__CA_BUNDLE_ACCESS_EDIT_DELETE__], true)) {
 				return false;
 			}
 		}
 		
 		// Check source restrictions
  		if (caSourceAccessControlIsEnabled($this)) {
-			$vn_source_access = $t_user->getSourceAccessLevel($table, $this->getSourceID());
-			if ($vn_source_access < __CA_BUNDLE_ACCESS_EDIT__) {
+			$vn_source_access = (int)$t_user->getSourceAccessLevel($table, $this->getSourceID());
+			if (!in_array($vn_source_access, [__CA_BUNDLE_ACCESS_EDIT_DELETE__], true)) {
 				return false;
 			}
 		}
@@ -1677,7 +1677,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if (
 			($dictionary_entry = ca_metadata_dictionary_entries::getEntry($dict_bundle_spec = $bundle_name_proc, $this, $bundle_settings))
 			||
-			($dictionary_entry = ca_metadata_dictionary_entries::getEntry($dict_bundle_spec = $this->tableName().'.'.$bundle_name_proc, $this, $bundle_settings))
+			(
+				!Datamodel::tableExists($bundle_name_proc) 
+				&&
+				($dictionary_entry = ca_metadata_dictionary_entries::getEntry($dict_bundle_spec = $this->tableName().'.'.$bundle_name_proc, $this, $bundle_settings))
+			)
 		) {
 			# Grab definition out of dictionary entry settings: if it was created in a system with multiple locales the available definitions 
 			# will be key'ed by locale code or locale_id (argh). If it was created in an older system with only a single active locale it may
@@ -2124,6 +2128,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'ca_editor_ui_screen_type_restrictions':
 					case 'ca_editor_ui_type_restrictions':
 					case 'ca_relationship_type_restrictions':
+					case 'ca_set_type_restrictions':
 						$element .= $this->getTypeRestrictionsHTMLFormBundle($options['request'], $options['formName'], $placement_code, $options);
 						break;
 					# -------------------------------
@@ -2157,7 +2162,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if (!$options['request']->user->canDoAction('is_administrator') && ($options['request']->getUserID() != $this->get('user_id'))) { return ''; }	// don't allow setting of group access if user is not owner
 						
 						if(in_array($this->tableName(), ['ca_editor_uis', 'ca_editor_ui_screens'], true)) { 
-						    $options['defaultAccess'] = __CA_BUNDLE_ACCESS_EDIT__;
+						    $options['defaultAccess'] = __CA_BUNDLE_ACCESS_EDIT_DELETE__;
 						}
 						$element .= $this->getUserRoleHTMLFormBundle($options['request'], $options['formName'], $placement_code, $this->tableNum(), $this->getPrimaryKey(), $options['request']->getUserID(), $options);
 						break;
@@ -2983,7 +2988,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		
  		if (isset($pa_options['bundles']) && is_array($pa_options['bundles'])) {
  			$va_bundles = $pa_options['bundles'];
- 			$vn_screen_access = __CA_BUNDLE_ACCESS_EDIT__;
+ 			$vn_screen_access = __CA_BUNDLE_ACCESS_EDIT_DELETE__;
  		} else {
  			$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen, $this->getTypeID());
  		
@@ -3097,7 +3102,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			
 				if ($vn_screen_access === __CA_BUNDLE_ACCESS_READONLY__) {
 					$va_bundle['settings']['readonly'] = true;	// force all bundles to read-only when user has "Read" access to screen
-				} elseif ($vn_screen_access !== __CA_BUNDLE_ACCESS_EDIT__) {
+				} elseif (!in_array((int)$vn_screen_access, [__CA_BUNDLE_ACCESS_EDIT__, __CA_BUNDLE_ACCESS_EDIT_DELETE__], true)) {
 					// no edit access so bail
 					//$this->postError(2320, _t('Access denied to screen %1', $pm_screen), "BundlableLabelableBaseModelWithAttributes->getBundleFormHTMLForScreen()");				
 					continue;
@@ -3457,8 +3462,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
-		if ($object_collections_hierarchy_enabled) {
-			
+		if ($object_collections_hierarchy_enabled && sizeof($object_collection_rel_types ?? [])) {
 			$type_selector 	= trim($this->getTypeListAsHTMLFormElement(
 				"{$placement_code}type_id", 
 				['id' => "{$placement_code}{$form_name}typeList"], 
@@ -3947,7 +3951,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				 	!(($b === 'idno') && !$this->getPrimaryKey())
 				) { continue; }			// don't attempt to save "read-only" bundles
 				
-				if (($po_request->user->getBundleAccessLevel($this->tableName(), $va_tmp['bundle_name'])) < __CA_BUNDLE_ACCESS_EDIT__) {	// don't save bundles use doesn't have edit access for
+				if (!in_array(((int)$po_request->user->getBundleAccessLevel($this->tableName(), $va_tmp['bundle_name'])), [__CA_BUNDLE_ACCESS_EDIT__, __CA_BUNDLE_ACCESS_EDIT_DELETE__])) {	// don't save bundles use doesn't have edit access for
 					continue;
 				}
 				$va_info = $this->getBundleInfo($va_tmp['bundle_name']);
@@ -6538,6 +6542,7 @@ if (!$batch) {
 		$disable_sorts = caGetOption('disableSorts', $pa_settings, false);
 						
  		$va_rel_items = $this->getRelatedItems($ps_bundle_name, $pa_settings);
+ 		$rel_pk = Datamodel::primaryKey($ps_bundle_name);
  		
  		$va_rels_to_add = $va_rels_to_delete = [];
  if(!$batch) {	
@@ -6569,7 +6574,7 @@ if (!$batch) {
 				
 				$va_rels_to_delete[] = array('bundle' => $ps_bundle_name, 'relation_id' => $va_rel_item[$vs_key]);
 			} elseif(!$disable_sorts) {
-				$this->editRelationship($ps_bundle_name, $va_rel_item[$vs_key], $va_rel_item['row_id'], $va_rel_item['relationship_type_code'], null, null, $va_rel_item['direction'], $vn_rank, ['allowDuplicates' => true]);		
+				$this->editRelationship($ps_bundle_name, $va_rel_item[$vs_key], $va_rel_item[$rel_pk], $va_rel_item['relationship_type_code'], null, null, $va_rel_item['direction'], $vn_rank, ['allowDuplicates' => true]);		
 			}
 		}
 }
@@ -8185,6 +8190,12 @@ $pa_options["display_form_field_tips"] = true;
 		if (!isset($pa_options['instance']) || !($t_instance = $pa_options['instance'])) {
 			if (!($t_instance = Datamodel::getInstance($pm_rel_table_name_or_num, true))) { return null; }
 		}
+		
+		$start = caGetOption('start', $pa_options, 0);
+		$limit = caGetOption('limit', $pa_options, null);
+		unset($pa_options['start']);
+		unset($pa_options['limit']);
+		
 		$va_ids = [];
 		foreach($pa_ids as $vn_k => $vn_id) {
 			if (is_numeric($vn_id)) { 
@@ -8205,8 +8216,6 @@ $pa_options["display_form_field_tips"] = true;
 			$vo_sort = new BaseFindEngine($this->getDb());
 			$va_ids = $vo_sort->sortHits($va_ids, $t_instance->tableName(), join(';', $pa_sort), caGetOption('sortDirection', $pa_options, 'asc'), $pa_options);
 		} 
-		$start = caGetOption('start', $pa_options, 0);
-		$limit = caGetOption('limit', $pa_options, null);
 		if(($start > 0) || ($limit > 0)) {
 			$va_ids = array_slice($va_ids, $start, $limit);
 		}
@@ -10469,9 +10478,9 @@ side. For many self-relations the direction determines the nature and display te
 	 * @param string $bundle
 	 * @return bool
 	 */
-	public function valueDidChange(string $bundle) : ?bool {
+	public function valueDidChange(string $bundle, ?array $options=null) : ?bool {
 		// TODO: handle changes on relationship?
-		return parent::valueDidChange($bundle);
+		return parent::valueDidChange($bundle, $options );
 	}
 	# -------------------------------------------------------
 }

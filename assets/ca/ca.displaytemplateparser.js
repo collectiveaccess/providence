@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2025 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -80,6 +80,7 @@ var caUI = caUI || {};
 
             // Weight
             "lbs": "pounds", "lb": "pounds", "lb.": "pounds", "pound": "pounds",
+            "lbsoz": "lbs + oz",
             "kg": "kilograms", "kg.": "kilograms", "kilo": "kilograms", "kilos": "kilograms", "kilogram": "kilograms",
             "g": "grams", "g.": "grams", "gr": "grams", "gr.": "grams", "gram": "grams",
             "mg": "milligrams", "mg.": "milligrams", "milligram": "milligrams",
@@ -229,10 +230,10 @@ var caUI = caUI || {};
                                         if ((unitCode = that.units2code[that.unitTable[units]]) && (that.addPeriodAfterUnits) && (that.addPeriodAfterUnits.indexOf(unitCode) !== -1)) {
                                             unitDisplay += ".";
                                         }
-                                
-                                        val = val.replace(units, unitDisplay);
-                                        normalizedVal = that.convertFractionalNumberToDecimal(unitBits[0]).replace(units, that.unitTable[units]);
-                                        foundValue = true;
+                                                                		
+										val = val.replace(units, unitDisplay);
+										normalizedVal = that.convertFractionalNumberToDecimal(unitBits[0]).replace(units, that.unitTable[units]);
+										foundValue = true;
                                     } else {
                                         // invalid units; display question mark to alert user to invalidosity
                                         t = t.replace(tag, "?");
@@ -375,7 +376,7 @@ var caUI = caUI || {};
                                     } else {
                                         vals.push(that.convertLengthToFractions(new Qty(inInches + " in").to('in').toPrec(0.00001).scalar + '', that.getLeastDenominator(), {'includeUnits': emitUnits, 'forceFractions': true, 'precision': that.getPrecisionForUnit("in")}));
                                     }
-                                	lastUnits = 'in'; 
+                                	lastUnits = '' 
                                 }
                                 q = vals.join(" ");
                             } else {
@@ -421,10 +422,17 @@ var caUI = caUI || {};
                             break;
                         // unit directly specified
                         default:
-                        	q = qty.to(cmd[1]).toPrec(that.getPrecisionForUnit(cmd[1])).scalar;
-                            lastUnits = cmd[1];
-                            
-                            templatevalues.push({'value': q, 'units': that.displayUnits[lastUnits] ? that.displayUnits[lastUnits] : lastUnits, 'tag': tag, 'type': 'direct_' + lastUnits});
+                        	if(cmd[1] === 'lbsoz') {
+                        		let w = qty.to('lbs').toPrec(0.00001).scalar;
+                        		let lbs = Math.floor(w);
+                        		let oz = new Qty(((w % 1) * 16) + " oz");
+                        		templatevalues.push({'value': lbs + " lbs " + oz.toPrec(that.getPrecisionForUnit('oz')).scalar + " oz", 'units': '', 'tag': tag, 'type': 'direct_lbsoz'});
+                        	} else {
+                        		q = qty.to(cmd[1]).toPrec(that.getPrecisionForUnit(cmd[1])).scalar;
+                        		
+                           		lastUnits = cmd[1];
+                            	templatevalues.push({'value': q, 'units': that.displayUnits[lastUnits] ? that.displayUnits[lastUnits] : lastUnits, 'tag': tag, 'type': 'direct_' + lastUnits});
+                        	}
                             break;
                     }
                 }
@@ -731,7 +739,7 @@ var caUI = caUI || {};
         			return 'OR';
         	}
         	return null;
-        }
+        };
         // --------------------------------------------------------------------------------
         // Process generate templates with caret-prefixed values. Eg. template is
         // "^title (^idno)"
@@ -787,6 +795,7 @@ var caUI = caUI || {};
            	} 
            	return template;
         };
+		
         // --------------------------------------------------------------------------------
         return that;
     };

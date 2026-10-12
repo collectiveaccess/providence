@@ -4877,8 +4877,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		if(!($delimiters = $item['settings']['delimiter'] ?? null)) { return $row; }
 		if(!$delimiters) { return $row; }
 		if(!is_array($delimiters)) { $delimiters = [$delimiters]; }
-		
-		$values = preg_split('!('.join('|', array_map(function($v) { return preg_quote($v, '!'); }, $delimiters)).')!', $row[$source] ?? null);
+		$values = preg_split('!('.join('|', array_map(function($v) { return preg_quote($v, '!'); }, $delimiters)).')!', is_array($row[$source] ?? null) ? join($delimiters[0] ?? ';', $row[$source]) : $row[$source] ?? null);
 		
 		$row[$source] = $values[$index] ?? null;
 		

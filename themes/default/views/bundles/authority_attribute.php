@@ -117,11 +117,11 @@ print ' '.caNavIcon(__CA_NAV_ICON_DELETE__, 12, ['id' => "{$field_name_prefix}_c
 			select: function( event, ui ) {
 <?php if(!$for_search) { ?>
 				var quickaddPanel = caRelationQuickAddPanel<?= $field_name_prefix; ?>_{n};
-				var quickaddUrl = '<?= $quickadd_url; ?>';
+				var quickaddUrl = '<?= $quickadd_url; ?>';		
+				var label = jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, ''));
 				
 				if(!parseInt(ui.item.id) || (ui.item.id == 0)) {
 					var panelUrl = quickaddUrl;
-					//if (ui.item._query) { panelUrl += '/q/' + escape(ui.item._query); }
 
 					quickaddPanel.showPanel(panelUrl, null, null, { q: ui.item._query, field_name_prefix: '<?= $field_name_prefix; ?>' });
 					var quickAddPanelContent = jQuery('#' + quickaddPanel.getPanelContentID());
@@ -138,10 +138,13 @@ print ' '.caNavIcon(__CA_NAV_ICON_DELETE__, 12, ['id' => "{$field_name_prefix}_c
 					}
 				}
 				
+				jQuery(jQuery('#<?= $field_name_prefix; ?>_autocomplete{n}')).trigger("caAuthorityItemSelected", { 
+					'display': label,
+					'id': ui.item.id
+				});
 				jQuery(this).parent().find('#<?= $field_name_prefix; ?>_{n}').val(ui.item.id);
 				jQuery(this).parent().find('#<?= $field_name_prefix; ?>_autocomplete{n}').val(jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, '')));
-<?php } else { ?>		
-				var label = jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, ''));
+<?php } else { ?>
 				jQuery(this).parent().find('#<?= $field_name_prefix; ?>_{n}').val(label);
 				jQuery(this).parent().find('#<?= $field_name_prefix; ?>_autocomplete{n}').val(label);
 <?php } ?>				
@@ -159,6 +162,11 @@ print ' '.caNavIcon(__CA_NAV_ICON_DELETE__, 12, ['id' => "{$field_name_prefix}_c
 			jQuery('#<?= $field_name_prefix; ?>_{n}').val('');
 			jQuery('#<?= $field_name_prefix; ?>{n}').val('');
 			jQuery('#<?= $field_name_prefix; ?>_autocomplete{n}').val('');
+			
+			jQuery(jQuery('#<?= $field_name_prefix; ?>_autocomplete{n}')).trigger("caAuthorityItemSelected", { 
+				'display': null,
+				'id': null
+			});
 		});
 	});
 </script>

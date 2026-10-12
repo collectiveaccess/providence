@@ -185,7 +185,7 @@ trait CLIUtilsReplication {
 			print "No list for set sources is defined\n";
 		} else {
 			if(ca_list_items::findAsInstance(['idno' => $system_info['app_name'], 'list_id' => $t_list->getPrimaryKey()])) {
-				print "Found existing collection source\n";
+				print "Found existing set source\n";
 			} else {
 				$t_item = new ca_list_items();
 				$t_item->set([

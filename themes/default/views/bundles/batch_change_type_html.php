@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2021 Whirl-i-Gig
+ * Copyright 2013-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,12 +24,11 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
-	AssetLoadManager::register("panel");
-	$t_item = $this->getVar('t_item');
-	
-	$vb_queue_enabled = (bool)$this->request->config->get('queue_enabled');
+ */ 
+AssetLoadManager::register("panel");
+$t_item = $this->getVar('t_item');
+
+$vb_queue_enabled = (bool)$this->request->config->get('queue_enabled');
 ?>
 <script type="text/javascript">
 	var caTypeChangePanel;

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,12 +24,11 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
-	AssetLoadManager::register("panel");
-	$t_item = $this->getVar('t_item');
-	
-	$vs_table_name = $t_item->tableName();
+ */  
+AssetLoadManager::register("panel");
+$t_item = $this->getVar('t_item');
+
+$table_name = $t_item->tableName();
 ?>
 <script type="text/javascript">
 	var caCreateChildPanel;
@@ -57,12 +56,12 @@
 	<div class='dialogHeader'><?= _t('Create child record under this %1', $t_item->getProperty('NAME_SINGULAR')); ?></div>
 	<div id="caCreateChildPanelContentArea">
 <?php	
-			if ($vs_type_list = $this->getVar('type_list')) {
+			if ($type_list = $this->getVar('type_list')) {
 ?>
 			<div class="addChild">
 				<div class="addChildMessage"><?= _t('Select a record type to add a child record under this one'); ?></div>
 					<?= caFormTag($this->request, 'Edit', 'caNewChildForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); ?>
-						<?= _t('Add a %1 under this', $vs_type_list).caHTMLHiddenInput($t_item->primaryKey(), array('value' => '0')).caHTMLHiddenInput('parent_id', array('value' => $t_item->getPrimaryKey())); ?>
+						<?= _t('Add a %1 under this', $type_list).caHTMLHiddenInput($t_item->primaryKey(), array('value' => '0')).caHTMLHiddenInput('parent_id', array('value' => $t_item->getPrimaryKey())); ?>
 						<div id="caTypeChangePanelControlButtons">
 							<table>
 								<tr>
@@ -81,15 +80,15 @@
 					$t_object = new ca_objects();
 					if ((bool)$this->request->config->get('ca_objects_enforce_strict_type_hierarchy')) {
 						// strict menu
-						$vs_type_list = $t_object->getTypeListAsHTMLFormElement('type_id', array('style' => 'width: 90px; font-size: 9px;'), array('childrenOfCurrentTypeOnly' => true, 'directChildrenOnly' => ($this->request->config->get($vs_table_name.'_enforce_strict_type_hierarchy') == '~') ? false : true, 'returnHierarchyLevels' => true, 'access' => __CA_BUNDLE_ACCESS_EDIT__));
+						$type_list = $t_object->getTypeListAsHTMLFormElement('type_id', array('style' => 'width: 90px; font-size: 9px;'), array('childrenOfCurrentTypeOnly' => true, 'directChildrenOnly' => ($this->request->config->get($table_name.'_enforce_strict_type_hierarchy') == '~') ? false : true, 'returnHierarchyLevels' => true, 'access' => __CA_BUNDLE_ACCESS_EDIT__));
 					} else {
 						// all types
-						$vs_type_list = $t_object->getTypeListAsHTMLFormElement('type_id', array('style' => 'width: 90px; font-size: 9px;'), array('access' => __CA_BUNDLE_ACCESS_EDIT__));
+						$type_list = $t_object->getTypeListAsHTMLFormElement('type_id', array('style' => 'width: 90px; font-size: 9px;'), array('access' => __CA_BUNDLE_ACCESS_EDIT__));
 					}
 ?>
 					<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; padding-top:10px" class="addChild">
 						<?= caFormTag($this->request, 'Edit', 'caNewChildObjectForm', 'editor/objects/ObjectEditor', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); ?>
-						<?= _t('Add a %1 under this', $vs_type_list).caHTMLHiddenInput('object_id', array('value' => '0')).caHTMLHiddenInput('collection_id', array('value' => $t_item->getPrimaryKey())); ?>
+						<?= _t('Add a %1 under this', $type_list).caHTMLHiddenInput('object_id', array('value' => '0')).caHTMLHiddenInput('collection_id', array('value' => $t_item->getPrimaryKey())); ?>
 						<div id="caTypeChangePanelControlButtons">
 							<table>
 								<tr>

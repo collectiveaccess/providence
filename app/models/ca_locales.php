@@ -667,4 +667,16 @@ class ca_locales extends BaseModel {
 		return $t[$name] ?? null;
 	}
 	# ------------------------------------------------------
+	/**
+	 * Return language code for locale
+	 *
+	 * @param string $locale
+	 *
+	 * @return string 
+	 */
+	static function languageForLocale(string $locale) : ?string {
+		$tmp = explode('_', $locale);
+		return array_shift($tmp);
+	}
+	# ------------------------------------------------------
 }
