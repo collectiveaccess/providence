@@ -1733,7 +1733,7 @@ class BaseEditorController extends ActionController {
 			$vs_display_field	= $t_label->getDisplayField();
 		}
 		
-		$vn_item_id 		= (isset($pa_parameters[$vs_pk])) ? $pa_parameters[$vs_pk] : null;
+		$vn_item_id 	= (isset($pa_parameters[$vs_pk])) ? $pa_parameters[$vs_pk] : null;
 		$type_id 		= (isset($pa_parameters['type_id'])) ? $pa_parameters['type_id'] : null;
 
 		$t_item->load($vn_item_id);
