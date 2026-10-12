@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2024 Whirl-i-Gig
+ * Copyright 2013-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -64,6 +64,9 @@ class ExpressionParser {
 			self::$s_visitor = new ExpressionVisitor();
 		}
 	}
+	
+	static public $last_error = null;
+	
 	# -------------------------------------------------------------------
 	/**
 	 * @param string $ps_expression
@@ -120,6 +123,7 @@ class ExpressionParser {
     	try {
     		return $e->evaluateExpression($ps_expression, $pa_variables);
     	} catch (Exception $e) {
+    		ExpressionParser::$last_error = $e->getMessage();
     		return null;
     	}
     }
@@ -132,6 +136,15 @@ class ExpressionParser {
 	 */
 	static public function getVariableList($ps_expression) {
 		return caGetTemplateTags($ps_expression);
+	}
+	# -------------------------------------------------------------------
+	/**
+	 * Get error from most recent call to ExpressionParser::evaluate()
+	 *
+	 * @return string
+	 */
+	static public function getLastError() : ?string{
+		return ExpressionParser::$last_error;
 	}
 	# -------------------------------------------------------------------
 }

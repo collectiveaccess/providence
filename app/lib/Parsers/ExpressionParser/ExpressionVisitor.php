@@ -440,7 +440,16 @@ class ExpressionVisitor implements Visitor\Visit {
 				$va_children[1]->accept($this, $f_acc, $f_eldnah);
 
 				break;
+			case '#modulus':
+				$va_children[0]->accept($this, $a, $f_eldnah);
 
+				$f_acc = function ($b) use ($a, $f_acc) {
+					return $f_acc($a() % $b);
+				};
+
+				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+
+				break;
 			case '#fakegroup':
 			case '#group':
 				$va_children[0]->accept($this, $a, $f_eldnah);
