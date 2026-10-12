@@ -1297,7 +1297,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// Check item level restrictions
-		if (caACLIsEnabled($this)) {
+		if (caACLIsEnabled($this) && (method_exists($this, 'checkACLAccessForUser'))) {
 			$vn_item_access = $this->checkACLAccessForUser($t_user);
 			if ($vn_item_access < __CA_ACL_READONLY_ACCESS__) {
 				return false;
@@ -1334,16 +1334,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		
  		// Check type restrictions
  		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
-			$vn_type_access = $t_user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
-			if ($vn_type_access != __CA_BUNDLE_ACCESS_EDIT__) {
+			$vn_type_access = (int)$t_user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
+			if (!in_array($vn_type_access, [__CA_BUNDLE_ACCESS_EDIT__, __CA_BUNDLE_ACCESS_EDIT_DELETE__], true)) {
 				return false;
 			}
 		}
 		
 		// Check source restrictions
  		if (caSourceAccessControlIsEnabled($this)) {
-			$vn_source_access = $t_user->getSourceAccessLevel($this->tableName(), $this->getSourceID());
-			if ($vn_source_access < __CA_BUNDLE_ACCESS_EDIT__) {
+			$vn_source_access = (int)$t_user->getSourceAccessLevel($this->tableName(), $this->getSourceID());
+			if (!in_array($vn_source_access, [__CA_BUNDLE_ACCESS_EDIT__, __CA_BUNDLE_ACCESS_EDIT_DELETE__], true)) {
 				return false;
 			}
 		}
@@ -1407,16 +1407,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		
  		// Check type restrictions
  		if ((bool)$config->get('perform_type_access_checking')) {
-			$vn_type_access = $t_user->getTypeAccessLevel($table, $this->getTypeID());
-			if ($vn_type_access != __CA_BUNDLE_ACCESS_EDIT__) {
+			$vn_type_access = (int)$t_user->getTypeAccessLevel($table, $this->getTypeID());
+			if (!in_array($vn_type_access, [__CA_BUNDLE_ACCESS_EDIT_DELETE__], true)) {
 				return false;
 			}
 		}
 		
 		// Check source restrictions
  		if (caSourceAccessControlIsEnabled($this)) {
-			$vn_source_access = $t_user->getSourceAccessLevel($table, $this->getSourceID());
-			if ($vn_source_access < __CA_BUNDLE_ACCESS_EDIT__) {
+			$vn_source_access = (int)$t_user->getSourceAccessLevel($table, $this->getSourceID());
+			if (!in_array($vn_source_access, [__CA_BUNDLE_ACCESS_EDIT_DELETE__], true)) {
 				return false;
 			}
 		}
@@ -2156,7 +2156,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if (!$options['request']->user->canDoAction('is_administrator') && ($options['request']->getUserID() != $this->get('user_id'))) { return ''; }	// don't allow setting of group access if user is not owner
 						
 						if(in_array($this->tableName(), ['ca_editor_uis', 'ca_editor_ui_screens'], true)) { 
-						    $options['defaultAccess'] = __CA_BUNDLE_ACCESS_EDIT__;
+						    $options['defaultAccess'] = __CA_BUNDLE_ACCESS_EDIT_DELETE__;
 						}
 						$element .= $this->getUserRoleHTMLFormBundle($options['request'], $options['formName'], $placement_code, $this->tableNum(), $this->getPrimaryKey(), $options['request']->getUserID(), $options);
 						break;
@@ -2982,7 +2982,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		
  		if (isset($pa_options['bundles']) && is_array($pa_options['bundles'])) {
  			$va_bundles = $pa_options['bundles'];
- 			$vn_screen_access = __CA_BUNDLE_ACCESS_EDIT__;
+ 			$vn_screen_access = __CA_BUNDLE_ACCESS_EDIT_DELETE__;
  		} else {
  			$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen, $this->getTypeID());
  		
@@ -3096,7 +3096,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			
 				if ($vn_screen_access === __CA_BUNDLE_ACCESS_READONLY__) {
 					$va_bundle['settings']['readonly'] = true;	// force all bundles to read-only when user has "Read" access to screen
-				} elseif ($vn_screen_access !== __CA_BUNDLE_ACCESS_EDIT__) {
+				} elseif (!in_array((int)$vn_screen_access, [__CA_BUNDLE_ACCESS_EDIT__, __CA_BUNDLE_ACCESS_EDIT_DELETE__], true)) {
 					// no edit access so bail
 					//$this->postError(2320, _t('Access denied to screen %1', $pm_screen), "BundlableLabelableBaseModelWithAttributes->getBundleFormHTMLForScreen()");				
 					continue;
@@ -3943,7 +3943,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				 	!(($b === 'idno') && !$this->getPrimaryKey())
 				) { continue; }			// don't attempt to save "read-only" bundles
 				
-				if (($po_request->user->getBundleAccessLevel($this->tableName(), $va_tmp['bundle_name'])) < __CA_BUNDLE_ACCESS_EDIT__) {	// don't save bundles use doesn't have edit access for
+				if (!in_array(((int)$po_request->user->getBundleAccessLevel($this->tableName(), $va_tmp['bundle_name'])), [__CA_BUNDLE_ACCESS_EDIT__, __CA_BUNDLE_ACCESS_EDIT_DELETE__])) {	// don't save bundles use doesn't have edit access for
 					continue;
 				}
 				$va_info = $this->getBundleInfo($va_tmp['bundle_name']);

@@ -130,6 +130,7 @@ $g_access_helpers_type_restriction_cache = array();
  *			__CA_BUNDLE_ACCESS_NONE__ (0)
  *			__CA_BUNDLE_ACCESS_READONLY__ (1)
  *			__CA_BUNDLE_ACCESS_EDIT__ (2)
+ *			__CA_BUNDLE_ACCESS_EDIT_DELETE (3)
  *			If not specified types are returned for which the user has at least __CA_BUNDLE_ACCESS_READONLY__
  *
  *		exactAccess = if set only sources with access equal to the "access" value are returned. Default is false.
@@ -197,6 +198,7 @@ $g_access_helpers_source_restriction_cache = array();
  *			__CA_BUNDLE_ACCESS_NONE__ (0)
  *			__CA_BUNDLE_ACCESS_READONLY__ (1)
  *			__CA_BUNDLE_ACCESS_EDIT__ (2)
+ *			__CA_BUNDLE_ACCESS_EDIT_DELETE (3)
  *			If not specified sources are returned for which the user has at least __CA_BUNDLE_ACCESS_READONLY__
  *
  *		exactAccess = if set only sources with access equal to the "access" value are returned. Default is false.
@@ -259,6 +261,7 @@ function caGetSourceRestrictionsForUser($pm_table_name_or_num, $pa_options=null)
  *			__CA_BUNDLE_ACCESS_NONE__ (0)
  *			__CA_BUNDLE_ACCESS_READONLY__ (1)
  *			__CA_BUNDLE_ACCESS_EDIT__ (2)
+ *			__CA_BUNDLE_ACCESS_EDIT_DELETE (3)
  *			If not specified types are returned for which the user has at least __CA_BUNDLE_ACCESS_READONLY__
  *
  * @return array List of numeric type_ids for which the user has access, or null if there are no restrictions at all
@@ -281,6 +284,7 @@ function caGetTypeListForUser($pm_table_name_or_num, $pa_options=null) {
  *			__CA_BUNDLE_ACCESS_NONE__ (0)
  *			__CA_BUNDLE_ACCESS_READONLY__ (1)
  *			__CA_BUNDLE_ACCESS_EDIT__ (2)
+ *			__CA_BUNDLE_ACCESS_EDIT_DELETE (3)
  *			If not specified sources are returned for which the user has at least __CA_BUNDLE_ACCESS_READONLY__
  *
  * @return array List of numeric source_ids for which the user has access, or null if there are no restrictions at all
@@ -723,7 +727,8 @@ function caMergeSourceRestrictionLists($t_instance, $pa_options) {
  * @return int Numeric constant representing access. Values are:
  *		__CA_BUNDLE_ACCESS_NONE__ (0)
  *		__CA_BUNDLE_ACCESS_READONLY__ (1)
- *		__CA_BUNDLE_ACCESS_EDIT__ (2)
+ *			__CA_BUNDLE_ACCESS_EDIT__ (2)
+ *			__CA_BUNDLE_ACCESS_EDIT_DELETE (3)
  */
 $g_bundle_access_level_cache = array();
 function caGetBundleAccessLevel($ps_table_name, $ps_bundle_name) {
@@ -747,7 +752,8 @@ function caGetBundleAccessLevel($ps_table_name, $ps_bundle_name) {
  * @return int Numeric constant representing access. Values are:
  *		__CA_BUNDLE_ACCESS_NONE__ (0)
  *		__CA_BUNDLE_ACCESS_READONLY__ (1)
- *		__CA_BUNDLE_ACCESS_EDIT__ (2)
+ *			__CA_BUNDLE_ACCESS_EDIT__ (2)
+ *			__CA_BUNDLE_ACCESS_EDIT_DELETE (3)
  */
 $g_type_access_level_cache = array();
 function caGetTypeAccessLevel($ps_table_name, $pm_type_code_or_id) {
@@ -769,7 +775,8 @@ function caGetTypeAccessLevel($ps_table_name, $pm_type_code_or_id) {
  * @return int Numeric constant representing access. Values are:
  *		__CA_BUNDLE_ACCESS_NONE__ (0)
  *		__CA_BUNDLE_ACCESS_READONLY__ (1)
- *		__CA_BUNDLE_ACCESS_EDIT__ (2)
+ *			__CA_BUNDLE_ACCESS_EDIT__ (2)
+ *			__CA_BUNDLE_ACCESS_EDIT_DELETE (3)
  */
 $g_source_access_level_cache = array();
 function caGetSourceAccessLevel($ps_table_name, $pm_source_code_or_id) {
@@ -1053,7 +1060,7 @@ function caGetAccessConfigOption(BaseModelWithAttributes $t_item, string $config
 function caConvertACLStringToConstant(string $name) : int {
 	switch($name) {
 		case 'edit':
-			return __CA_BUNDLE_ACCESS_EDIT__;
+			return __CA_BUNDLE_ACCESS_EDIT_DELETE__;
 		case 'read':
 			return __CA_BUNDLE_ACCESS_READONLY__;
 		case 'none':
@@ -1070,7 +1077,7 @@ function caConvertUserGroupAccessStringToInt(string $name) : int {
 		case 'read':
 			return 1;
 		case 'edit':
-			return 2;
+			return 3;
 		default:
 			return 0;
 	}
