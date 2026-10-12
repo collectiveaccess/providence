@@ -1792,10 +1792,10 @@ class BaseEditorController extends ActionController {
 			$vs_display_field	= $t_label->getDisplayField();
 		}
 		
-		$vn_item_id 		= (isset($pa_parameters[$vs_pk])) ? $pa_parameters[$vs_pk] : null;
+		$vn_item_id 	= (isset($pa_parameters[$vs_pk])) ? $pa_parameters[$vs_pk] : null;
 		$type_id 		= (isset($pa_parameters['type_id'])) ? $pa_parameters['type_id'] : null;
 
-		if(!$t_item->load($vn_item_id)) { return; }
+		$t_item->load($vn_item_id);
 
 		if(!$this->verifyAccess($t_item, __CA_BUNDLE_ACCESS_READONLY__)) { 
 			$t_item->clear();
