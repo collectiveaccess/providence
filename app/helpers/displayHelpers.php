@@ -6603,7 +6603,7 @@ function caEditorFormControls(View $view, string $form_id, ?array $options=null)
 	$labels = $view->request->config->getAssoc("{$table}_{$type}_editor_control_labels") ?? $view->request->config->getAssoc("{$table}_editor_control_labels") ?? $view->request->config->getAssoc("editor_control_labels") ?? [];
 
 	$buf = caFormControlBox(
-		caFormSubmitButton($view->request, __CA_NAV_ICON_SAVE__, $labels['save'] ?? _t("Save"), $form_id).' '.
+		caFormSubmitButton($view->request, __CA_NAV_ICON_SAVE__, $labels['save'] ?? _t("Save"), $form_id, ['preventDuplicateSubmits' => true]).' '.
 		($view->getVar('show_save_and_return') ? caFormSubmitButton($view->request, __CA_NAV_ICON_SAVE__, $labels['save_and_return'] ?? _t("Save and return"), $form_id, ['isSaveAndReturn' => true]) : '').' '.
 		caFormNavButton($view->request, __CA_NAV_ICON_CANCEL__, $labels['cancel'] ?? _t("Cancel"), '', $url['module'], $url['controller'], 'Edit/'.$view->request->getActionExtra(), $cancel_parameters),
 		($view->getVar('show_show_notifications') ? caFormJSButton($view->request, __CA_NAV_ICON_ALERT__, $labels['alerts'] ?? _t("Show editor alerts"), '', ['class' => 'caEditorFormNotifications']) : ''),
