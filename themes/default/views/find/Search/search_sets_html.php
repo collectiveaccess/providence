@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2025 Whirl-i-Gig
+ * Copyright 2025-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -82,7 +82,7 @@ if ($can_edit_sets || $can_create_sets) {
 			<?= caBusyIndicatorIcon($this->request, ['id' => 'caSetRequestIndicator']); ?>
 		</span>
 		<br>
-		<form id="caCreateSetyFromResults">
+		<form id="caCreateSetFromResults">
 			<?= _t("%1 to %2", 
 				$source_select,
 				($can_edit_sets ? $set_list : '').($can_create_sets ? $new_set_input : '')
