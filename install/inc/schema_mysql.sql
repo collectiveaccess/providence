@@ -8048,4 +8048,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, modifier, datetime, schema_name) VALUES (216, 0, unix_timestamp(), 'CORE');
+INSERT IGNORE INTO ca_schema_updates (version_num, modifier, datetime, schema_name) VALUES (217, 0, unix_timestamp(), 'CORE');
