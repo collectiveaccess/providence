@@ -98,6 +98,14 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		return $pa_params;
 	}
 	# --------------------------------------------------------------------------------------------
+	public function hookDataPostImport(&$pa_params) {
+		if ($this->opo_plugin_config->get('enabled') && !caGetOption('for_duplication', $pa_params, false)) {
+			$pa_params['instance'] = $pa_params['subject'];
+			$this->prepopulateFields($pa_params, ['hook' => 'dataPostImport', 'use' => 'import']);
+		}
+		return $pa_params;
+	}
+	# --------------------------------------------------------------------------------------------
 	/**
 	 *
 	 */
@@ -171,7 +179,8 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		$default_prepop_on_save  = (bool)$this->opo_plugin_config->get('prepopulate_fields_on_save');
 		$default_prepop_on_edit  = (bool)$this->opo_plugin_config->get('prepopulate_fields_on_edit');
 		$default_prepop_before_insert = (bool)$this->opo_plugin_config->get('prepopulate_fields_before_insert');
-
+		$default_prepop_on_import = (bool)$this->opo_plugin_config->get('prepopulate_fields_on_import');
+		
 		$va_rules = $this->opo_plugin_config->get('prepopulate_rules');
 		if (!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { 
 			$this->log->logDebug("[prepopulateFields()] aborting because no rules are set");
@@ -214,12 +223,12 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 
 		// process rules
 		$va_expression_vars = array(); // we only process those if and when we need them
+		
 		foreach($va_rules as $vs_rule_key => $va_rule) {
 			if($t_instance->tableName() != $va_rule['table']) { continue; }
 			$useFor = caGetOption('useFor', $va_rule, null);
 			if ($useFor && !is_array($useFor)) { $useFor = [$useFor]; }
 			$useFor = is_array($useFor) ? array_map(function($v) { return strtolower($v); }, $useFor) : null;
-
 			if (is_array($useFor) && !is_null($use) && !in_array($use, $useFor, true)) {
 				continue;
 			} elseif(!$useFor) {
@@ -228,12 +237,12 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 				if (($use === 'edit') && !$default_prepop_on_edit) { continue; }
 				if (($use === 'save') && !$default_prepop_on_save) { continue; }
 				if (($use === 'beforeinsert') && !$default_prepop_before_insert) { continue; }
+				if (($use === 'import') && !$default_prepop_on_import) { continue; }
 			}
 			$vs_mode = strtolower(caGetOption('mode', $va_rule, 'merge'));
 
 			// check target
 			$vs_target = caGetOption('target', $va_rule, null);
-
 			if(strlen($vs_target)<1) { $this->log->logDebug("[prepopulateFields()] skipping rule $vs_rule_key because target is not set"); continue; }
 
 			$vb_is_relationship_rule = Datamodel::tableExists($vs_target);
