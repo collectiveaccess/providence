@@ -806,43 +806,45 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$va_sql_params[] = (string)$ps_set_name;
 		}
 		
-		if (!$pb_set_ids_only && !$pb_omit_counts) {
-			// get set item counts
-			$qr_table_nums = $o_db->query("
-				SELECT DISTINCT cs.table_num 
-				FROM ca_sets cs
-				INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
-				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
-				".join(' AND ', $va_sql_wheres)."
-			", $va_sql_params);
-			
-			$va_item_counts = array();
-			while($qr_table_nums->nextRow()) {
-				$t_instance = Datamodel::getInstanceByTableNum($vn_table_num = (int)$qr_table_nums->get('table_num'), true);
-				if (!$t_instance) { continue; }
-				
-				$va_item_sql_params = $va_sql_params;
-				$va_item_wheres = $va_sql_wheres;
-				$va_item_wheres[] = "(cs.table_num = {$vn_table_num})";
-				if ($t_instance->hasField('deleted')) {
-					$va_item_wheres[] = "(t.deleted = 0)";
-				}
-				if (!is_null($pa_public_access) && is_array($pa_public_access) && sizeof($pa_public_access)) {
-					$va_item_wheres[] = "(t.access IN (?))";
-					$va_item_sql_params[] = $pa_public_access;
-				}
-				
-				$qr_res = $o_db->query("
-					SELECT cs.set_id, count(distinct row_id) item_count
+		if (!$pb_set_ids_only) {
+			if(!$pb_omit_counts) {
+				// get set item counts
+				$qr_table_nums = $o_db->query("
+					SELECT DISTINCT cs.table_num 
 					FROM ca_sets cs
-					LEFT JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
-					INNER JOIN ".$t_instance->tableName()." AS t ON t.".$t_instance->primaryKey()." = csi.row_id
-					".(sizeof($va_item_wheres) ? 'WHERE ' : '')."
-					".join(' AND ', $va_item_wheres)."
-					GROUP BY cs.set_id
-				", $va_item_sql_params);
-				while($qr_res->nextRow()) {
-					$va_item_counts[(int)$qr_res->get('set_id')] = (int)$qr_res->get('item_count');
+					INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
+					".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
+					".join(' AND ', $va_sql_wheres)."
+				", $va_sql_params);
+				
+				$va_item_counts = [];
+				while($qr_table_nums->nextRow()) {
+					$t_instance = Datamodel::getInstanceByTableNum($vn_table_num = (int)$qr_table_nums->get('table_num'), true);
+					if (!$t_instance) { continue; }
+					
+					$va_item_sql_params = $va_sql_params;
+					$va_item_wheres = $va_sql_wheres;
+					$va_item_wheres[] = "(cs.table_num = {$vn_table_num})";
+					if ($t_instance->hasField('deleted')) {
+						$va_item_wheres[] = "(t.deleted = 0)";
+					}
+					if (!is_null($pa_public_access) && is_array($pa_public_access) && sizeof($pa_public_access)) {
+						$va_item_wheres[] = "(t.access IN (?))";
+						$va_item_sql_params[] = $pa_public_access;
+					}
+					
+					$qr_res = $o_db->query("
+						SELECT cs.set_id, count(distinct row_id) item_count
+						FROM ca_sets cs
+						LEFT JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
+						INNER JOIN ".$t_instance->tableName()." AS t ON t.".$t_instance->primaryKey()." = csi.row_id
+						".(sizeof($va_item_wheres) ? 'WHERE ' : '')."
+						".join(' AND ', $va_item_wheres)."
+						GROUP BY cs.set_id
+					", $va_item_sql_params);
+					while($qr_res->nextRow()) {
+						$va_item_counts[(int)$qr_res->get('set_id')] = (int)$qr_res->get('item_count');
+					}
 				}
 			}
 		
