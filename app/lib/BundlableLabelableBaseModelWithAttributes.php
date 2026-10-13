@@ -1357,10 +1357,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
  		// Check actions
- 		if (!$this->getPrimaryKey() && !$t_user->canDoAction('can_create_'.$this->tableName())) {
+ 		if (!$this->getPrimaryKey() && ($t_user->canDoAction('can_create_'.$this->tableName()) === false)) {
  			return false;
  		}
- 		if ($this->getPrimaryKey() && !$t_user->canDoAction('can_edit_'.$this->tableName())) {
+ 		if ($this->getPrimaryKey() && ($t_user->canDoAction('can_edit_'.$this->tableName()) === false)) {
  			return false;
  		}
  		
