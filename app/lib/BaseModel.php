@@ -677,6 +677,15 @@ class BaseModel extends BaseObject {
 	}
 	# --------------------------------------------------------------------------------
 	/**
+	 * Return internal list of fields that have changed since instantiation
+	 *
+	 * @return array
+	 */
+	public function getDidChangeList() {
+		return $this->_FIELD_VALUE_CHANGED;
+	}
+	# --------------------------------------------------------------------------------
+	/**
 	 * Check if the content of a field changed prior to the last insert or update.
 	 *
 	 * @param string $field field name
