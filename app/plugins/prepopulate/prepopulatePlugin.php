@@ -37,6 +37,8 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 	
 	private $log;
 	
+	private static $run_dependencies;
+	
 	# --------------------------------------------------------------------------------------------
 	/**
 	 * Plugin config
@@ -153,7 +155,6 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			$this->log->logDebug("[prepopulateFields()] aborting because no instance was passed");
 			return false; 
 		}
-		
 		//
 		$t_parent = null;
 		$id = $t_instance->getPrimaryKey();
@@ -222,10 +223,31 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 		}
 
 		// process rules
-		$va_expression_vars = array(); // we only process those if and when we need them
+		$va_expression_vars = []; // we only process those if and when we need them
 		
+		$dependencies = [];
 		foreach($va_rules as $vs_rule_key => $va_rule) {
-			if($t_instance->tableName() != $va_rule['table']) { continue; }
+			if($t_instance->tableName() != $va_rule['table']) { 
+				if(is_array($va_rule['dependencies'] ?? null)) {
+					foreach($va_rule['dependencies']  as $dtable => $dinfo) {
+						if(!Datamodel::tableExists($dtable)) { continue; }
+						if($t_instance->tableName() !== $dtable) { continue; }
+						if(is_array($dinfo['restrictToTypes'] ?? null)) {
+							$rtypes = caMakeTypeIDList($t_instance->tableName(), $dinfo['restrictToTypes']);
+							if(!in_array($t_instance->getTypeID(), $rtypes)) { continue; }
+						}
+						$ids = $t_instance->get("{$va_rule['table']}.".Datamodel::primaryKey($va_rule['table']), ['restrictToTypes' => $va_rule['restrictToTypes'] ?? null, 'restrictToRelationshipTypes' => $dinfo['restrictToRelationshipTypes'] ?? null, 'returnAsArray' => true]);
+					
+						$use = $dinfo['useFor'] ?? $options['use'];
+						if($use && !is_array($use)) { $use = [$use]; }
+						
+						foreach($use as $u) {
+							$dependencies[$va_rule['table']][$u] = array_unique(array_merge($dependencies[$dtable][$u] ?? [], $ids ?? []));
+						}
+					}
+				}
+				continue; 
+			}
 			$useFor = caGetOption('useFor', $va_rule, null);
 			if ($useFor && !is_array($useFor)) { $useFor = [$useFor]; }
 			$useFor = is_array($useFor) ? array_map(function($v) { return strtolower($v); }, $useFor) : null;
@@ -737,7 +759,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 				}
 			}
 		}
-
+		
 		if($force_values) {
 			foreach($forced_values as $k => $v) {
 				if($t_instance->hasField($k)) {
@@ -757,6 +779,24 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 				return false;
 			}
 		}
+		
+		// Dependencies?
+		if(is_array($dependencies) && sizeof($dependencies)) { 
+			foreach($dependencies as $dtable => $by_use) {
+				foreach($by_use as $use => $dids) {
+					foreach($dids as $did) {
+						if($t_dep = $dtable::findAsInstance($did)) { 
+							if(self::$run_dependencies[$dtable][$use][$did] ?? false) { continue; }
+							$dparams = ['instance' => $t_dep];
+							
+							$this->prepopulateFields($dparams, array_merge($options, ['use' => $use ?? $options['use'] ?? 'save']));
+							self::$run_dependencies[$dtable][$use][$did] = true;
+						}
+					}
+				}
+			}
+		}
+		
 
 		if ($vb_we_set_transaction) { $t_instance->removeTransaction(true); }
 		return true;
