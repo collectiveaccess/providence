@@ -892,7 +892,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				$va_sets[$set_id][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), $extras);
 					
 				if(isset($pa_options['inventoriesOnly'])) {
-					$i = ca_set_items::findAsInstance($qr_res->get('item_id'));	
+					if(!($i = ca_set_items::findAsInstance($qr_res->get('item_id')))) { continue; }
 					$found_idno = $i->get("ca_set_items.{$editable_bundle_info['containerElementCode']}.{$editable_bundle_info['foundElementCode']}", ['convertCodesToIdno' => true]) ?? 'NOT_CHECKED';
 			
 					$found_options = is_array($editable_bundle_info['foundOptions']) ? $editable_bundle_info['foundOptions'] : [];
