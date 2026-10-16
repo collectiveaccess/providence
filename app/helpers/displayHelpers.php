@@ -1412,18 +1412,6 @@ function caEditorInspector($view, $options=null) {
 				}
 			}
 
-			if($view->request->user->canDoAction("can_duplicate_{$table_name}") && $t_item->getPrimaryKey()) {
-				$tools[] = "<div id='caDuplicateItemButton' class='inspectorActionButton'>".
-				           caFormTag($view->request, 'Edit', 'DuplicateItemForm', $view->request->getModulePath().'/'.$view->request->getController(), 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true]).
-				           "<div>".caFormSubmitLink($view->request, caNavIcon(__CA_NAV_ICON_DUPLICATE__, '20px'), '', 'DuplicateItemForm', null, ['aria-label' => _t('Duplicate item')])."</div>".
-				           caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey())).
-				           caHTMLHiddenInput('mode', array('value' => 'dupe')).
-				           "	</form>
-						</div>\n";
-
-				TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($type_name, 'UTF-8')));
-			}
-
 			if (method_exists($t_item, 'getTypeCode') && caHomeLocationsEnabled($t_item->tableName(), $t_item->getTypeCode()) && $view->request->user->canDoAction("can_set_home_location_".$table_name)) {
 				$tools[] = "<div id='inspectorSetHomeLocation' class='inspectorActionButton'><div id='inspectorSetHomeLocationButton'><a href='#' onclick='_initSetHomeLocationHierarchyBrowser(); return false;'>".caNavIcon(__CA_NAV_ICON_HOME__, '20px', array('title' => _t('Set home location')))."</a></div></div>\n";
 
