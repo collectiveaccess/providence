@@ -6291,6 +6291,7 @@ table.caConfirmBatchExecutionPanelAlertControls {
 
 /* Type change */
 #caTypeChangePanel, #caCreateChildPanel, #caSetAccessForRelatedPanel, #caDuplicationSettingsPanel, #caRandomSetGenerationPanel {
+
     position: fixed;
     top: 0px;
     left: 0px;
@@ -6305,7 +6306,7 @@ table.caConfirmBatchExecutionPanelAlertControls {
     -webkit-border-radius:4px;
 }
 
-#caTypeChangePanel .close a, #caCreateChildPanel .close a, #caSetHomeLocationPanel .close a, ##caCreateChildPanel .close a, #caSetAccessForRelatedPanel .close a, .close, caDuplicationSettingsPanel .close a a {
+#caTypeChangePanel .close a, #caCreateChildPanel .close a, #caSetHomeLocationPanel .close a, #caCreateChildPanel .close a, #caSetAccessForRelatedPanel .close a, .close, caDuplicationSettingsPanel .close a a {
     text-decoration:none;
     font-size:16px;
 }

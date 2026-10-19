@@ -4445,7 +4445,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public static function _extractIntrinsicValues($pa_values, $ps_table) {
 		$t_instance = Datamodel::getInstance($ps_table, true);
-		$va_form_fields = $t_instance->getFormFields();
+		$va_form_fields = $t_instance->getFormFields(true);
 		
 		$va_extracted_values = array();
 		foreach($va_form_fields as $vs_field => $va_field_info) {

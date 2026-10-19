@@ -45,6 +45,7 @@ trait CLIUtilsMedia {
 		$kinds = caGetOption('kinds', $opts, 'ca_object_representations', ['forceLowercase' => true, 'validValues' => ['all', 'ca_object_representations', 'ca_attributes', 'icons'], 'delimiter' => [',', ';']]);
 		
 		$unprocessed = (bool)$opts->getOption('unprocessed');
+		$missing = (bool)$opts->getOption('missing');
 		$oriented_only = (bool)$opts->getOption('oriented-only');
 		if($extract_metadata_only = (bool)$opts->getOption('extract-metadata-only')) {
 			$kinds = ['ca_object_representations'];
@@ -155,6 +156,20 @@ trait CLIUtilsMedia {
 							continue;
 						}
 					}
+					
+					$mversions = [];
+					if($missing) {
+						$cversions = $versions ?? $qr_reps->getMediaVersions('media');
+						foreach($cversions as $cv) {
+							if(!$qr_reps->getMediaInfo('media', $cv, 'MIMETYPE')) {
+								$mversions[] = $cv;
+							}
+						}
+						if(!sizeof($mversions)) { 
+							if (!$quiet) { print CLIProgressBar::next(1, $message); }
+							continue; 
+						}
+					}
 
 
 					if (!$quiet) {
@@ -176,9 +191,10 @@ trait CLIUtilsMedia {
 						$t_rep->updateExtractedMediaMetadata();
 					} else {
 						$t_rep->set('media', $qr_reps->getMediaPath('media', 'original'), array('original_filename' => $original_filename));
-	
-						if (is_array($versions) && sizeof($versions)) {
-							$t_rep->update(array('updateOnlyMediaVersions' =>$versions));
+						if(is_array($mversions) && sizeof($mversions)) {
+							$t_rep->update(['updateOnlyMediaVersions' => $mversions]);
+						} elseif(is_array($versions) && sizeof($versions)) {
+							$t_rep->update(['updateOnlyMediaVersions' => $versions]);
 						} else {
 							$t_rep->update();
 						}
@@ -190,6 +206,7 @@ trait CLIUtilsMedia {
 						}
 					}
 				}
+				$qr_reps->free();
 				$c += $inc;
 			} while($n > 0);
 			if (!$quiet) { print CLIProgressBar::finish(); }
@@ -302,6 +319,7 @@ trait CLIUtilsMedia {
 			"object_ids|o-s" => _t('Comma separated list of object ids to reload'),
 			"kinds|k-s" => _t('Comma separated list of kind of media to reprocess. Valid kinds are ca_object_representations (object representations), ca_attributes (metadata elements) and icons (icon graphics on list items, storage locations, editors, editor screens, tours and tour stops). You may also specify "all" to reprocess all kinds of media. Default is "all"'),
 			"unprocessed|u" => _t('Reprocess all unprocessed media'),
+			"missing|g" => _t('Reprocess all missing media versions'),
 			"oriented-only|y-i" => _t('Only reprocess image media having the EXIF orientation set to a value > 1'),
 			"extract-metadata-only|z-i" => _t('Only extract embedded metadata from media. Do not reprocess.'),
 		);

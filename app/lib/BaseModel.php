@@ -4863,6 +4863,12 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 							$replace_with_version_opt = $skip_when_opt[$v]['replaceWithVersion'] ?? null;
 						}
 
+						if(caGetOption('SKIP_IF_PLAYABLE_H264', $version_info[$v], false, ['castTo' => 'boolean'])) {
+							$is_playable_h264 = caIsPlayableH264($this->_SET_FILES[$ps_field]['tmp_name']);
+							
+							if(($is_playable_h264 === true) || is_null($is_playable_h264)) { continue; }
+						}
+
 						if (isset($media_desc[$basis]) && isset($media_desc[$basis]['FILENAME'])) {
 							if (!isset($va_media_objects[$basis])) {
 								$o_media = new Media();

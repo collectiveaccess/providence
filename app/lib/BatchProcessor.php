@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2025 Whirl-i-Gig
+ * Copyright 2012-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -866,11 +866,11 @@ class BatchProcessor {
 											}
 	
 											$vs_bool = 'OR';
-											$va_values = array();
+											$va_values = [];
 										
 											$match_value = $va_matches[1];
 											if (isset($idno_alts_list[strtolower($match_value)])) { $match_value = $idno_alts_list[strtolower($match_value)];  }
-											foreach($va_fields_to_match_on as $vs_fld) {
+											foreach($va_fields_to_match_on as $i => $vs_fld) {
 												switch($vs_match_type) {
 													case 'STARTS':
 														$match_value = "{$match_value}%";
@@ -883,28 +883,30 @@ class BatchProcessor {
 														break;
 												}
 												if (in_array($vs_fld, array('preferred_labels', 'nonpreferred_labels'))) {
-													$va_values[$vs_fld] = ['name' => $match_value];
+													$va_values[$i][$vs_fld] = ['name' => $match_value];
 												} elseif(sizeof($va_flds = explode('.', $vs_fld)) > 1) {
-													$va_values[$va_flds[0]][$va_flds[1]] = $match_value;
+													$va_values[$i][$va_flds[0]][$va_flds[1]] = $match_value;
 												} else {
-													$va_values[$vs_fld] = $match_value;
+													$va_values[$i][$vs_fld] = $match_value;
 												}
 											}
 										
 											$o_log->logDebug("Trying to find records using boolean {$vs_bool} and values ".print_r($va_values,true));
 	
-											if (class_exists($vs_import_target) && ($vn_id = $vs_import_target::find($va_values, array('returnAs' => 'firstId', 'allowWildcards' => true, 'boolean' => $vs_bool, 'restrictToTypes' => $va_limit_matching_to_type_ids)))) {
-												if ($t_instance->load($vn_id)) {
-													$va_notices[$vs_relative_directory.'/'.$vs_match_name.'_match'] = array(
-														'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
-														'label' => $t_instance->getLabelForDisplay(),
-														'message' => $vs_msg = _t('Matched media %1 from %2 to %3 using expression "%4"', $f, $vs_relative_directory, caGetTableDisplayName($vs_import_target, false), $va_regex_info['displayName']),
-														'file' => $f,
-														'status' => 'MATCHED'
-													);
-													$o_log->logInfo($vs_msg);
+											foreach($va_values as $i => $fvalues) {
+												if (class_exists($vs_import_target) && ($vn_id = $vs_import_target::find($fvalues, array('returnAs' => 'firstId', 'allowWildcards' => true, 'boolean' => $vs_bool, 'restrictToTypes' => $va_limit_matching_to_type_ids)))) {
+													if ($t_instance->load($vn_id)) {
+														$va_notices[$vs_relative_directory.'/'.$vs_match_name.'_match'] = array(
+															'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
+															'label' => $t_instance->getLabelForDisplay(),
+															'message' => $vs_msg = _t('Matched media %1 from %2 to %3 using expression "%4"', $f, $vs_relative_directory, caGetTableDisplayName($vs_import_target, false), $va_regex_info['displayName']),
+															'file' => $f,
+															'status' => 'MATCHED'
+														);
+														$o_log->logInfo($vs_msg);
+													}
+													break(3);
 												}
-												break(3);
 											}
 										}
 									} else {
