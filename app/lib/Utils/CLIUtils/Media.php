@@ -746,6 +746,99 @@ trait CLIUtilsMedia {
 	/**
 	 *
 	 */
+	public static function remove_all_records($opts=null) {
+		$quiet = $opts->getOption('quiet');
+		$table = $opts->getOption('table');
+		$auto_confirm = $opts->getOption('auto-confirm');
+		
+		if(!($t_instance = DataModel::getInstance($table))) {
+			CLIUtils::addError(_t('Invalid table %1', $table));
+			return;
+		}
+		
+		$table_display = $t_instance->getProperty('NAME_SINGULAR');
+		
+		if(!$auto_confirm) {
+			CLIUtils::addMessage(_t("Are you sure you want to PERMANENTLY remove all %1 records? This cannot be undone.\n\nType 'y' to proceed or 'N' to cancel, then hit return \n\n", $table_display));
+	
+			flush();
+			ob_flush();
+			$confirmation  =  trim( fgets( STDIN ) );
+			if ( $confirmation !== 'y' ) {
+				// The user did not say 'y'.
+				return false;
+			}
+		}
+		
+		$qr = $table::findAsSearchResult('*');
+		
+		print CLIProgressBar::start($qr->numHits(), _t('Remove all %1 records', $table_display));
+		
+		$errors = [];
+		$deleted = 0;
+		while($qr->nextHit()) {
+			$t_instance = $qr->getInstance();
+			if(!$t_instance->delete(false)) {
+				$errors[$t_instance->getPrimaryKey()] = $t_instance->getErrors();
+			} else {
+				$deleted++;
+			}
+			print CLIProgressBar::next(1);
+		}
+		
+		if(!$quiet) {
+			print CLIProgressBar::finish();
+			CLIUtils::addMessage(_t('Removed %1 records', $deleted));
+			if(sizeof($errors)) {
+				$error_list = array_reduce($errors, function($c, $i) {
+					foreach($i as $e) {
+						$c[$e]++;
+					}
+					return $c;
+				}, []);
+				$error_counts = [];
+				foreach($error_list as $e => $c) {
+					$error_counts[] = "{$e} ({$c})";
+				}
+				CLIUtils::addError(_t('%1 records could not be removed due to errors: %2', sizeof($errors), join(", ", $error_counts)));
+			}
+		}
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function remove_all_recordsParamList() {
+		return [
+			"table|t-s" => _t("Table to remove all records from."),
+			"auto-confirm|d" => _t("Perform removal without waiting for confirmation."),
+		];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function remove_all_recordsUtilityClass() {
+		return _t('Media');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function remove_all_recordsShortHelp() {
+		return _t("Delete all records of a specific table from the system. Typically used in development and debugging environments.");
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function removeAllRepresentationsHelp() {
+		return _t("Sets media class values for object representations. A media class indicates the general type of media (image, video, audio, etc.) and should be set for each uploaded representation on upload. When migrating from an older system these values may not be set. This command will ensure all representations with associated media are assigned a media class.");
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public static function transcribe($opts=null) {
 		$quiet = $opts->getOption('quiet');
 		$mimetypes = caGetOption('mimetypes', $opts, null, ['delimiter' => [',', ';']]);
