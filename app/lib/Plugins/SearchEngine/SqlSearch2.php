@@ -438,6 +438,12 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$qclass = get_class($query);
 		$term = ($qclass === 'Zend_Search_Lucene_Search_Query_Term') ? $query->getTerm() : $query;
 		
+		$force_strict = false;
+	 	if($term->text[0] === '~') {
+	 		$term->text = substr($term->text, 1);
+	 		$force_strict = true;
+	 	}
+	 	
 	 	$field = $term->field;
 	 	$field_lc = mb_strtolower($field);
 	 	$field_elements = explode('.', $field_lc);

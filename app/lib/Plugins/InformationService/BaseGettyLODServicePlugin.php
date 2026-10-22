@@ -65,7 +65,8 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		if ( ! is_array( $pa_options ) ) {
 			$pa_options = array();
 		}
-
+		
+		$ps_search = preg_replace("!^http://!i", "https://", $ps_search);
 		$va_service_conf = $this->opo_linked_data_conf->get( $this->getConfigName() );
 		$va_params = $this->_getParams( $pa_options, $va_service_conf );
 		if ($pa_settings) {
