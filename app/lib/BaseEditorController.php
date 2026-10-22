@@ -186,9 +186,11 @@ class BaseEditorController extends ActionController {
 					$this->notification->addNotification(_t('Duplicated %1 "%2" (%3)', $vs_type_name, $t_subject->getLabelForDisplay(), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
 				}
 							
-				// Redirect to edit first newly created dupe.
-				$this->response->setRedirect(caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), [$t_subject->primaryKey() => $t_first->getPrimaryKey()]));
-				return;
+				if($t_first) {
+					// Redirect to edit first newly created dupe.
+					$this->response->setRedirect(caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), [$t_subject->primaryKey() => $t_first->getPrimaryKey()]));
+					return;
+				}
 			}
 		}
 
