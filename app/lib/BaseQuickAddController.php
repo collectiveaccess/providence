@@ -175,6 +175,7 @@ class BaseQuickAddController extends ActionController {
 		if (!is_array($va_prepopulate_quickadd_fields) || !sizeof($va_prepopulate_quickadd_fields) || in_array('preferred_labels', $va_prepopulate_quickadd_fields)) {		
 			global $g_ui_locale_id;
 			$v = caUcFirstUTF8Safe($this->view->getVar('q'));
+			$v = preg_replace('!^"+!', '', preg_replace('!"+$!', '', $v));
 			$va_force_new_label = [
 				'locale_id' => $g_ui_locale_id, 									// use default locale
 				$t_subject->getLabelDisplayField() => $v					// query text is used for display field
