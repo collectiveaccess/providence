@@ -73,50 +73,55 @@ class ExpressionVisitor implements Visitor\Visit {
 		};
 
 		$this->opa_functions  = array(
-			'abs'			=> xcallable('abs'),
-			'ceil'			=> xcallable('ceil'),
-			'floor'			=> xcallable('floor'),
-			'int'			=> xcallable('intval'),
-			'max'			=> xcallable('max'),
-			'min'			=> xcallable('min'),
-			'rand'			=> xcallable('rand'),
-			'round'			=> xcallable('round'),
-			'random'		=> xcallable('rand'),
-			'current'		=> xcallable('caIsCurrentDate'),
-			'isvaliddate'	=> xcallable('caIsValidDate'),
-			'future'		=> xcallable('caDateEndsInFuture'),
-			'past'		=> xcallable('caDateStartsInPast'),
-			'wc'			=> xcallable('str_word_count'),
-			'length'		=> xcallable('strlen'),
+			'abs'			=> xcallable('caExpressionFunctionAbsValue'),
+			'ceil'			=> xcallable('caExpressionFunctionCeilValue'),
+			'floor'			=> xcallable('caExpressionFunctionFloorValue'),
+			'int'			=> xcallable('caExpressionFunctionIntValue'),
+			'max'			=> xcallable('caExpressionFunctionMaxValue'),
+			'min'			=> xcallable('caExpressionFunctionMinValue'),
+			'rand'			=> xcallable('caExpressionFunctionRandomValue'),
+			'round'			=> xcallable('caExpressionFunctionRoundValue'),
+			'random'		=> xcallable('caExpressionFunctionRandomValue'),
+			
+			'wc'			=> xcallable('caExpressionFunctionStringWordCount'),
+			'length'		=> xcallable('caExpressionFunctionStringLength'),
+			'replace'		=> xcallable('preg_replace'),
+			'trim'			=> xcallable('trim'),
+			
 			'date'			=> xcallable('caDateToHistoricTimestamp'),
 			'formatdate'	=> xcallable('caFormatDate'),
 			'formatgmdate'	=> xcallable('caFormatGMDate'),
-			'sizeof'		=> xcallable('caExpressionCount'),
-			'count'			=> xcallable('caExpressionCount'),
-			'valueCount'	=> xcallable('caValueCount'),
-			'uniqueValueCount'	=> xcallable('caUniqueValueCount'),
+			'current'		=> xcallable('caIsCurrentDate'),
+			'isvaliddate'	=> xcallable('caIsValidDate'),
+			'future'		=> xcallable('caDateEndsInFuture'),
+			'past'			=> xcallable('caDateStartsInPast'),
 			'age'			=> xcallable('caCalculateAgeInYears'),
 			'ageyears'		=> xcallable('caCalculateAgeInYears'),
 			'agedays'		=> xcallable('caCalculateAgeInDays'),
 			'avgdays'		=> xcallable('caCalculateDateRangeAvgInDays'),
 			'earliestDate'	=> xcallable('caGetEarliestDate'),
 			'latestDate'	=> xcallable('caGetLatestDate'),
-			'average' 		=> xcallable($average),
-			'avg'     		=> xcallable($average),
-			'sum'			=> xcallable(function () { return array_sum(func_get_args()); }),
-			'replace'		=> xcallable('preg_replace'),
-			'join'			=> xcallable($implode),
-			'implode'		=> xcallable($implode),
-			'trim'			=> xcallable('trim'),
-			'idnoUseCount'	=> xcallable('caIdnoUseCount'),
 			'dateIsRange'	=> xcallable('caDateIsRange'),
 			'fromUnixtime'	=> xcallable(function($arg) { return date('c', $arg); }),
-			'existsInList'	=> xcallable(function($arg1, $arg2) { return caItemExists($arg1, $arg2); })
+			
+			'sizeof'		=> xcallable('caExpressionFunctionValueCount'),
+			'count'			=> xcallable('caExpressionFunctionValueCount'),
+			'valueCount'	=> xcallable('caExpressionFunctionValueCount'),
+			'uniqueValueCount'	=> xcallable('caExpressionFunctionUniqueValueCount'),
+			'join'			=> xcallable($implode),
+			'implode'		=> xcallable($implode),
+			'existsInList'	=> xcallable(function($arg1, $arg2) { return caItemExists($arg1, $arg2); }),
+			
+			'average' 		=> xcallable('caExpressionFunctionAverageValues'),
+			'avg'     		=> xcallable('caExpressionFunctionAverageValues'),
+			'sum'			=> xcallable('caExpressionFunctionSumValues'),
+			
+			'idnoUseCount'	=> xcallable('caIdnoUseCount'),
 		);
 
 		// Let application plugins add their own expression functions
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
-		$va_tmp = $this->opo_app_plugin_manager->hookRegisterExpressions(array('expressions' => $this->opa_functions, 'instance' => $this));
+		$va_tmp = $this->opo_app_plugin_manager->hookRegisterExpressions(['expressions' => $this->opa_functions, 'instance' => $this]);
 		$this->opa_functions = $va_tmp['expressions'];
 		return;
 	}
@@ -151,7 +156,7 @@ class ExpressionVisitor implements Visitor\Visit {
 	 * @return bool|mixed
 	 */
 	public function getVariable($ps_var) {
-		return isset($this->opa_variables[$ps_var]) ? $this->opa_variables[$ps_var] : false;
+		return $this->opa_variables[$ps_var.':array'] ?? $this->opa_variables[$ps_var] :: false;
 	}
 
 	/**
@@ -180,20 +185,65 @@ class ExpressionVisitor implements Visitor\Visit {
 		$f_acc = &$f_handle;
 
 		switch ($vs_type) {
-
 			case '#function':
-				$vs_name = array_shift($va_children)->accept($this, $_, $f_eldnah);
-				$f_function = $this->getFunction($vs_name);
-				$va_args = array();
-
+				$name = array_shift($va_children)->accept($this, $_, $f_eldnah);
+				$f_function = $this->getFunction($name);
+				
+				// First argument to function handler is array of context information
+				$args = [[
+					'variables' => $this->opa_variables
+				]];
+				
+				$fparams = [];
 				foreach ($va_children as $o_child) {
+					$token = $o_child->getValue();
+					switch($token['token']) {
+						case 'string_single_quote':
+						case 'string':
+							$token['value'] = trim(trim($token['value'], '"'), "'");
+							$vtags = caGetTemplateTags($token['value']);
+							$etypes = (is_array($vtags) && sizeof($vtags) && ('^'.$vtags[0] == trim($token['value']))) ? caGetTagDatatypes([$token['value'] => true], []) : null;
+							$fparams[] = [
+								'type' => $etypes[$token['value']] ?? '_LITERAL_',
+								'value' => $token['value']
+							];
+							break;
+						case 'variable':
+							$etypes = caGetTagDatatypes([$token['value'] => true], []);
+							$fparams[] = [
+								'type' => $etypes[$token['value']] ?? '_UNKNOWN_',
+								'value' => $token['value']
+							];
+							break;
+						case 'true':
+						case 'false':
+							$fparams[] = [
+								'type' => '_LITERAL_',
+								'value' => (bool)$token['value']
+							];
+							break;
+						case 'number':
+							$fparams[] = [
+								'type' => '_LITERAL_',
+								'value' => (float)$token['value']
+							];
+							break;
+						default:
+							$fparams[] = [
+								'type' => '_LITERAL_',
+								'value' => $token['value']
+							];
+							break;
+					}
 					$o_child->accept($this, $_, $f_eldnah);
-					$va_args[] = $_();
+					$args[] = $_();
 					unset($_);
 				}
+				
+				$args[0]['params'] = $fparams;
 
-				$f_acc = function () use ($f_function, $va_args, $f_acc) {
-					return $f_acc($f_function->distributeArguments($va_args));
+				$f_acc = function () use ($f_function, $args, $f_acc) {
+					return $f_acc($f_function->distributeArguments($args));
 				};
 
 				break;
@@ -469,19 +519,19 @@ class ExpressionVisitor implements Visitor\Visit {
 					case 'id':
 						return $value;
 					case 'string':
-						$out = preg_replace('/(^"|"$)/', '', $value);
+						$out = $this->_processVarsInString(preg_replace('/(^"|"$)/', '', $value));
 						break;
 					case 'string_single_quote':
-						$out = preg_replace("/(^'|'$)/", '', $value);
+						$out = $this->_processVarsInString(preg_replace("/(^'|'$)/", '', $value));
 						break;
 					case 'regex':
 						// @todo maybe mangle regex?
 						$out = (string) $value;
 						break;
 					case 'variable':
-						$vs_var = mb_substr((string) $value, 1); // get rid of caret ^
-						$out = $this->getVariable($vs_var);
-						if(is_array($out)) { $out = join("", $out); }	// we need to join multiple values
+						$var = mb_substr((string) $value, 1); // get rid of caret ^
+						$out = $this->getVariable($var);
+						//if(is_array($out)) { $out = join("", $out); }	// we need to join multiple values
 						break;
 					case 'true':
 						$out = true;
@@ -502,6 +552,14 @@ class ExpressionVisitor implements Visitor\Visit {
 		}
 
 		return $f_acc();
+	}
+	
+	/**
+	 *
+	 */
+	private function _processVarsInString(string $str) {
+		$str = DisplayTemplateParser::processSimpleTemplate($str, $this->opa_variables);
+		return $str;
 	}
 
 	/**

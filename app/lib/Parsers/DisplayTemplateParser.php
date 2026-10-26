@@ -616,8 +616,11 @@ class DisplayTemplateParser {
 					break;
 				case 'expression':
 					if ($vs_exp = trim($o_node->getInnerText())) {
-						$vs_acc .= $content = ExpressionParser::evaluate(DisplayTemplateParser::_processChildren($pr_res, $o_node->children, DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), $pa_options), array_merge($pa_options, ['quoteNonNumericValues' => true])), $pa_vals);
+						$etags = DisplayTemplateParser::_getTags($o_node->children, $pa_options);
+						//$vs_acc .= $content = ExpressionParser::evaluate(DisplayTemplateParser::_processChildren($pr_res, $o_node->children, DisplayTemplateParser::_getValues($pr_res, $etags, $pa_options), array_merge($pa_options, ['quoteNonNumericValues' => true])), $pa_vals, ['tagDataTypes' => $etypes]);
 						
+						$vals = DisplayTemplateParser::_getValues($pr_res, $etags, $pa_options);
+						$vs_acc .= $content = ExpressionParser::evaluate(array_reduce($o_node->children, function($c, $i) { return $c.$i->html(); }, ''), $pa_vals);
 						if ($pb_is_case && $content) { break(2); }
 					}
 					break;
@@ -1439,11 +1442,13 @@ class DisplayTemplateParser {
 				$ps_delimiter = caGetOption('delimiter', $va_opts, ';');
 				
 				if ($vs_relative_to_container) {
+					$va_vals[$vn_c][$vs_tag.':array'] = $va_val_list;
 					$va_vals[$vn_c][$vs_tag] = join($ps_delimiter, $va_val_list);
 					if (isset($va_tag_vals[$vn_c]['__sort__'])) {
 						$va_vals[$vn_c]['__sort__'] = $va_tag_vals[$vn_c]['__sort__'];
 					}
 				} else {
+					$va_vals[$vs_tag.':array'] = $va_val_list;
 					$va_vals[$vs_tag] = join($ps_delimiter, $va_val_list);
 					if (isset($va_tag_vals[$vn_c]['__sort__'])) {
 						$va_vals['__sort__'] = $va_tag_vals[$vn_c]['__sort__'];

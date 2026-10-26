@@ -32,7 +32,6 @@
 require_once(__CA_LIB_DIR__.'/Parsers/ExpressionParser/ExpressionVisitor.php');
 
 class ExpressionParser {
-
 	/**
 	 * @var Hoa\Compiler\Llk
 	 */
@@ -47,10 +46,7 @@ class ExpressionParser {
 	 * Variables
 	 * @var array
 	 */
-    private $opa_variables = array();
-
-
-	private $opo_compiler = null;
+    private $variables = [];
 
 	public function __construct() {
 		// init compiler/visitor if necessary
@@ -69,59 +65,63 @@ class ExpressionParser {
 	
 	# -------------------------------------------------------------------
 	/**
-	 * @param string $ps_expression
-	 * @param null|array $pa_variables
+	 * @param string $expression
+	 * @param null|array $variables
 	 * @return mixed The abstract syntax tree of the parsed expression
 	 */
-	public function parse($ps_expression, $pa_variables=null) {
-		if (is_array($pa_variables)) { $this->setVariables($pa_variables); }
+	public function parse(string $expression, ?array $variables=null) {
+		if (is_array($variables)) { $this->setVariables($variables); }
 		
-		return self::$s_compiler->parse($ps_expression);
+		return self::$s_compiler->parse($expression);
 	}
 	# -------------------------------------------------------------------
-	public function setVariables($pa_variables) {
-		$this->opa_variables = $pa_variables;
+	/**
+	 *
+	 */
+	public function setVariables(array $variables) : bool{
+		$this->variables = $variables;
 		return true;
 	}
 	# -------------------------------------------------------------------
-	public function getVariables() {
-		return $this->opa_variables;
+	/**
+	 *
+	 */
+	public function getVariables() : ?array {
+		return $this->variables;
 	}
 	# -------------------------------------------------------------------
 	# External interface
 	# -------------------------------------------------------------------
-    /**
-
-     */
-
 	/**
 	 * Evaluate an expression, returning the value
-	 * @param string $ps_expression
-	 * @param array|null $pa_variables
+	 * @param string $expression
+	 * @param array|null $variables
 	 * @return mixed
 	 */
-    public function evaluateExpression($ps_expression, $pa_variables=null) {
-        $o_ast = $this->parse($ps_expression, $pa_variables);
+    public function evaluateExpression(string $expression, ?array $variables=null, ?array $options=null) {
+        $o_ast = $this->parse($expression, $variables);
 
-		// dump the syntax tree in easy-to-read-format ... useful for debugging
-		//$o_dumper = new Hoa\Compiler\Visitor\Dump();
-		//print $o_dumper->visit($o_ast);
+		if(caGetOption('debug', $options, false)) {
+			// dump the syntax tree in easy-to-read-format ... useful for debugging
+			$o_dumper = new Hoa\Compiler\Visitor\Dump();
+			print $o_dumper->visit($o_ast);
+		}
 
-		self::$s_visitor->setVariables($pa_variables);
+		self::$s_visitor->setVariables($variables);
 
 		return self::$s_visitor->visit($o_ast);
     }
     # -------------------------------------------------------------------
 	/**
 	 * Statically evaluate an expression, returning the value
-	 * @param string $ps_expression
-	 * @param null|array $pa_variables
+	 * @param string $expression
+	 * @param null|array $variables
 	 * @return mixed
 	 */
-    static public function evaluate($ps_expression, $pa_variables=null) {
+    static public function evaluate(string $expression, ?array $variables=null, ?array $options=null) : mixed {
         $e = new ExpressionParser();
     	try {
-    		return $e->evaluateExpression($ps_expression, $pa_variables);
+    		return $e->evaluateExpression($expression, $variables, $options);
     	} catch (Exception $e) {
     		ExpressionParser::$last_error = $e->getMessage();
     		return null;
@@ -131,11 +131,11 @@ class ExpressionParser {
 	/**
 	 * Returns list of variables defined in the expression
 	 *
-	 * @param string $ps_expression
+	 * @param string $expression
 	 * @return array
 	 */
-	static public function getVariableList($ps_expression) {
-		return caGetTemplateTags($ps_expression);
+	static public function getVariableList(string $expression) : ?array {
+		return caGetTemplateTags($expression);
 	}
 	# -------------------------------------------------------------------
 	/**

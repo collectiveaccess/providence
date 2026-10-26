@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2025 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -110,6 +110,9 @@ function caCalculateAgeInDays() {
 	return $o_diff->days;
 }
 # ---------------------------------------
+/**
+ *
+ */
 function caCalculateDateRangeAvgInDays() {
 	$va_date_ranges = func_get_args();
 
@@ -241,48 +244,429 @@ function caDateIsRange($date_expression) {
 }
 # ----------------------------------------
 /**
- * Count delimited values in a string
+ * 
  */
-function caValueCount(string $value, ?string $delimiter=';') : int {
-	if(!strlen($value)) { return 0; }
-	$acc = explode($delimiter, $value);
-	return sizeof($acc);
+function caExpressionFunctionSumValues(...$args) : mixed {
+	$context = array_shift($args);
+
+	$acc = 0;
+	
+	$first_param = $context['params'][array_key_first($context['params'])];
+	$type = $first_param['type'] ?? null;
+	
+	$return_as = null;
+	
+	foreach($context['params'] as $p) {
+		if(is_int($p['type'])) {		// is attribute
+			$tag = substr($p['value'], 1);
+			$value_list = $context['variables']["{$tag}:array"] ?? $context['variables']["{$tag}"] ?? null;
+			if($value_list && !is_array($value_list)) { $value_list = [$value_list]; }
+			if($value_list) {
+				foreach($value_list as $vv) {
+					$ret = caParseQuantityForExpression($p['type'], $vv);
+					
+					switch($p['type']) {
+						case __CA_ATTRIBUTE_VALUE_CURRENCY__:
+							if(!$return_as) { 
+								$return_as = $ret['currency']; 
+							} elseif($return_as !== $ret['currency']) {
+								$acc += caConvertCurrencyValue($vv, $return_as, ['numericValue' => true]);
+							} else {
+								$acc += $ret['value'];
+							}
+							break;
+						case __CA_ATTRIBUTE_VALUE_LENGTH__:
+							if(!$return_as) { $return_as = $ret['units']; }
+							$acc += $ret['value'];	// always meters
+							break;
+						case __CA_ATTRIBUTE_VALUE_WEIGHT__:
+							if(!$return_as) { $return_as = $ret['units']; }
+							$acc += $ret['value'];	// always kilograms
+							break;
+						default:
+							$acc += $ret['value'];
+							break;
+					}
+				}
+			}
+			
+		} else { // is literal
+			$type = __CA_ATTRIBUTE_VALUE_NUMERIC__;
+			if(is_numeric($p['value'])) {
+				$acc += $p['value'];
+			}
+		}
+	}
+	$ret =  caGetQuantityForExpressionDisplay($type, $acc, ['returnAs' => $return_as]);
+	return $ret['value'] ?? null;
 }
 # ---------------------------------------
 /**
  * 
- *
- * @return 
  */
-function caExpressionCount() {
-	$args = func_get_args();
+function caExpressionFunctionAverageValues(...$args) : mixed {
+	$context = array_shift($args);
+
+	$acc = 0;
 	
-	$poss_params = array_pop($args);
-	$params = [];
-	if(preg_match('!^params:(.*)!i', $poss_params, $m)) {
-		parse_str($m[1], $params);
-	} else {
-		$args[] = $poss_params;
-	}
+	$first_param = $context['params'][array_key_first($context['params'])];
+	$type = $first_param['type'] ?? null;
 	
-	$acc = [];
-	foreach($args as $arg) {
-		if(strpos($arg, ';') !== false) {
-			$acc = array_merge($acc, explode(';', $arg));
-		} elseif(strlen($arg) > 0) {
-			$acc[] = $arg;
+	$return_as = null;
+	
+	$c = 0;
+	foreach($context['params'] as $p) {
+		if(is_int($p['type'])) {		// is attribute
+			$tag = substr($p['value'], 1);
+			$value_list = $context['variables']["{$tag}:array"] ?? $context['variables']["{$tag}"] ?? null;
+			if($value_list && !is_array($value_list)) { $value_list = [$value_list]; }
+			if($value_list) {
+				foreach($value_list as $vv) {
+					$ret = caParseQuantityForExpression($p['type'], $vv);
+					
+					switch($p['type']) {
+						case __CA_ATTRIBUTE_VALUE_CURRENCY__:
+							if(!$return_as) { 
+								$return_as = $ret['currency']; 
+							} elseif($return_as !== $ret['currency']) {
+								$acc += caConvertCurrencyValue($vv, $return_as, ['numericValue' => true]);
+							} else {
+								$acc += $ret['value'];
+							}
+							break;
+						case __CA_ATTRIBUTE_VALUE_LENGTH__:
+							if(!$return_as) { $return_as = $ret['units']; }
+							$acc += $ret['value'];	// always meters
+							break;
+						case __CA_ATTRIBUTE_VALUE_WEIGHT__:
+							if(!$return_as) { $return_as = $ret['units']; }
+							$acc += $ret['value'];	// always kilograms
+							break;
+						default:
+							$acc += $ret['value'];
+							break;
+					}
+					$c++;
+				}
+			}
+			
+		} else { // is literal
+			$type = __CA_ATTRIBUTE_VALUE_NUMERIC__;
+			if(is_numeric($p['value'])) {
+				$acc += $p['value'];
+				$c++;
+			}
 		}
 	}
-	return count($acc);
+	$ret =  caGetQuantityForExpressionDisplay($type, $acc/$c, ['returnAs' => $return_as]);
+	return $ret['value'] ?? null;
 }
 # ---------------------------------------
 /**
-
- * Count unique delimited values in a string
+ *
  */
-function caUniqueValueCount(string $value, ?string $delimiter=';') : int {
-	if(!strlen($value)) { return 0; }
-	$acc = array_unique(explode($delimiter, $value));
-	return sizeof($acc);
+$g_expression_quantity_parsers = [];
+function caGetQuantityForExpressionDisplay(int $type, mixed $value, ?array $options=null) : ?array {
+	global $g_expression_quantity_parsers;
+	
+	$return_as = caGetOption('returnAs', $options, null);
+	
+	switch($type) {
+		case __CA_ATTRIBUTE_VALUE_INTEGER__:
+			return ['value' => (int)$value];
+			break;
+		case __CA_ATTRIBUTE_VALUE_NUMERIC__:
+			return ['value' => (float)$value];
+			break;
+		case __CA_ATTRIBUTE_VALUE_TIMECODE__:
+			$tcp = $g_expression_quantity_parsers['TimecodeParser'] ?? ($g_expression_quantity_parsers['TimecodeParser'] = new TimecodeParser());
+			if($tcp->parse($value)) {
+				return ['value' => $tcp->getText()];
+			}
+			return null;
+			break;
+		case __CA_ATTRIBUTE_VALUE_CURRENCY__:
+			return ['value' => $return_as.' '.$value];
+			break;
+		case __CA_ATTRIBUTE_VALUE_FILESIZE__:
+			return ['value' => caHumanFilesize($value)];
+			break;
+		case __CA_ATTRIBUTE_VALUE_LENGTH__:
+			$m = caParseLengthDimension($value);
+			return ['value' => $m->convertTo($return_as, 6)];
+			break;
+		case __CA_ATTRIBUTE_VALUE_WEIGHT__:
+			$m = caParseWeightDimension($value);
+			return ['value' => $m->convertTo($return_as, 6)];
+			break;
+	}
+	return ['value' => $value];
 }
 # ---------------------------------------
+/**
+ *
+ */
+function caParseQuantityForExpression(int $type, mixed $value, ?array $options=null) : ?array {
+	global $g_expression_quantity_parsers;
+	switch($type) {
+		case __CA_ATTRIBUTE_VALUE_INTEGER__:
+			return ['value' => (int)$value];
+			break;
+		case __CA_ATTRIBUTE_VALUE_NUMERIC__:
+			return ['value' => (float)$value];
+			break;
+		case __CA_ATTRIBUTE_VALUE_TIMECODE__:
+			$tcp = $g_expression_quantity_parsers['TimecodeParser'] ?? ($g_expression_quantity_parsers['TimecodeParser'] = new TimecodeParser());
+			if($tcp->parse($value)) {
+				return ['value' => (float)$tcp->getSeconds()];
+			}
+			return null;
+			break;
+		case __CA_ATTRIBUTE_VALUE_CURRENCY__:
+			return caParseCurrencyValue($value);
+			break;
+		case __CA_ATTRIBUTE_VALUE_FILESIZE__:
+			return ['value' => caParseHumanFilesize($value)];
+			break;
+		case __CA_ATTRIBUTE_VALUE_LENGTH__:
+			$m = caParseLengthDimension($value);
+			return ['value' => $m->convertTo('METER',6, 'en_US'), 'units' => $m->getType()];
+			break;
+		case __CA_ATTRIBUTE_VALUE_WEIGHT__:
+			$m = caParseWeightDimension($value);
+			return ['value' => $m->convertTo('KILOGRAM', 6, 'en_US'), 'units' => $m->getType()];
+			break;
+	}
+	return null;
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caExpressionFunctionValueCount(...$args) : mixed {
+	$context = array_shift($args);
+	
+	$c = 0;
+	foreach($context['params'] as $p) {
+		$tag = substr($p['value'], 1);
+		$value_list = $context['variables']["{$tag}:array"] ?? $context['variables']["{$tag}"] ?? null;
+		$c += (is_array($value_list)) ? sizeof($value_list) : 1;
+	}
+	return $c;
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caExpressionFunctionUniqueValueCount(...$args) : mixed {
+	$context = array_shift($args);
+	
+	$acc = [];
+	foreach($context['params'] as $p) {
+		$tag = substr($p['value'], 1);
+		$value_list = $context['variables']["{$tag}:array"] ?? [$context['variables']["{$tag}"]] ?? null;
+		$acc = array_merge($acc, $value_list);
+	}
+	$acc = array_unique($acc);
+	return sizeof($acc);;
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caExpressionFunctionMaxValue(...$args) : mixed {
+	return caExpressionFunctionNumericValueTransform('max', $args);
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caExpressionFunctionMinValue(...$args) : mixed {
+	return caExpressionFunctionNumericValueTransform('min', $args);
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caExpressionFunctionAbsValue(...$args) : mixed {
+	return caExpressionFunctionNumericValueTransform('abs', $args);
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caExpressionFunctionCeilValue(...$args) : mixed {
+	return caExpressionFunctionNumericValueTransform('ceil', $args);
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caExpressionFunctionFloorValue(...$args) : mixed {
+	return caExpressionFunctionNumericValueTransform('floor', $args);
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caExpressionFunctionIntValue(...$args) : mixed {
+	return caExpressionFunctionNumericValueTransform('int', $args);
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caExpressionFunctionRoundValue(...$args) : mixed {
+	return caExpressionFunctionNumericValueTransform('round', $args);
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caExpressionFunctionRandomValue(...$args) : mixed {
+	return caExpressionFunctionNumericValueTransform('random', $args);
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caExpressionFunctionNumericValueTransform(string $function, array $args) : mixed {
+	$context = array_shift($args);
+	
+	$mv = $mv_display = null;
+	foreach($context['params'] as $i => $p) {
+		$tag = ($p['value'][0] === '^') ? substr($p['value'], 1) : null;
+		$value_list = ($tag) ? ($context['variables']["{$tag}:array"] ?? [$context['variables']["{$tag}"]] ?? null) : [$p['value']];
+		foreach($value_list as $v) {
+			$t = $p['type'];
+			
+			if(is_numeric($p['type'])) {
+				$pq = caParseQuantityForExpression($p['type'], $v);
+				$vv = $pq['value'];
+			} else {
+				$vv = $v;
+			}
+			$trigger = false;
+			switch($function) {
+				case 'min':
+					$trigger = (is_null($mv) || ($vv < $mv));
+					break;
+				case 'max':
+					$trigger = (is_null($mv) || ($vv > $mv));
+					break;
+				case 'abs':
+					return abs($vv);
+					break;
+				case 'ceil':
+					return ceil($vv);
+					break;
+				case 'floor':
+					return floor($vv);
+					break;
+				case 'int':
+					return intval($vv);
+					break;
+				case 'round':
+					return round($vv);
+					break;
+				case 'random':
+					return rand($args[0], $args[1]);
+					break;
+			}
+			
+			if($trigger) { 
+				$mv = $vv; 
+				$mv_display = $v; 
+			}
+		}
+	}
+	
+	return $mv_display;
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caExpressionFunctionStringWordCount(...$args) : mixed {
+	return caExpressionFunctionStringValueTransform('wc', $args);
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caExpressionFunctionStringLength(...$args) : mixed {
+	return caExpressionFunctionStringValueTransform('length', $args);
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caExpressionFunctionStringValueTransform(string $function, array $args) : mixed {
+	$context = array_shift($args);
+	
+	$mv = null;
+	foreach($context['params'] as $i => $p) {
+		$tag = ($p['value'][0] === '^') ? substr($p['value'], 1) : null;
+		$value_list = ($tag) ? ($context['variables']["{$tag}:array"] ?? [$context['variables']["{$tag}"]] ?? null) : [$p['value']];
+		foreach($value_list as $v) {
+			$t = $p['type'];
+			
+			switch($function) {
+				case 'wc':
+					if(is_null($mv)) { $mv = 0; }
+					$words = preg_split('![ \t\n\r]+!u', $v);
+					$mv += sizeof($words);
+					break;
+				case 'length':
+					if(is_null($mv)) { $mv = 0; }
+					$mv += mb_strlen($v);
+					break;
+			}
+		}
+	}
+	
+	return $mv;
+}
+# ---------------------------------------
+/**
+ *
+ */
+// 'abs'			=> xcallable('abs'),
+// 'ceil'			=> xcallable('ceil'),
+// 'floor'			=> xcallable('floor'),
+// 'int'			=> xcallable('intval'),
+// 'max'			=> xcallable('max'),
+// 'min'			=> xcallable('min'),
+// 'rand'			=> xcallable('rand'),
+// 'round'			=> xcallable('round'),
+// 'random'		=> xcallable('rand'),
+// 'current'		=> xcallable('caIsCurrentDate'),
+// 'isvaliddate'	=> xcallable('caIsValidDate'),
+// 'future'		=> xcallable('caDateEndsInFuture'),
+// 'past'		=> xcallable('caDateStartsInPast'),
+// 'wc'			=> xcallable('str_word_count'),
+// 'length'		=> xcallable('strlen'),
+// 'date'			=> xcallable('caDateToHistoricTimestamp'),
+// 'formatdate'	=> xcallable('caFormatDate'),
+// 'formatgmdate'	=> xcallable('caFormatGMDate'),
+	// 'sizeof'		=> xcallable('caExpressionCount'),
+	// 'count'			=> xcallable('caExpressionCount'),
+	// 'valueCount'	=> xcallable('caValueCount'),
+	// 'uniqueValueCount'	=> xcallable('caUniqueValueCount'),
+// 'age'			=> xcallable('caCalculateAgeInYears'),
+// 'ageyears'		=> xcallable('caCalculateAgeInYears'),
+// 'agedays'		=> xcallable('caCalculateAgeInDays'),
+// 'avgdays'		=> xcallable('caCalculateDateRangeAvgInDays'),
+// 'earliestDate'	=> xcallable('caGetEarliestDate'),
+// 'latestDate'	=> xcallable('caGetLatestDate'),
+	// 'average' 		=> xcallable($average),
+	// 'avg'     		=> xcallable($average),
+	// 'sum'			=> xcallable('caSumExpressionValues'),
+// 'replace'		=> xcallable('preg_replace'),
+// 'join'			=> xcallable($implode),
+// 'implode'		=> xcallable($implode),
+// 'trim'			=> xcallable('trim'),
+// 'idnoUseCount'	=> xcallable('caIdnoUseCount'),
+// 'dateIsRange'	=> xcallable('caDateIsRange'),
+// 'fromUnixtime'	=> xcallable(function($arg) { return date('c', $arg); }),
+// 'existsInList'	=> xcallable(function($arg1, $arg2) { return caItemExists($arg1, $arg2); })

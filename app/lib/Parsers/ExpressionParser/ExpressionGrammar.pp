@@ -54,7 +54,7 @@
 %token  comma     ,
 
 // Literals
-%token  number    (0|[1-9]\d*)(\.\d+)?([eE][\+\-]?\d+)?
+%token  number    ([\-]{0,1})(0|[1-9]\d*)(\.\d+)?([eE][\+\-]?\d+)?
 %token  string    (?<!\\)\"((?<=\\)\"|[^"])+(?<!\\)\"
 %token  string_single_quote    \'[^']*\'
 

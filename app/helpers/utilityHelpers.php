@@ -5300,3 +5300,67 @@ function caFileIsIncludable($ps_file) {
 			return $sheet->getCell($coordinate);
 		};
 	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caMapIntrinsicTypesToAttributeTypes($intrinsic_type) {
+		switch ($intrinsic_type) {
+			case FT_NUMBER:
+				return __CA_ATTRIBUTE_VALUE_INTEGER__;
+			case FT_DATETIME:
+			case FT_HISTORIC_DATETIME:
+			case FT_DATE:
+			case FT_DATERANGE:
+			case FT_HISTORIC_DATE:
+			case FT_HISTORIC_DATERANGE:
+			case FT_TIME:
+			case FT_TIMESTAMP:
+			case FT_TIMERANGE:
+				return __CA_ATTRIBUTE_VALUE_DATERANGE__;
+			case FT_TIMECODE:
+				return __CA_ATTRIBUTE_VALUE_TIMECODE__;
+			case FT_BIT;
+				return __CA_ATTRIBUTE_VALUE_INTEGER__;
+			case FT_FILE:
+				return __CA_ATTRIBUTE_VALUE_FILE__;
+			case FT_MEDIA:
+				return __CA_ATTRIBUTE_VALUE_MEDIA__;
+			case FT_PASSWORD:
+			case FT_VARS;
+			default:
+				return __CA_ATTRIBUTE_VALUE_TEXT__;
+		}
+	};
+	# -------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caGetTagDatatypes(array $tags, ?array $options=null) : ?array {
+		$relative_to = caGetOption('relativeTo', $options, null);
+		$ttypes = [];
+		foreach($tags as $tag => $c) {
+			if($tag[0] === '^') { $tag = substr($tag, 1); }
+			$tmp = explode('.', $tag);
+			if(!$t_instance = Datamodel::getInstance($tmp[0])) {
+				if($relative_to) {
+					$rtmp = explode('.', $relative_to);
+					$tmp = [...$rtmp, ...$tmp];
+				}
+			}
+			list($table, $field, $subfield, $subsubfield, $subsubsubfield) = array_pad($tmp, 5, null);
+			if(!$t_instance){ $t_instance = Datamodel::getInstance($table); }
+			if(!$t_instance){ return null; }
+			
+			if(in_array($field, ['preferred_labels', 'nonpreferred_labels'])) {
+				$ttypes[$tag] = $ttypes["^{$tag}"] = __CA_ATTRIBUTE_VALUE_TEXT__;
+			} elseif($t_instance->hasField($field)) { 
+				$ttypes[$tag] = $ttypes["^{$tag}"] = caMapIntrinsicTypesToAttributeTypes($t_instance->getFieldInfo($field, 'FIELD_TYPE'));
+			} elseif(!is_null($dt = ca_metadata_elements::getElementDatatype($subfield ?? $field))) {
+				$ttypes[$tag] = $ttypes["^{$tag}"] =  $dt;
+			} else {
+				$ttypes[$tag] = $ttypes["^{$tag}"] = null;
+			}
+		}
+		return sizeof($ttypes) ? $ttypes : [];
+	}
+	# ----------------------------------------
