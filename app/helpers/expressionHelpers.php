@@ -29,10 +29,8 @@
  *
  * ----------------------------------------------------------------------
  */
-
-
-# ---------------------------------------
 require_once(__CA_LIB_DIR__.'/Parsers/TimeExpressionParser.php');
+
 # ---------------------------------------
 /**
  * DateTime diff calculation with arbitrary number of parameters.
@@ -209,7 +207,7 @@ function caGetLatestDate() : ?string {
  */
 function caGetDateListAndParams($args) : array {
 	$poss_params = array_pop($args);
-	if(!caIsValidDate($poss_params)) {
+	if(!is_array($poss_params) && !caIsValidDate($poss_params)) {
 		parse_str($poss_params, $params);
 	} else {
 		$args[] = $poss_params;
@@ -218,7 +216,9 @@ function caGetDateListAndParams($args) : array {
 	
 	$acc = [];
 	foreach($args as $arg) {
-		if(strpos($arg, ';') !== false) {
+		if(is_array($arg)) {
+			$acc = array_merge($acc, $arg);
+		} elseif(strpos($arg, ';') !== false) {
 			$acc = array_merge($acc, explode(';', $arg));
 		} else {
 			$acc[] = $arg;
@@ -601,6 +601,63 @@ function caExpressionFunctionStringLength(...$args) : mixed {
 /**
  * 
  */
+function caExpressionFunctionStringTrim(...$args) : mixed {
+	return caExpressionFunctionStringValueTransform('trim', $args);
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caExpressionFunctionStringReplace(...$args) : mixed {
+	return caExpressionFunctionStringValueTransform('replace', $args);
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caExpressionFunctionIdnoUseCount(...$args) : mixed {
+	return caIdnoUseCount($args[1] ?? null, $args[2] ?? null);
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caExpressionFunctionJoinList(...$args) : mixed {
+	$context = array_shift($args);
+	
+	$acc = [];
+	array_shift($context['params']);	// remove delimiter
+	foreach($context['params'] as $i => $p) {
+		$tag = ($p['value'][0] === '^') ? substr($p['value'], 1) : null;
+		$value_list = ($tag) ? ($context['variables']["{$tag}:array"] ?? [$context['variables']["{$tag}"]] ?? null) : [$p['value']];
+		$acc = array_merge($acc, $value_list);
+	}
+	
+	$delimiter = array_shift($args);
+	return implode($delimiter, $acc);
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caExpressionFunctionExistsInList(...$args) : mixed {
+	$context = array_shift($args);
+	$acc = [];
+	array_shift($context['params']);	// remove list code
+	foreach($context['params'] as $i => $p) {
+		$tag = ($p['value'][0] === '^') ? substr($p['value'], 1) : null;
+		$value_list = ($tag) ? ($context['variables']["{$tag}:array"] ?? [$context['variables']["{$tag}"]] ?? null) : [$p['value']];
+		foreach($value_list as $v) {
+			if(caItemExists($args[0], $v)) { return true; }
+		}
+	}
+	
+	return false; 
+}
+# ---------------------------------------
+/**
+ * 
+ */
 function caExpressionFunctionStringValueTransform(string $function, array $args) : mixed {
 	$context = array_shift($args);
 	
@@ -621,52 +678,188 @@ function caExpressionFunctionStringValueTransform(string $function, array $args)
 					if(is_null($mv)) { $mv = 0; }
 					$mv += mb_strlen($v);
 					break;
+				case 'trim':
+					if(is_null($mv)) { $mv = []; }
+					$mv[] = trim($v);
+					break;
+				case 'replace':
+					if(is_null($mv)) { $mv = []; }
+					if(!($args[1] ?? null)) { break; }
+					$mv[] = preg_replace($args[1], $args[2] ?? '', $v);
+					break;
 			}
 		}
 	}
 	
-	return $mv;
+	return is_array($mv) ? join(';', $mv) : $mv;
 }
 # ---------------------------------------
 /**
  *
  */
-// 'abs'			=> xcallable('abs'),
-// 'ceil'			=> xcallable('ceil'),
-// 'floor'			=> xcallable('floor'),
-// 'int'			=> xcallable('intval'),
-// 'max'			=> xcallable('max'),
-// 'min'			=> xcallable('min'),
-// 'rand'			=> xcallable('rand'),
-// 'round'			=> xcallable('round'),
-// 'random'		=> xcallable('rand'),
-// 'current'		=> xcallable('caIsCurrentDate'),
-// 'isvaliddate'	=> xcallable('caIsValidDate'),
-// 'future'		=> xcallable('caDateEndsInFuture'),
-// 'past'		=> xcallable('caDateStartsInPast'),
-// 'wc'			=> xcallable('str_word_count'),
-// 'length'		=> xcallable('strlen'),
-// 'date'			=> xcallable('caDateToHistoricTimestamp'),
-// 'formatdate'	=> xcallable('caFormatDate'),
-// 'formatgmdate'	=> xcallable('caFormatGMDate'),
-	// 'sizeof'		=> xcallable('caExpressionCount'),
-	// 'count'			=> xcallable('caExpressionCount'),
-	// 'valueCount'	=> xcallable('caValueCount'),
-	// 'uniqueValueCount'	=> xcallable('caUniqueValueCount'),
-// 'age'			=> xcallable('caCalculateAgeInYears'),
-// 'ageyears'		=> xcallable('caCalculateAgeInYears'),
-// 'agedays'		=> xcallable('caCalculateAgeInDays'),
-// 'avgdays'		=> xcallable('caCalculateDateRangeAvgInDays'),
-// 'earliestDate'	=> xcallable('caGetEarliestDate'),
-// 'latestDate'	=> xcallable('caGetLatestDate'),
-	// 'average' 		=> xcallable($average),
-	// 'avg'     		=> xcallable($average),
-	// 'sum'			=> xcallable('caSumExpressionValues'),
-// 'replace'		=> xcallable('preg_replace'),
-// 'join'			=> xcallable($implode),
-// 'implode'		=> xcallable($implode),
-// 'trim'			=> xcallable('trim'),
-// 'idnoUseCount'	=> xcallable('caIdnoUseCount'),
-// 'dateIsRange'	=> xcallable('caDateIsRange'),
-// 'fromUnixtime'	=> xcallable(function($arg) { return date('c', $arg); }),
-// 'existsInList'	=> xcallable(function($arg1, $arg2) { return caItemExists($arg1, $arg2); })
+function caExpressionDate(...$args) : mixed {
+	return caExpressionFunctionStringDateTimeTransform('date', $args);
+}
+# ---------------------------------------
+/**
+ *
+ */
+function caExpressionFormatDate(...$args) : mixed {
+	return caExpressionFunctionStringDateTimeTransform('formatDate', $args);
+}
+# ---------------------------------------
+/**
+ *
+ */
+function caExpressionFormatGMDate(...$args) : mixed {
+	return caExpressionFunctionStringDateTimeTransform('formatGMDate', $args);
+}
+# ---------------------------------------
+/**
+ *
+ */
+function caExpressionFromUnixTime(...$args) : mixed {
+	return caExpressionFunctionStringDateTimeTransform('fromUnixTime', $args);
+}
+# ---------------------------------------
+/**
+ *
+ */
+function caExpressionIsCurrentDate(...$args) : mixed {
+	return caExpressionFunctionStringDateTimeTransform('isCurrentDate', $args);
+}
+# ---------------------------------------
+/**
+ *
+ */
+function caExpressionDateStartsInPast(...$args) : mixed {
+	return caExpressionFunctionStringDateTimeTransform('dateStartsInPast', $args);
+}
+# ---------------------------------------
+/**
+ *
+ */
+function caExpressionDateEndsInFuture(...$args) : mixed {
+	return caExpressionFunctionStringDateTimeTransform('dateEndsInFuture', $args);
+}
+# ---------------------------------------
+/**
+ *
+ */
+function caExpressionIsValidDate(...$args) : mixed {
+	return caExpressionFunctionStringDateTimeTransform('isValidDate', $args);
+}
+# ---------------------------------------
+/**
+ *
+ */
+function caExpressionDateAgeInYears(...$args) : mixed {
+	return caExpressionFunctionStringDateTimeTransform('ageInYears', $args);
+}
+# ---------------------------------------
+/**
+ *
+ */
+function caExpressionDateAgeInDays(...$args) : mixed {
+	return caExpressionFunctionStringDateTimeTransform('ageInDays', $args);
+}
+# ---------------------------------------
+/**
+ *
+ */
+function caExpressionDateAverageInDays(...$args) : mixed {
+	return caExpressionFunctionStringDateTimeTransform('avgInDays', $args);
+}
+# ---------------------------------------
+/**
+ *
+ */
+function caExpressionEarliestDate(...$args) : mixed {
+	return caExpressionFunctionStringDateTimeTransform('earliestDate', $args);
+}
+# ---------------------------------------
+/**
+ *
+ */
+function caExpressionLatestDate(...$args) : mixed {
+	return caExpressionFunctionStringDateTimeTransform('latestDate', $args);
+}
+# ---------------------------------------
+/**
+ *
+ */
+function caExpressionDateIsRange(...$args) : mixed {
+	return caExpressionFunctionStringDateTimeTransform('dateIsRange', $args);
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caExpressionFunctionStringDateTimeTransform(string $function, array $args) : mixed {
+	$context = array_shift($args);
+	
+	$mv = null;
+	$acc = [];
+	foreach($context['params'] as $i => $p) {
+		$tag = ($p['value'][0] === '^') ? substr($p['value'], 1) : null;
+		$value_list = ($tag) ? ($context['variables']["{$tag}:array"] ?? [$context['variables']["{$tag}"]] ?? null) : [$p['value']];
+		foreach($value_list as $v) {
+			$t = $p['type'];
+			
+			switch($function) {
+				case 'date':
+					return caDateToHistoricTimestamp($v);
+					break;
+				case 'formatDate':
+					return caFormatDate($v, $args[1] ?? 'c');
+					break;
+				case 'formatGMDate':
+					return caFormatGMDate($v, $args[1] ?? 'c');
+					break;
+				case 'isCurrentDate':
+					return caIsCurrentDate($v);
+					break;
+				case 'isValidDate':
+					return caIsValidDate($v);
+					break;
+				case 'dateEndsInFuture':
+					return caDateEndsInFuture($v);
+					break;
+				case 'dateStartsInPast':
+					return caDateStartsInPast($v);
+					break;
+				case 'ageInYears':
+					return caCalculateAgeInYears($v);
+					break;
+				case 'ageInDays':
+					return caCalculateAgeInDays($v);
+					break;
+				case 'avgInDays':
+					return caCalculateDateRangeAvgInDays($v);
+					break;
+				case 'earliestDate':
+				case 'latestDate':
+					$acc[] = $v;
+					break;
+				case 'dateIsRange':
+					return caDateIsRange($v);
+					break;
+				case 'fromUnixTime':
+					return date('c', $v);
+					break;
+			}
+		}
+	}
+	
+	switch($function) {
+		case 'earliestDate':
+			return caGetEarliestDate($acc);
+			break;
+		case 'latestDate':
+			return caGetLatestDate($acc);
+			break;
+	}	
+	
+	return is_array($mv) ? join(';', $mv) : $mv;
+}
+# ---------------------------------------
