@@ -444,21 +444,20 @@ function caParseQuantityForExpression(int $type, mixed $value, ?array $options=n
  * 
  */
 function caExpressionFunctionValueCount(...$args) : mixed {
-	$context = array_shift($args);
-	
-	$c = 0;
-	foreach($context['params'] as $p) {
-		$tag = substr($p['value'], 1);
-		$value_list = $context['variables']["{$tag}:array"] ?? $context['variables']["{$tag}"] ?? null;
-		$c += (is_array($value_list)) ? sizeof($value_list) : 1;
-	}
-	return $c;
+	return caExpressionValueCount('count', $args);
 }
 # ---------------------------------------
 /**
  * 
  */
 function caExpressionFunctionUniqueValueCount(...$args) : mixed {
+	return caExpressionValueCount('unique', $args);
+}
+# ---------------------------------------
+/**
+ * 
+ */
+function caExpressionValueCount(string $function, array $args) : mixed {
 	$context = array_shift($args);
 	
 	$acc = [];
@@ -467,8 +466,11 @@ function caExpressionFunctionUniqueValueCount(...$args) : mixed {
 		$value_list = $context['variables']["{$tag}:array"] ?? [$context['variables']["{$tag}"]] ?? null;
 		$acc = array_merge($acc, $value_list);
 	}
-	$acc = array_unique($acc);
-	return sizeof($acc);;
+	
+	if($function === 'unique') {
+		$acc = array_unique($acc);
+	}
+	return sizeof($acc);
 }
 # ---------------------------------------
 /**
