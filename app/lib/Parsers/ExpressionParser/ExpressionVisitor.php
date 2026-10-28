@@ -40,7 +40,7 @@ use Hoa\Visitor;
  */
 class ExpressionVisitor implements Visitor\Visit {
 
-	protected $opa_functions = array();
+	protected $functions = array();
 	protected $opa_variables = array();
 	protected $opo_app_plugin_manager = null;
 
@@ -55,9 +55,9 @@ class ExpressionVisitor implements Visitor\Visit {
 	 */
 	protected function initializeFunctions() {
 
-		if(sizeof($this->opa_functions) > 0) { return; }
+		if(sizeof($this->functions) > 0) { return; }
 
-		$this->opa_functions  = array(
+		$this->functions  = array(
 			'abs'			=> xcallable('caExpressionFunctionAbsValue'),
 			'ceil'			=> xcallable('caExpressionFunctionCeilValue'),
 			'floor'			=> xcallable('caExpressionFunctionFloorValue'),
@@ -114,8 +114,8 @@ class ExpressionVisitor implements Visitor\Visit {
 
 		// Let application plugins add their own expression functions
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
-		$va_tmp = $this->opo_app_plugin_manager->hookRegisterExpressions(['expressions' => $this->opa_functions, 'instance' => $this]);
-		$this->opa_functions = $va_tmp['expressions'];
+		$va_tmp = $this->opo_app_plugin_manager->hookRegisterExpressions(['expressions' => $this->functions, 'instance' => $this]);
+		$this->functions = $va_tmp['expressions'];
 		return;
 	}
 
@@ -176,10 +176,11 @@ class ExpressionVisitor implements Visitor\Visit {
 		}
 
 		$f_acc = &$f_handle;
-
 		switch ($vs_type) {
 			case '#function':
-				$name = array_shift($children)->accept($this, $_, $f_eldnah);
+				$f = array_shift($children);
+				
+				$name = $f->accept($this, $_, $f_eldnah);
 				$f_function = $this->getFunction($name);
 				
 				// First argument to function handler is array of context information
@@ -222,30 +223,38 @@ class ExpressionVisitor implements Visitor\Visit {
 							];
 							break;
 						default:
-							$fparams[] = [
-								'type' => '_LITERAL_',
-								'value' => $token['value']
-							];
+							if(is_null($token)) {
+								// Nested function
+								$ret = $this->visit($o_child, $_, $f_eldnah);
+								$fparams[] = [
+									'type' => '_LITERAL_',
+									'value' => $ret
+								];
+							} else {
+								$fparams[] = [
+									'type' => '_LITERAL_',
+									'value' => $token['value']
+								];
+							}
 							break;
 					}
 					$o_child->accept($this, $_, $f_eldnah);
 					$args[] = $_();
 					unset($_);
 				}
-				
 				$args[0]['params'] = $fparams;
 
-				$f_acc = function () use ($f_function, $args, $f_acc) {
-					return $f_acc($f_function->distributeArguments($args));
+				$f_acc = function () use ($f_function, $args, $f_acc, $name) {
+					$z = $f_acc($f_function->distributeArguments($args));
+					return $z;
 				};
-
 				break;
 
 			case '#bool_and':
 				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					$v = $a(); if(is_array($v)) { $v = array_shift($v); }
+					$v = $a(); if(is_array($v)) { $v = join(";", $v); }		// join multiples together before eval
 					return $f_acc($v && $b);
 				};
 
@@ -256,7 +265,7 @@ class ExpressionVisitor implements Visitor\Visit {
 				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					$v = $a(); if(is_array($v)) { $v = array_shift($v); }
+					$v = $a(); if(is_array($v)) { $v = join(";", $v); }		// join multiples together before eval
 					return $f_acc($v || $b);
 				};
 
@@ -267,8 +276,11 @@ class ExpressionVisitor implements Visitor\Visit {
 				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					$v = $a(); if(is_array($v)) { $v = array_shift($v); }
-					return $f_acc((bool)@preg_match($b, $v));
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// test multiple values
+					foreach($vv as $v) {
+						if($f_acc((bool)@preg_match($b, $v))) { return true; }
+					}
+					return false;
 				};
 
 				$children[1]->accept($this, $f_acc, $f_eldnah);
@@ -278,8 +290,11 @@ class ExpressionVisitor implements Visitor\Visit {
 				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					$v = $a(); if(is_array($v)) { $v = array_shift($v); }
-					return $f_acc(!((bool) @preg_match($b, $v)));
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// test multiple values
+					foreach($vv as $v) {
+						if($f_acc(!((bool) @preg_match($b, $v)))) { return true; }
+					}
+					return false;
 				};
 
 				$children[1]->accept($this, $f_acc, $f_eldnah);
@@ -289,8 +304,12 @@ class ExpressionVisitor implements Visitor\Visit {
 				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					$v = $a(); if(is_array($v)) { $v = array_shift($v); }
-					return $f_acc($v > $b);
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// test multiple values
+					
+					foreach($vv as $v) {
+						if($f_acc($v > $b)) { return true; }
+					}
+					return false;
 				};
 
 				$children[1]->accept($this, $f_acc, $f_eldnah);
@@ -300,8 +319,12 @@ class ExpressionVisitor implements Visitor\Visit {
 				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					$v = $a(); if(is_array($v)) { $v = array_shift($v); }
-					return $f_acc($v >= $b);
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// test multiple values
+					
+					foreach($vv as $v) {
+						if($f_acc($v >= $b)) { return true; }
+					}
+					return false;
 				};
 
 				$children[1]->accept($this, $f_acc, $f_eldnah);
@@ -311,8 +334,12 @@ class ExpressionVisitor implements Visitor\Visit {
 				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					$v = $a(); if(is_array($v)) { $v = array_shift($v); }
-					return $f_acc($v < $b);
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// test multiple values
+					
+					foreach($vv as $v) {
+						if($f_acc($v < $b)) { return true; }
+					}
+					return false;
 				};
 
 				$children[1]->accept($this, $f_acc, $f_eldnah);
@@ -322,8 +349,12 @@ class ExpressionVisitor implements Visitor\Visit {
 				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					$v = $a(); if(is_array($v)) { $v = array_shift($v); }
-					return $f_acc($v <= $b);
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// test multiple values
+					
+					foreach($vv as $v) {
+						if($f_acc($v <= $b)) { return true; }
+					}
+					return false;
 				};
 
 				$children[1]->accept($this, $f_acc, $f_eldnah);
@@ -333,8 +364,12 @@ class ExpressionVisitor implements Visitor\Visit {
 				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					$v = $a(); if(is_array($v)) { $v = array_shift($v); }
-					return $f_acc($v != $b);
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// test multiple values
+					
+					foreach($vv as $v) {
+						if($f_acc($v != $b)) { return true; }
+					}
+					return false;
 				};
 
 				$children[1]->accept($this, $f_acc, $f_eldnah);
@@ -343,16 +378,21 @@ class ExpressionVisitor implements Visitor\Visit {
 			case '#comp_eq':
 				$children[0]->accept($this, $a, $f_eldnah);
 				$f_acc = function ($b) use ($a, $f_acc) {
-					$v = $a(); if(is_array($v)) { $v = array_shift($v); }
-					return $f_acc($v == $b);
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// test multiple values
+					
+					foreach($vv as $v) {
+						if($f_acc($v == $b)) { return true; }
+					}
+					return false;
 				};
 
 				$children[1]->accept($this, $f_acc, $f_eldnah);
 				break;
 
 			case '#in_op':
-				$vs_needle = array_shift($children)->accept($this, $in, $f_eldnah);
-				$haystack = array();
+				$needle = array_shift($children)->accept($this, $in, $f_eldnah);
+				if(!is_array($needle)) { $needle = [$needle]; }
+				$haystack = [];
 
 				$in = $f_handle;
 
@@ -364,20 +404,23 @@ class ExpressionVisitor implements Visitor\Visit {
 				foreach ($children as $o_child) {
 					$o_child->accept($this, $in, $f_eldnah);
 					
-					$v = $in(); if(is_array($v)) { $v = array_shift($v); }
-					$haystack[] = $v;
+					$vv = $in(); if(!is_array($vv)) { $vv = [$vv]; }
+					$haystack = array_merge($haystack, $vv);
 					unset($in);
 				}
-
-				$f_acc = function () use ($vs_needle, $haystack, $f_acc) {
-					return $f_acc(in_array($vs_needle, $haystack));
+				$f_acc = function () use ($needle, $haystack, $f_acc) {
+					foreach($needle as $n) {
+						if($f_acc(in_array($n, $haystack))) { return true; }
+					}
+					return false;
 				};
 
 				break;
 
 			case '#notin_op':
-				$vs_needle = array_shift($children)->accept($this, $in, $f_eldnah);
-				$haystack = array();
+				$needle = array_shift($children)->accept($this, $in, $f_eldnah);
+				if(!is_array($needle)) { $needle = [$needle]; }
+				$haystack = [];
 
 				$in = $f_handle;
 
@@ -388,13 +431,17 @@ class ExpressionVisitor implements Visitor\Visit {
 
 				foreach ($children as $o_child) {
 					$o_child->accept($this, $in, $f_eldnah);
-					$v = $in(); if(is_array($v)) { $v = array_shift($v); }
-					$haystack[] = $v;
+					
+					$vv = $in(); if(!is_array($vv)) { $vv = [$vv]; }
+					$haystack = array_merge($haystack, $vv);
 					unset($in);
 				}
 
-				$f_acc = function () use ($vs_needle, $haystack, $f_acc) {
-					return $f_acc(!in_array($vs_needle, $haystack));
+				$f_acc = function () use ($needle, $haystack, $f_acc) {
+					foreach($needle as $n) {
+						if($f_acc(!in_array($n, $haystack))) { return true; }
+					}
+					return false;
 				};
 
 				break;
@@ -425,7 +472,11 @@ class ExpressionVisitor implements Visitor\Visit {
 				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					$v = $a(); if(is_array($v)) { $v = array_shift($v); }
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// multiple values
+					
+					$v = array_reduce($vv, function($c, $i) {
+						return $c + $i;
+					}, 0);
 					return $f_acc($v + $b);
 				};
 
@@ -437,7 +488,11 @@ class ExpressionVisitor implements Visitor\Visit {
 				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					$v = $a(); if(is_array($v)) { $v = array_shift($v); }
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// multiple values
+					
+					$v = array_reduce($vv, function($c, $i) {
+						return $c + $i;
+					}, 0);
 					return $f_acc($v - $b);
 				};
 
@@ -449,6 +504,11 @@ class ExpressionVisitor implements Visitor\Visit {
 				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// multiple values
+					
+					$v = array_reduce($vv, function($c, $i) {
+						return $c + $i;
+					}, 0);
 					return $f_acc($v * $b);
 				};
 
@@ -462,14 +522,18 @@ class ExpressionVisitor implements Visitor\Visit {
 
 				if (null === $parent || (null === $parent->getId())) {
 					$f_acc = function ($b) use ($a, $f_acc) {
-						$v = $a(); if(is_array($v)) { $v = array_shift($v); }
+						$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// multiple values
+					
+						$v = array_reduce($vv, function($c, $i) {
+							return $c + $i;
+						}, 0);
 						if (0 === $b) {
 							throw new \RuntimeException(
 								'Division by zero is not possible.'
 							);
 						}
 
-						return $f_acc($v) / $b;
+						return $f_acc($v / $b);
 					};
 				} else {
 					if ('#fakegroup' !== $parent->getId()) {
@@ -487,7 +551,11 @@ class ExpressionVisitor implements Visitor\Visit {
 						break;
 					} else {
 						$f_acc = function ($b) use ($a, $f_acc) {
-							$v = $a(); if(is_array($v)) { $v = array_shift($v); }
+							$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// multiple values
+					
+							$v = array_reduce($vv, function($c, $i) {
+								return $c + $i;
+							}, 0);
 							if (0 === $b) {
 								throw new \RuntimeException(
 									'Division by zero is not possible.'
@@ -506,7 +574,11 @@ class ExpressionVisitor implements Visitor\Visit {
 				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					$v = $a(); if(is_array($v)) { $v = array_shift($v); }
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// multiple values
+					
+					$v = array_reduce($vv, function($c, $i) {
+						return $c + $i;
+					}, 0);
 					return $f_acc($v % $b);
 				};
 
@@ -518,7 +590,11 @@ class ExpressionVisitor implements Visitor\Visit {
 				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function () use ($a, $f_acc) {
-					$v = $a(); if(is_array($v)) { $v = array_shift($v); }
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// multiple values
+					
+					$v = array_reduce($vv, function($c, $i) {
+						return (float)$c + (float)$i;
+					}, 0);
 					return $f_acc($v);
 				};
 
@@ -528,10 +604,10 @@ class ExpressionVisitor implements Visitor\Visit {
 				$value = $po_element->getValueValue();
 				$token = $po_element->getValueToken();
 				$out = null;
-				
 				switch($token) {
 					case 'id':
 						return $value;
+						break;
 					case 'string':
 						$out = $this->_processVarsInString(preg_replace('/(^"|"$)/', '', $value));
 						break;
@@ -545,7 +621,6 @@ class ExpressionVisitor implements Visitor\Visit {
 					case 'variable':
 						$var = mb_substr((string) $value, 1); // get rid of caret ^
 						$out = $this->getVariable($var);
-						//if(is_array($out)) { $out = join("", $out); }	// we need to join multiple values
 						break;
 					case 'true':
 						$out = true;
@@ -561,7 +636,6 @@ class ExpressionVisitor implements Visitor\Visit {
 				$f_acc = function () use ($out, $f_acc) {
 					return $f_acc($out);
 				};
-
 				break;
 		}
 
@@ -583,10 +657,10 @@ class ExpressionVisitor implements Visitor\Visit {
 	 * @throws Exception
 	 */
 	public function getFunction($ps_name) {
-		if(!isset($this->opa_functions[$ps_name])) {
+		if(!isset($this->functions[$ps_name])) {
 			throw new Exception('Invalid function name');
 		}
-		return $this->opa_functions[$ps_name];
+		return $this->functions[$ps_name];
 	}
 
 }
