@@ -123,7 +123,7 @@ class FileUploadController extends BaseServiceController {
 					$copied[$rpath] = filesize("{$path}/{$name}");
 					
 					if($t_instance) {
-						if($t_instance->addRepresentation("{$path}/{$name}", $type_id, $locale_id, $status, $access, $is_primary, ['idno' => $idno, 'preferred_labels' => $label], ['original_filename' => $n, 'type_id' => $rel_type_id])) {
+						if($t_instance->addRepresentation("{$path}/{$name}", $type_id, $locale_id, $status, $access, $is_primary, ['idno' => $idno, 'preferred_labels' => ['name' => $label]], ['original_filename' => $n, 'type_id' => $rel_type_id])) {
 							$is_primary = false;
 							$notices[$rpath] = _t('Added uploaded file as representation for %1 with id %2 (%3)', $table, $id, $t_instance->get('idno'));
 						} else {

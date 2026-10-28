@@ -82,24 +82,9 @@ require_once(__CA_LIB_DIR__."/CookieOptionsManager.php");
    		}
 		
         // If the locale is valid, locale is set
-        $_locale = new Zend_Locale($ps_locale);
-            
-        if(!caIsRunFromCLI() && ($o_cache = caGetCacheObject('ca_translation', 3600 * 24))) {
-            Zend_Translate::setCache($o_cache);
-        }
-        $_ = new Zend_Translate(array(
-            'adapter' => 'gettext',
-            'content' => array_shift($va_locale_paths),
-            'locale'  => $_locale,
-            'tag'     => 'CA',
-            'disableNotices' => true
-        ));
-        foreach($va_locale_paths as $vs_locale_path) {
-            $_->addTranslation([
-                'content' => $vs_locale_path,
-                'locale'  => $_locale
-            ]);
-        }
+        $_locale = $ps_locale;
+
+        $_ = new GettextTranslator($va_locale_paths, $_locale, ['cache' => !caIsRunFromCLI()]);
 
         if(CookieOptionsManager::allow('performance')) {
 			if (!headers_sent()) { 

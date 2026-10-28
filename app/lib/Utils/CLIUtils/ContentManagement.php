@@ -34,7 +34,7 @@ trait CLIUtilsContentManagement {
 	
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt|null $po_opts
+	 * @param CLIGetopt|null $po_opts
 	 * @return bool
 	 */
 	public static function scan_site_page_templates($po_opts=null) {

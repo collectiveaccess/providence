@@ -79,8 +79,7 @@ class WLPlugCurrencyConversionEuroBank Extends BaseCurrencyConversionPlugin impl
 		}
 	
 		if (!$vs_currency_specifier) {
-			$o_currency = new Zend_Currency();
-			$vs_currency_specifier = $o_currency->getShortName();
+			$vs_currency_specifier = LocaleFormat::getCurrencyCode($_locale ? $_locale : __CA_DEFAULT_LOCALE__);
 		}
 		
 		$vs_currency_specifier = parent::normalizeCurrencySpecifier($vs_currency_specifier);
@@ -98,21 +97,21 @@ class WLPlugCurrencyConversionEuroBank Extends BaseCurrencyConversionPlugin impl
 			return (float)sprintf("%01.2f", $vn_converted_value);
 		}
 		
-		$o_locale = $_locale ? $_locale : new Zend_Locale(__CA_DEFAULT_LOCALE__);
+		$o_locale = $_locale ? $_locale : __CA_DEFAULT_LOCALE__;
 		
-		$vs_format = Zend_Locale_Data::getContent($o_locale, 'currencynumber');
+		$vs_format = LocaleFormat::getCurrencyPattern($o_locale);
 
-		// this returns a string like '50,00 ��' for locale de_DE
-		$vs_decimal_with_placeholder = Zend_Locale_Format::toNumber($vn_converted_value, array('locale' => $o_locale, 'number_format' => $vs_format, 'precision' => 2));
+		// this returns a string like '50,00 ¤' for locale de_DE
+		$vs_decimal_with_placeholder = LocaleFormat::toNumber($vn_converted_value, array('locale' => $o_locale, 'number_format' => $vs_format, 'precision' => 2));
 
 		// if the currency placeholder is the first character, for instance in en_US locale ($10), insert a space.
 		// this has to be done because we don't print "$10" (which is expected in the locale rules) but "USD 10" ... and that looks nicer with an additional space.
-		if(substr($vs_decimal_with_placeholder,0,2)=='��'){ // for whatever reason '��' has length 2
-			$vs_decimal_with_placeholder = str_replace('��', '�� ', $vs_decimal_with_placeholder);
+		if(substr($vs_decimal_with_placeholder,0,2)=='¤'){ // '¤' has length 2
+			$vs_decimal_with_placeholder = str_replace('¤', '¤ ', $vs_decimal_with_placeholder);
 		}
 
 		// insert currency which is not locale-dependent in our case
-		return str_replace('��', $ps_to, $vs_decimal_with_placeholder);
+		return str_replace('¤', $ps_to, $vs_decimal_with_placeholder);
 	}
 	# ------------------------------------------------
 	/**

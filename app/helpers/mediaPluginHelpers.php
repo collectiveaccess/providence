@@ -1019,24 +1019,34 @@ function caMediaIdentifierTypeToTable($ps_type, $pa_options=null) {
 function caGetPDFInfo($ps_filepath) {
 	$o_config = Configuration::load();
 	
-	// try ZendPDF
+	// try PHP PDF parser (configuration option retains its historical name)
 	if(!$o_config->get('dont_use_zendpdf_to_identify_pdfs')) {
 		try {
-			$o_pdf = Zend_Pdf::load($ps_filepath);
-		} catch(Exception $e){
+			$o_pdf = (new \Smalot\PdfParser\Parser())->parseFile($ps_filepath);
+			$pages = $o_pdf->getPages();
+		} catch(Throwable $e){
 			$o_pdf = null;
+			$pages = [];
 		}
-		if ($o_pdf && (sizeof($o_pdf->pages) > 0)) { 
-			$o_page = $o_pdf->pages[0];
+		if ($o_pdf && (sizeof($pages) > 0)) {
+			// MediaBox may be inherited from an ancestor in the page tree
+			$box = null;
+			for($o_node = $pages[0]; ($o_node instanceof \Smalot\PdfParser\PDFObject) && !$box; $o_node = $o_node->get('Parent')) {
+				$node_details = $o_node->getDetails();
+				if (is_array($node_details['MediaBox'] ?? null) && (sizeof($node_details['MediaBox']) == 4)) {
+					$box = array_map('floatval', array_values($node_details['MediaBox']));
+				}
+			}
+			$details = $o_pdf->getDetails();
 			return [
-				'title' => $o_pdf->properties['Title'] ?? null,
-				'author' => $o_pdf->properties['Author'] ?? null,
-				'producer' => $o_pdf->properties['Producer'] ?? null,
-				'pages' => sizeof($o_pdf->pages),
-				'width' => $o_page->getWidth(),
-				'height' => $o_page->getHeight()
+				'title' => $details['Title'] ?? null,
+				'author' => $details['Author'] ?? null,
+				'producer' => $details['Producer'] ?? null,
+				'pages' => sizeof($pages),
+				'width' => $box ? abs($box[2] - $box[0]) : null,
+				'height' => $box ? abs($box[3] - $box[1]) : null
 			];
-		} 
+		}
 	}
 	
 	// try graphicsmagick

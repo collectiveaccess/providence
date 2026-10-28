@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2025 Whirl-i-Gig
+ * Copyright 2010-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -418,12 +418,15 @@ final class ConfigurationCheck {
 	}
 	# -------------------------------------------------------
 	public static function PHPModuleRequirementQuickCheck() {
-		//mbstring, JSON, mysql, iconv, zlib, PCRE are required
+		//mbstring, intl, JSON, mysql, iconv, zlib, PCRE are required
 		if (!function_exists("json_encode")) {
 			self::addError(_t("PHP JSON module is required for CollectiveAccess to run. Please install it."));
 		}
 		if (!function_exists("mb_strlen")) {
 			self::addError(_t("PHP mbstring module is required for CollectiveAccess to run. Please install it."));
+		}
+		if (!class_exists("NumberFormatter")) {
+			self::addError(_t("PHP intl module is required for CollectiveAccess to run. Please install it."));
 		}
 		if (!function_exists("iconv")) {
 			self::addError(_t("PHP iconv module is required for CollectiveAccess to run. Please install it."));
@@ -612,12 +615,25 @@ final class ConfigurationCheck {
 	 */
 	public static function getSchemaVersion() {
 		if(!self::$opo_db) { self::$opo_db = new Db(); }
-		$qr_res = self::$opo_db->query('
-			SELECT max(version_num) n
-			FROM ca_schema_updates
-		');
-		if ($qr_res->nextRow()) {
-			return $qr_res->get('n');
+		
+		try {
+			$qr_res = self::$opo_db->query('
+				SELECT max(version_num) n
+				FROM ca_schema_updates
+				WHERE schema_name = "CORE"
+			');
+			if ($qr_res->nextRow()) {
+				return $qr_res->get('n');
+			}
+		} catch(DatabaseException $e) {
+			// Table may not have been updated, so fallback to pre-216 structure and try again
+			$qr_res = self::$opo_db->query('
+				SELECT max(version_num) n
+				FROM ca_schema_updates
+			');
+			if ($qr_res->nextRow()) {
+				return $qr_res->get('n');
+			}
 		}
 		return null;
 	}
