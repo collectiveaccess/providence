@@ -207,7 +207,7 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
         global $g_ui_units_pref;
     
         try {
-            $vo_measurement = new Zend_Measure_Length((float)$pa_value_array['value_decimal1'], 'METER', $g_ui_locale);
+            $vo_measurement = new MeasureLength((float)$pa_value_array['value_decimal1'], 'METER', $g_ui_locale);
 
             $o_config = Configuration::load();
             $vs_units = caGetOption('units', $pa_options, $g_ui_units_pref);
@@ -231,22 +231,22 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
             switch($vs_units) {
                 default:
                 case 'metric':
-                    $vs_value_in_cm = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, 15);
+                    $vs_value_in_cm = $vo_measurement->convertTo(MeasureLength::CENTIMETER, 15);
                     $vn_value_in_cm = (float)preg_replace("![^0-9\.\,]+!", "", $vs_value_in_cm);
                     
                     $vn_mm_threshold = $this->config->get('use_millimeters_for_display_up_to');
                     $vn_cm_threshold = $this->config->get('use_centimeters_for_display_up_to');
                     $vn_m_threshold = $this->config->get('use_meters_for_display_up_to');
                     
-                    $vs_convert_to_units = Zend_Measure_Length::MILLIMETER;
+                    $vs_convert_to_units = MeasureLength::MILLIMETER;
                     if (($vn_mm_threshold > 0) && ($vn_value_in_cm > $vn_mm_threshold)) {
-                        $vs_convert_to_units = Zend_Measure_Length::CENTIMETER;
+                        $vs_convert_to_units = MeasureLength::CENTIMETER;
                     }
                     if (($vn_cm_threshold > 0) && ($vn_value_in_cm > $vn_cm_threshold)) {
-                        $vs_convert_to_units = Zend_Measure_Length::METER;
+                        $vs_convert_to_units = MeasureLength::METER;
                     }
                     if (($vn_m_threshold > 0) && ($vn_value_in_cm > $vn_m_threshold)) {
-                        $vs_convert_to_units = Zend_Measure_Length::KILOMETER;
+                        $vs_convert_to_units = MeasureLength::KILOMETER;
                     }
                     
                     if (is_null($vn_precision)) {
@@ -256,18 +256,18 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                     break;
                 case 'english':
                 case 'fractions':
-                    $vs_value_in_inches = $vo_measurement->convertTo(Zend_Measure_Length::INCH, 15);
+                    $vs_value_in_inches = $vo_measurement->convertTo(MeasureLength::INCH, 15);
                     $vn_value_in_inches = (float)preg_replace("![^0-9\.\,]+!", "", $vs_value_in_inches);
                     
                     $vn_inch_threshold = $this->config->get('use_inches_for_display_up_to');
                     $vn_feet_threshold = $this->config->get('use_feet_for_display_up_to');
                     
-                    $vs_convert_to_units = Zend_Measure_Length::INCH;
+                    $vs_convert_to_units = MeasureLength::INCH;
                     if (($vn_inch_threshold > 0) && ($vn_value_in_inches > $vn_inch_threshold)) {
-                        $vs_convert_to_units = Zend_Measure_Length::FEET;
+                        $vs_convert_to_units = MeasureLength::FEET;
                     }
                     if (($vn_feet_threshold > 0) && ($vn_value_in_inches > $vn_feet_threshold)) {
-                        $vs_convert_to_units = Zend_Measure_Length::MILE;
+                        $vs_convert_to_units = MeasureLength::MILE;
                     }
                     
                     if (is_null($vn_precision)) {
@@ -278,10 +278,10 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                     list($vn_whole, $vn_decimal) = explode(".",$vs_value);
                     if($vn_decimal > 0) {
                         switch($vs_convert_to_units) {
-                            case Zend_Measure_Length::FEET:
+                            case MeasureLength::FEET:
                                 $vn_inches = (float)(".{$vn_decimal}") * 12;
-                                $vo_feet = new Zend_Measure_Length($vn_whole, $vs_convert_to_units, $g_ui_locale);                                    
-                                $vo_inches = new Zend_Measure_Length($vn_inches, Zend_Measure_Length::INCH, $g_ui_locale);
+                                $vo_feet = new MeasureLength($vn_whole, $vs_convert_to_units, $g_ui_locale);                                    
+                                $vo_inches = new MeasureLength($vn_inches, MeasureLength::INCH, $g_ui_locale);
                                 
                                 $vs_value = $vo_feet->convertTo($vs_convert_to_units, $vn_precision);
                                 if(in_array($vs_convert_to_units, $add_period_after_units)) { $vs_value .= '.'; }
@@ -291,7 +291,7 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                                 
                                 if (($vn_inches > 0) && ($vs_units === 'fractions')) {
                                     $vs_value .= " ".caLengthToFractions($vn_inches, $vn_maximum_denominator, true, ['precision' => $iprecision, 'allowFractionsFor' => $fracs, 'useUnicodeFractionGlyphsFor' => $unicode_fracs]);
-                                    if(in_array(Zend_Measure_Length::INCH, $add_period_after_units)) { $vs_value .= '.'; }
+                                    if(in_array(MeasureLength::INCH, $add_period_after_units)) { $vs_value .= '.'; }
                                 } elseif($vn_inches > 0) {
                                 	$vs_value .= " ".(float)sprintf("%0.{$iprecision}f", $vn_inches).' '.$this->getUnits('in');
                                 	if($add_period_after_units) { $vs_value .= '.'; }
@@ -299,25 +299,25 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                                 $vs_value = $this->processUnitsInValue($vs_value);
                                 return trim($vs_value);
                                 break;
-                            case Zend_Measure_Length::MILE:
+                            case MeasureLength::MILE:
                                 $vn_feet = (float)(".{$vn_decimal}") * 5280;
                                 list($vn_whole_feet, $vn_decimal_inches) = explode(".", $vn_feet);
                                 $vn_inches = (float)(".{$vn_decimal_inches}") * 12;
                                 
-                                $vo_miles = new Zend_Measure_Length($vn_whole, $vs_convert_to_units, $g_ui_locale);    
-                                $vo_feet = new Zend_Measure_Length($vn_whole_feet, Zend_Measure_Length::FEET, $g_ui_locale);
-                                $vo_inches = new Zend_Measure_Length($vn_inches, Zend_Measure_Length::INCH, $g_ui_locale);
+                                $vo_miles = new MeasureLength($vn_whole, $vs_convert_to_units, $g_ui_locale);    
+                                $vo_feet = new MeasureLength($vn_whole_feet, MeasureLength::FEET, $g_ui_locale);
+                                $vo_inches = new MeasureLength($vn_inches, MeasureLength::INCH, $g_ui_locale);
                                 
                                 $vs_value = $vo_miles->convertTo($vs_convert_to_units, $vn_precision);
                                 if(in_array($vs_convert_to_units, $add_period_after_units)) { $vs_value .= '.'; }
                                 
                                 if ($vn_whole_feet > 0) {
-                                    $vs_value .= " ".$vo_feet->convertTo(Zend_Measure_Length::FEET, $this->config->get('feet_decimal_precision'));
-                                    if(in_array(Zend_Measure_Length::INCH, $add_period_after_units)) { $vs_value .= '.'; }
+                                    $vs_value .= " ".$vo_feet->convertTo(MeasureLength::FEET, $this->config->get('feet_decimal_precision'));
+                                    if(in_array(MeasureLength::INCH, $add_period_after_units)) { $vs_value .= '.'; }
                                 }
                                 if (($vn_inches > 0) && ($vs_units === 'fractions')) {
-                                    $vs_value .= " ".caLengthToFractions($vn_inches, $vn_maximum_denominator, true, ['units' => Zend_Measure_Length::INCH, 'allowFractionsFor' => $fracs, 'useUnicodeFractionGlyphsFor' => $unicode_fracs]);
-                                    if(in_array(Zend_Measure_Length::INCH, $add_period_after_units)) { $vs_value .= '.'; }
+                                    $vs_value .= " ".caLengthToFractions($vn_inches, $vn_maximum_denominator, true, ['units' => MeasureLength::INCH, 'allowFractionsFor' => $fracs, 'useUnicodeFractionGlyphsFor' => $unicode_fracs]);
+                                    if(in_array(MeasureLength::INCH, $add_period_after_units)) { $vs_value .= '.'; }
                                 } elseif($vn_inches > 0) {
                                 	$vs_value .= " ".(float)sprintf("%0.{$iprecision}f", $vn_inches).' '.$this->getUnits('in');
                                 	if($add_period_after_units) { $vs_value .= '.'; }
@@ -325,7 +325,7 @@ class LengthAttributeValue extends AttributeValue implements IAttributeValue {
                                 $vs_value = $this->processUnitsInValue($vs_value);
                                 return trim($vs_value);
                                 break;
-                            case Zend_Measure_Length::INCH:
+                            case MeasureLength::INCH:
                             default:
                             	if($vs_units === 'fractions') {
                                 	$vs_value = caLengthToFractions($vs_value_in_inches, $vn_maximum_denominator, true, ['units' => $vs_convert_to_units, 'allowFractionsFor' => $fracs, 'useUnicodeFractionGlyphsFor' => $unicode_fracs]);

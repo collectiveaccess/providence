@@ -1761,10 +1761,8 @@ class ca_users extends BaseModel {
 					break;
 				case 'FT_TEXT':
 					if ($va_pref_info['displayType'] == 'DT_CURRENCIES') {
-						// this respects the global UI locale which is set using Zend_Locale
-						
-						$o_currency = new Zend_Currency($_locale);
-						return ($vs_currency_specifier = $o_currency->getShortName()) ? $vs_currency_specifier : "CAD";
+						// this respects the global UI locale
+						return ($vs_currency_specifier = LocaleFormat::getCurrencyCode($_locale)) ? $vs_currency_specifier : "CAD";
 					}
 					return $va_pref_info["default"] ? $va_pref_info["default"] : null;
 					break;
@@ -2160,8 +2158,8 @@ class ca_users extends BaseModel {
 							foreach($va_locales as $vs_code => $va_parts) {
 								if (is_array($va_restrict_to_ui_locales) && sizeof($va_restrict_to_ui_locales) && !in_array($vs_code, $va_restrict_to_ui_locales)) { continue; }
 								try {
-									$vs_lang_name = Zend_Locale::getTranslation(strtolower($va_parts[0]), 'language', strtolower($va_parts[0]));
-									$vs_country_name = Zend_Locale::getTranslation($va_parts[1], 'Country', $vs_code);
+									$vs_lang_name = LocaleFormat::getLanguageName(strtolower($va_parts[0]), strtolower($va_parts[0]));
+									$vs_country_name = LocaleFormat::getCountryName($va_parts[1], $vs_code);
 								} catch (Exception $e) {
 									$vs_lang_name = strtolower($va_parts[0]);
 									$vs_country_name = $vs_code;

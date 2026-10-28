@@ -3468,7 +3468,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				]
 			));
 			
-			if($this->tableName() == 'ca_collections') {
+			if(($this->tableName() == 'ca_collections') && $t_rel_type) {
 				$rel_type_res = $t_rel_type->getTypeRestrictions() ?? [];
 				$restrict_to_types = [];
 				foreach($rel_type_res as $res) {

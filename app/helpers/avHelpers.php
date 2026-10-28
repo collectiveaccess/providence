@@ -32,21 +32,22 @@
 # ------------------------------------------------------------------------------------------------
 /**
  * Divine file format with media info
- * @param string $ps_path
+ *
+ * @param string $path
  * @return string mime type usable for media processing back-end, e.g. video/mp4
  */
-function caMediaInfoGuessFileFormat($ps_path) {
+function caMediaInfoGuessFileFormat($path) {
 	if(!caMediaInfoInstalled()) { return false; }
 
-	$va_media_metadata = caExtractMetadataWithMediaInfo($ps_path);
-	
-	switch($va_media_metadata['VIDEO']['Format']) {
+	$media_metadata = caExtractMetadataWithMediaInfo($path);
+	switch($media_metadata['VIDEO']['Format'] ?? null) {
 		case 'DV':
 			return 'video/x-dv';
 		case 'MPEG-4':
+		case 'MPEG-4 Visual':
 			return 'video/mp4';
 		case 'AVC':
-			switch($va_media_metadata['GENERAL']['Format']) {
+			switch($media_metadata['GENERAL']['Format'] ?? null) {
 				case 'MPEG-4':
 					return 'video/mp4';
 					break;
@@ -63,31 +64,62 @@ function caMediaInfoGuessFileFormat($ps_path) {
 			return 'video/x-matroska';
 		// @todo add more popular formats here!
 		default:
+			switch($media_metadata['GENERAL']['Format'] ?? null) {
+				case 'MPEG-4':
+					return 'video/mp4';
+					break;
+				case 'MXF':
+					return 'video/mxf';
+					break;
+			}
 			return false;
 	}
 }
 # ------------------------------------------------------------------------------------------------
 /**
+ * Determine if file is a web-playable H.264 MPEG-4 video. Will return true if it a playable H,264-compressed
+ * MPEG-4 video, false if it is a non-web-playable MPEG-4 video and null for all other files.
+ *
+ * Requires presence of MediaInfo. If MediaInfo is not available null will be returned.
+ *
+ * @param string $path
+ * @return bool or null
+ */
+function caIsPlayableH264($path) : ?bool {
+	if(!caMediaInfoInstalled()) { return null; }
+
+	$media_metadata = caExtractMetadataWithMediaInfo($path);
+
+	if(!preg_match('!MPEG\-4!i', $media_metadata['GENERAL']['Format'])) { return null; }
+	
+	if(preg_match("!H\.263!i", ($media_metadata['VIDEO']['Format settings, Matrix'] ?? null))) { return false; }
+	if(($media_metadata['VIDEO']['Chroma subsampling'] ?? null) === '4:2:2') { return false; }
+
+	return true;
+}
+# ------------------------------------------------------------------------------------------------
+/**
  * Divine file format with getID3
- * @param $ps_path
+ *
+ * @param $path
  * @return bool|string
  */
-function caGetID3GuessFileFormat($ps_path) {
-	if(!$ps_path) { return null; }
-	if($va_getid3_info = caExtractMetadataWithGetID3($ps_path)) {
+function caGetID3GuessFileFormat($path) {
+	if(!$path) { return null; }
+	if($getid3_info = caExtractMetadataWithGetID3($path)) {
 	
 		if(
-			isset($va_getid3_info['quicktime']) && 
-			isset($va_getid3_info['quicktime']['ftyp']) && 
-			isset($va_getid3_info['quicktime']['ftyp']['signature']) && 
-			($va_getid3_info['quicktime']['ftyp']['signature'] === 'heic')
+			isset($getid3_info['quicktime']) && 
+			isset($getid3_info['quicktime']['ftyp']) && 
+			isset($getid3_info['quicktime']['ftyp']['signature']) && 
+			($getid3_info['quicktime']['ftyp']['signature'] === 'heic')
 		) {
 			return false;
 		}
 	
 	
-		if($va_getid3_info['mime_type']) {
-			return $va_getid3_info["mime_type"];
+		if($getid3_info['mime_type']) {
+			return $getid3_info["mime_type"];
 		}
 	}
 
@@ -96,26 +128,27 @@ function caGetID3GuessFileFormat($ps_path) {
 # ------------------------------------------------------------------------------------------------
 /**
  * Extract media metadata with get id3
- * @param string $ps_filepath
+ *
+ * @param string $filepath
  * @return array|bool
  */
-function caExtractMetadataWithGetID3($ps_filepath) {
-	if(!$ps_filepath) { return null; }
-	if(MemoryCache::contains($ps_filepath, 'GetID3MediaMetadata')) {
-		return MemoryCache::fetch($ps_filepath, 'GetID3MediaMetadata');
+function caExtractMetadataWithGetID3($filepath) {
+	if(!$filepath) { return null; }
+	if(MemoryCache::contains($filepath, 'GetID3MediaMetadata')) {
+		return MemoryCache::fetch($filepath, 'GetID3MediaMetadata');
 	}
 
 	$ID3 = new getID3();
 	$ID3->option_max_2gb_check = false;
-	$va_getid3_info = $ID3->analyze($ps_filepath);
-	if (!isset($va_getid3_info["mime_type"])) { return false; }
+	$getid3_info = $ID3->analyze($filepath);
+	if (!isset($getid3_info["mime_type"])) { return false; }
 
 	// force MPEG-4 files to use video/mp4 mimetype rather than the video/quicktime
 	// mimetype getID3 returns. This will allow us to distinguish MPEG-4 files, which can
 	// be played in HTML5 and Flash players from older Quicktime files which cannot.
-	if ($va_getid3_info["mime_type"] === 'video/quicktime') {
-		if (caGetID3IsMpeg4($va_getid3_info)) {
-			$va_getid3_info["mime_type"] = 'video/mp4';
+	if ($getid3_info["mime_type"] === 'video/quicktime') {
+		if (caGetID3IsMpeg4($getid3_info)) {
+			$getid3_info["mime_type"] = 'video/mp4';
 		}
 	}
 
@@ -124,21 +157,21 @@ function caExtractMetadataWithGetID3($ps_filepath) {
 	// when parsing MPEG-4 files, so we supress it here, otherwise we'd never be able
 	// to parse MPEG-4 files.
 	//
-	if ((isset($va_getid3_info["error"])) && (is_array($va_getid3_info["error"])) && (sizeof($va_getid3_info["error"]) == 1)) {
-		if (preg_match("/does not fully support MPEG-4/", $va_getid3_info['error'][0])) {
-			$va_getid3_info['error'] = array();
+	if ((isset($getid3_info["error"])) && (is_array($getid3_info["error"])) && (sizeof($getid3_info["error"]) == 1)) {
+		if (preg_match("/does not fully support MPEG-4/", $getid3_info['error'][0])) {
+			$getid3_info['error'] = array();
 		}
-		if (preg_match("/claims to go beyond end-of-file/", $va_getid3_info['error'][0])) {
-			$va_getid3_info['error'] = array();
+		if (preg_match("/claims to go beyond end-of-file/", $getid3_info['error'][0])) {
+			$getid3_info['error'] = array();
 		}
-		if (preg_match("/because beyond 2GB limit of PHP filesystem functions/", $va_getid3_info['error'][0])) {
-			$va_getid3_info['error'] = array();
+		if (preg_match("/because beyond 2GB limit of PHP filesystem functions/", $getid3_info['error'][0])) {
+			$getid3_info['error'] = array();
 		}
 	}
 
-	MemoryCache::save($ps_filepath, $va_getid3_info, 'GetID3MediaMetadata');
+	MemoryCache::save($filepath, $getid3_info, 'GetID3MediaMetadata');
 
-	return $va_getid3_info;
+	return $getid3_info;
 }
 # ------------------------------------------------------------------------------------------------
 /**

@@ -522,6 +522,7 @@ class SimpleService {
 		$delimiter = caGetOption('delimiter', $template, ";");
 		$vtemplate = caGetOption('valueTemplate', $template, 'No template');
 		$relative_to = caGetOption('relativeTo', $template, null);
+		$map = caGetOption('map', $template, null);
 		$context = caGetOption('context', $options, null);
 		if($relative_to) {
 			$tmp = explode(".", $relative_to);
@@ -550,7 +551,6 @@ class SimpleService {
 					return $vals;
 				}
 			} elseif($t_rel = Datamodel::getInstance($relative_to, true)) { // related
-				$map = caGetOption('map', $template, []);
 				$b = ($relative_to === $context) ? $t_rel->tableName().'.related.'.$t_rel->primaryKey() : $t_rel->primaryKey(true);
 				$ids = $pt_instance->get($b, ['restrictToTypes' => caGetOption('restrictToTypes', $template, null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $template, null), 'returnAsArray' => true]);
 				if(!sizeof($ids)) { return []; }
@@ -573,6 +573,16 @@ class SimpleService {
 			for($i=0; $i < sizeof($vals[$keys[0]]); $i++) {
 				foreach($keys as $k) {
 					$d[(int)$i][$k] = $vals[$k][$i];
+				}
+			}
+			return $d;
+		} elseif(is_array($map)) {
+			$d = [];
+			foreach($map as $k => $t) {
+				if (SimpleService::isSimpleTemplate($vtemplate)) {
+					$d[$k] = $pt_instance->get(str_replace("^", "", $t), $options);
+				} else {
+					$d[$k] = $pt_instance->getWithTemplate($t, array_merge($options, ['includeBlankValuesInArray' => true]));
 				}
 			}
 			return $d;
