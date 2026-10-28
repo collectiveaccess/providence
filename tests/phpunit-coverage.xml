@@ -56,7 +56,6 @@
                 <directory>../install/graphics</directory>
                 <directory>../app/conf</directory>
                 <directory>../app/fonts</directory>
-                <directory>../app/lib/Zend</directory>
                 <directory>../app/lib/Print/phpqrcode/cache</directory>
                 <directory>../app/locale</directory>
                 <directory>../app/log</directory>

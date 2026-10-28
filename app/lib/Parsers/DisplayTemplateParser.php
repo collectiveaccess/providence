@@ -2138,8 +2138,8 @@ class DisplayTemplateParser {
 	        } catch (Exception $e) {
 	            continue;
 	        }
-	        $in_inches = $vo_measurement->convertTo(Zend_Measure_Length::INCH, 15);
-	        $in_cm = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, 15);
+	        $in_inches = $vo_measurement->convertTo(MeasureLength::INCH, 15);
+	        $in_cm = $vo_measurement->convertTo(MeasureLength::CENTIMETER, 15);
 	        
 	        if (!$force_english_units) {
                 if ((($threshold = $o_dim_config->get('force_feet_for_all_when_dimension_exceeds')) > 0) && ($in_inches > $threshold)) {

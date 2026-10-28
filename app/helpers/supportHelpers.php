@@ -58,7 +58,7 @@
 			die("ERROR: cannot find AAT data.\n");
 		}
 		
-		$_ = new Zend_Translate('gettext', __CA_APP_DIR__.'/locale/en_US/messages.mo', 'en_US');
+		$_ = new GettextTranslator(__CA_APP_DIR__.'/locale/en_US/messages.mo', 'en_US');
 
 		$t_locale = new ca_locales();
 		$pn_en_locale_id = $t_locale->loadLocaleByCode('en_US');
@@ -470,7 +470,7 @@
 		
 		define('__CA_DONT_DO_SEARCH_INDEXING__', true);
 		
-		$_ = new Zend_Translate('gettext', __CA_APP_DIR__.'/locale/en_US/messages.mo', 'en_US');
+		$_ = new GettextTranslator(__CA_APP_DIR__.'/locale/en_US/messages.mo', 'en_US');
 
 		$t_locale = new ca_locales();
 		$pn_en_locale_id = $t_locale->loadLocaleByCode('en_US');

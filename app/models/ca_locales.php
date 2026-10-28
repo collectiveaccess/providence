@@ -646,11 +646,7 @@ class ca_locales extends BaseModel {
 	 * @return string 'rtl' or 'ltr'
 	 */
 	static function directionForLocale(string $locale) : string {
-		$locale_data = Zend_Locale_Data::getList($locale, 'layout');
-		if($locale_data['characterOrder'] === 'right-to-left') {
-			return 'rtl';
-		}
-		return 'ltr';
+		return LocaleFormat::isRightToLeft($locale) ? 'rtl' : 'ltr';
 	}
 	# ------------------------------------------------------
 	/**

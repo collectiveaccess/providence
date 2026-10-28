@@ -1180,8 +1180,8 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caConvertLocaleSpecificFloat($ps_value, $locale="en_US") {
 		try {
-			return Zend_Locale_Format::getNumber($ps_value, array('locale' => $locale));
-		} catch (Zend_Locale_Exception $e) { // happens when you enter 54.33 but 54,33 is expected in the current locale
+			return LocaleFormat::getNumber($ps_value, ['locale' => $locale]);
+		} catch (LocaleFormatException $e) { // happens when you enter 54.33 but 54,33 is expected in the current locale
 			return floatval($ps_value);
 		}
 	}
@@ -1196,8 +1196,8 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caConvertFloatToLocale($pn_value, $locale="en_US") {
 		try {
-			return Zend_Locale_Format::toNumber($pn_value, array('locale' => $locale));
-		} catch (Zend_Locale_Exception $e) {
+			return LocaleFormat::toNumber($pn_value, ['locale' => $locale]);
+		} catch (Exception $e) {
 			return $pn_value;
 		}
 	}
@@ -1216,7 +1216,7 @@ function caFileIsIncludable($ps_file) {
 			if(!$locale) { $locale = 'en_US'; }
 		}
 
-		$va_symbols = Zend_Locale_Data::getList($locale,'symbols');
+		$va_symbols = LocaleFormat::getSymbols($locale);
 		if(isset($va_symbols['decimal'])){
 			return $va_symbols['decimal'];
 		} else {
@@ -1532,36 +1532,6 @@ function caFileIsIncludable($ps_file) {
 		$vs_proc_string = str_replace("<~root~>", "", $vs_proc_string);
 		$vs_proc_string = str_replace("</~root~>", "", $vs_proc_string);
 		return trim($vs_proc_string);
-	}
-	# ---------------------------------------
-	/**
-	  *
-	  */
-	function caGetCacheObject($ps_prefix, $pn_lifetime=86400, $ps_cache_dir=null, $pn_cleaning_factor=100) {
-		if (!$ps_cache_dir) { $ps_cache_dir = __CA_TEMP_DIR__; }
-		$va_frontend_options = array(
-			'cache_id_prefix' => $ps_prefix,
-			'lifetime' => $pn_lifetime,
-			'logging' => false,					/* do not use Zend_Log to log what happens */
-			'write_control' => false,			/* immediate read after write is enabled (we don't write often) */
-			'automatic_cleaning_factor' => $pn_cleaning_factor, 	/* automatic cache cleaning */
-			'automatic_serialization' => true	/* we store arrays, so we have to enable that */
-		);
-
-		$va_backend_options = array(
-			'cache_dir' =>  $ps_cache_dir,		/* where to store cache data? */
-			'file_locking' => true,				/* cache corruption avoidance */
-			'read_control' => false,			/* no read control */
-			'file_name_prefix' => $ps_prefix,	/* prefix of cache files */
-			'cache_file_perm' => 0700			/* permissions of cache files */
-		);
-
-
-		try {
-			return Zend_Cache::factory('Core', 'File', $va_frontend_options, $va_backend_options);
-		} catch (exception $e) {
-			return null;
-		}
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -2311,7 +2281,7 @@ function caFileIsIncludable($ps_file) {
 	 * caGetOption() provides a simple interface to grab values, force default values for non-existent settings and enforce simple validation rules.
 	 *
 	 * @param mixed $pm_option The option to extract. If an array is provided then each option is tried, in order, until a non-false value is found.
-	 * @param array $pa_options The options array to extract values from. An instance of Zend_Console_Getopt may also be passed, allowing processing of command line options.
+	 * @param array $pa_options The options array to extract values from. An instance of CLIGetopt may also be passed, allowing processing of command line options.
 	 * @param mixed $pm_default An optional default value to return if $ps_option is not set in $pa_options
 	 * @param array $pa_parse_options Option parser options (cross your eyes now) include:
 	 *		forceLowercase = transform option value to all lowercase [default=false]
@@ -2324,7 +2294,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return mixed
 	 */
 	function caGetOption($pm_option, $pa_options, $pm_default=null, ?array $pa_parse_options=null) {
-		if (is_object($pa_options) && is_a($pa_options, 'Zend_Console_Getopt')) {
+		if (is_object($pa_options) && is_a($pa_options, 'CLIGetopt')) {
 			$pa_options = array($pm_option => $pa_options->getOption($pm_option));
 		}
 		$va_valid_values = null;
@@ -2885,18 +2855,18 @@ function caFileIsIncludable($ps_file) {
 		try {
 			// either
 			if (preg_match("!^([^\d]+)([\d\.\,]+)$!", trim($value), $matches)) {
-				$decimal_value = round(Zend_Locale_Format::getNumber($matches[2], ['locale' => $locale, 'precision' => 6]), 2);
+				$decimal_value = round((float)LocaleFormat::getNumber($matches[2], ['locale' => $locale, 'precision' => 6]), 2);
 				$currency_specifier = trim($matches[1]);
 			// or 1
 			} else if (preg_match("!^([\d\.\,]+)([^\d]+)$!", trim($value), $matches)) {
-				$decimal_value = round(Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 6]), 2);
+				$decimal_value = round((float)LocaleFormat::getNumber($matches[1], ['locale' => $locale, 'precision' => 6]), 2);
 				$currency_specifier = trim($matches[2]);
 			// or 2
 			} else if (preg_match("!(^[\d\,\.]+$)!", trim($value), $matches)) {
-				$decimal_value = round(Zend_Locale_Format::getNumber($matches[1], ['locale' => $locale, 'precision' => 6]), 2);
+				$decimal_value = round((float)LocaleFormat::getNumber($matches[1], ['locale' => $locale, 'precision' => 6]), 2);
 				$currency_specifier = null;
 			}
-		} catch (Zend_Locale_Exception $e){
+		} catch (LocaleFormatException $e){
 			return null;
 		}
 		if ($currency_specifier || ($decimal_value > 0)) {
@@ -3361,7 +3331,7 @@ function caFileIsIncludable($ps_file) {
 	 * Parse generic dimension (weight or length)
 	 * @param string $ps_value value to parse
 	 * @param null|array $pa_options options array
-	 * @return bool|null|Zend_Measure_Length|Zend_Measure_Weight
+	 * @return bool|null|MeasureLength|MeasureWeight
 	 */
 	function caParseDimension($ps_value, $pa_options=null) {
 		try {
@@ -3384,7 +3354,7 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
-	 * Get length unit type as Zend constant, e.g. 'ft.' = Zend_Measure_Length::FEET
+	 * Get length unit type code, e.g. 'ft.' = MeasureLength::FEET
 	 * @param string $ps_unit
 	 * @param array $pa_options Options include:
 	 *		short = return short name for unit (ex. for feet, return "ft", for millimeter return "mm")
@@ -3400,7 +3370,7 @@ function caFileIsIncludable($ps_file) {
 			case 'feet':
 			case 'foot':
 			    if ($vb_return_code) return 'feet';
-				return $vb_return_short ? 'ft' : Zend_Measure_Length::FEET;
+				return $vb_return_short ? 'ft' : MeasureLength::FEET;
 				break;
 			case '"':
 			case "”":
@@ -3408,7 +3378,7 @@ function caFileIsIncludable($ps_file) {
 			case 'inch':
 			case 'inches':
 			    if ($vb_return_code) return 'inch';
-				return $vb_return_short ? 'in' :  Zend_Measure_Length::INCH;
+				return $vb_return_short ? 'in' :  MeasureLength::INCH;
 				break;
 			case 'm':
 			case 'm.':
@@ -3418,7 +3388,7 @@ function caFileIsIncludable($ps_file) {
 			case 'metres':
 			case 'mt':
 			    if ($vb_return_code) return 'meter';
-				return $vb_return_short ? 'm' :  Zend_Measure_Length::METER;
+				return $vb_return_short ? 'm' :  MeasureLength::METER;
 				break;
 			case 'cm':
 			case 'centimeter':
@@ -3426,7 +3396,7 @@ function caFileIsIncludable($ps_file) {
 			case 'centimetre':
 			case 'centimetres':
 			    if ($vb_return_code) return 'centimeter';
-				return $vb_return_short ? 'cm' : Zend_Measure_Length::CENTIMETER;
+				return $vb_return_short ? 'cm' : MeasureLength::CENTIMETER;
 				break;
 			case 'mm':
 			case 'millimeter':
@@ -3434,19 +3404,19 @@ function caFileIsIncludable($ps_file) {
 			case 'millimetre':
 			case 'millimetres':
 			    if ($vb_return_code) return 'millimeter';
-				return $vb_return_short ? 'mm' :  Zend_Measure_Length::MILLIMETER;
+				return $vb_return_short ? 'mm' :  MeasureLength::MILLIMETER;
 				break;
 			case 'point':
 			case 'pt':
 			case 'p':
 			    if ($vb_return_code) return 'point';
-				return $vb_return_short ? 'pt' :  Zend_Measure_Length::POINT;
+				return $vb_return_short ? 'pt' :  MeasureLength::POINT;
 				break;
 			case 'mile':
 			case 'miles':
 			case 'mi':
 			    if ($vb_return_code) return 'mile';
-				return $vb_return_short ? 'mi' :  Zend_Measure_Length::MILE;
+				return $vb_return_short ? 'mi' :  MeasureLength::MILE;
 				break;
 			case 'km':
 			case 'k':
@@ -3455,7 +3425,7 @@ function caFileIsIncludable($ps_file) {
 			case 'kilometre':
 			case 'kilometres':
 			    if ($vb_return_code) return 'kilometer';
-				return $vb_return_short ? 'km' :  Zend_Measure_Length::KILOMETER;
+				return $vb_return_short ? 'km' :  MeasureLength::KILOMETER;
 				break;
 			default:
 				return null;
@@ -3467,7 +3437,7 @@ function caFileIsIncludable($ps_file) {
 	 * Parse length dimension
 	 * @param string $ps_value
 	 * @param null|array $pa_options
-	 * @return bool|null|Zend_Measure_Length
+	 * @return bool|null|MeasureLength
 	 * @throws Exception
 	 */
 	function caParseLengthDimension($ps_value, $pa_options=null) {
@@ -3499,7 +3469,7 @@ function caFileIsIncludable($ps_file) {
 				}
 
 				try {
-					$o_tmp = new Zend_Measure_Length($vs_value, $vs_units, $vs_locale);
+					$o_tmp = new MeasureLength($vs_value, $vs_units, $vs_locale);
 				} catch (Exception $e) {
 					throw new Exception(_t('Not a valid measurement'));
 				}
@@ -3525,7 +3495,7 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
-	 * Get weight unit type as Zend constant, e.g. 'ft.' = Zend_Measure_Length::KILOGRAM
+	 * Get weight unit type code, e.g. 'kg' = MeasureWeight::KILOGRAM
 	 * @param string $ps_unit
 	 * @param array $pa_options Options include:
 	 *		short = return short name for unit (ex. for kilograp, return "kg", for pounds return "lbs")
@@ -3542,7 +3512,7 @@ function caFileIsIncludable($ps_file) {
             case 'lb.':
             case 'pound':
             case 'pounds':
-                return $vb_return_short ? 'lbs' :  Zend_Measure_Weight::POUND;
+                return $vb_return_short ? 'lbs' :  MeasureWeight::POUND;
                 break;
             case 'kg':
             case 'kg.':
@@ -3550,7 +3520,7 @@ function caFileIsIncludable($ps_file) {
             case 'kilos':
             case 'kilogram':
             case 'kilograms':
-                return $vb_return_short ? 'kg' : Zend_Measure_Weight::KILOGRAM;
+                return $vb_return_short ? 'kg' : MeasureWeight::KILOGRAM;
                 break;
             case 'g':
             case 'g.':
@@ -3558,19 +3528,19 @@ function caFileIsIncludable($ps_file) {
             case 'grams':
             case 'gm':
             case 'gm.':
-                return $vb_return_short ? 'g' : Zend_Measure_Weight::GRAM;
+                return $vb_return_short ? 'g' : MeasureWeight::GRAM;
                 break;
             case 'mg':
             case 'mg.':
             case 'milligram':
             case 'milligrams':
-                return $vb_return_short ? 'mg' : Zend_Measure_Weight::MILLIGRAM;
+                return $vb_return_short ? 'mg' : MeasureWeight::MILLIGRAM;
                 break;
             case 'oz':
             case 'oz.':
             case 'ounce':
             case 'ounces':
-                return $vb_return_short ? 'oz' : Zend_Measure_Weight::OUNCE;
+                return $vb_return_short ? 'oz' : MeasureWeight::OUNCE;
                 break;
             case 'ton':
             case 'tons':
@@ -3578,15 +3548,15 @@ function caFileIsIncludable($ps_file) {
             case 'tonnes':
             case 't':
             case 't.':
-                return $vb_return_short ? 't' : Zend_Measure_Weight::TON;
+                return $vb_return_short ? 't' : MeasureWeight::TON;
                 break;
             case 'stone':
-                return $vb_return_short ? 'stone' : Zend_Measure_Weight::STONE;
+                return $vb_return_short ? 'stone' : MeasureWeight::STONE;
                 break;
             case 'grain':
             case 'gr':
             case 'gr.':
-                return $vb_return_short ? 'gr' : Zend_Measure_Weight::GRAIN;
+                return $vb_return_short ? 'gr' : MeasureWeight::GRAIN;
                 break;
             default:
                 return null;
@@ -3599,7 +3569,7 @@ function caFileIsIncludable($ps_file) {
 	 * Parse weight dimension
 	 * @param string $ps_value value to parse
 	 * @param null|array $pa_options options array
-	 * @return bool|null|Zend_Measure_Weight
+	 * @return bool|null|MeasureWeight
 	 * @throws Exception
 	 */
 	function caParseWeightDimension($ps_value, $pa_options=null) {
@@ -3628,7 +3598,7 @@ function caFileIsIncludable($ps_file) {
                 }
 
 				try {
-					$o_tmp = new Zend_Measure_Weight($vs_value, $vs_units, $vs_locale);
+					$o_tmp = new MeasureWeight($vs_value, $vs_units, $vs_locale);
 				} catch (Exception $e) {
 					throw new Exception(_t('Not a valid measurement'));
 				}
@@ -3665,7 +3635,7 @@ function caFileIsIncludable($ps_file) {
 	 *		units = Units to use as default for quantities that lack a specification. [Default is inches]
 	 *		returnExtractedMeasurements = return an array of arrays, each of which includes the numeric quantity, units and display string as separate values. [Default is false]
 	 *		precision = number of significant digits to the right of the decimal point to return, overriding any unit specific settings in dimensions.conf. [Default is null]
-	 * @return array An array of parsed and normalized length dimensions, parseable by caParseLengthDimension() or Zend_Measure
+	 * @return array An array of parsed and normalized length dimensions, parseable by caParseLengthDimension() or MeasureLength
 	 */
 	function caParseLengthExpression($ps_expression, $pa_options=null) {
         $vn_php_precision = ini_get('precision');
