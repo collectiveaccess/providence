@@ -223,8 +223,8 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 			if (is_array($useFor) && !is_null($use) && !in_array($use, $useFor, true)) {
 				continue;
 			} elseif(!$useFor) {
-				if (($use === 'insert') && !$default_prepop_on_insert) { continue; }
-				if (($use === 'update') && !$default_prepop_on_update) { continue; }
+				if (($use === 'insert') && !$default_prepop_on_insert && !$default_prepop_on_save) { continue; }
+				if (($use === 'update') && !$default_prepop_on_update && !$default_prepop_on_save) { continue; }
 				if (($use === 'edit') && !$default_prepop_on_edit) { continue; }
 				if (($use === 'save') && !$default_prepop_on_save) { continue; }
 				if (($use === 'beforeinsert') && !$default_prepop_before_insert) { continue; }
