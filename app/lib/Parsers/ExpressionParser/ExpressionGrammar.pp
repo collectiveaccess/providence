@@ -185,5 +185,5 @@ number:
 
 #function:
     <id> ::bracket_::
-    ( scalar() ( ::comma:: scalar() )* )?
+    ( (function() | scalar()) ( ::comma:: (function() | scalar()) )* )?
     ::_bracket::
