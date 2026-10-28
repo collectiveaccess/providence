@@ -1883,20 +1883,18 @@ class ca_users extends BaseModel {
 			if (isset($va_pref_info["choiceList"]) && is_array($va_pref_info["choiceList"])) {
 				if (is_array($ps_value)) {
 					foreach($ps_value as $vs_value) {
-						if (!in_array($vs_value, array_values($va_pref_info["choiceList"]))) {
+						if (!in_array($vs_value, array_values($va_pref_info["choiceList"]), true)) {
 							if ($pb_post_errors) {
 								$this->postError(921, _t("%1 is not a valid value for %2", $vs_value, $va_pref_info["label"]),"User->isValidPreferenceValue()");
 							}
 							return false;
 						}
 					}
-				} else {
-					if (!in_array($ps_value, array_values($va_pref_info["choiceList"]))) {
-						if ($pb_post_errors) {
-							$this->postError(921, _t("%1 is not a valid value for %2", $ps_value, $va_pref_info["label"]),"User->isValidPreferenceValue()");
-						}
-						return false;
+				} elseif (!in_array($ps_value, array_values($va_pref_info["choiceList"]), true)) {
+					if ($pb_post_errors) {
+						$this->postError(921, _t("%1 is not a valid value for %2", $ps_value, $va_pref_info["label"]),"User->isValidPreferenceValue()");
 					}
+					return false;
 				}
 			}
 			
