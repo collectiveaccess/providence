@@ -1412,18 +1412,6 @@ function caEditorInspector($view, $options=null) {
 				}
 			}
 
-			if($view->request->user->canDoAction("can_duplicate_{$table_name}") && $t_item->getPrimaryKey()) {
-				$tools[] = "<div id='caDuplicateItemButton' class='inspectorActionButton'>".
-				           caFormTag($view->request, 'Edit', 'DuplicateItemForm', $view->request->getModulePath().'/'.$view->request->getController(), 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true]).
-				           "<div>".caFormSubmitLink($view->request, caNavIcon(__CA_NAV_ICON_DUPLICATE__, '20px'), '', 'DuplicateItemForm', null, ['aria-label' => _t('Duplicate item')])."</div>".
-				           caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey())).
-				           caHTMLHiddenInput('mode', array('value' => 'dupe')).
-				           "	</form>
-						</div>\n";
-
-				TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($type_name, 'UTF-8')));
-			}
-
 			if (method_exists($t_item, 'getTypeCode') && caHomeLocationsEnabled($t_item->tableName(), $t_item->getTypeCode()) && $view->request->user->canDoAction("can_set_home_location_".$table_name)) {
 				$tools[] = "<div id='inspectorSetHomeLocation' class='inspectorActionButton'><div id='inspectorSetHomeLocationButton'><a href='#' onclick='_initSetHomeLocationHierarchyBrowser(); return false;'>".caNavIcon(__CA_NAV_ICON_HOME__, '20px', array('title' => _t('Set home location')))."</a></div></div>\n";
 
@@ -1440,13 +1428,56 @@ function caEditorInspector($view, $options=null) {
 				TooltipManager::add('#inspectorLotMediaDownloadButton', _t("Download all media associated with objects in this lot"));
 			}
 
+			if($view->request->user->canDoAction("can_duplicate_{$table_name}") && $t_item->getPrimaryKey()) {
+				if(!$view->request->user->getPreference($t_item->tableName().'_extended_duplication_options')) {
+					$tools[] = "<div id='caDuplicateItemButton' class='inspectorActionButton'>".
+								caFormTag($view->request, 'Edit', 'DuplicateItemForm', $view->request->getModulePath().'/'.$view->request->getController(), 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true]).
+								"<div>".caFormSubmitLink($view->request, caNavIcon(__CA_NAV_ICON_DUPLICATE__, '20px'), '', 'DuplicateItemForm', null, ['aria-label' => _t('Duplicate item')])."</div>".
+								caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey())).
+								caHTMLHiddenInput('mode', array('value' => 'dupe')).
+							"	</form>
+							</div>\n";
+	
+					TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($type_name, 'UTF-8')));
+				} else {
+					$tools[] = "<div id='caDuplicateItem' class='inspectorActionButton'><div id='caDuplicateItemButton'><a href='#' onclick='caDuplicationSettingsPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_DUPLICATE__, '20px', ['title' => _t('Duplicate item')])."</a></div></div>\n";
+					
+					$duplication_settings_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
+					$duplication_settings_view->setVar('t_item', $t_item);
+					$duplication_settings_view->setVar('type_name', $type_name ?? $t_item->getPropery('NAME_SINGULAR'));
+					$duplication_settings_view->setVar('last_duplication_mode', Session::getVar($t_item->tableName().'_editor_last_duplication_mode') ?? 'create');
+					
+					$duplication_settings_view->setVar('set_select', caHTMLSelect('pair_with_set_id', [], ['id' => 'caDuplicateItemFormSetList', 'class' => ''], ['width' => '200px']));
+					
+					FooterManager::add($duplication_settings_view->render("duplication_html.php"));
+		
+					TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($type_name, 'UTF-8')));
+				}
+			}
+			
+			if (method_exists($t_item, 'getTypeCode') && caHomeLocationsEnabled($t_item->tableName(), $t_item->getTypeCode()) && $view->request->user->canDoAction("can_set_home_location_".$table_name)) {	
+				$tools[] = "<div id='inspectorSetHomeLocation' class='inspectorActionButton'><div id='inspectorSetHomeLocationButton'><a href='#' onclick='_initSetHomeLocationHierarchyBrowser(); return false;'>".caNavIcon(__CA_NAV_ICON_HOME__, '20px', array('title' => _t('Set home location')))."</a></div></div>\n";
+	
+				$change_type_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
+				$change_type_view->setVar('t_item', $t_item);
+	
+				FooterManager::add($change_type_view->render("set_home_location_html.php"));
+				TooltipManager::add("#inspectorSetHomeLocation", _t('Set home location'));
+			}
+	
+			// Download media in lot ($num_objects is only set for object lots)
+			if ($num_objects > 0) {
+				$tools[] = "<div id='inspectorLotMediaDownloadButton' class='inspectorActionButton'>".caNavLink($view->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, '20px'), "button", $view->request->getModulePath(), $view->request->getController(), 'getLotMedia', array('lot_id' => $t_item->getPrimaryKey(), 'download' => 1), array())."</div>\n";
+				TooltipManager::add('#inspectorLotMediaDownloadButton', _t("Download all media associated with objects in this lot"));
+			}
+			
 			// Download media in set
 			if(($table_name == 'ca_sets') && (sizeof($t_item->getItemRowIDs() ?? []) > 0)) {
 				$tools [] = "<div id='inspectorSetMediaDownloadButton' class='inspectorActionButton'>".caNavLink($view->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, '20px'), "button", $view->request->getModulePath(), $view->request->getController(), 'getSetMedia', array('set_id' => $t_item->getPrimaryKey(), 'download' => 1), array())."</div>\n";
-
+	
 				TooltipManager::add('#inspectorSetMediaDownloadButton', _t("Download all media associated with records in this set"));
 			}
-
+		
 			// Auto-delete set?
 			if(($table_name == 'ca_sets') && ($view->request->user->getPreference('autodelete_sets') === 'yes')) {
 				$autodelete = "<div class='inspectorActionButton'><div><a href='#' title='"._t('Set auto-deletion of set.')."' onclick='caToggleAutoDelete(); return false;' id='inspectorSetAutoDeleteButton'>".caNavIcon($t_item->willAutoDelete() ? __CA_NAV_ICON_AUTO_DELETE__ : __CA_NAV_ICON_NO_AUTO_DELETE__, '20px')."</a></div></div>";
@@ -2853,7 +2884,7 @@ function caProcessTemplateTagDirectives($ps_value, $pa_directives, $pa_options=n
 								$t = explode("/", $v); return ((int)$t[1] > $acc) ? (int)$t[1] : $acc;
 							}, 0);
 
-							$vs_in_inches = $vo_measurement->convertTo(Zend_Measure_Length::INCH, 15);
+							$vs_in_inches = $vo_measurement->convertTo(MeasureLength::INCH, 15);
 							$vn_value_in_inches = (float)preg_replace("![^0-9\.]+!", "", $vs_in_inches);
 							$va_measure_conv = [];
 
@@ -2867,44 +2898,44 @@ function caProcessTemplateTagDirectives($ps_value, $pa_directives, $pa_options=n
 							}
 							if ($vn_value_in_inches > 0) {
 								$vo_inches = caParseLengthDimension("{$vn_value_in_inches} in");
-								$va_measure_conv[] = (in_array($vs_units, ['fractionalenglish', 'infrac']) ? caLengthToFractions($vn_value_in_inches, $vn_maximum_denominator, true) : $vo_inches->convertTo(Zend_Measure_Length::INCH, $o_dimensions_config->get('inch_decimal_precision'))).((!$pb_omit_units && in_array('INCH', $va_add_periods_list)) ? '.' : '');
+								$va_measure_conv[] = (in_array($vs_units, ['fractionalenglish', 'infrac']) ? caLengthToFractions($vn_value_in_inches, $vn_maximum_denominator, true) : $vo_inches->convertTo(MeasureLength::INCH, $o_dimensions_config->get('inch_decimal_precision'))).((!$pb_omit_units && in_array('INCH', $va_add_periods_list)) ? '.' : '');
 							}
 							$vs_measure_conv = join(" ", $va_measure_conv);
 
 							break;
 						case 'metric':
-							$vs_in_cm = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, 15);
+							$vs_in_cm = $vo_measurement->convertTo(MeasureLength::CENTIMETER, 15);
 							$vn_value_in_cm = (float)preg_replace("![^0-9\.]+!", "", $vs_in_cm);
 
 							if (($force_metric_units == 'mm') || (!$force_metric_units && ($vn_value_in_cm <= $o_dimensions_config->get('use_millimeters_for_display_up_to')))) {
-								$vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::MILLIMETER, (int)$o_dimensions_config->get('millimeter_decimal_precision')).((!$pb_omit_units && in_array('MILLIMETER', $va_add_periods_list)) ? '.' : '');
+								$vs_measure_conv = $vo_measurement->convertTo(MeasureLength::MILLIMETER, (int)$o_dimensions_config->get('millimeter_decimal_precision')).((!$pb_omit_units && in_array('MILLIMETER', $va_add_periods_list)) ? '.' : '');
 							} elseif (($force_metric_units == 'cm') || (!$force_metric_units && ($vn_value_in_cm <= $o_dimensions_config->get('use_centimeters_for_display_up_to')))) {
-								$vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, (int)$o_dimensions_config->get('centimeter_decimal_precision')).((!$pb_omit_units && in_array('CENTIMETER', $va_add_periods_list)) ? '.' : '');
+								$vs_measure_conv = $vo_measurement->convertTo(MeasureLength::CENTIMETER, (int)$o_dimensions_config->get('centimeter_decimal_precision')).((!$pb_omit_units && in_array('CENTIMETER', $va_add_periods_list)) ? '.' : '');
 							} elseif (($force_metric_units == 'm') || (!$force_metric_units && ($vn_value_in_cm <= $o_dimensions_config->get('use_meters_for_display_up_to')))) {
-								$vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::METER, (int)$o_dimensions_config->get('meter_decimal_precision')).((!$pb_omit_units && in_array('METER', $va_add_periods_list)) ? '.' : '');
+								$vs_measure_conv = $vo_measurement->convertTo(MeasureLength::METER, (int)$o_dimensions_config->get('meter_decimal_precision')).((!$pb_omit_units && in_array('METER', $va_add_periods_list)) ? '.' : '');
 							} else {
-								$vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::KILOMETER, $o_dimensions_config->get('kilometer_decimal_precision')).((!$pb_omit_units && in_array('KILOMETER', $va_add_periods_list)) ? '.' : '');
+								$vs_measure_conv = $vo_measurement->convertTo(MeasureLength::KILOMETER, $o_dimensions_config->get('kilometer_decimal_precision')).((!$pb_omit_units && in_array('KILOMETER', $va_add_periods_list)) ? '.' : '');
 							}
 							break;
 						case 'm':
-							$vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::METER, $o_dimensions_config->get('meter_decimal_precision')).((!$pb_omit_units && in_array('METER', $va_add_periods_list)) ? '.' : '');
+							$vs_measure_conv = $vo_measurement->convertTo(MeasureLength::METER, $o_dimensions_config->get('meter_decimal_precision')).((!$pb_omit_units && in_array('METER', $va_add_periods_list)) ? '.' : '');
 							break;
 						case 'cm':
-							$vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, $o_dimensions_config->get('centimeter_decimal_precision')).((!$pb_omit_units && in_array('CENTIMETER', $va_add_periods_list)) ? '.' : '');
+							$vs_measure_conv = $vo_measurement->convertTo(MeasureLength::CENTIMETER, $o_dimensions_config->get('centimeter_decimal_precision')).((!$pb_omit_units && in_array('CENTIMETER', $va_add_periods_list)) ? '.' : '');
 							break;
 						case 'ft':
 						case 'ft.':
 						case 'foot':
 						case 'feet':
 						case "'":
-							$vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::FEET, $o_dimensions_config->get('feet_decimal_precision')).((!$pb_omit_units && in_array('FEET', $va_add_periods_list)) ? '.' : '');
+							$vs_measure_conv = $vo_measurement->convertTo(MeasureLength::FEET, $o_dimensions_config->get('feet_decimal_precision')).((!$pb_omit_units && in_array('FEET', $va_add_periods_list)) ? '.' : '');
 							break;
 						case 'in':
 						case 'inch':
 						case 'inches':
 						case 'in.':
 						case '"':
-							$vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::INCH, $o_dimensions_config->get('inch_decimal_precision')).((!$pb_omit_units && in_array('INCH', $va_add_periods_list)) ? '.' : '');
+							$vs_measure_conv = $vo_measurement->convertTo(MeasureLength::INCH, $o_dimensions_config->get('inch_decimal_precision')).((!$pb_omit_units && in_array('INCH', $va_add_periods_list)) ? '.' : '');
 							break;
 					}
 
@@ -4543,8 +4574,8 @@ function caProcessBottomLineTemplateForPlacement($request, $placement, $res, $op
 				$tag_values[$value_name]['AVG'] = ($c > 0) ? sprintf("%1.2f", $tag_values[$value_name]['SUM']/$c) : "0.00";
 
 				foreach($tag_values[$value_name] as $tag => $val) {
-					$vo_measurement = new Zend_Measure_Length((float)$val, 'METER', $g_ui_locale);
-					$tag_values[$value_name][$tag] = $vo_measurement->convertTo(($g_ui_units_pref == 'metric') ? Zend_Measure_Length::METER :  Zend_Measure_Length::FEET, 4);
+					$vo_measurement = new MeasureLength((float)$val, 'METER', $g_ui_locale);
+					$tag_values[$value_name][$tag] = $vo_measurement->convertTo(($g_ui_units_pref == 'metric') ? MeasureLength::METER :  MeasureLength::FEET, 4);
 				}
 
 				break;
@@ -4553,8 +4584,8 @@ function caProcessBottomLineTemplateForPlacement($request, $placement, $res, $op
 				$tag_values[$value_name]['AVG'] = ($c > 0) ? sprintf("%1.2f", $tag_values[$value_name]['SUM']/$c) : "0.00";
 
 				foreach($tag_values[$value_name] as $tag => $val) {
-					$vo_measurement = new Zend_Measure_Length((float)$val, 'KILOGRAM', $g_ui_locale);
-					$tag_values[$value_name][$tag] = $vo_measurement->convertTo(($g_ui_units_pref == 'metric') ? Zend_Measure_Weight::KILOGRAM :  Zend_Measure_Weight::POUND, 4);
+					$vo_measurement = new MeasureWeight((float)$val, 'KILOGRAM', $g_ui_locale);
+					$tag_values[$value_name][$tag] = $vo_measurement->convertTo(($g_ui_units_pref == 'metric') ? MeasureWeight::KILOGRAM :  MeasureWeight::POUND, 4);
 				}
 
 				break;
@@ -6355,7 +6386,7 @@ function caGetFindViewList($table_name_or_num) : ?array {
 				'list' => _t('list'),
 				'full' => _t('full'),
 				'thumbnail' => _t('thumbnails'),
-				'list_with_thumbnail' => _t('list + thumbnails'),
+				'list_with_thumbnail' => _t('list').' + '._t('thumbnails'),
 			];
 			break;
 		case 'ca_object_representations':
@@ -6603,7 +6634,7 @@ function caEditorFormControls(View $view, string $form_id, ?array $options=null)
 	$labels = $view->request->config->getAssoc("{$table}_{$type}_editor_control_labels") ?? $view->request->config->getAssoc("{$table}_editor_control_labels") ?? $view->request->config->getAssoc("editor_control_labels") ?? [];
 
 	$buf = caFormControlBox(
-		caFormSubmitButton($view->request, __CA_NAV_ICON_SAVE__, $labels['save'] ?? _t("Save"), $form_id).' '.
+		caFormSubmitButton($view->request, __CA_NAV_ICON_SAVE__, $labels['save'] ?? _t("Save"), $form_id, ['preventDuplicateSubmits' => true]).' '.
 		($view->getVar('show_save_and_return') ? caFormSubmitButton($view->request, __CA_NAV_ICON_SAVE__, $labels['save_and_return'] ?? _t("Save and return"), $form_id, ['isSaveAndReturn' => true]) : '').' '.
 		caFormNavButton($view->request, __CA_NAV_ICON_CANCEL__, $labels['cancel'] ?? _t("Cancel"), '', $url['module'], $url['controller'], 'Edit/'.$view->request->getActionExtra(), $cancel_parameters),
 		($view->getVar('show_show_notifications') ? caFormJSButton($view->request, __CA_NAV_ICON_ALERT__, $labels['alerts'] ?? _t("Show editor alerts"), '', ['class' => 'caEditorFormNotifications']) : ''),

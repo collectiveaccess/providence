@@ -34,7 +34,7 @@ trait CLIUtilsConfiguration {
 	/**
 	 * Create a fresh installation of CollectiveAccess based on contents of setup.php.  This is essentially a CLI
 	 * command wrapper for the installation process, as /install/inc/page2.php is a web wrapper.
-	 * @param Zend_Console_Getopt $po_opts
+	 * @param CLIGetopt $po_opts
 	 * @param bool $pb_installing
 	 * @return bool
 	 */
@@ -319,7 +319,7 @@ trait CLIUtilsConfiguration {
 	
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt|null $po_opts
+	 * @param CLIGetopt|null $po_opts
 	 * @return bool
 	 */
 	public static function push_config_changes($po_opts=null) {

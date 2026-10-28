@@ -137,16 +137,15 @@ class ElasticSearchConfigurationSettings extends ASearchConfigurationSettings {
 	# ------------------------------------------------
 	private function _checkElasticSearchRunning(){
 		/* check if elasticsearch alive */
-		$vo_http_client = new Zend_Http_Client();
-		$vo_http_client->setUri(
-			$this->ops_elasticsearch_base_url."/". /* general url */
-			$this->ops_elasticsearch_index_name."/". /* index name */
-			"/_search"
-		);
-		$vo_http_client->setParameterGet('q','*');
+		$vo_http_client = new \GuzzleHttp\Client(['http_errors' => false]);
 		try {
-			$vo_http_response = $vo_http_client->request();
-		} catch (Zend_Http_Client_Exception $v_e){
+			$vo_http_response = $vo_http_client->request('GET',
+				$this->ops_elasticsearch_base_url."/". /* general url */
+				$this->ops_elasticsearch_index_name."/". /* index name */
+				"/_search",
+				['query' => ['q' => '*']]
+			);
+		} catch (\GuzzleHttp\Exception\GuzzleException $v_e){
 			return __CA_SEARCH_CONFIG_ERROR__;
 		}
 
@@ -156,22 +155,20 @@ class ElasticSearchConfigurationSettings extends ASearchConfigurationSettings {
 	# ------------------------------------------------
 	private function _checkElasticSearchIndexExists(){
 		/* check if elasticsearch alive */
-		$vo_http_client = new Zend_Http_Client();
-		
-		$vo_http_client->setUri(
-			$this->ops_elasticsearch_base_url."/". /* general url */
-			$this->ops_elasticsearch_index_name."/". /* index name */
-			"/_search"
-		);
-		$vo_http_client->setParameterGet('q','*');
+		$vo_http_client = new \GuzzleHttp\Client(['http_errors' => false]);
 		try {
-			$vo_http_response = $vo_http_client->request();
-			$va_response = json_decode($vo_http_response->getBody(),true);
-			
+			$vo_http_response = $vo_http_client->request('GET',
+				$this->ops_elasticsearch_base_url."/". /* general url */
+				$this->ops_elasticsearch_index_name."/". /* index name */
+				"/_search",
+				['query' => ['q' => '*']]
+			);
+			$va_response = json_decode((string)$vo_http_response->getBody(),true);
+
 			if(isset($va_response["status"]) && $va_response["status"]==404){
 				return __CA_SEARCH_CONFIG_ERROR__;
 			}
-		} catch (Zend_Http_Client_Exception $v_e){
+		} catch (\GuzzleHttp\Exception\GuzzleException $v_e){
 			return __CA_SEARCH_CONFIG_ERROR__;
 		}
 

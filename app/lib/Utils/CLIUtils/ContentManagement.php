@@ -34,7 +34,7 @@ trait CLIUtilsContentManagement {
 	
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt|null $po_opts
+	 * @param CLIGetopt|null $po_opts
 	 * @return bool
 	 */
 	public static function scan_site_page_templates($po_opts=null) {
@@ -78,6 +78,5 @@ trait CLIUtilsContentManagement {
 	public static function scan_site_page_templatesHelp() {
 		return _t('Scan site page template for tags to build the content management editing user interface.');
 	}
-	
 	# -------------------------------------------------------
 }

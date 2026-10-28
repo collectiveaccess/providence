@@ -321,7 +321,7 @@ trait CLIUtilsImportExport {
 	}
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt|null $po_opts
+	 * @param CLIGetopt|null $po_opts
 	 * @return bool
 	 */
 	public static function print_system_guid($po_opts=null) {
@@ -1056,7 +1056,7 @@ trait CLIUtilsImportExport {
 	}
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt|null $po_opts
+	 * @param CLIGetopt|null $po_opts
 	 * @return bool
 	 */
 	public static function run_external_export($po_opts=null) {
@@ -1120,7 +1120,7 @@ trait CLIUtilsImportExport {
 	}
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt|null $po_opts
+	 * @param CLIGetopt|null $po_opts
 	 * @return bool
 	 */
 	public static function run_pending_external_exports($po_opts=null) {
@@ -1167,7 +1167,7 @@ trait CLIUtilsImportExport {
 	}
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt|null $po_opts
+	 * @param CLIGetopt|null $po_opts
 	 * @return bool
 	 */
 	public static function write_exporter_to_file($po_opts=null) {
@@ -1229,7 +1229,7 @@ trait CLIUtilsImportExport {
 	}
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt|null $po_opts
+	 * @param CLIGetopt|null $po_opts
 	 * @return bool
 	 *
 	 * @TODO: use caExportResult helper instead
@@ -1377,7 +1377,7 @@ trait CLIUtilsImportExport {
 	}
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt|null $po_opts
+	 * @param CLIGetopt|null $po_opts
 	 * @return bool
 	 */
 	public static function write_importer_to_file($po_opts=null) {
