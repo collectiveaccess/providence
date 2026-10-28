@@ -185,7 +185,7 @@ class ExitManager {
 		
 		
 		if(is_array($md = \ca_metadata_elements::getElementsAsList(true, $table, null, true, true, true))) {
-			$dictionary = array_merge($this->_genAttributeDictionary($md));
+			$dictionary = array_merge($dictionary, $this->_genAttributeDictionary($md));
 		}
 		
 		// Marshall data X rows at a time
@@ -222,9 +222,9 @@ class ExitManager {
 			}
 		}
 		if(sizeof($data) > 0) {
-			$format->process($data);
+			$format->process($data, ['primaryKey' => $t->primaryKey()]);
 		}
-		if ($show_process) { print \CLIProgressBar::finish(); }
+		if ($show_progress) { print \CLIProgressBar::finish(); }
 		$format->write();
 		
 		return true;

@@ -35,22 +35,17 @@ require_once(__CA_LIB_DIR__.'/Exit/Formats/BaseExitFormat.php');
 class XML extends BaseExitFormat {
 	# ------------------------------------------------------
 	/**
-	 *
+	 * XMLWriter instance; output is buffered in memory and flushed to the export file after each batch
 	 */
-	private $dom;
+	private $writer;
 	
 	/**
-	 *
+	 * Flag indicating header (root element and dictionary) has been written
 	 */
-	private $root = null;
+	private $header_written = false;
 	
 	/**
-	 *
-	 */
-	 private $data = null;
-	
-	/**
-	 *
+	 * File handle for export file
 	 */
 	private $output = null;
 	# ------------------------------------------------------
@@ -58,15 +53,17 @@ class XML extends BaseExitFormat {
 	 *
 	 */
 	public function __construct(string $directory, string $file, ?array $options=null){
-		$this->ops_name = 'XML';
-		
-		$this->dom = new \DOMDocument('1.0','utf-8'); // are those settings?
-		$this->dom->formatOutput = true;
-		$this->dom->preserveWhiteSpace = false;
+		$this->name = 'XML';
 		
 		if(!($this->output = fopen($fd = "{$directory}/{$file}.".$this->getFileExtension(), "w"))) {
-			throw new \ApplicationException(_t('Could not open file for export: %1', $td));
+			throw new \ApplicationException(_t('Could not open file for export: %1', $fd));
 		}
+		
+		$this->writer = new \XMLWriter();
+		$this->writer->openMemory();
+		$this->writer->setIndent(true);
+		$this->writer->setIndentString('  ');
+		$this->writer->startDocument('1.0', 'utf-8');
 
 		parent::__construct($directory, $file, $options);
 	}
@@ -86,36 +83,37 @@ class XML extends BaseExitFormat {
 	}
 	# ------------------------------------------------------
 	/**
-	 *
+	 * Write items to export file. Each call is flushed to disk on completion, so memory 
+	 * usage is bounded by the size of the batch rather than the size of the export.
 	 */
 	public function process(array $data, ?array $options=null){
-		if(!$this->root) {
+		if(!$this->header_written) {
 			$this->writeHeader($options);
 		}
+		$w = $this->writer;
 		
 		$pk = caGetOption('primaryKey', $options, null);
 		foreach($data as $i => $item_data) {
-			$item = $this->dom->createElement('item', '');
+			// START ITEM
+			$w->startElement('item');
 			
 			if($pk && isset($item_data[$pk])) {
-				$item->setAttribute('id', $item_data[$pk]);
+				$w->writeAttribute('id', (string)$item_data[$pk]);
 			}
 			
 			if(isset($item_data['_guid'])) {
-				$item->setAttribute('guid', $item_data['_guid']);
+				$w->writeAttribute('guid', (string)$item_data['_guid']);
 				unset($item_data['_guid']);
 			}
 			
-			$this->data->append($item);
-			
-			// START ITEM
 			foreach($item_data as $f => $d) {
 				if(!preg_match("!^[a-z]+!i", $f)) { $f = "_{$f}"; }
 				if(is_array($d)) {
 					foreach($d as $r => $rv) {
-						$fld = $this->dom->createElement($f, '');
+						if(!is_array($rv)) { continue; }
+						$attrs = [];
 						if(isset($rv['locale'])) {
-							$fld->setAttribute('locale', $rv['locale']);
+							$attrs['locale'] = $rv['locale'];
 							unset($rv['locale']);
 						}
 						
@@ -123,112 +121,157 @@ class XML extends BaseExitFormat {
 						unset($rv['_datatype']);
 						
 						if(isset($rv['__source__']) && strlen($rv['__source__'])) {
-							$fld->setAttribute('source', $rv['__source__']);
+							$attrs['source'] = $rv['__source__'];
 							unset($rv['__source__']);
 						}
 						if((sizeof($rv) === 2) && isset($rv['_id']) && isset($rv['_idno'])) { // intrinsic list
-							$fld->setAttribute('item_id', $rv['_id']);
+							$attrs['item_id'] = $rv['_id'];
 							$rv = [$rv['_idno']];
 						}
+						
+						// Field value is either a set of sub-elements (containers and labels) or a single text value
+						$sub_elements = [];
+						$text = '';
+						$has_sub_elements = (($datatype === 0) || (in_array($f, ['preferred_labels', 'nonpreferred_labels'])));
 						foreach($rv as $x => $y) {
 							if(!preg_match("!^[a-z]+!i", $x)) { $x = "_{$x}"; }
-							if(($datatype === 0) || (in_array($f, ['preferred_labels', 'nonpreferred_labels']))) {
+							if($has_sub_elements) {
 								if(is_array($y)) {
-									$se = $this->dom->createElement($x, $y['_idno']);
-									$se->setAttribute('id', $y['_id']);
+									$sub_elements[] = ['name' => $x, 'value' => (string)($y['_idno'] ?? ''), 'attrs' => ['id' => $y['_id'] ?? '']];
 								} else {
-									$se = $this->dom->createElement($x, $y);
+									$sub_elements[] = ['name' => $x, 'value' => (string)$y, 'attrs' => []];
 								}
-								$fld->append($se);
 							} elseif($y && !is_array($y)) {
-								$fld->textContent = $y;
+								$text = (string)$y;
 							}
 						}
-						if(strlen($fld->textContent) > 0) {
-							$item->append($fld);
+						
+						// Omit fields without content
+						if($has_sub_elements) {
+							if(!strlen(join('', array_column($sub_elements, 'value')))) { continue; }
+						} elseif(!strlen($text)) {
+							continue;
 						}
+						
+						$w->startElement($f);
+						foreach($attrs as $an => $av) {
+							$w->writeAttribute($an, (string)$av);
+						}
+						if($has_sub_elements) {
+							foreach($sub_elements as $se) {
+								$w->startElement($se['name']);
+								foreach($se['attrs'] as $an => $av) {
+									$w->writeAttribute($an, (string)$av);
+								}
+								if(strlen($se['value'])) { $w->text($se['value']); }
+								$w->endElement();
+							}
+						} else {
+							$w->text($text);
+						}
+						$w->endElement();
 					}
 				} else { // Intrinsic
 					if(strlen($d)) { 
-						$fld = $this->dom->createElement($f, $d);
-						$item->append($fld);
+						$w->writeElement($f, (string)$d);
 					}
 				}
 			}
+			$w->endElement();
 			// END ITEM
 		}
+		$this->flush();
 	}
 	# ------------------------------------------------------
 	/**
-	 *
+	 * Write root element and data dictionary, and open data element. Root and data elements 
+	 * are closed by write()
 	 */
 	public function writeHeader(?array $options=null) : bool{
-		if($this->root) { return false; }
+		if($this->header_written) { return false; }
 		$header = $this->getHeader();
 		$dictionary = $this->getDictionary();
+		$w = $this->writer;
 		
 		// add root
-		$this->root = $this->dom->createElement('export', '');
-		$this->root->setAttribute('table', $header['table']);
-		$this->root->setAttribute('name', $header['name']);
-		$this->root->setAttribute('count', $header['count']);
-		$this->root->setAttribute('exportDate', $header['exportDate']);
+		$w->startElement('export');
+		$w->writeAttribute('table', (string)$header['table']);
+		$w->writeAttribute('name', (string)$header['name']);
+		$w->writeAttribute('count', (string)$header['count']);
+		$w->writeAttribute('exportDate', (string)$header['exportDate']);
 		
-		$this->dom->append($this->root);
-		
-		$dict = $this->dom->createElement('dictionary', '');
-		
+		$w->startElement('dictionary');
 		foreach($dictionary as $f => $d) {
 			if(!preg_match("!^[a-z]+!i", $f)) { $f = "_{$f}"; }
 			
-			$de = $this->dom->createElement('data', '');
-			$de->setAttribute('code', $f);
-			$de->setAttribute('type', $d['type']);
-			$de->setAttribute('name', $d['name']);
-			$de->setAttribute('description', $d['description']);
-			$de->setAttribute('canRepeat', $d['canRepeat'] ? "yes" : "no");
-			if(strlen($d['list_id'] ?? null)) { $de->setAttribute('list_id', $d['list_id']); }
-			if(strlen($d['list_code'] ?? null)) { $de->setAttribute('list', $d['list_code']); }
+			$w->startElement('data');
+			$w->writeAttribute('code', $f);
+			$w->writeAttribute('type', (string)$d['type']);
+			$w->writeAttribute('name', (string)$d['name']);
+			$w->writeAttribute('description', (string)$d['description']);
+			$w->writeAttribute('canRepeat', $d['canRepeat'] ? "yes" : "no");
+			if(strlen($d['list_id'] ?? '')) { $w->writeAttribute('list_id', (string)$d['list_id']); }
+			if(strlen($d['list_code'] ?? '')) { $w->writeAttribute('list', (string)$d['list_code']); }
 		
-			if(strlen($d['related_to_table'] ?? null)) { $de->setAttribute('relatedToTable', $d['related_to_table']); }
-			if(strlen($d['related_to_field'] ?? null)) { $de->setAttribute('relatedToField', $d['related_to_field']); }
+			if(strlen($d['related_to_table'] ?? '')) { $w->writeAttribute('relatedToTable', (string)$d['related_to_table']); }
+			if(strlen($d['related_to_field'] ?? '')) { $w->writeAttribute('relatedToField', (string)$d['related_to_field']); }
 			
-			if(strlen($d['reference_to'] ?? null)) { $de->setAttribute('referenceTo', $d['reference_to']); }
+			if(strlen($d['reference_to'] ?? '')) { $w->writeAttribute('referenceTo', (string)$d['reference_to']); }
 			
 			if(isset($d['subElements']) && sizeof($d['subElements'])) {
 				foreach($d['subElements'] as $sec => $dse) {
 					if(!preg_match("!^[a-z]+!i", $sec)) { $sec = "_{$sec}"; }
-					$se = $this->dom->createElement('data', '');
-					$se->setAttribute('code', $sec);
-					$se->setAttribute('type', $dse['type']);
-					$se->setAttribute('name', $dse['name']);
-					$se->setAttribute('description', $dse['description']);
-					if(strlen($dse['list_id'] ?? null)) { $se->setAttribute('list_id', $dse['list_id']); }
-					if(strlen($dse['list_code'] ?? null)) { $se->setAttribute('list', $dse['list_code']); }
-					if(strlen($dse['reference_to'] ?? null)) { $se->setAttribute('referenceTo', $dse['reference_to']); }
-					$de->append($se);
+					$w->startElement('data');
+					$w->writeAttribute('code', $sec);
+					$w->writeAttribute('type', (string)$dse['type']);
+					$w->writeAttribute('name', (string)$dse['name']);
+					$w->writeAttribute('description', (string)$dse['description']);
+					if(strlen($dse['list_id'] ?? '')) { $w->writeAttribute('list_id', (string)$dse['list_id']); }
+					if(strlen($dse['list_code'] ?? '')) { $w->writeAttribute('list', (string)$dse['list_code']); }
+					if(strlen($dse['reference_to'] ?? '')) { $w->writeAttribute('referenceTo', (string)$dse['reference_to']); }
+					$w->endElement();
 				}
 			}
-			$dict->append($de);
+			$w->endElement();
 		}
-		$this->root->append($dict);
+		$w->endElement(); // dictionary
 		
-		$this->data = $this->dom->createElement('data', '');
-		$this->root->append($this->data);
+		$w->startElement('data');
+		
+		$this->header_written = true;
+		$this->flush();
 		
 		return true;
 	}
 	# ------------------------------------------------------
 	/**
-	 *
+	 * Close open elements, flush remaining output and close export file
 	 */
 	public function write(?array $options=null) : bool {
-		if(!$this->root) {
+		if(!$this->output) { return false; }
+		if(!$this->header_written) {
+			fclose($this->output);
+			$this->output = null;
 			return false;
 		}
-		$ret = fputs($this->output, $this->dom->saveXML());
+		$this->writer->endElement(); // data
+		$this->writer->endElement(); // export
+		$this->writer->endDocument();
 		
-		return (bool)$ret;
+		$ret = $this->flush();
+		fclose($this->output);
+		$this->output = null;
+		
+		return $ret;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Write buffered XML to export file
+	 */
+	private function flush() : bool {
+		$buf = $this->writer->outputMemory(true);
+		if(!strlen($buf)) { return true; }
+		return (fwrite($this->output, $buf) !== false);
 	}
 	# ------------------------------------------------------
 }
