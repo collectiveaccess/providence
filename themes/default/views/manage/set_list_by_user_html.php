@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2025 Whirl-i-Gig
+ * Copyright 2018-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -86,39 +86,36 @@ if (!$this->request->isAjax()) {
 }
 ?>
 	<div id="resultBox">
-<?php
-	print $this->render('sets/paging_controls_html.php');
-?>
-
+	<?= $this->render('sets/paging_controls_html.php');?>
 	<table id="caItemList" class="listtable">
 		<thead>
 			<tr>
-				<th class="<?= (($current_sort == "name") ? "list-header-sorted-".$current_sort_direction : ""); ?> list-header-nolink">
-					<?= caNavLink($this->request, _t('Name'), '', 'manage', 'Set', 'ListSets', array('sort' => 'name', 'direction' => ((($current_sort == "name") && ($current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
+				<th class="{sorter: false} list-header-nosort list-header-nolink">
+					<?=  _t('Name'); ?>
 				</th>
-				<th class="<?= (($current_sort == "set_content_type") ? "list-header-sorted-".$current_sort_direction : ""); ?> list-header-nolink">
-					<?= caNavLink($this->request, _t('Content type'), '', 'manage', 'Set', 'ListSets', array('sort' => 'set_content_type', 'direction' => ((($current_sort == "set_content_type") && ($current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
+				<th class="{sorter: false} list-header-nosort list-header-nolink">
+					<?= _t('Content type'); ?>
 				</th>
 <?php
 				if(!$type_id){
 ?>
-					<th class="<?= (($current_sort == "set_type") ? "list-header-sorted-".$current_sort_direction : ""); ?> list-header-nolink">
-						<?= caNavLink($this->request, _t('Type'), '', 'manage', 'Set', 'ListSets', array('sort' => 'set_type', 'direction' => ((($current_sort == "set_type") && ($current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
+					<th class="{sorter: false} list-header-nosort list-header-nolink">
+						<?= _t('Type'); ?>
 					</th>
 <?php
 				}
 ?>
-				<th class="<?= (($current_sort == "item_count") ? "list-header-sorted-".$current_sort_direction : ""); ?> list-header-nolink">
-					<?= caNavLink($this->request, _t('# Items'), '', 'manage', 'Set', 'ListSets', array('sort' => 'item_count', 'direction' => ((($current_sort == "item_count") && ($current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
+				<th class="{sorter: false} list-header-nosort list-header-nolink">
+					<?= _t('# Items'); ?>
 				</th>
-				<th class="<?= (($current_sort == "lname") ? "list-header-sorted-".$current_sort_direction : ""); ?> list-header-nolink">
-					<?= caNavLink($this->request, _t('Owner'), '', 'manage', 'Set', 'ListSets', array('sort' => 'lname', 'direction' => ((($current_sort == "lname") && ($current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
+				<th class="{sorter: false} list-header-nosort list-header-nolink">
+					<?= _t('Owner'); ?>
 				</th>
-				<th class="<?= (($current_sort == "access") ? "list-header-sorted-".$current_sort_direction : ""); ?> list-header-nolink">
-					<?= caNavLink($this->request, _t('Access'), '', 'manage', 'Set', 'ListSets', array('sort' => 'access', 'direction' => ((($current_sort == "access") && ($current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
+				<th class="{sorter: false} list-header-nosort list-header-nolink">
+					<?= _t('Access'); ?>
 				</th>
-				<th class="<?= (($current_sort == "status") ? "list-header-sorted-".$current_sort_direction : ""); ?> list-header-nolink">
-					<?= caNavLink($this->request, _t('Status'), '', 'manage', 'Set', 'ListSets', array('sort' => 'status', 'direction' => ((($current_sort == "status") && ($current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
+				<th class="{sorter: false} list-header-nosort list-header-nolink">
+					<?= _t('Status'); ?>
 				</th>
 				<th class="{sorter: false} list-header-nosort listtableEdit"> </th>
 			</tr>
