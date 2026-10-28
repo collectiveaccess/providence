@@ -78,6 +78,5 @@ trait CLIUtilsContentManagement {
 	public static function scan_site_page_templatesHelp() {
 		return _t('Scan site page template for tags to build the content management editing user interface.');
 	}
-	
 	# -------------------------------------------------------
 }
