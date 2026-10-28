@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2025 Whirl-i-Gig
+ * Copyright 2025-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -196,7 +196,7 @@ class ExitManager {
 		$format->setDictionary($dictionary);
 		while($qr->nextHit()) {
 			$id = $qr->getPrimaryKey();
-			if ($show_progress) { print \CLIProgressBar::next(1, _t('[%1] Processing %2', $table_display, $id)); }
+			if ($show_progress) { print \CLIProgressBar::next(1, _t('[%1][Mem: %2] Processing %3', $table_display, caGetMemoryUsage(), $id)); }
 			
 			// Intrinsics
 			$acc = $this->_getIntrinsics($table, $intrinsic_info, $qr, ['isRelationship' => $is_relationship]);
@@ -219,6 +219,8 @@ class ExitManager {
 			if(sizeof($data) >= self::$s_data_buffer_size) {
 				$format->process($data, ['primaryKey' => $t->primaryKey()]);
 				$data = [];
+				
+				\SearchResult::clearCaches();
 			}
 		}
 		if(sizeof($data) > 0) {
