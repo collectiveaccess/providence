@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,12 +29,11 @@
  *
  * ----------------------------------------------------------------------
  */
- use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\TestCase;
 
 require_once(__CA_LIB_DIR__.'/Parsers/ExpressionParser.php');
 
 class ExpressionParserTest extends TestCase {
-
 	public function testParens() {
 		$this->assertEquals(13, ExpressionParser::evaluate('5 + (4 * 2)'));
 		$this->assertEquals(13, ExpressionParser::evaluate('5 + 4 * 2'));
@@ -56,7 +55,20 @@ class ExpressionParserTest extends TestCase {
 		$this->assertEquals(5, ExpressionParser::evaluate('max(1,2,3,4,5)'));
 		$this->assertEquals(12, ExpressionParser::evaluate('length("Hello World!")'));
 	}
-
+	
+	public function testListReturns() {
+		$this->assertEquals(5, ExpressionParser::evaluate("sizeof(1,2,3,4,6)"));
+		$this->assertEquals(3, ExpressionParser::evaluate("valueCount(^mylist)", ['mylist:array' => ['1','2','3']]));
+		$this->assertEquals(3, ExpressionParser::evaluate("sizeof(^mylist)", ['mylist:array' => ['1','2','3']]));
+		$this->assertEquals(3, ExpressionParser::evaluate("length(^mylist)", ['mylist:array' => ['1','2','3']]));
+	}
+	
+	public function testNestedFunctions() {
+		$this->assertEquals(15, ExpressionParser::evaluate("length('Hello world!   ')"));
+		$this->assertEquals(12, ExpressionParser::evaluate("length(trim('Hello world!   '))"));
+		$this->assertEquals(22.5, ExpressionParser::evaluate("avg(sum(5,10,15), sum(1,2,4,8))"));
+	}
+	
 	public function testIn() {
 		$this->assertTrue(ExpressionParser::evaluate('"Seth" IN ["Julia", "Sophie", "Maria", "Seth"]'));
 		$this->assertFalse(ExpressionParser::evaluate('"Joe" IN ["Julia", "Sophie", "Maria", "Seth"]'));
@@ -138,44 +150,46 @@ class ExpressionParserTest extends TestCase {
 		$this->assertEquals("7", ExpressionParser::evaluate('replace("/[\s]+cm$/", "", "7 cm")'));
 		$this->assertEquals("cm", ExpressionParser::evaluate('replace("/^[0-9]+[\s]+/", "", "7 cm")'));
 	}
-
+	
 	/**
 	 * Random expressions we used for testing while writing the grammar. Might as well leave them in here
 	 */
-// 	public function testParse() {
-// 		$o_parser = new ExpressionParser();
-// 
-// 		// parse() will throw an exception if it fails, so no assertions necessary
-// 
-// 		$o_parser->parse('^ca_objects.preferred_labels = "foo"');
-// 		$o_parser->parse('^5 = "foo"');
-// 
-// 		$o_parser->parse('"Joe" NOT IN ["Julia", "Allison", "Sophie", "Maria", "Angie", "Seth"]');
-// 		$o_parser->parse('"Seth" IN ["Julia", "Allison", "Sophie", "Maria", "Angie", "Seth"]');
-// 		$o_parser->parse('5 IN [1,2,3,4,5]');
-// 
-// 
-// 		$o_parser->parse('("seth" = "seth")');
-// 		$o_parser->parse('5 > 10 OR "seth" = "seth"');
-// 		$o_parser->parse('(5 = 10) AND ("seth" = "seth") AND (6 > 1)');
-// 		$o_parser->parse('((5 > 10) AND ("seth" = "seth")) OR (6 > 1)');
-// 
-// 		$o_parser->parse('5 =~ /foo/');
-// 		$o_parser->parse('5 =~ /test test/');
-// 		$o_parser->parse('"foo" =~ /test test/');
-// 
-// 
-// 		$o_parser->parse('5 + 4');
-// 		$o_parser->parse('"foo" + "bar"');
-// 
-// 		$o_parser->parse('5 > 4');
-// 		$o_parser->parse('5 >= 4');
-// 		$o_parser->parse('5 != 4');
-// 		$o_parser->parse('5 = 4');
-// 		$o_parser->parse('5+5 >= 4');
-// 		$o_parser->parse('avg(abs(1.345), max(4,5))');
-// 		$o_parser->parse('1 ÷ 2 ÷ 3 + 4 * (5 * 2 - 6) * 3.14 ÷ avg(7, 8, 9)');
-// 	}
+	public function testParse() {
+		$o_parser = new ExpressionParser();
+
+		// parse() will throw an exception if it fails, so no assertions necessary
+
+		$o_parser->parse('^ca_objects.preferred_labels = "foo"');
+		$o_parser->parse('^5 = "foo"');
+
+		$o_parser->parse('"Joe" NOT IN ["Julia", "Allison", "Sophie", "Maria", "Angie", "Seth"]');
+		$o_parser->parse('"Seth" IN ["Julia", "Allison", "Sophie", "Maria", "Angie", "Seth"]');
+		$o_parser->parse('5 IN [1,2,3,4,5]');
+
+
+		$o_parser->parse('("seth" = "seth")');
+		$o_parser->parse('5 > 10 OR "seth" = "seth"');
+		$o_parser->parse('(5 = 10) AND ("seth" = "seth") AND (6 > 1)');
+		$o_parser->parse('((5 > 10) AND ("seth" = "seth")) OR (6 > 1)');
+
+		$o_parser->parse('5 =~ /foo/');
+		$o_parser->parse('5 =~ /test test/');
+		$o_parser->parse('"foo" =~ /test test/');
+
+
+		$o_parser->parse('5 + 4');
+		$o_parser->parse('"foo" + "bar"');
+
+		$o_parser->parse('5 > 4');
+		$o_parser->parse('5 >= 4');
+		$o_parser->parse('5 != 4');
+		$o_parser->parse('5 = 4');
+		$o_parser->parse('5+5 >= 4');
+		$o_parser->parse('avg(abs(1.345), max(4,5))');
+		$o_parser->parse('1 ÷ 2 ÷ 3 + 4 * (5 * 2 - 6) * 3.14 ÷ avg(7, 8, 9)');
+		
+		$this->assertEquals(7.78, ExpressionParser::evaluate('1 ÷ 2 ÷ 3 + 4 * (5 * 2 - 6) * 3.14 ÷ avg(7, 8, 9)'));
+	}
 
 	public function testVars() {
 		$this->assertTrue(ExpressionParser::evaluate('^var = 5', array('var' => 5)));
@@ -188,6 +202,18 @@ class ExpressionParserTest extends TestCase {
 
 	public function testObscureVars() {
 		$this->assertTrue(ExpressionParser::evaluate('^/gvp:Subject/gvp:parentString =~ /Corporate/', array('/gvp:Subject/gvp:parentString' => 'Corporate')));
+	}
+	
+	public function testSum() {
+		$this->assertEquals(11.5, ExpressionParser::evaluate('sum(2.5, 3.5, 5.5)'));	// sum static numbers
+		$this->assertEquals(60.5, ExpressionParser::evaluate('sum(^nums)', ['nums' => [10, 20, 30.5]]));	// sum static numbers in array var
+		$this->assertEquals(88.9, ExpressionParser::evaluate('sum(^nums, ^morenums)', ['nums' => [10, 20, 30.5], 'morenums' => [5.4, 23]]));	// sum static numbers in array var
+		$this->assertEquals("01:42:11.000", ExpressionParser::evaluate('sum(^ca_objects.duration)', ['ca_objects.duration' => ["1h 10m 5s","22m","10m 6s"]]));	// sum timecode
+		$this->assertEquals("$ 190.55", ExpressionParser::evaluate('sum(^ca_objects.currency_test)', ['ca_objects.currency_test' => ["$55","$125.50","$10.05"]]));	// sum currency
+		$this->assertGreaterThan("$ 190.55", ExpressionParser::evaluate('sum(^ca_objects.currency_test)', ['ca_objects.currency_test' => ["$55","£125.50","$10.05"]]));	// sum mixes currencies
+		$this->assertEquals("1.524 m", ExpressionParser::evaluate('sum(^ca_objects.dimensions.dimensions_length)', ['ca_objects.dimensions.dimensions_length' => ["10 in", "20in", "30in"]]));	// sum lengths
+		$this->assertEquals("27.215542 kg", ExpressionParser::evaluate('sum(^ca_objects.dimensions.dimensions_weight)', ['ca_objects.dimensions.dimensions_weight' => ["10 lb", "20lb", "30lb"]]));	// sum weights		
+		$this->assertEquals("5.34 GiB", ExpressionParser::evaluate('sum(^ca_objects.filesize_test)', ['ca_objects.filesize_test' => ["245mib", "100.5mb", "5gib"]]));	// sum filesizes
 	}
 
 	/**
