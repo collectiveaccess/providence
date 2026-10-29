@@ -1053,6 +1053,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
                     }
 
 					foreach($va_field_list as $vs_field => $va_field_indexing_info) {
+						if(!is_array($va_field_indexing_info)) { $va_field_indexing_info = []; }
 						if (in_array('DONT_INCLUDE_IN_SEARCH_FORM', $va_field_indexing_info)) { continue; }
 						if(Datamodel::getFieldInfo($vs_table, $vs_field, 'DONT_INCLUDE_IN_SEARCH_FORM')) { continue; }
 												
