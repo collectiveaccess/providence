@@ -55,7 +55,7 @@
 
 // Literals
 %token  number    ([\-]{0,1})(0|[1-9]\d*)(\.\d+)?([eE][\+\-]?\d+)?
-%token  string    (?<!\\)\"((?<=\\)\"|[^"])+(?<!\\)\"
+%token  string    (?<!\\)\"((?<=\\)\"|[^"])*(?<!\\)\"
 %token  string_single_quote    \'[^']*\'
 
 // Math
@@ -161,16 +161,16 @@ scalar:
   | <false>
 
 primary:
-    secondary() ( ::minus:: #substraction scalar() )*
+    secondary() ( ::minus:: #substraction scalar() )?
 
 secondary:
-    ternary() ( ::times:: #multiplication scalar() )*
+    ternary() ( ::times:: #multiplication scalar() )?
 
 ternary:
-    quartarnary() ( ::div:: #division scalar() )*
+    quartarnary() ( ::div:: #division scalar() )?
     
 quartarnary:
-    term() ( ::mod:: #modulus scalar() )*
+    term() ( ::mod:: #modulus scalar() )?
 
 
 term:

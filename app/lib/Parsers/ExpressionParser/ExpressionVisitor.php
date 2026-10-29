@@ -477,6 +477,7 @@ class ExpressionVisitor implements Visitor\Visit {
 					$v = array_reduce($vv, function($c, $i) {
 						return $c + $i;
 					}, 0);
+					
 					return $f_acc($v + $b);
 				};
 
@@ -493,6 +494,7 @@ class ExpressionVisitor implements Visitor\Visit {
 					$v = array_reduce($vv, function($c, $i) {
 						return $c + $i;
 					}, 0);
+					
 					return $f_acc($v - $b);
 				};
 
@@ -532,39 +534,35 @@ class ExpressionVisitor implements Visitor\Visit {
 								'Division by zero is not possible.'
 							);
 						}
+						return $f_acc($v / $b);
+					};
+				} elseif ('#fakegroup' !== $parent->getId()) {
+					$classname = get_class($po_element);
+					$group = new $classname(
+						'#fakegroup',
+						null,
+						[$po_element],
+						$parent
+					);
+					$po_element->setParent($group);
+					$this->visit($group, $f_acc, $f_eldnah);
+
+					break;
+				} else {
+					$f_acc = function ($b) use ($a, $f_acc) {
+						$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// multiple values
+				
+						$v = array_reduce($vv, function($c, $i) {
+							return $c + $i;
+						}, 0);
+						if (0 === $b) {
+							throw new \RuntimeException(
+								'Division by zero is not possible.'
+							);
+						}
 
 						return $f_acc($v / $b);
 					};
-				} else {
-					if ('#fakegroup' !== $parent->getId()) {
-						$classname = get_class($po_element);
-						$group = new $classname(
-							'#fakegroup',
-							null,
-							[$po_element],
-							$parent
-						);
-						$po_element->setParent($group);
-
-						$this->visit($group, $f_acc, $f_eldnah);
-
-						break;
-					} else {
-						$f_acc = function ($b) use ($a, $f_acc) {
-							$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// multiple values
-					
-							$v = array_reduce($vv, function($c, $i) {
-								return $c + $i;
-							}, 0);
-							if (0 === $b) {
-								throw new \RuntimeException(
-									'Division by zero is not possible.'
-								);
-							}
-
-							return $f_acc($v / $b);
-						};
-					}
 				}
 
 				$children[1]->accept($this, $f_acc, $f_eldnah);

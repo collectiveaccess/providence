@@ -112,27 +112,31 @@ function caCalculateAgeInDays() {
  *
  */
 function caCalculateDateRangeAvgInDays() {
-	$va_date_ranges = func_get_args();
+	$date_ranges = func_get_args();
 
 	$o_tep = new TimeExpressionParser();
 	$va_days = array();
 
-	foreach($va_date_ranges as $vs_date_range) {
-		if(!$o_tep->parse($vs_date_range)) {
-			return false;
+	foreach($date_ranges as $date_range) {
+		if(!is_array($date_range)) { $date_range = [$date_range]; }
+		
+		foreach($date_range as $vs_date_range) {
+			if(!$o_tep->parse($vs_date_range)) {
+				return false;
+			}
+	
+			$va_arg_historic_stamps = $o_tep->getHistoricTimestamps();
+	
+			$va_start_parts = $o_tep->getHistoricDateParts($va_arg_historic_stamps['start']);
+			$va_end_parts = $o_tep->getHistoricDateParts($va_arg_historic_stamps['end']);
+	
+			$vs_start = $o_tep->getISODateTime($va_start_parts);
+			$vs_end = $o_tep->getISODateTime($va_end_parts);
+	
+			$o_start = new DateTime($vs_start);
+			$o_end = new DateTime($vs_end);
+			$va_days[] = $o_start->diff($o_end)->days;
 		}
-
-		$va_arg_historic_stamps = $o_tep->getHistoricTimestamps();
-
-		$va_start_parts = $o_tep->getHistoricDateParts($va_arg_historic_stamps['start']);
-		$va_end_parts = $o_tep->getHistoricDateParts($va_arg_historic_stamps['end']);
-
-		$vs_start = $o_tep->getISODateTime($va_start_parts);
-		$vs_end = $o_tep->getISODateTime($va_end_parts);
-
-		$o_start = new DateTime($vs_start);
-		$o_end = new DateTime($vs_end);
-		$va_days[] = $o_start->diff($o_end)->days;
 	}
 
 	if(sizeof($va_days)) {
@@ -248,55 +252,53 @@ function caDateIsRange($date_expression) {
  */
 function caExpressionFunctionSumValues(...$args) : mixed {
 	$context = array_shift($args);
-
 	$acc = 0;
-	
 	$first_param = $context['params'][array_key_first($context['params'])];
 	$type = $first_param['type'] ?? null;
 	
 	$return_as = null;
-	
 	foreach($context['params'] as $p) {
-		if(is_int($p['type'])) {		// is attribute
-			$tag = substr($p['value'], 1);
-			$value_list = $context['variables']["{$tag}:array"] ?? $context['variables']["{$tag}"] ?? null;
-			if($value_list && !is_array($value_list)) { $value_list = [$value_list]; }
-			if($value_list) {
-				foreach($value_list as $vv) {
-					$ret = caParseQuantityForExpression($p['type'], $vv);
-					
-					switch($p['type']) {
-						case __CA_ATTRIBUTE_VALUE_CURRENCY__:
-							if(!$return_as) { 
-								$return_as = $ret['currency']; 
-							} elseif($return_as !== $ret['currency']) {
-								$acc += caConvertCurrencyValue($vv, $return_as, ['numericValue' => true]);
-							} else {
-								$acc += $ret['value'];
-							}
-							break;
-						case __CA_ATTRIBUTE_VALUE_LENGTH__:
-							if(!$return_as) { $return_as = $ret['units']; }
-							$acc += $ret['value'];	// always meters
-							break;
-						case __CA_ATTRIBUTE_VALUE_WEIGHT__:
-							if(!$return_as) { $return_as = $ret['units']; }
-							$acc += $ret['value'];	// always kilograms
-							break;
-						default:
+		if($p['type'] === '_LITERAL_') {
+			$p['type'] = $type = __CA_ATTRIBUTE_VALUE_NUMERIC__;	
+			$acc += $p['value'];
+			continue;
+		} elseif(!is_int($p['type'])) {		// is not attribute
+			$p['type'] = $type = __CA_ATTRIBUTE_VALUE_NUMERIC__;	
+		}
+		$tag = substr($p['value'], 1);
+		$value_list = $context['variables']["{$tag}:array"] ?? $context['variables']["{$tag}"] ?? null;
+		if($value_list && !is_array($value_list)) { $value_list = [$value_list]; }
+		if($value_list) {
+			foreach($value_list as $vv) {
+				$ret = caParseQuantityForExpression($p['type'], $vv);
+				
+				switch($p['type']) {
+					case __CA_ATTRIBUTE_VALUE_CURRENCY__:
+						if(!$return_as) { 
+							$return_as = $ret['currency'];
+							$acc += $ret['value']; 
+						} elseif($return_as !== $ret['currency']) {
+							$acc += caConvertCurrencyValue($vv, $return_as, ['numericValue' => true]);
+						} else {
 							$acc += $ret['value'];
-							break;
-					}
+						}
+						break;
+					case __CA_ATTRIBUTE_VALUE_LENGTH__:
+						if(!$return_as) { $return_as = $ret['units']; }
+						$acc += $ret['value'];	// always meters
+						break;
+					case __CA_ATTRIBUTE_VALUE_WEIGHT__:
+						if(!$return_as) { $return_as = $ret['units']; }
+						$acc += $ret['value'];	// always kilograms
+						break;
+					default:
+						$acc += $ret['value'];
+						break;
 				}
-			}
-			
-		} else { // is literal
-			$type = __CA_ATTRIBUTE_VALUE_NUMERIC__;
-			if(is_numeric($p['value'])) {
-				$acc += $p['value'];
 			}
 		}
 	}
+	print_R($scc);
 	$ret =  caGetQuantityForExpressionDisplay($type, $acc, ['returnAs' => $return_as]);
 	return $ret['value'] ?? null;
 }
@@ -370,7 +372,6 @@ function caGetQuantityForExpressionDisplay(int $type, mixed $value, ?array $opti
 	global $g_expression_quantity_parsers;
 	
 	$return_as = caGetOption('returnAs', $options, null);
-	
 	switch($type) {
 		case __CA_ATTRIBUTE_VALUE_INTEGER__:
 			return ['value' => (int)$value];
@@ -392,11 +393,11 @@ function caGetQuantityForExpressionDisplay(int $type, mixed $value, ?array $opti
 			return ['value' => caHumanFilesize($value)];
 			break;
 		case __CA_ATTRIBUTE_VALUE_LENGTH__:
-			$m = caParseLengthDimension($value);
+			$m = caParseLengthDimension("{$value} m");
 			return ['value' => $m->convertTo($return_as, 6)];
 			break;
 		case __CA_ATTRIBUTE_VALUE_WEIGHT__:
-			$m = caParseWeightDimension($value);
+			$m = caParseWeightDimension("{$value} kg");
 			return ['value' => $m->convertTo($return_as, 6)];
 			break;
 	}
@@ -430,11 +431,11 @@ function caParseQuantityForExpression(int $type, mixed $value, ?array $options=n
 			break;
 		case __CA_ATTRIBUTE_VALUE_LENGTH__:
 			$m = caParseLengthDimension($value);
-			return ['value' => $m->convertTo('METER',6, 'en_US'), 'units' => $m->getType()];
+			return ['value' => preg_replace("![^\d]+$!", "", $m->convertTo('METER',6, 'en_US')), 'units' => $m->getType()];
 			break;
 		case __CA_ATTRIBUTE_VALUE_WEIGHT__:
 			$m = caParseWeightDimension($value);
-			return ['value' => $m->convertTo('KILOGRAM', 6, 'en_US'), 'units' => $m->getType()];
+			return ['value' => preg_replace("![^\d]+$!", "", $m->convertTo('KILOGRAM', 6, 'en_US')), 'units' => $m->getType()];
 			break;
 	}
 	return null;
@@ -636,7 +637,7 @@ function caExpressionFunctionJoinList(...$args) : mixed {
 	}
 	
 	$delimiter = array_shift($args);
-	return implode($delimiter, $acc);
+	return sizeof($acc) ? implode($delimiter, $acc) : null;
 }
 # ---------------------------------------
 /**
@@ -685,12 +686,18 @@ function caExpressionFunctionStringValueTransform(string $function, array $args)
 					$mv[] = trim($v);
 					break;
 				case 'replace':
-					if(is_null($mv)) { $mv = []; }
-					if(!($args[1] ?? null)) { break; }
-					$mv[] = preg_replace($args[1], $args[2] ?? '', $v);
-					break;
+ 					if(is_null($mv)) { $mv = []; }
+ 					
+ 					$mv[] = array_shift($value_list);
+ 					break(2);
 			}
 		}
+	}
+	
+	switch($function) {
+		case 'replace':
+			$mv = preg_replace($mv[0], $mv[1], $mv[2]);
+			break;
 	}
 	
 	return is_array($mv) ? join(';', $mv) : $mv;
@@ -831,13 +838,13 @@ function caExpressionFunctionStringDateTimeTransform(string $function, array $ar
 					return caDateStartsInPast($v);
 					break;
 				case 'ageInYears':
-					return caCalculateAgeInYears($v);
+					return caCalculateAgeInYears($v, end($args) ?? 'c');
 					break;
 				case 'ageInDays':
-					return caCalculateAgeInDays($v);
+					return caCalculateAgeInDays($v, end($args) ?? 'c');
 					break;
 				case 'avgInDays':
-					return caCalculateDateRangeAvgInDays($v);
+					return caCalculateDateRangeAvgInDays($v, end($args) ?? 'c');
 					break;
 				case 'earliestDate':
 				case 'latestDate':
