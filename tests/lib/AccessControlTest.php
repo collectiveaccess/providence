@@ -70,9 +70,8 @@ class AccessControlTest extends TestCase {
 		// set up test user
 
 		$this->ops_username = "unit_test_user";
-		$this->ops_password = "topsecret";
+		$this->ops_password = "topsecret#52Ttt2c3gc";
 		$this->opt_user = new ca_users();
-		$this->opt_user->setMode(ACCESS_WRITE);
 		$this->opt_user->set(
 			array(
 				'user_name' => $this->ops_username,
