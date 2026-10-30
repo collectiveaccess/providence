@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2025 Whirl-i-Gig
+ * Copyright 2012-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,16 +48,14 @@ print $vs_control_box = caFormControlBox(
 	<div class="sectionBox">
 <?php
 		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'caBatchMediaImportForm', null, 'POST', 'multipart/form-data', '_top', array('noCSRFToken' => false, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-		print caHTMLHiddenInput('import_target', array('value' => $this->getVar('import_target')));
+		print caHTMLHiddenInput('import_target', ['value' => $this->getVar('import_target')]);
 ?>
 		<div class='bundleLabel'>
 			<span class="formLabelText"><?= _t('Import target'); ?></span>
 			<div class="bundleContainer">
 				<div class="caLabelList" >
 					<p>
-						<?php
-						print $this->getVar('import_target');
-						?>
+						<?= $this->getVar('import_target'); ?>
 					</p>
 				</div>
 			</div>
@@ -134,7 +132,7 @@ print $vs_control_box = caFormControlBox(
 				if($this->getVar('user_can_delete_media_on_import')) {
 					print caHTMLCheckboxInput('delete_media_on_import', $va_opts).' '._t('Delete media after import');
 					
-					print '<div id="caDeleteSelectedMediaContainer" style="float: right; display: none">'.caJSButton($this->request, __CA_NAV_ICON_TRASH__, _t('Delete files'), 'caDeleteSelectedMedia', [], ['size' => '16px']).'</div>';
+					print '<div id="caDeleteSelectedMediaContainer" style="position: absolute; right: 0px; bottom: -5px; display: none;">'.caJSButton($this->request, __CA_NAV_ICON_TRASH__, _t('Delete files'), 'caDeleteSelectedMedia', [], ['size' => '16px']).'</div>';
 				}
 ?>
 				</div>
