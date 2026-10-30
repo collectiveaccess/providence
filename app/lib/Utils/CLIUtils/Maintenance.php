@@ -535,7 +535,7 @@ trait CLIUtilsMaintenance {
 	
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt|null $opts
+	 * @param CLIGetopt|null $opts
 	 * @return bool
 	 */
 	public static function clear_search_indexing_queue_lock_file($opts=null) {
@@ -1459,7 +1459,7 @@ trait CLIUtilsMaintenance {
 	}
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt|null $opts
+	 * @param CLIGetopt|null $opts
 	 * @return bool
 	 */
 	public static function reload_ulan_records($opts=null) {
@@ -1828,7 +1828,7 @@ trait CLIUtilsMaintenance {
 	}
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt $opts
+	 * @param CLIGetopt $opts
 	 * @return bool
 	 */
 	public static function remove_duplicate_records($opts=null) {
@@ -1909,7 +1909,7 @@ trait CLIUtilsMaintenance {
 	}
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt|null $opts
+	 * @param CLIGetopt|null $opts
 	 * @return bool
 	 */
 	public static function generate_new_system_guid($opts=null) {
@@ -1952,7 +1952,7 @@ trait CLIUtilsMaintenance {
 	
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt|null $opts
+	 * @param CLIGetopt|null $opts
 	 * @return bool
 	 */
 	public static function check_url_reference_integrity($opts=null) {
@@ -2004,7 +2004,7 @@ trait CLIUtilsMaintenance {
 	
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt|null $opts
+	 * @param CLIGetopt|null $opts
 	 * @return bool
 	 */
 	public static function check_metadata_alerts($opts=null) {
@@ -2039,7 +2039,7 @@ trait CLIUtilsMaintenance {
 	
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt|null $opts
+	 * @param CLIGetopt|null $opts
 	 * @return bool
 	 */
 	public static function regenerate_dependent_field_values($opts=null) {
@@ -2120,7 +2120,7 @@ trait CLIUtilsMaintenance {
 	}
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt|null $opts
+	 * @param CLIGetopt|null $opts
 	 * @return bool
 	 */
 	public static function check_relationship_type_roots($opts=null) {
@@ -2444,7 +2444,7 @@ trait CLIUtilsMaintenance {
 	}
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt|null $opts
+	 * @param CLIGetopt|null $opts
 	 * @return bool
 	 */
 	public static function set_default_field_values($opts=null) {
@@ -2538,7 +2538,7 @@ trait CLIUtilsMaintenance {
 	}
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt|null $opts
+	 * @param CLIGetopt|null $opts
 	 * @return bool
 	 */
 	public static function reload_attribute_sortable_values($opts=null) {
@@ -2606,7 +2606,7 @@ trait CLIUtilsMaintenance {
 	}
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt|null $opts
+	 * @param CLIGetopt|null $opts
 	 * @return bool
 	 */
 	public static function check_representation_primary_values($opts=null) {
@@ -2700,7 +2700,7 @@ trait CLIUtilsMaintenance {
 	}
 	# -------------------------------------------------------
 	/**
-	 * @param Zend_Console_Getopt|null $opts
+	 * @param CLIGetopt|null $opts
 	 * @return bool
 	 */
 	public static function check_hierarchy_ids($opts=null) {

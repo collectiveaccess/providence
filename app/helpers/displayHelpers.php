@@ -2884,7 +2884,7 @@ function caProcessTemplateTagDirectives($ps_value, $pa_directives, $pa_options=n
 								$t = explode("/", $v); return ((int)$t[1] > $acc) ? (int)$t[1] : $acc;
 							}, 0);
 
-							$vs_in_inches = $vo_measurement->convertTo(Zend_Measure_Length::INCH, 15);
+							$vs_in_inches = $vo_measurement->convertTo(MeasureLength::INCH, 15);
 							$vn_value_in_inches = (float)preg_replace("![^0-9\.]+!", "", $vs_in_inches);
 							$va_measure_conv = [];
 
@@ -2898,44 +2898,44 @@ function caProcessTemplateTagDirectives($ps_value, $pa_directives, $pa_options=n
 							}
 							if ($vn_value_in_inches > 0) {
 								$vo_inches = caParseLengthDimension("{$vn_value_in_inches} in");
-								$va_measure_conv[] = (in_array($vs_units, ['fractionalenglish', 'infrac']) ? caLengthToFractions($vn_value_in_inches, $vn_maximum_denominator, true) : $vo_inches->convertTo(Zend_Measure_Length::INCH, $o_dimensions_config->get('inch_decimal_precision'))).((!$pb_omit_units && in_array('INCH', $va_add_periods_list)) ? '.' : '');
+								$va_measure_conv[] = (in_array($vs_units, ['fractionalenglish', 'infrac']) ? caLengthToFractions($vn_value_in_inches, $vn_maximum_denominator, true) : $vo_inches->convertTo(MeasureLength::INCH, $o_dimensions_config->get('inch_decimal_precision'))).((!$pb_omit_units && in_array('INCH', $va_add_periods_list)) ? '.' : '');
 							}
 							$vs_measure_conv = join(" ", $va_measure_conv);
 
 							break;
 						case 'metric':
-							$vs_in_cm = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, 15);
+							$vs_in_cm = $vo_measurement->convertTo(MeasureLength::CENTIMETER, 15);
 							$vn_value_in_cm = (float)preg_replace("![^0-9\.]+!", "", $vs_in_cm);
 
 							if (($force_metric_units == 'mm') || (!$force_metric_units && ($vn_value_in_cm <= $o_dimensions_config->get('use_millimeters_for_display_up_to')))) {
-								$vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::MILLIMETER, (int)$o_dimensions_config->get('millimeter_decimal_precision')).((!$pb_omit_units && in_array('MILLIMETER', $va_add_periods_list)) ? '.' : '');
+								$vs_measure_conv = $vo_measurement->convertTo(MeasureLength::MILLIMETER, (int)$o_dimensions_config->get('millimeter_decimal_precision')).((!$pb_omit_units && in_array('MILLIMETER', $va_add_periods_list)) ? '.' : '');
 							} elseif (($force_metric_units == 'cm') || (!$force_metric_units && ($vn_value_in_cm <= $o_dimensions_config->get('use_centimeters_for_display_up_to')))) {
-								$vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, (int)$o_dimensions_config->get('centimeter_decimal_precision')).((!$pb_omit_units && in_array('CENTIMETER', $va_add_periods_list)) ? '.' : '');
+								$vs_measure_conv = $vo_measurement->convertTo(MeasureLength::CENTIMETER, (int)$o_dimensions_config->get('centimeter_decimal_precision')).((!$pb_omit_units && in_array('CENTIMETER', $va_add_periods_list)) ? '.' : '');
 							} elseif (($force_metric_units == 'm') || (!$force_metric_units && ($vn_value_in_cm <= $o_dimensions_config->get('use_meters_for_display_up_to')))) {
-								$vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::METER, (int)$o_dimensions_config->get('meter_decimal_precision')).((!$pb_omit_units && in_array('METER', $va_add_periods_list)) ? '.' : '');
+								$vs_measure_conv = $vo_measurement->convertTo(MeasureLength::METER, (int)$o_dimensions_config->get('meter_decimal_precision')).((!$pb_omit_units && in_array('METER', $va_add_periods_list)) ? '.' : '');
 							} else {
-								$vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::KILOMETER, $o_dimensions_config->get('kilometer_decimal_precision')).((!$pb_omit_units && in_array('KILOMETER', $va_add_periods_list)) ? '.' : '');
+								$vs_measure_conv = $vo_measurement->convertTo(MeasureLength::KILOMETER, $o_dimensions_config->get('kilometer_decimal_precision')).((!$pb_omit_units && in_array('KILOMETER', $va_add_periods_list)) ? '.' : '');
 							}
 							break;
 						case 'm':
-							$vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::METER, $o_dimensions_config->get('meter_decimal_precision')).((!$pb_omit_units && in_array('METER', $va_add_periods_list)) ? '.' : '');
+							$vs_measure_conv = $vo_measurement->convertTo(MeasureLength::METER, $o_dimensions_config->get('meter_decimal_precision')).((!$pb_omit_units && in_array('METER', $va_add_periods_list)) ? '.' : '');
 							break;
 						case 'cm':
-							$vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::CENTIMETER, $o_dimensions_config->get('centimeter_decimal_precision')).((!$pb_omit_units && in_array('CENTIMETER', $va_add_periods_list)) ? '.' : '');
+							$vs_measure_conv = $vo_measurement->convertTo(MeasureLength::CENTIMETER, $o_dimensions_config->get('centimeter_decimal_precision')).((!$pb_omit_units && in_array('CENTIMETER', $va_add_periods_list)) ? '.' : '');
 							break;
 						case 'ft':
 						case 'ft.':
 						case 'foot':
 						case 'feet':
 						case "'":
-							$vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::FEET, $o_dimensions_config->get('feet_decimal_precision')).((!$pb_omit_units && in_array('FEET', $va_add_periods_list)) ? '.' : '');
+							$vs_measure_conv = $vo_measurement->convertTo(MeasureLength::FEET, $o_dimensions_config->get('feet_decimal_precision')).((!$pb_omit_units && in_array('FEET', $va_add_periods_list)) ? '.' : '');
 							break;
 						case 'in':
 						case 'inch':
 						case 'inches':
 						case 'in.':
 						case '"':
-							$vs_measure_conv = $vo_measurement->convertTo(Zend_Measure_Length::INCH, $o_dimensions_config->get('inch_decimal_precision')).((!$pb_omit_units && in_array('INCH', $va_add_periods_list)) ? '.' : '');
+							$vs_measure_conv = $vo_measurement->convertTo(MeasureLength::INCH, $o_dimensions_config->get('inch_decimal_precision')).((!$pb_omit_units && in_array('INCH', $va_add_periods_list)) ? '.' : '');
 							break;
 					}
 
@@ -4574,8 +4574,8 @@ function caProcessBottomLineTemplateForPlacement($request, $placement, $res, $op
 				$tag_values[$value_name]['AVG'] = ($c > 0) ? sprintf("%1.2f", $tag_values[$value_name]['SUM']/$c) : "0.00";
 
 				foreach($tag_values[$value_name] as $tag => $val) {
-					$vo_measurement = new Zend_Measure_Length((float)$val, 'METER', $g_ui_locale);
-					$tag_values[$value_name][$tag] = $vo_measurement->convertTo(($g_ui_units_pref == 'metric') ? Zend_Measure_Length::METER :  Zend_Measure_Length::FEET, 4);
+					$vo_measurement = new MeasureLength((float)$val, 'METER', $g_ui_locale);
+					$tag_values[$value_name][$tag] = $vo_measurement->convertTo(($g_ui_units_pref == 'metric') ? MeasureLength::METER :  MeasureLength::FEET, 4);
 				}
 
 				break;
@@ -4584,8 +4584,8 @@ function caProcessBottomLineTemplateForPlacement($request, $placement, $res, $op
 				$tag_values[$value_name]['AVG'] = ($c > 0) ? sprintf("%1.2f", $tag_values[$value_name]['SUM']/$c) : "0.00";
 
 				foreach($tag_values[$value_name] as $tag => $val) {
-					$vo_measurement = new Zend_Measure_Length((float)$val, 'KILOGRAM', $g_ui_locale);
-					$tag_values[$value_name][$tag] = $vo_measurement->convertTo(($g_ui_units_pref == 'metric') ? Zend_Measure_Weight::KILOGRAM :  Zend_Measure_Weight::POUND, 4);
+					$vo_measurement = new MeasureWeight((float)$val, 'KILOGRAM', $g_ui_locale);
+					$tag_values[$value_name][$tag] = $vo_measurement->convertTo(($g_ui_units_pref == 'metric') ? MeasureWeight::KILOGRAM :  MeasureWeight::POUND, 4);
 				}
 
 				break;

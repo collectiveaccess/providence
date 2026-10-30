@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2025 Whirl-i-Gig
+ * Copyright 2025-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -185,7 +185,7 @@ class ExitManager {
 		
 		
 		if(is_array($md = \ca_metadata_elements::getElementsAsList(true, $table, null, true, true, true))) {
-			$dictionary = array_merge($this->_genAttributeDictionary($md));
+			$dictionary = array_merge($dictionary, $this->_genAttributeDictionary($md));
 		}
 		
 		// Marshall data X rows at a time
@@ -196,7 +196,7 @@ class ExitManager {
 		$format->setDictionary($dictionary);
 		while($qr->nextHit()) {
 			$id = $qr->getPrimaryKey();
-			if ($show_progress) { print \CLIProgressBar::next(1, _t('[%1] Processing %2', $table_display, $id)); }
+			if ($show_progress) { print \CLIProgressBar::next(1, _t('[%1][Mem: %2] Processing %3', $table_display, caGetMemoryUsage(), $id)); }
 			
 			// Intrinsics
 			$acc = $this->_getIntrinsics($table, $intrinsic_info, $qr, ['isRelationship' => $is_relationship]);
@@ -219,12 +219,14 @@ class ExitManager {
 			if(sizeof($data) >= self::$s_data_buffer_size) {
 				$format->process($data, ['primaryKey' => $t->primaryKey()]);
 				$data = [];
+				
+				\SearchResult::clearCaches();
 			}
 		}
 		if(sizeof($data) > 0) {
-			$format->process($data);
+			$format->process($data, ['primaryKey' => $t->primaryKey()]);
 		}
-		if ($show_process) { print \CLIProgressBar::finish(); }
+		if ($show_progress) { print \CLIProgressBar::finish(); }
 		$format->write();
 		
 		return true;

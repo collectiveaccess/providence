@@ -187,17 +187,17 @@ class WeightAttributeValue extends AttributeValue implements IAttributeValue {
 		
 		switch($g_ui_units_pref) {
 			case 'metric':
-				$vo_measurement = new Zend_Measure_Weight((float)$pa_value_array['value_decimal1'], 'KILOGRAM', $g_ui_locale);
-				$this->ops_text_value = $vo_measurement->convertTo(Zend_Measure_Weight::KILOGRAM, 4);
+				$vo_measurement = new MeasureWeight((float)$pa_value_array['value_decimal1'], 'KILOGRAM', $g_ui_locale);
+				$this->ops_text_value = $vo_measurement->convertTo(MeasureWeight::KILOGRAM, 4);
 				break;
 			case 'english':
 			case 'fractions':
-				$vo_measurement = new Zend_Measure_Weight((float)$pa_value_array['value_decimal1'], 'KILOGRAM', $g_ui_locale);
-				$this->ops_text_value = $vo_measurement->convertTo(Zend_Measure_Weight::POUND, 4);
+				$vo_measurement = new MeasureWeight((float)$pa_value_array['value_decimal1'], 'KILOGRAM', $g_ui_locale);
+				$this->ops_text_value = $vo_measurement->convertTo(MeasureWeight::POUND, 4);
 				break;
 			default: // show value in unit entered, but adjusted for the UI locale
 				try {
-					$vo_measurement = new Zend_Measure_Weight((float)$pa_value_array['value_decimal1'], 'KILOGRAM', $g_ui_locale);
+					$vo_measurement = new MeasureWeight((float)$pa_value_array['value_decimal1'], 'KILOGRAM', $g_ui_locale);
 					$this->ops_text_value = $vo_measurement->convertTo($pa_value_array['value_longtext2'], 4);
 				} catch (Exception $e) { // derp
 					$this->ops_text_value = $pa_value_array['value_longtext1'];
@@ -206,7 +206,7 @@ class WeightAttributeValue extends AttributeValue implements IAttributeValue {
 		}
 
 		// Trim off trailing zeros in quantity
-		$symbols = Zend_Locale_Data::getList( $g_ui_locale, 'symbols');
+		$symbols = LocaleFormat::getSymbols($g_ui_locale);
 
 		$this->ops_text_value = preg_replace(sprintf("!\%s([1-9]*)[0]+([A-Za-z ]+)$!",$symbols['decimal']), sprintf("%s$1$2",$symbols['decimal']), $this->ops_text_value);
 		$this->ops_text_value = preg_replace(sprintf("!\%s([A-Za-z ]+)$!",$symbols['decimal']), "$1", $this->ops_text_value);
@@ -230,13 +230,13 @@ class WeightAttributeValue extends AttributeValue implements IAttributeValue {
 		}
 		switch(caGetOption('units', $pa_options, $g_ui_units_pref)) {
 			case 'metric':
-				$vo_measurement = new Zend_Measure_Weight((float)$this->opn_decimal_value, 'KILOGRAM', $g_ui_locale);
-				return $this->processUnitsInValue($vo_measurement->convertTo(Zend_Measure_Weight::KILOGRAM, 2));
+				$vo_measurement = new MeasureWeight((float)$this->opn_decimal_value, 'KILOGRAM', $g_ui_locale);
+				return $this->processUnitsInValue($vo_measurement->convertTo(MeasureWeight::KILOGRAM, 2));
 				break;
 			case 'english':
 			case 'fractions':
-				$vo_measurement = new Zend_Measure_Weight((float)$this->opn_decimal_value, 'KILOGRAM', $g_ui_locale);
-				return $this->processUnitsInValue($vo_measurement->convertTo(Zend_Measure_Weight::POUND, 2));
+				$vo_measurement = new MeasureWeight((float)$this->opn_decimal_value, 'KILOGRAM', $g_ui_locale);
+				return $this->processUnitsInValue($vo_measurement->convertTo(MeasureWeight::POUND, 2));
 				break;
 			default: // show value in unit as-entered
 				return $this->ops_text_value;

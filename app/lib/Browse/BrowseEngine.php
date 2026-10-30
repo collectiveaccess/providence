@@ -840,7 +840,7 @@ class BrowseEngine extends BaseFindEngine {
 			case 'normalizedLength':
 				$vn_start = urldecode($pn_row_id);
 				if (!($vs_output_units = caGetLengthUnitType($vs_units=caGetOption('units', $va_facet_info, 'm')))) {
-					$vs_output_units = Zend_Measure_Length::METER;
+					$vs_output_units = MeasureLength::METER;
 				}
 				
 				if (preg_match("!^([\d][\.]*[\d]*)[ ]*\-[ ]*([\d][\.]*[\d]*)$!", $vn_start, $m)) { // range?
@@ -857,7 +857,7 @@ class BrowseEngine extends BaseFindEngine {
 			case 'normalizedWeight':
 				$vn_start = urldecode(trim($pn_row_id));
 				if (!($vs_output_units = caGetWeightUnitType($vs_units=caGetOption('units', $va_facet_info, 'g')))) {
-					$vs_output_units = Zend_Measure_Weight::GRAM;
+					$vs_output_units = MeasureWeight::GRAM;
 				}
 				
 				if (preg_match("!^([\d][\.]*[\d]*)[ ]*\-[ ]*([\d][\.]*[\d]*)$!", $vn_start, $m)) { // range?
@@ -2013,7 +2013,7 @@ class BrowseEngine extends BaseFindEngine {
 								}
 
 								if (!($vs_output_units = caGetLengthUnitType($vs_units=caGetOption('units', $va_facet_info, 'm')))) {
-									$vs_output_units = Zend_Measure_Length::METER;
+									$vs_output_units = MeasureLength::METER;
 								}
 								$vs_increment = caGetOption('increment', $va_facet_info, '1 m');
 								$vo_increment = caParseLengthDimension($vs_increment);
@@ -2030,10 +2030,10 @@ class BrowseEngine extends BaseFindEngine {
 									}
 
 									// convert to meters
-									$vo_start = new Zend_Measure_Length($vn_start, $vs_output_units, 'en_US');
-									$vo_end = new Zend_Measure_Length($vn_end, $vs_output_units, 'en_US');
-									$vn_start_in_meters = (float)$vo_start->convertTo(Zend_Measure_Length::METER, 6, 'en_US');
-									$vn_end_in_meters = (float)$vo_end->convertTo(Zend_Measure_Length::METER, 6, 'en_US');
+									$vo_start = new MeasureLength($vn_start, $vs_output_units, 'en_US');
+									$vo_end = new MeasureLength($vn_end, $vs_output_units, 'en_US');
+									$vn_start_in_meters = (float)$vo_start->convertTo(MeasureLength::METER, 6, 'en_US');
+									$vn_end_in_meters = (float)$vo_end->convertTo(MeasureLength::METER, 6, 'en_US');
 									
 									$va_params = [intval($vs_target_browse_table_num), $vn_element_id, $vn_start_in_meters, $vn_end_in_meters];
 									$vs_container_sql = '';
@@ -2105,7 +2105,7 @@ class BrowseEngine extends BaseFindEngine {
 								}
 
 								if (!($vs_output_units = caGetWeightUnitType($vs_units=caGetOption('units', $va_facet_info, 'm')))) {
-									$vs_output_units = Zend_Measure_Length::METER;
+									$vs_output_units = MeasureLength::METER;
 								}
 								$vs_increment = caGetOption('increment', $va_facet_info, '1 g');
 								$vo_increment = caParseWeightDimension($vs_increment);
@@ -2121,10 +2121,10 @@ class BrowseEngine extends BaseFindEngine {
 									}
 
 									// convert to kilograms
-									$vo_start = new Zend_Measure_Weight($vn_start, $vs_output_units, 'en_US');
-									$vo_end = new Zend_Measure_Weight($vn_end, $vs_output_units, 'en_US');
-									$vn_start_in_meters = (float)$vo_start->convertTo(Zend_Measure_Weight::KILOGRAM, 6, 'en_US');
-									$vn_end_in_meters = (float)$vo_end->convertTo(Zend_Measure_Weight::KILOGRAM, 6, 'en_US');
+									$vo_start = new MeasureWeight($vn_start, $vs_output_units, 'en_US');
+									$vo_end = new MeasureWeight($vn_end, $vs_output_units, 'en_US');
+									$vn_start_in_meters = (float)$vo_start->convertTo(MeasureWeight::KILOGRAM, 6, 'en_US');
+									$vn_end_in_meters = (float)$vo_end->convertTo(MeasureWeight::KILOGRAM, 6, 'en_US');
 									
 									$va_params = [intval($vs_target_browse_table_num), $vn_element_id, $vn_start_in_meters, $vn_end_in_meters];
 									$vs_container_sql = '';
@@ -6609,7 +6609,7 @@ class BrowseEngine extends BaseFindEngine {
 					$va_values = array();
 
 					if (!($vs_output_units = caGetLengthUnitType($vs_units=caGetOption('units', $va_facet_info, 'm')))) {
-						$vs_output_units = Zend_Measure_Length::METER;
+						$vs_output_units = MeasureLength::METER;
 					}
 
 					$vs_increment = caGetOption('increment', $va_facet_info, '1 m');
@@ -6622,7 +6622,7 @@ class BrowseEngine extends BaseFindEngine {
 						// convert to target dimensions
 
 						// normalize
-						$vo_dim = new Zend_Measure_Length($vn_meters, Zend_Measure_Length::METER, 'en_US');
+						$vo_dim = new MeasureLength($vn_meters, MeasureLength::METER, 'en_US');
 						$vs_dim = $vo_dim->convertTo($vs_output_units, 6, 'en_US');
 						$vn_dim = (float)$vs_dim;
 					
@@ -6798,7 +6798,7 @@ class BrowseEngine extends BaseFindEngine {
 					$va_values = array();
 
 					if (!($vs_output_units = caGetWeightUnitType($vs_units=caGetOption('units', $va_facet_info, 'm')))) {
-						$vs_output_units = Zend_Measure_Weight::KILOGRAM;
+						$vs_output_units = MeasureWeight::KILOGRAM;
 					}
 
 					$vs_increment = caGetOption('increment', $va_facet_info, '1 g');
@@ -6811,7 +6811,7 @@ class BrowseEngine extends BaseFindEngine {
 						// convert to target dimensions
 
 						// normalize
-						$vo_dim = new Zend_Measure_Weight($vn_kg, Zend_Measure_Weight::KILOGRAM, 'en_US');
+						$vo_dim = new MeasureWeight($vn_kg, MeasureWeight::KILOGRAM, 'en_US');
 						$vs_dim = $vo_dim->convertTo($vs_output_units, 6, 'en_US');
 						$vn_dim = (float)$vs_dim;
 
