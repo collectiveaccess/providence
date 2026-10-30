@@ -79,12 +79,12 @@ trait CLIUtilsPerformance {
 										foreach($va_tag_vals as $vs_val) {
 											$vs_search_proc = caProcessTemplate($vs_search, [$vs_tag => $vs_val]);
 											file_get_contents($vs_url = $o_app_conf->get('site_protocol')."://{$vs_auth}".$o_app_conf->get('site_hostname').'/'.$o_app_conf->get('ca_url_root')."/service.php/simple/{$vs_endpoint}?noCache=1&q=".urlencode($vs_search_proc));
-											CLIUtils::addMessage(_t("[".$t_instance->getProperty('NAME_PLURAL')."] Cached endpoint %1 for search %2", $vs_endpoint, $vs_search_proc));
+											CLIUtils::addMessage(_t("[%1] Cached endpoint %2 for search %3", $t_instance->getProperty('NAME_PLURAL'), $vs_endpoint, $vs_search_proc));
 										}
 									}
 								} else {
 									file_get_contents($vs_url = $o_app_conf->get('site_protocol')."://{$vs_auth}".$o_app_conf->get('site_hostname').'/'.$o_app_conf->get('ca_url_root')."/service.php/simple/{$vs_endpoint}?noCache=1&q=".urlencode($vs_search));
-									CLIUtils::addMessage(_t("[".$t_instance->getProperty('NAME_PLURAL')."] Cached endpoint %1 for search %2", $vs_endpoint, $vs_search));
+									CLIUtils::addMessage(_t("[%1] Cached endpoint %2 for search %3", $t_instance->getProperty('NAME_PLURAL'), $vs_endpoint, $vs_search));
 								}
 							}
 						}
@@ -94,7 +94,7 @@ trait CLIUtilsPerformance {
 						if ($qr_res = $vs_table::find('*', ['returnAs' => 'searchResult'])) {
 							while($qr_res->nextHit()) {
 								file_get_contents($vs_url = $o_app_conf->get('site_protocol')."://{$vs_auth}".$o_app_conf->get('site_hostname').'/'.$o_app_conf->get('ca_url_root')."/service.php/simple/{$vs_endpoint}/id/".$qr_res->get($vs_pk));
-								CLIUtils::addMessage(_t("[".$t_instance->getProperty('NAME_PLURAL')."] Cached endpoint %1: %2", $vs_endpoint, $qr_res->get("{$vs_table}.preferred_labels")));
+								CLIUtils::addMessage(_t("[%1] Cached endpoint %2: %3", $t_instance->getProperty('NAME_PLURAL'), $vs_endpoint, $qr_res->get("{$vs_table}.preferred_labels")));
 							}
 						}
 						break;
@@ -131,7 +131,7 @@ trait CLIUtilsPerformance {
 	 *
 	 */
 	public static function precache_simple_servicesHelp() {
-		return _t('Pre-cache responses for appropriately configurated simple services. Caching can dramatically improve performance for services providing infrequently changing data.');
+		return _t('Pre-cache responses for appropriately configured simple services. Caching can dramatically improve performance for services providing infrequently changing data.');
 	}
 	# -------------------------------------------------------
 	/**

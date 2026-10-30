@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2025 Whirl-i-Gig
+ * Copyright 2011-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -157,7 +157,7 @@ function caSearchLink($po_request, $ps_content, $ps_classname, $ps_table, $ps_se
 	
 	$vs_tag = "<a href='".$vs_url."'";
 	
-	if ($ps_classname) { $vs_tag .= " class='$ps_classname'"; }
+	if ($ps_classname) { $vs_tag .= " class='{$ps_classname}'"; }
 	if (is_array($pa_attributes)) {
 		$vs_tag .= _caHTMLMakeAttributeString($pa_attributes);
 	}
@@ -2087,17 +2087,17 @@ function caFlattenContainers(ca_search_forms $t_search_form, string $table, Conf
 					if ($sub_element['element_id'] == $sub_element['hier_element_id']) {	// is root
 						if(!is_array($b) && !is_array($bundles[$b])) { $bundles[$b] = []; }
 						$bundles[$b] = array_merge($bundles[$b], [
-							'id' => "{$bundle_info['bundle']}",
-							'bundle' => "{$bundle_info['bundle']}",
+							'id' => $bundle_info['bundle'],
+							'bundle' => $bundle_info['bundle'],
 							'label' => $sub_element['display_label'],
-							'description' => ['description']
+							'description' => $bundle_info['description'] ?? null
 						]);
 					} else {
 						$bundles[$b]['bundles'][] = [
 							'id' => "{$bundle_info['bundle']}.{$sub_element_code}",
 							'bundle' => "{$bundle_info['bundle']}.{$sub_element_code}",
 							'label' => $sub_element['display_label'],
-							'description' => ['description']
+							'description' => $bundle_info['description'] ?? null
 						];
 					}
 					

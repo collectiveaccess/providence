@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2023 Whirl-i-Gig
+ * Copyright 2012-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -61,7 +61,7 @@ class ElasticSearchConfigurationSettings extends ASearchConfigurationSettings {
 	public function __construct(){
 		$this->opo_search_base = new SearchBase();
 		$this->opo_app_config = Configuration::load();
-		$this->opo_search_config = Configuration::load('search.conf'));
+		$this->opo_search_config = Configuration::load('search.conf');
 		$this->opo_search_indexing_config = Configuration::load('search_indexing.conf');
 		$this->opa_setting_descriptions = array();
 		$this->opa_setting_names = array();

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -305,6 +305,7 @@ class ca_attribute_values extends BaseModel {
 		
 	
 			if (!$this->numErrors()) {
+				if(mb_strlen($sv = $this->get('value_sortable')) > 100) { $this->set('value_sortable', mb_substr(strip_tags($sv), 0, 100)); }
 				return $this->insert($pa_options);
 			} else {
 				return false;
@@ -390,6 +391,7 @@ class ca_attribute_values extends BaseModel {
 			$vn_p++;
 		}
 		
+		if(mb_strlen($sv = $this->get('value_sortable')) > 100) { $this->set('value_sortable', mb_substr(strip_tags($sv), 0, 100)); }
 		$this->update();
 		
 		if ($this->numErrors()) {

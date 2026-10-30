@@ -213,7 +213,7 @@ class CLIProgressBar
     {
     	if(!self::$defaults) {
     		self::$defaults = array(
-				'format' => _t("\r:message::padding:%.01f%% %2\$d/%3\$d ETC: %4\$s. Elapsed: %5\$s [%6\$s]"),
+				'format' => "\r:message::padding:%.01f%% %2\$d/%3\$d ETC: %4\$s. Elapsed: %5\$s [%6\$s]",
 				'message' => _t('Running'),
 				'size' => 30,
 				'width' => null

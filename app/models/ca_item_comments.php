@@ -93,7 +93,7 @@ BaseModel::$s_ca_models_definitions['ca_item_comments'] = array(
 				'DISPLAY_WIDTH' => 50, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
-				'LABEL' => _t('E-mail address'), 'DESCRIPTION' => _t('E-mail address of commentor.'),
+				'LABEL' => _t('E-mail address'), 'DESCRIPTION' => _t('E-mail address of commenter.'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'name' => array(

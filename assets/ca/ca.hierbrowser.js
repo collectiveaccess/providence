@@ -613,9 +613,11 @@ var caUI = caUI || {};
 									return false;
 								});
 
-								if ((that.allowExtractionFromHierarchy) && (that.extractFromHierarchyButtonIcon)) {
+								if ((that.allowExtractionFromHierarchy) && (that.initItemID == item['item_id']) && (that.extractFromHierarchyButtonIcon)) {
+									let ix = {... item};
+									
 									jQuery('#' + newLevelListID + ' #hierBrowser_' + that.name + '_extract').unbind('click.extract').bind('click.extract', function() {
-										that.extractItemFromHierarchy(item['item_id'], item);
+										that.extractItemFromHierarchy(ix['item_id'], ix);
 									});
 								}
 							} else {

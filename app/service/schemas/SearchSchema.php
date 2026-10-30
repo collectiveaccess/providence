@@ -224,11 +224,11 @@ class SearchSchema extends \GraphQLServices\GraphQLSchema {
 				],
 				'idno' => [
 					'type' => Type::string(),
-					'description' => 'First matched identifer'
+					'description' => 'First matched identifier'
 				],
 				'idnos' => [
 					'type' => Type::listOf(Type::string()),
-					'description' => 'Full list of matched identifers'
+					'description' => 'Full list of matched identifiers'
 				],
 			]
 		]);

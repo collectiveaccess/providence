@@ -97,7 +97,7 @@ bornQualifier = [nato, n, n.]
 #centuryIndicator = [century, jahrhundert, cent]
 centuryIndicator = [secolo]
 
-# Text to indicate decdae (as in "1920s")
+# Text to indicate decade (as in "1920s")
 decadeIndicator = [s]
 
 # list of numeric suffixes, starting with the one for zero
@@ -112,7 +112,7 @@ monthComesFirstInDelimitedDate = 0
 
 # character(s) to append to day in full (not delimited) date
 # eg. in the date "1. February 2009", "." is the daySuffix
-# Note: you can put arbitrary text here - only punctuation
+# Note: you cannot put arbitrary text here - only punctuation
 daySuffix = 
 
 # Definite articles

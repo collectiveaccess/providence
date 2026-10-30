@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2025 Whirl-i-Gig
+ * Copyright 2007-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,109 +47,6 @@ if (!function_exists('array_key_first')) {
         }
         return NULL;
     }
-}
-# ----------------------------------------------------------------------
-# String localization functions (getText)
-# ----------------------------------------------------------------------
-/**
- * Translates the string in $ps_key into the current locale
- * You interpolate values into the returned string by embedding numbered placeholders in $ps_key
- * in the format %n (where n is a number). Each parameter passed after $ps_key corresponds to a
- * placeholder (ex. the first parameter replaces %1, the second %2)
- */
-
-MemoryCache::flush('translation');
-
-$g_translations = Configuration::load('translations.conf');
-
-$g_translation_strings = $g_translations->get('strings');
-$g_translation_replacements = $g_translations->get('replacements');
-$g_translation_cache = [];
-
-function _t($ps_key) {
-	if(!$ps_key) { return ''; }
-	global $_, $_locale, $g_translation_strings, $g_translation_replacements, $g_translation_cache;
-	
-	if (
-		isset($g_translation_strings[$ps_key]) && 
-		(
-			is_string($g_translation_strings[$ps_key]) || 
-			(is_array($g_translation_strings[$ps_key]) && isset($g_translation_strings[$ps_key][(string)$_locale]))
-		)
-	) { return is_array($g_translation_strings[$ps_key]) ? $g_translation_strings[$ps_key][(string)$_locale] : $g_translation_strings[$ps_key]; }
-	
-	if((defined('__CA_DONT_CACHE_TRANSLATIONS__') && __CA_DONT_CACHE_TRANSLATIONS__) || !isset($g_translation_cache[$ps_key])) {
-		if (is_array($_)) {
-			$vs_str = $ps_key;
-			foreach($_ as $o_locale) {
-				if ($o_locale->isTranslated($ps_key)) {
-					$vs_str = $o_locale->_($ps_key);
-					break;
-				}
-			}
-		} else {
-			if (!is_object($_)) {
-				$vs_str = $ps_key;
-			} else {
-				$vs_str = $_->_($ps_key);
-			}
-		}
-		
-		if(is_array($g_translation_replacements)) {
-		    $vs_str = str_replace(array_keys($g_translation_replacements), array_values($g_translation_replacements), $vs_str);
-		}
-		
-		$g_translation_cache[$ps_key] = $vs_str;
-	} else {
-		$vs_str = $g_translation_cache[$ps_key];
-	}
-
-	if (sizeof($va_args = func_get_args()) > 1) {
-		$vn_num_args = sizeof($va_args) - 1;
-		for($vn_i=$vn_num_args; $vn_i >= 1; $vn_i--) {
-			$vs_str = str_replace("%{$vn_i}", is_array($va_args[$vn_i]) ? join('; ', $va_args[$vn_i]) : $va_args[$vn_i], $vs_str);
-		}
-	}
-	return $vs_str;
-}
-
-/**
- * The same as _t(), but rather than returning the translated string, it prints it
- **/
-function _p($ps_key) {
-	if(!$ps_key) { return; }
-	global $_, $g_translation_cache;
-
-	if (!sizeof(func_get_args()) & isset($g_translation_cache[$ps_key])) {
-		print $g_translation_cache[$ps_key]; return;
-	}
-
-	if (is_array($_)) {
-		$vs_str = $ps_key;
-		foreach($_ as $o_locale) {
-			if ($o_locale->isTranslated($ps_key)) {
-				$vs_str = $o_locale->_($ps_key);
-				break;
-			}
-		}
-	} else {
-		if (!is_object($_)) {
-			$vs_str = $ps_key;
-		} else {
-			$vs_str = $_->_($ps_key);
-		}
-	}
-
-	if (sizeof($va_args = func_get_args()) > 1) {
-		$vn_num_args = sizeof($va_args) - 1;
-		for($vn_i=$vn_num_args; $vn_i >= 1; $vn_i--) {
-			$vs_str = str_replace("%{$vn_i}", $va_args[$vn_i], $vs_str);
-		}
-	}
-
-	$g_translation_cache[$ps_key] = $vs_str;
-	print $vs_str;
-	return;
 }
 # ----------------------------------------------------------------------
 # Define parameter type constants for getParameter()
@@ -363,6 +260,7 @@ function caFileIsIncludable($ps_file) {
 		if(caGetOption('includeRoot', $pa_options, false)) {
 			$va_file_list[$dir] = true;
 		}
+		$pa_options['includeRoot'] = false;
 		$limit = caGetOption('limit', $pa_options, null);
 		
 		if($va_paths = @scandir($dir, 0)) {
@@ -392,7 +290,9 @@ function caFileIsIncludable($ps_file) {
 						$va_file_list["{$dir}/{$item}"] = true;
 					}
 					if ($pb_recursive && $vb_is_dir) {
-						$va_file_list = array_merge($va_file_list, array_flip(caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files, false, $pb_include_directories)));
+						foreach(caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files, false, $pb_include_directories, $pa_options) as $path) {
+							$va_file_list[$path] = true;
+						}
 					} else {
 						if (!$vb_is_dir) {
 							$va_file_list["{$dir}/{$item}"] = true;
@@ -476,7 +376,9 @@ function caFileIsIncludable($ps_file) {
 			while (false !== ($item = readdir($handle))) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 					if (is_dir("{$dir}/{$item}")) {
-						$va_dir_list = array_merge($va_dir_list, caGetSubDirectoryList("{$dir}/{$item}", true, $pb_include_hidden_files));
+						foreach(caGetSubDirectoryList("{$dir}/{$item}", true, $pb_include_hidden_files) as $path => $count) {
+							$va_dir_list[$path] = $count;
+						}
 					}  else {
 						$vn_file_count++;
 					}
@@ -3080,11 +2982,32 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $ps_date_expression
 	 * @return bool
 	 */
-	function caDateEndsInFuture($ps_date_expression) {
-		if ($va_date = caDateToHistoricTimestamps($ps_date_expression)) {
-			$va_now = caDateToHistoricTimestamps(_t('now'));
+	function caDateEndsInFuture(?string $date_expression) {
+		if(!trim($date_expression)) { return false; }
+		if ($date = caDateToHistoricTimestamps($date_expression)) {
+			$now = caDateToHistoricTimestamps(_t('now'));
 			if (
-				($va_date['end'] >= $va_now['end'])
+				($date['end'] >= $now['end'])
+			) {
+				return true;
+			}
+		}
+		return false;
+	}
+	# ----------------------------------------
+	/**
+	 * Returns true if the date expression starts before the current date/time.
+	 * Only the start point of the expression is considered.
+	 *
+	 * @param string $date_expression
+	 * @return bool
+	 */
+	function caDateStartsInPast(?string $date_expression) {
+		if(!trim($date_expression)) { return false; }
+		if ($date = caDateToHistoricTimestamps($date_expression)) {
+			$now = caDateToHistoricTimestamps(_t('now'));
+			if (
+				($date['start'] <= $now['start'])
 			) {
 				return true;
 			}
@@ -5069,7 +4992,9 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 */
 	function caGetHTMLPurifier(?array $options=null) : HTMLPurifier {
-		$config = HTMLPurifier_Config::createDefault();
+		#$config = HTMLPurifier_Config::createDefault();
+		# Swapping out config with html5 compatiable config
+		$config = HTMLPurifier_HTML5Config::createDefault();
 		$config->set('URI.DisableExternalResources', !Configuration::load()->get('purify_allow_external_references'));
 		$config->set('Cache.SerializerPath', Configuration::load()->get('purify_serializer_path'));
 		return new HTMLPurifier($config); 
@@ -5132,12 +5057,16 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $options Options include:
 	 *		convertOldStyleNamesOnly = only convert old style 'ca_attribute_' prefixed names. [Default is false]
 	 *		includeTablePrefix = Include table in returned value when converting new-style names .[Default is false]
+	 *		table = Table name to prefix old style names with when 'includeTablePrefix' is set. [Default is null]
 	 *
 	 * @return string
 	 */
 	function caConvertBundleNameToCode(string $name, ?array $options=null) : string {
 		if(substr($name, 0, 13) === 'ca_attribute_') {
-			return str_replace('ca_attribute_', '', $name);
+			$name = str_replace('ca_attribute_', '', $name);
+			if(($options['includeTablePrefix'] ?? false) && $options['table'] ?? false) {
+				return $options['table'].".{$name}";
+			}
 		}
 		if(!($options['convertOldStyleNamesOnly'] ?? false)) {
 			$tmp = explode('.', $name);
@@ -5353,7 +5282,7 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 *
 	 */
-	 function caGetObjectCollectionHierarchyRelationshipTypes() {
+	function caGetObjectCollectionHierarchyRelationshipTypes() {
 	 	$config = Configuration::load();
 	 	
 	 	if($type = $config->get('ca_objects_x_collections_hierarchy_relationship_type')) {
@@ -5365,4 +5294,14 @@ function caFileIsIncludable($ps_file) {
 	 	}
 	 	return null;
 	 }
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetExcelCellFromSheet($sheet, mixed $coordinate) {
+			if (is_array($coordinate)) {
+				$coordinate = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($coordinate[0]) . $coordinate[1];
+			}
+			return $sheet->getCell($coordinate);
+		};
 	# ----------------------------------------

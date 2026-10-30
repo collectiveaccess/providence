@@ -1737,13 +1737,13 @@ function caGetAnalyticsIntegrationValueList() : array {
 		],
 		'bodyStart' => [
 			'name' => _t('Analytics code (start of &lt;body&gt;)'),
-			'tooltip' => _t('Content to be added to the end of the &lt;body&gt; section on all Pawtucket pages. Your analytics provider should have provided this content.'),
+			'tooltip' => _t('Content to be added to the start of the &lt;body&gt; section on all Pawtucket pages. Your analytics provider should have provided this content.'),
 			'width' => '670px',
 			'height' => '200px'
 		],
 		'bodyEnd' => [
 			'name' => _t('Analytics code (end of &lt;body&gt;)'),
-			'tooltip' => _t('Content to be added to the start of the &lt;body&gt; section on all Pawtucket pages. Your analytics provider should have provided this content.'),
+			'tooltip' => _t('Content to be added to the end of the &lt;body&gt; section on all Pawtucket pages. Your analytics provider should have provided this content.'),
 			'width' => '670px',
 			'height' => '200px'
 		]

@@ -63,13 +63,14 @@ class BaseQuickAddController extends ActionController {
 		$vn_subject_id = $t_subject->getPrimaryKey();
 		
 		$t_placement = ($placement_id = $this->request->getParameter('placement_id', pString)) ? ca_editor_ui_bundle_placements::findAsInstance($placement_id) : null;
+		$this->view->setVar('placement_id', $placement_id);
 		
+		$create_relationship_on_save = $t_placement ? $t_placement->getSetting('createRelationshipOnQuickaddSave') : null;
 		$default_type_id = $t_placement ? $t_placement->getSetting('defaultQuickaddType') : null;
 		if(is_array($default_type_id)) { $default_type_id = array_shift($default_type_id); }
 		if(!$default_type_id) { $default_type_id = $t_subject->getDefaultTypeID(); }
 		
 		// table name and row_id from calling record (what we're quick-adding on)
-		// only set for ca_objects quick-adds
 		$vs_source = $this->request->getParameter('source', pString);
 		$vn_source_id = $this->request->getParameter('source_id', pInteger);
 	
@@ -93,6 +94,7 @@ class BaseQuickAddController extends ActionController {
 		// table name and row_id of caller
 		$this->view->setVar('source', $vs_source);
 		$this->view->setVar('source_id', $vn_source_id);
+		
 		
 		//
 		// Is record of correct type?
@@ -173,6 +175,7 @@ class BaseQuickAddController extends ActionController {
 		if (!is_array($va_prepopulate_quickadd_fields) || !sizeof($va_prepopulate_quickadd_fields) || in_array('preferred_labels', $va_prepopulate_quickadd_fields)) {		
 			global $g_ui_locale_id;
 			$v = caUcFirstUTF8Safe($this->view->getVar('q'));
+			$v = preg_replace('!^"+!', '', preg_replace('!"+$!', '', $v));
 			$va_force_new_label = [
 				'locale_id' => $g_ui_locale_id, 									// use default locale
 				$t_subject->getLabelDisplayField() => $v					// query text is used for display field
@@ -204,6 +207,17 @@ class BaseQuickAddController extends ActionController {
 			$this->view->setVar('forceLabel', $va_force_new_label);
 		}
 		
+		if($create_relationship_on_save && $vs_source && ($rt = Datamodel::getLinkingTableName($vs_source, $t_subject->tableName()))) {
+			$t_rel = Datamodel::getINstance($rt);
+			
+			$rtl = null;
+			if($t_source = $vs_source::findAsInstance($vn_source_id)) {
+				$rtl = $t_rel->getRelationshipTypesAsHTMLSelect($t_subject->tableName(), $t_subject->getTypeID(), $t_source->getTypeID(), ['name' => 'relationship_type_id'], $t_placement ? $t_placement->getSettings() : []);
+			}
+			
+			$this->view->setVar('relationship_type_list', $rtl);
+		}
+		
 		$this->view->setVar('restrict_to_lists', $this->request->getParameter('lists', pString));
 		$this->request->setParameter('type_id', $vn_type_id);
 		if($t_subject->hasField('type_id')) {
@@ -212,8 +226,7 @@ class BaseQuickAddController extends ActionController {
 		
 		$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $vn_type_id, array('editorPref' => 'quickadd'));
 		if (!$t_ui) {
-			$this->postError(1100, _t('No interface defined for %1', $this->ops_table_name), 'BaseQuickAddController->Form');
-			return;
+			throw new ApplicationException( _t('No interface defined for %1', $this->ops_table_name));
 		}
 		// Get default screen (this is all we show in quickadd, even if the UI has multiple screens)
 		$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
@@ -287,6 +300,14 @@ class BaseQuickAddController extends ActionController {
 		list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
+		$source = $this->request->getParameter('source', pString);
+		$source_id = $this->request->getParameter('source_id', pInteger);
+		
+		$t_placement = ($placement_id = $this->request->getParameter('placement_id', pString)) ? ca_editor_ui_bundle_placements::findAsInstance($placement_id) : null;
+		$this->view->setVar('placement_id', $placement_id);
+		
+		$create_relationship_on_save = $t_placement ? $t_placement->getSetting('createRelationshipOnQuickaddSave') : null;
+		
 		// Is user allowed to quickadd?
 		if (!(is_array($pa_options) && isset($pa_options['dontCheckQuickAddAction']) && (bool)$pa_options['dontCheckQuickAddAction']) && (!$this->request->user->canDoAction('can_quickadd_'.$t_subject->tableName()))) {
 			$va_response = array(
@@ -311,7 +332,13 @@ class BaseQuickAddController extends ActionController {
 		if ($t_subject->getAppConfig()->get('perform_type_access_checking')) {
 			$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__));
 		}
-		if (is_array($va_restrict_to_types) && !in_array($t_subject->get('type_id'), $va_restrict_to_types)) {
+		
+		if(!($type_id = $t_subject->get('type_id'))) {
+			if($type_id = $this->request->getParameter(['type_id', 'change_type_id'], pInteger)) {
+				$this->request->setParameter('type_id', $type_id);
+			}
+		}
+		if (is_array($va_restrict_to_types) && !in_array($type_id, $va_restrict_to_types)) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
 			return;
 		}
@@ -428,7 +455,8 @@ class BaseQuickAddController extends ActionController {
 			$va_error_list = array();
 			$vb_no_save_error = false;
 			foreach($va_errors as $o_e) {
-				$va_error_list[$o_e->getErrorDescription()] = $o_e->getErrorDescription()."\n";
+				$label = $t_subject->getDisplayLabel($o_e->getErrorSource());
+				$va_error_list[($label ? "{$label}: " : '').$o_e->getErrorDescription()]++;
 				
 				switch($o_e->getErrorNumber()) {
 					case 1100:	// duplicate/invalid idno
@@ -472,8 +500,8 @@ class BaseQuickAddController extends ActionController {
 			'table' => $t_subject->tableName(),
 			'type_id' => method_exists($t_subject, "getTypeID") ? $t_subject->getTypeID() : null,
 			'relation_id' => $vn_relation_id,
-			'display' => $va_name['label'],
-			'errors' => $va_error_list
+			'display' => $va_name['label'] ?? '???',
+			'errors' => $va_error_list ?? []
 		);
 		
 		$this->view->setVar('response', $va_response);

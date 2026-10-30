@@ -287,12 +287,12 @@ trait CLIUtilsImportExport {
 			'import-target-s' => _t('Table name of record to import media into. Should be a valid representation-taking table such as ca_objects, ca_entities, ca_occurrences, ca_places, etc. Default is ca_objects.'),
 			'import-target-type|t-s' => _t('Type to use for all newly created target records. Default is the first type in the target\'s type list.'),
 			'import-target-idno|i-s' => _t('Identifier to use for all newly created target records.'),
-			'import-target-idno-mode|m-s' => _t('Sets how identifiers of newly created target records are set. Valid values are AUTO, FILENAME, FILENAME_NO_EXT, DIRECTORY_AND_FILENAME. Set to AUTO to use an identifier calculated according to system numbering settings; set to FILENAME to use the file name as identifier; set to FILENAME_NO_EXT to use the file name stripped of extension as the identifier; use DIRECTORY_AND_FILENAME to set the identifer to the directory name and file name with extension. Default is AUTO.'),
+			'import-target-idno-mode|m-s' => _t('Sets how identifiers of newly created target records are set. Valid values are AUTO, FILENAME, FILENAME_NO_EXT, DIRECTORY_AND_FILENAME. Set to AUTO to use an identifier calculated according to system numbering settings; set to FILENAME to use the file name as identifier; set to FILENAME_NO_EXT to use the file name stripped of extension as the identifier; use DIRECTORY_AND_FILENAME to set the identifier to the directory name and file name with extension. Default is AUTO.'),
 			'import-target-access|a-s' => _t('Set access for newly created target records. Possible values are %1. Default is %2.', $access_status_list_str, $access_status_default_str),
 			'import-target-status|w-s' => _t('Set status for newly created target records. Possible values are %1. Default is %2.', $workflow_status_list_str, $workflow_status_default_str),
 			'representation-type|T-s' => _t('Type to use for all newly created representations. Possible values are %1. Default is %2.', $representation_type_list_str, $representation_type_default_str),
 			'representation-idno|I-s' => _t('Identifier to use for all newly created representation records.'),
-			'representation-idno-mode|M-s' => _t('Sets how identifiers of newly created representations are set. Valid values are AUTO, FILENAME, FILENAME_NO_EXT, DIRECTORY_AND_FILENAME. Set to AUTO to use an identifier calculated according to system numbering settings; set to FILENAME to use the file name as identifier; set to FILENAME_NO_EXT to use the file name stripped of extension as the identifier; use DIRECTORY_AND_FILENAME to set the identifer to the directory name and file name with extension. Default is AUTO.'),
+			'representation-idno-mode|M-s' => _t('Sets how identifiers of newly created representations are set. Valid values are AUTO, FILENAME, FILENAME_NO_EXT, DIRECTORY_AND_FILENAME. Set to AUTO to use an identifier calculated according to system numbering settings; set to FILENAME to use the file name as identifier; set to FILENAME_NO_EXT to use the file name stripped of extension as the identifier; use DIRECTORY_AND_FILENAME to set the identifier to the directory name and file name with extension. Default is AUTO.'),
 			'representation-access|A-s' => _t('Set access for newly created representations. Possible values are %1. Default is %2.', $access_status_list_str, $access_status_default_str),
 			'representation-status|W-s' => _t('Set status for newly created representations. Possible values are %1. Default is %2.', $workflow_status_list_str, $workflow_status_default_str),
 			'remove-media-on-import|R' => _t('Remove media from directory after it has been successfully imported. Default is false.')
@@ -451,7 +451,7 @@ trait CLIUtilsImportExport {
 			return false;
 		}
 		if ($t_set && ((int)$t_set->get('table_num') !== (int)$t_mapping->get('table_num'))) {
-			CLIUtils::addError(_t('Set %1 does take items imported by mapping', $vs_add_to_set));
+			CLIUtils::addError(_t('Set %1 does not take items imported by mapping', $vs_add_to_set));
 			return false;
 		}
 		if ($start = (int)$po_opts->getOption('start')) {
@@ -511,18 +511,18 @@ trait CLIUtilsImportExport {
 	public static function import_dataParamList() {
 		return array(
 			"source|s=s" => _t('Data to import. For files provide the path; for database, OAI and other non-file sources provide a URL.'),
-			"dataset|w=s" => _t('Dataset to import. For XLSX files this is equivalent to worksheets. Dataset indexes are zero-based. For example, in Excel to import the first worksheet set this option to zero (or omit it, as the defalt is zero).'),
+			"dataset|w=s" => _t('Dataset to import. For XLSX files this is equivalent to worksheets. Dataset indexes are zero-based. For example, in Excel to import the first worksheet set this option to zero (or omit it, as the default is zero).'),
 			"mapping|m=s" => _t('Mapping to import data with.'),
 			"format|f-s" => _t('The format of the data to import. (Ex. XLSX, tab, CSV, mysql, OAI, Filemaker XML, ExcelXML, MARC). If omitted an attempt will be made to automatically identify the data format.'),
 			"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
 			"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of importance: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
-			"limit-log-to|g-s" => _t('Limit logging to specific event types when log level is set to INFO. Limit logging to specific event types for log level INFO. Valid values are: GENERAL (general status messages), EXISTING_RECORD_POLICY (messages relating to merging of existing records, SKIP (messages relating to conditional skipping of mappings, groups or records), RELATIONSHIPS (messages relating to creating of relationships. Seprate multiple types with commas or semicolors.'),
+			"limit-log-to|g-s" => _t('Limit logging to specific event types when log level is set to INFO. Valid values are: GENERAL (general status messages), EXISTING_RECORD_POLICY (messages relating to merging of existing records), SKIP (messages relating to conditional skipping of mappings, groups or records), RELATIONSHIPS (messages relating to creating of relationships). Separate multiple types with commas or semicolumns.'),
 			"import-all-datasets" => _t('When importing an Excel .xslx file, if set import will be performed on all worksheets in the file. By default, only the first worksheet is imported.'),
 			"add-to-set|t-s" => _t('Optional identifier of set to add all imported items to.'),
 			"environment|e-s" => _t('JSON-encoded key value pairs to add to import environment values.'),
 			"dryrun" => _t('If set import is performed without data actually being saved to the database. This is useful for previewing an import for errors.'),
 			"direct" => _t('If set import is performed without a transaction. This allows viewing of imported data during the import, which may be useful during debugging/development. It may also lead to data corruption and should only be used for testing.'),
-			"no-search-indexing" => _t('If set indexing of changes made during import is not done. This may significantly reduce import time, but will neccessitate a reindex of the entire database after the import.'),
+			"no-search-indexing" => _t('If set indexing of changes made during import is not done. This may significantly reduce import time, but will necessitate a reindex of the entire database after the import.'),
 			"log-to-tmp-directory-as-fallback" => _t('Use the system temporary directory for the import log if the application logging directory is not writable. Default report an error if the application log directory is not writeable.'),
 			"detailed-log-name" => _t('Name to use for detailed field-level error log. By default these log files are named with the date and code for the import mapping.'),
 			"start|h-i" => _t('Row to start import on.'),
@@ -954,7 +954,7 @@ trait CLIUtilsImportExport {
 			}
 
 			$o_rows->next();
-			print CLIProgressBar::next(1, _t($is_existing_item ? 'Updated preferred term %1' : 'Added preferred term %1', $data[$level]));
+			print CLIProgressBar::next(1, $is_existing_item ? _t('Updated preferred term %1', $data[$level]) : _t('Added preferred term %1', $data[$level]));
 			if(!sizeof($data)) { continue; }
 
 			$parent_id = isset($parent_ids[$level-1]) ? $parent_ids[$level-1] : $root_id;
@@ -1028,7 +1028,7 @@ trait CLIUtilsImportExport {
 	 */
 	public static function load_chenhall_nomenclatureParamList() {
 		return array(
-			"file|f=s" => _t('Excel XLSX-format https://nomemclature.info Chenhall Nomenclature file to load.'),
+			"file|f=s" => _t('Excel XLSX-format %1 Chenhall Nomenclature file to load.', 'https://nomemclature.info'),
 			"list|l=s" => _t('Code for list to load Chenhall Nomenclature into. If list with code does not exist it will be created.'),
 			"update|u=s" => _t('Update an existing Chenhall installation.')
 		);
@@ -1052,7 +1052,7 @@ trait CLIUtilsImportExport {
 	 *
 	 */
 	public static function load_chenhall_nomenclatureHelp() {
-		return _t('Loads Chenhall Nomenclature from Excel XLSX format file into the specified list. You can obtain a copy of the Nomenclature from https://nomenclature.info.');
+		return _t('Loads Chenhall Nomenclature from Excel XLSX format file into the specified list. You can obtain a copy of the Nomenclature from %1', 'https://nomenclature.info.');
 	}
 	# -------------------------------------------------------
 	/**
@@ -1411,7 +1411,7 @@ trait CLIUtilsImportExport {
 	# -------------------------------------------------------
 	public static function write_importer_to_fileParamList() {
 		return [
-			"mapping|m=s" => _t('Required. importer mapping to write to file.'),
+			"mapping|m=s" => _t('Required. Importer mapping to write to file.'),
 			"file|f=s" => _t('Required. File to save importer to.')
 		];
 	}

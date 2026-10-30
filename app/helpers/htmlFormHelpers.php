@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -233,6 +233,20 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 								SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText, Strikethrough, 
 								Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage
 							],
+							htmlSupport: {
+								allow: [
+									{
+										name: 'a',
+										attributes: ['name', 'id'] 
+									},
+									{
+										name: /(div|p|h[1-6])/,
+										attributes: ['id', 'class']
+									},
+									{ name: 'details' },
+									{ name: 'summary' }
+								]
+							},
 							toolbar: {
 								items: ".json_encode($toolbar).",
 								shouldNotGroupWhenFull: true
@@ -473,9 +487,13 @@ function caHTMLImage($ps_url, $pa_options=null) {
 		}
 
 		$vn_layers = 						(int)$pa_options["layers"];
-		
+
 		if (!($vs_id_name = (string)($pa_options["idname"] ?? null))) {
 			$vs_id_name = (string)($pa_options["id"] ?? null);
+		}
+
+		if (!$vs_id_name) {
+			$vs_id_name = uniqid('caTileViewer_');
 		}
 
 		$vn_viewer_width = 				$pa_options["viewer_width"];

@@ -124,20 +124,8 @@ class BaseLookupController extends ActionController {
 				// Get type_ids
 				$ids = [];
 				if (sizeof($restrict_to_types)) {
-					$type_list = $this->opo_item_instance->getTypeList();
-					$type_list_proc = array();
-					foreach($type_list as $vn_type_id => $va_type) {
-						$type_list_proc[$vn_type_id] = $type_list_proc[$va_type['idno']] = $vn_type_id;
-					}
-					foreach($restrict_to_types as $rtype) {
-						if (isset($type_list_proc[$rtype])) {
-							$ids[$type_list_proc[$rtype]] = true;
-						} elseif (is_numeric($rtype)) {
-							$ids[(int)$rtype] = true;
-						}
-					}
-					$ids = array_keys($ids);
-				
+					$ids = caMakeTypeIDList($this->ops_table_name, $restrict_to_types, ['dontIncludeSubtypesInTypeRestriction' => false]);
+					
 					if (sizeof($ids) > 0) {
 						$t_list = new ca_lists();
 					
@@ -204,9 +192,11 @@ class BaseLookupController extends ActionController {
 			
 				$qr_res->setOption('prefetch', $limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
+				
+				$can_quickadd = ($this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName()) && !((bool) $o_config->get($this->opo_item_instance->tableName().'_disable_quickadd')));
 			
 				$va_opts = ['exclude' => $va_excludes, 'limit' => $limit, 'request' => $this->getRequest(), 'template' => caGetOption('template', $options, null)];
-				if(!$no_inline && ($quickadd || (!strlen($quickadd) && $this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName()) && !((bool) $o_config->get($this->opo_item_instance->tableName().'_disable_quickadd'))))) {
+				if(!$no_inline && ($quickadd || (!strlen($quickadd) && $can_quickadd))){
 					// if the lookup was restricted by search, try the lookup without the restriction
 					// so that we can notify the user that he might be about to create a duplicate
 					if((strlen($restrict_to_search) > 0)) {

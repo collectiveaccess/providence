@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2024 Whirl-i-Gig
+ * Copyright 2016-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -129,7 +129,7 @@ var caUI = caUI || {};
 				case 'begins_with':
 					return prefix + escapeValue('^' + ruleSet.value, true);
 				case 'contains':
-					return prefix + escapeValue(ruleSet.value, true);
+					return prefix + escapeValue('@' + ruleSet.value, true);
 				case 'ends_with':
 					return prefix + escapeValue('$' + ruleSet.value, true);
 				case 'less':
@@ -512,7 +512,7 @@ var caUI = caUI || {};
 							wildcardSuffix = isNextToken(tokens, TOKEN_WILDCARD);
 						
 							assignOperatorAndValue(rule, acc.length > 0 ? acc.reduce((a, v) => a + (a ? ' ' : '') + v.value, '') : undefined, negation, wildcardPrefix, wildcardSuffix);
-							rule.value = rule.value.replaceAll(/^[=\^\$]{1}/g, '');
+							rule.value = rule.value.replaceAll(/^[=\^\$\@]{1}/g, '');
 						}
 					}
 					skipWhitespace(tokens);

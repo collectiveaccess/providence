@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2024 Whirl-i-Gig
+ * Copyright 2018-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,7 +49,7 @@ class WLPlugInformationServiceSeleucid extends BaseInformationServicePlugin Impl
 		parent::__construct();
 		$this->info['NAME'] = 'Seleucid Coins Online';
 		
-		$this->description = _t('Provides access to Seleucid Coins Online numismatic data service (http://numismatics.org/sco/)');
+		$this->description = _t('Provides access to Seleucid Coins Online numismatic data service (%1)', 'http://numismatics.org/sco/');
 	}
 	# ------------------------------------------------
 	# Data

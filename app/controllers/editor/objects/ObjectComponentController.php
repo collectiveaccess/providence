@@ -87,7 +87,7 @@ class ObjectComponentController extends ActionController {
 		
 		
 		// Set type restrictions to component types
-		$component_types = $t_parent->getComponentTypes(); 
+		$component_types = $t_parent->getValidChildTypes(null, ['components' => true]);
 		if (is_array($component_types) && sizeof($component_types) && !in_array('*', $component_types)) {
 			$this->view->setVar('restrict_to_types', $component_types);
 		}
@@ -113,7 +113,15 @@ class ObjectComponentController extends ActionController {
 				$subject_idno_element_count = sizeof($subject_idno_instance->getElements() ?? []);
 				$parent_idno_instance = $t_parent->getIDNoPlugInInstance();
 				$parent_idno_element_count = sizeof($parent_idno_instance->getElements() ?? []);
-				if((!$subject_idno_instance || !$subject_idno_instance->isSerialFormat($subject_idno_instance->getFormat()) || ($parent_idno_instance && ($subject_idno_element_count > $parent_idno_element_count))) && strlen($pidno)) {
+				if(
+					(
+						!$subject_idno_instance || 
+						!$subject_idno_instance->isSerialFormat($subject_idno_instance->getFormat()) || 
+						($parent_idno_instance && ($subject_idno_element_count > $parent_idno_element_count))
+					) 
+					&& strlen($pidno)
+					&& (bool)$this->request->config->get('ca_objects_component_inherit_idno')
+				) {
 					$t_subject->set('idno', $pidno);
 				}
 			}

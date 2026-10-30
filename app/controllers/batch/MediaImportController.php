@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2025 Whirl-i-Gig
+ * Copyright 2012-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -139,7 +139,7 @@ class MediaImportController extends ActionController {
 		$this->view->setVar('import_target', caHTMLSelect('import_target', $this->opa_importable_tables, array(
 			'id' => 'caImportTargetSelect',
 			'onchange' => 'window.location.replace("'.caNavUrl($this->getRequest(), $this->getRequest()->getModulePath(), $this->getRequest()->getController(), $this->getRequest()->getAction()) . '/target/" + jQuery("#caImportTargetSelect").val()); return false;'
-		), array('value' => $vs_import_target)));
+		), array('value' => $vs_import_target, 'width' => '50%')));
 		
 		if(!sizeof($import_modes = caGetAvailableMediaUploadModes())) {
 			throw new ApplicationException(_t('No import modes are configured. Check the application configuration <em>media_importer_allowed_modes</em> setting and make sure at least one valid mode is set.'));

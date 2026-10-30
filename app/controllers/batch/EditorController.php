@@ -301,14 +301,27 @@ class EditorController extends ActionController {
 		
 		$t_ui = new ca_editor_uis();
 		if (!isset($options['ui']) || !$options['ui']) {
-			$t_ui->load($this->request->user->getPreference("batch_".$t_subject->tableName()."_editor_ui"));
-			$restrictions = $t_ui->getTypeRestrictions();
-			$type_ids = array_map(function($v) {
-				return $v['type_id'] ?? null;
-			}, $restrictions ?? []);
-			if(is_array($type_ids) && sizeof($type_ids) && !in_array($t_subject->getTypeID(), $type_ids)) {
-				$types_in_set = array_keys($t_set->getTypesForItems());
-				if(!($t_ui = ca_editor_uis::loadDefaultUI($t_subject->tableName(), $this->request, array_shift($types_in_set)))) {
+			$editors_by_type = $this->request->user->getPreference("batch_".$t_subject->tableName()."_editor_ui");
+			$table_num = $t_subject->tableNum();
+			$types_in_set = array_keys($t_set->getTypesForItems());
+			
+			if(is_array($editors_by_type)) { 
+				$ui_id = $editors_by_type[$t_subject->getTypeID()] ?? $editors_by_type['__all__'] ?? null;
+			} elseif(is_numeric($editors_by_type)) {
+				$ui_id = (int)$editors_by_type;
+			}
+			if($ui_id) { $t_ui->load($ui_id); }
+			
+			$restrictions = null;
+			if($t_ui->isLoaded()) {
+				$restrictions = array_map(function($v) use ($table_num) {
+					return $v['type_id'];
+				}, $j = array_filter($t_ui->getTypeRestrictions() ?? [], function($x) use ($table_num) {
+					return ($x['table_num'] == $table_num);
+				}));
+			}
+			if(!$t_ui->isLoaded() || (is_array($restrictions) && sizeof($restrictions) && !sizeof(array_intersect($restrictions, $types_in_set)))) {
+				if(!($t_ui = ca_editor_uis::loadDefaultUI($table_num, $this->request, array_shift($types_in_set)))) {
 					$t_ui = new ca_editor_uis();
 				}
 			}

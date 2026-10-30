@@ -902,7 +902,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->handle->setimageformat($this->magick_names[$mimetype]);
 			# set quality
 			if (($this->properties["quality"] ?? null) && ($this->properties["mimetype"] != "image/tiff")){ 
-				$this->handle->setcompressionquality($this->properties["quality"]);
+				$this->handle->setcompressionquality($this->properties["quality"] ?: 75);
 			}
 			
 			$this->handle->setimagebackgroundcolor(new GmagickPixel(caGetOption('background', $this->properties, "#FFFFFF")));
@@ -1488,7 +1488,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 			return $handle;
 		} catch(Exception $e) {
-			$this->postError(1610, _t("Could not read image file: ".$e->getMessage()), "WLPlugGmagick->read()");
+			$this->postError(1610, _t("Could not read image file: %1", $e->getMessage()), "WLPlugGmagick->read()");
 			return false; // gmagick couldn't read file, presumably
 		}
 	}

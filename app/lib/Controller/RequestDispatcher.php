@@ -183,6 +183,19 @@ class RequestDispatcher extends BaseObject {
 		if ($this->isDispatchable()) {
 			do {
 				$this->response->clearContent();
+				
+				if($route = $this->router->dispatch($this->request)) {
+					$action_path = explode('/', $route['to']['action']);
+					$this->opa_module_path = $route['to']['module'] ? [$route['to']['module']] : [];
+					$this->request->setModulePath($route['to']['module'] ? $route['to']['module'] : '');
+					$this->request->setController($this->ops_controller = $route['to']['controller']);
+					$this->request->setAction($this->ops_action = array_shift($action_path));
+					$this->request->setActionExtra($this->ops_action_extra = join('/', $action_path));
+					
+					foreach($route['to']['params'] ?? [] as $p => $v) {
+						$this->request->setParameter($p, $v);
+					}
+				}
 				$vs_classname = ucfirst($this->ops_controller).'Controller';
 				$ops_module_path = $this->opa_module_path ? join('/', $this->opa_module_path)."/" : '';
 
@@ -211,21 +224,6 @@ class RequestDispatcher extends BaseObject {
 									}
 							
 									if ($vb_is_error) {
-										// Try routing table?
-										if($route = $this->router->dispatch($this->request)) {
-											$action_path = explode('/', $route['to']['action']);
-											$this->opa_module_path = $route['to']['module'] ? [$route['to']['module']] : [];
-											$this->request->setModulePath($route['to']['module'] ? $route['to']['module'] : '');
-											$this->request->setController($this->ops_controller = $route['to']['controller']);
-											$this->request->setAction($this->ops_action = array_shift($action_path));
-											$this->request->setActionExtra($this->ops_action_extra = join('/', $action_path));
-											
-											foreach($route['to']['params'] ?? [] as $p => $v) {
-												$this->request->setParameter($p, $v);
-											}
-											continue;
-										}
-			
 										// Try to load "Default" controller in controllers directory and call method with controller name
 										if (file_exists($this->ops_controller_path.'/DefaultController.php') && @include_once($this->ops_controller_path.'/DefaultController.php')) {
 						

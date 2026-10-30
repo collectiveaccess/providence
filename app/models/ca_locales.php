@@ -61,7 +61,7 @@ BaseModel::$s_ca_models_definitions['ca_locales'] = array(
 				'DISPLAY_WIDTH' => 2, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('ISO 3166-1 alpha-2 country code'), 'DESCRIPTION' => _t('2 characer country code for locale; use the ISO 3166-1 alpha-2 standard.'),
+				'LABEL' => _t('ISO 3166-1 alpha-2 country code'), 'DESCRIPTION' => _t('2 character country code for locale; use the ISO 3166-1 alpha-2 standard.'),
 				'BOUNDS_LENGTH' => array(0,2)
 		),
 		'dialect' => array(
@@ -69,7 +69,7 @@ BaseModel::$s_ca_models_definitions['ca_locales'] = array(
 				'DISPLAY_WIDTH' => 8, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Dialect'), 'DESCRIPTION' => _t('Optional dialect specifier for locale. Up to 8 characters, this code is usually one defined by the language lists at http://www.ethnologue.com.'),
+				'LABEL' => _t('Dialect'), 'DESCRIPTION' => _t('Optional dialect specifier for locale. Up to 8 characters, this code is usually one defined by the language lists at %1.', 'http://www.ethnologue.com'),
 				'BOUNDS_LENGTH' => array(0,8)
 		),
 		'dont_use_for_cataloguing' => array(
@@ -665,6 +665,18 @@ class ca_locales extends BaseModel {
 		
 		$t = array_flip(ca_locales::$s_code2_to_name);
 		return $t[$name] ?? null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return language code for locale
+	 *
+	 * @param string $locale
+	 *
+	 * @return string 
+	 */
+	static function languageForLocale(string $locale) : ?string {
+		$tmp = explode('_', $locale);
+		return array_shift($tmp);
 	}
 	# ------------------------------------------------------
 }

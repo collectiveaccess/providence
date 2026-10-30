@@ -135,7 +135,7 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 						}, $facet_values);
 						
 						if(!($facet_info = self::facetInfo($browse_info['table'], $facet))) {
-							throw new \ServiceException(_t('No facets defined for table '.$browse_info['table']));
+							throw new \ServiceException(_t('No facets defined for table %1', $browse_info['table']));
 						}
 						return [
 							'name' => $facet,
@@ -455,7 +455,7 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 						}, $facet_values);
 						
 						if(!($facet_info = self::facetInfo($browse_info['table'], $facet))) {
-							throw new \ServiceException(_t('No facets defined for table '.$browse_info['table']));
+							throw new \ServiceException(_t('No facets defined for table %1', $browse_info['table']));
 						}
 						return [
 							'name' => $facet,
@@ -792,10 +792,10 @@ class BrowseController extends \GraphQLServices\GraphQLServiceController {
 	private static function browseParams(array $args, array $options=null) {
 		$browse_type = trim($args['browseType']);
 		if(!($browse_info = caGetInfoForBrowseType($browse_type))) { 
-			throw new \ServiceException(_t('Invalid browse type '.$browse_type));
+			throw new \ServiceException(_t('Invalid browse type %1', $browse_type));
 		}
 		if(!($browse = caGetBrowseInstance($table = $browse_info['table']))) { 
-			throw new \ServiceException(_t('Invalid browse table '.$table));
+			throw new \ServiceException(_t('Invalid browse table %1', $table));
 		}
 		
 		if ($key = trim($args['key'])) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -86,6 +86,14 @@ class BaseEditorController extends ActionController {
 				throw new ApplicationException(_t('CSRF check failed'));
 				return;
 			}
+			
+			$dupe_mode = $this->request->getParameter('duplication_mode', pString);
+			if(!in_array($dupe_mode, ['create', 'pair'], true)) { $dupe_mode = 'create'; }
+			
+			$dupe_quantity = (int)$this->request->getParameter('duplication_quantity', pString);
+			if($dupe_quantity < 1) { $dupe_quantity = 1; }
+			if($dupe_quantity > 100) { $dupe_quantity = 100; }
+			
 			// Trigger "before duplicate" hook
 			$this->opo_app_plugin_manager->hookBeforeDuplicateItem(
 				[
@@ -96,38 +104,93 @@ class BaseEditorController extends ActionController {
 					'request' => $this->request
 				]
 			);
-
-			if ($t_dupe = $t_subject->duplicate(array(
-				'user_id' => $this->request->getUserID(),
-				'duplicate_nonpreferred_labels' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_nonpreferred_labels'),
-				'duplicate_attributes' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_attributes'),
-				'duplicate_relationships' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_relationships'),
-				'duplicate_current_relationships_only' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_current_relationships_only'),
-				'duplicate_relationship_attributes' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_relationship_attributes'),
-				'duplicate_media' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_media'),
-				'duplicate_subitems' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_subitems'),
-				'duplicate_element_settings' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_element_settings'),
-				'duplicate_children' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_children')
-			))) {
-				$this->notification->addNotification(_t('Duplicated %1 "%2" (%3)', $vs_type_name, $t_subject->getLabelForDisplay(), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
-				// Trigger duplicate hook
-				$this->opo_app_plugin_manager->hookDuplicateItem(
-					[
-						'id' => $vn_subject_id, 
-						'table_num' => $t_subject->tableNum(), 
-						'table_name' => $t_subject->tableName(), 
-						'instance' => $t_subject, 
-						'duplicate' => $t_dupe,
-						'request' => $this->request
-					]
-				);
+			
+			Session::setVar($t_subject->tableName().'_editor_last_duplication_mode', $dupe_mode);
+			
+			$rel_table = $rel_type = null;
+			if($dupe_mode == 'pair') {
+				$set_id = $this->request->getParameter('pair_with_set_id', pInteger);
+				if(!($t_set = ca_sets::findAsInstance($set_id))) {
+					$this->notification->addNotification(_t('Set does not exist'), __NOTIFICATION_TYPE_ERROR__);
+					$dupe_mode = null;
+				} else {
+					// Do we have access to this set?
+					if(!$t_set->haveAccessToSet($this->request->getUserID(), __CA_SET_READ_ACCESS__)) {
+						$this->notification->addNotification(_t('Set is not accessible'), __NOTIFICATION_TYPE_ERROR__);
+						$dupe_mode = null;
+					} else {
+						$set_item_ids = $t_set->getItems(['idsOnly' => true]);
+						$dupe_quantity = sizeof($set_item_ids);
+						$rel_table = Datamodel::getTableName($t_set->get('table_num'));
+						
+						$t_rel_types = new ca_relationship_types();
+						if(!($rel_linking_table = $t_rel_types->getRelationshipTypeTable($t_subject->tableName(), $rel_table))) {
+							$this->notification->addNotification(_t('Set contents cannot be paired'), __NOTIFICATION_TYPE_ERROR__);
+							$dupe_mode = null;
+						}
+						
+						// Use default relationship type
+						if(!($rel_type = $t_rel_types->getDefaultRelationshipTypeID($rel_linking_table))) {
+							$this->notification->addNotification(_t('Default relationship type is not set for this relationship'), __NOTIFICATION_TYPE_ERROR__);
+							$dupe_mode = null;	
+						}
+					}
+				}
+			}
+			
+			if($dupe_mode) {
+				$c = 0;
+				$t_first = null;
+				while($c < $dupe_quantity) {
+					if ($t_dupe = $t_subject->duplicate([
+						'user_id' => $this->request->getUserID(),
+						'duplicate_nonpreferred_labels' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_nonpreferred_labels'),
+						'duplicate_attributes' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_attributes'),
+						'duplicate_relationships' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_relationships'),
+						'duplicate_current_relationships_only' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_current_relationships_only'),
+						'duplicate_relationship_attributes' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_relationship_attributes'),
+						'duplicate_media' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_media'),
+						'duplicate_subitems' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_subitems'),
+						'duplicate_element_settings' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_element_settings'),
+						'duplicate_children' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_children')
+					])) {
+						// Trigger duplicate hook
+						$this->opo_app_plugin_manager->hookDuplicateItem(
+							[
+								'id' => $vn_subject_id, 
+								'table_num' => $t_subject->tableNum(), 
+								'table_name' => $t_subject->tableName(), 
+								'instance' => $t_subject, 
+								'duplicate' => $t_dupe,
+								'request' => $this->request
+							]
+						);
+						if(!$t_first) { $t_first = $t_dupe; }
+						
+						if($dupe_mode === 'pair') {
+							$related_item_id = array_shift($set_item_ids);
+							if(!$t_dupe->addRelationship($rel_table, $related_item_id, $rel_type)) {
+								$this->notification->addNotification(_t('Could not pair duplicate %1 with %2: %3', $vs_type_name, $rel_table, join('; ', $t_subject->getErrors())), __NOTIFICATION_TYPE_ERROR__);
+							}
+						}
+					} else {
+						$this->notification->addNotification(_t('Could not duplicate %1: %2', $vs_type_name, join('; ', $t_subject->getErrors())), __NOTIFICATION_TYPE_ERROR__);
+					}
+					$c++;
+				}
 				Session::save();
 				
-				// redirect to edit newly created dupe.
-				$this->response->setRedirect(caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), array($t_subject->primaryKey() => $t_dupe->getPrimaryKey())));
-				return;
-			} else {
-				$this->notification->addNotification(_t('Could not duplicate %1: %2', $vs_type_name, join('; ', $t_subject->getErrors())), __NOTIFICATION_TYPE_ERROR__);
+				if($dupe_quantity > 1) {
+					$this->notification->addNotification(_t('Created %1 duplicates of %2 "%3" (%4)', $c, $vs_type_name, $t_subject->getLabelForDisplay(), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
+				} else {
+					$this->notification->addNotification(_t('Duplicated %1 "%2" (%3)', $vs_type_name, $t_subject->getLabelForDisplay(), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
+				}
+							
+				if($t_first) {
+					// Redirect to edit first newly created dupe.
+					$this->response->setRedirect(caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), [$t_subject->primaryKey() => $t_first->getPrimaryKey()]));
+					return;
+				}
 			}
 		}
 
@@ -1347,6 +1410,7 @@ class BaseEditorController extends ActionController {
 						break;
 				}
 				
+				if(!$va_item['is_enabled'] && !sizeof($va_subtypes)) { continue; }
 				if($this->getRequest()->config->get($this->ops_table_name.'_navigation_new_menu_use_indented_type_lists')) {
 					$no_new_submenu = $this->getRequest()->config->get($this->ops_table_name.'_no_new_submenu'); 
 					$va_types[$vs_key][] = array(
@@ -1432,6 +1496,7 @@ class BaseEditorController extends ActionController {
 					break;
 			}
 
+			if(!$va_type['is_enabled'] && !sizeof($va_subsubtypes)) { continue; }
 			if($use_indented_lists) {
 				$offset = $level * 16;
 				$va_subtypes[$vs_key][$va_type['item_id']] = array(
@@ -1574,31 +1639,32 @@ class BaseEditorController extends ActionController {
 	 * reload an editing form.
 	 */
 	public function reload() {
-		list($vn_subject_id, $t_subject) = $this->_initView();
+		list($subject_id, $t_subject) = $this->_initView();
 
 		if(!$this->verifyAccess($t_subject)) { return; }
 
-		$ps_bundle = $this->request->getParameter("bundle", pString);
-		$pn_placement_id = $this->request->getParameter("placement_id", pInteger);
+		$bundle = $this->request->getParameter("bundle", pString);
+		$placement_id = $this->request->getParameter("placement_id", pInteger);
 		
-		$ps_sort = $this->request->getParameter("sort", pString);
-		$ps_sort_direction = $this->request->getParameter("sortDirection", pString);
+		$sort = $this->request->getParameter("sort", pString);
+		$sort_direction = $this->request->getParameter("sortDirection", pString);
 
 		$form_name = $this->request->getParameter("formName", pString);
+		$reload_item_list_only = $this->request->getParameter("reloadItemListOnly", pInteger);
 
-		switch($ps_bundle) {
+		switch($bundle) {
 			case '__inspector__':
-				$this->response->addContent($this->info(array($t_subject->primaryKey() => $vn_subject_id, 'type_id' => $this->request->getParameter("type_id", pInteger))));
+				$this->response->addContent($this->info(array($t_subject->primaryKey() => $subject_id, 'type_id' => $this->request->getParameter("type_id", pInteger))));
 				break;
 			default:
-				$t_placement = new ca_editor_ui_bundle_placements($pn_placement_id);
+				$t_placement = new ca_editor_ui_bundle_placements($placement_id);
 
 				if (!$t_placement->getPrimaryKey()) {
 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 					return;
 				}
 
-				if ($t_placement->get('bundle_name') != $ps_bundle) {
+				if ($t_placement->get('bundle_name') != $bundle) {
 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 					return;
 				}
@@ -1606,11 +1672,18 @@ class BaseEditorController extends ActionController {
 				if (!is_array($bundle_sort_defaults = $this->request->user->getVar('bundleSortDefaults'))) { 
 					$bundle_sort_defaults = [];
 				}
-				$bundle_sort_defaults["P{$pn_placement_id}"] = ['sort' => $ps_sort, 'sortDirection' => $ps_sort_direction];
+				$bundle_sort_defaults["P{$placement_id}"] = ['sort' => $sort, 'sortDirection' => $sort_direction];
 				$this->request->user->setVar('bundleSortDefaults', $bundle_sort_defaults);
 				
 				$bundle_label = null;
-				$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, "P{$pn_placement_id}", array_merge($t_placement->get('settings') ?? [], ['placement_id' => $pn_placement_id]), ['formName' => $form_name, 'request' => $this->request, 'contentOnly' => true, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction, 'userSetSort' => true], $bundle_label));
+				
+				$content = $t_subject->getBundleFormHTML($bundle, "P{$placement_id}", array_merge($t_placement->get('settings') ?? [], ['placement_id' => $placement_id]), ['formName' => $form_name, 'request' => $this->request, 'contentOnly' => true, 'sort' => $sort, 'sortDirection' => $sort_direction, 'userSetSort' => true, 'relatedListOnly' => $reload_item_list_only], $bundle_label);
+				if($reload_item_list_only) {
+					$this->response->setContentType('application/json');
+					$this->response->addContent(json_encode($content));
+				} else {
+					$this->response->addContent($content);
+				}
 				break;
 		}
 	}
@@ -1619,22 +1692,22 @@ class BaseEditorController extends ActionController {
 	 * Return partial list of values for bundle. Used for incremental loading of relationship lists.
 	 */
 	public function loadBundleValues() {
-		list($vn_subject_id, $t_subject) = $this->_initView();
+		list($subject_id, $t_subject) = $this->_initView();
 
 		if(!$this->verifyAccess($t_subject)) { return; }
 		
-		$ps_bundle_name = $this->request->getParameter("bundle", pString);
-		if ($this->request->user->getBundleAccessLevel($t_subject->tableName(), $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
+		$bundle_name = $this->request->getParameter("bundle", pString);
+		if ($this->request->user->getBundleAccessLevel($t_subject->tableName(), $bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
 
-		$pn_placement_id = $this->request->getParameter("placement_id", pInteger);
-		$pn_start = (int)$this->request->getParameter("start", pInteger);
-		if (!($pn_limit = $this->request->getParameter("limit", pInteger))) { $pn_limit = null; }
+		$placement_id = $this->request->getParameter("placement_id", pInteger);
+		$start = (int)$this->request->getParameter("start", pInteger);
+		if (!($limit = $this->request->getParameter("limit", pInteger))) { $limit = null; }
 		$sort = $this->request->getParameter("sort", pString);
 		$sort_direction = $this->request->getParameter("sortDirection", pString);
 
-		$t_placement = new ca_editor_ui_bundle_placements($pn_placement_id);
+		$t_placement = new ca_editor_ui_bundle_placements($placement_id);
 		
-		$d = $t_subject->getBundleFormValues($ps_bundle_name, "{$pn_placement_id}", $t_placement->get('settings'), array('start' => $pn_start, 'limit' => $pn_limit, 'sort' => $sort, 'sortDirection' => $sort_direction, 'request' => $this->request, 'contentOnly' => true));
+		$d = $t_subject->getBundleFormValues($bundle_name, "{$placement_id}", $t_placement->get('settings'), array('start' => $start, 'limit' => $limit, 'sort' => $sort, 'sortDirection' => $sort_direction, 'request' => $this->request, 'contentOnly' => true));
 
 		$this->response->setContentType('application/json');
 		$this->response->addContent(json_encode(['sort' => array_keys($d ?? []), 'data' => $d]));
@@ -1723,7 +1796,7 @@ class BaseEditorController extends ActionController {
 			$vs_display_field	= $t_label->getDisplayField();
 		}
 		
-		$vn_item_id 		= (isset($pa_parameters[$vs_pk])) ? $pa_parameters[$vs_pk] : null;
+		$vn_item_id 	= (isset($pa_parameters[$vs_pk])) ? $pa_parameters[$vs_pk] : null;
 		$type_id 		= (isset($pa_parameters['type_id'])) ? $pa_parameters['type_id'] : null;
 
 		$t_item->load($vn_item_id);
@@ -2009,7 +2082,7 @@ class BaseEditorController extends ActionController {
 			
 			$vs_mimetype = $t_instance->getMediaInfo('media', 'INPUT', 'MIMETYPE');
 			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype))) {
-				throw new ApplicationException(_t('Invalid viewer for '.$vs_mimetype));
+				throw new ApplicationException(_t('Invalid viewer for %1', $vs_mimetype));
 			}
 			
 			$va_display_info = caGetMediaDisplayInfo('media_overlay', $vs_mimetype);
@@ -2769,13 +2842,13 @@ class BaseEditorController extends ActionController {
 		}
 		$placement = new ca_editor_ui_bundle_placements($placement_id);
 		if (!$placement->isLoaded()) {
-			throw new ApplicationException(_('Invalid placement_id'));
+			throw new ApplicationException(_t('Invalid placement_id'));
 		}
 		$editor_table = $placement->getEditorType();
 		$t_instance = Datamodel::getInstance($editor_table, true);
 		$vn_primary_id = $this->getRequest()->getParameter('primary_id', pInteger);
 		if (!($t_instance->load($vn_primary_id))) { 
-			throw new ApplicationException(_('Invalid id'));
+			throw new ApplicationException(_t('Invalid id'));
 		}
 		
 		$bundle_name = $placement->get('bundle_name');
@@ -2783,13 +2856,13 @@ class BaseEditorController extends ActionController {
 		switch($bundle_name) {
 			case 'history_tracking_current_contents':
 				if(!($policy = $placement->getSetting('policy'))) {
-					throw new ApplicationException(_('No policy set'));
+					throw new ApplicationException(_t('No policy set'));
 				}
 				if(!is_array($policy_config = $editor_table::getPolicyConfig($policy))) {
-					throw new ApplicationException(_('Could not get policy configuration for policy %1', $policy));
+					throw new ApplicationException(_t('Could not get policy configuration for policy %1', $policy));
 				}
 				if(!($table = $policy_config['table']) || !Datamodel::tableExists($table)) {
-					throw new ApplicationException(_('Invalid table %1 in policy %2', $table, $policy));
+					throw new ApplicationException(_t('Invalid table %1 in policy %2', $table, $policy));
 				}
 				$ids = $t_instance->getContents($policy, array_merge($placement->getSettings(), ['idsOnly' => true]));
 				break;
@@ -2797,7 +2870,7 @@ class BaseEditorController extends ActionController {
 				$id = $this->request->getParameter('primary_id', pInteger);
 				$t_object = ca_objects::findAsInstance($id);
 				if(!$t_object || !$t_object->isSaveable($this->request) || !$t_object->canTakeComponents()) {
-					throw new ApplicationException(_('Invalid item'));
+					throw new ApplicationException(_t('Invalid item'));
 				}
 				$ids = $t_object->getComponents(['returnAs' => 'ids']);
 				$table = "ca_objects";
@@ -2814,7 +2887,7 @@ class BaseEditorController extends ActionController {
 		}
 	
 		if(!$ids || !sizeof($ids)) { 
-			throw new ApplicationException(_('No related items'));
+			throw new ApplicationException(_t('No related items'));
 		}
 		$rc = new ResultContext($this->request, $table, 'BatchEdit');
 		$rc->setResultList($ids);
@@ -3039,12 +3112,12 @@ class BaseEditorController extends ActionController {
 			// For now support both placement_ids and passed ID lists
 			$placement = new ca_editor_ui_bundle_placements($placement_id);
 			if (!$placement->isLoaded()) {
-				throw new ApplicationException(_('Invalid placement_id'));
+				throw new ApplicationException(_t('Invalid placement_id'));
 			}
 			$t_instance = Datamodel::getInstance($placement->getEditorType(), true);
 	
 			if (!($t_instance->load($vn_primary_id))) { 
-				throw new ApplicationException(_('Invalid id'));
+				throw new ApplicationException(_t('Invalid id'));
 			}
 			$va_ids = $t_instance->getRelatedItems($placement->get('bundle_name'), ['returnAs' => 'ids']);
 		} else {

@@ -116,9 +116,9 @@ BaseModel::$s_ca_models_definitions['ca_sets'] = array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
-				'DEFAULT' => '',
+				'DEFAULT' => null,
 				'LABEL' => _t('Set code sortable value'), 'DESCRIPTION' => _t('Sortable value for set code.'),
-				'BOUNDS_LENGTH' => array(0, 100),
+				'BOUNDS_LENGTH' => array(0, 768),
 				'UNIQUE_WITHIN' => array()
 		),
 		'access' => array(
@@ -358,7 +358,9 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$this->BUNDLES['ca_set_items'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Set items'));
 		
 		$this->BUNDLES['_itemCount'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Number of items in set'));
-		
+	
+		$this->BUNDLES['ca_set_type_restrictions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Type restrictions'));
+
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
 	}
@@ -655,6 +657,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$va_sql_wheres[] = "(cs.user_id IN (SELECT user_id FROM ca_users))";
 		} elseif (isset($pa_options['allUsers']) && $pa_options['allUsers']) {
 			$va_sql_wheres[] = "(cs.user_id IN (SELECT user_id FROM ca_users WHERE userclass IN (0, 255)))";
+			if (!is_null($pn_user_id)) $va_sql_wheres[] = "(cs.user_id != $pn_user_id)";
 		} elseif (isset($pa_options['publicUsers']) && $pa_options['publicUsers']) {
 			$va_sql_wheres[] = "(cs.user_id IN (SELECT user_id FROM ca_users WHERE userclass = 1))";
 		} else {
@@ -2830,7 +2833,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$pa_public_access = array_map(function($v) { return (int)$v; }, $pa_public_access);
 		
 		if($pn_user_id){
-			$va_extra_joins = array();
 			$va_sql_wheres = array("(cs.deleted = 0)");
 			$va_sql_params = array();
 			$o_db = $this->getDb();
@@ -2943,7 +2945,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 									FROM ca_sets cs
 									INNER JOIN ca_users AS cu ON cs.user_id = cu.user_id
 									INNER JOIN ca_set_labels AS csl ON csl.set_id = cs.set_id
-									".join("\n", $va_extra_joins)."
 									".(sizeof($va_sql_wheres) ? "WHERE " : "")." ".join(" AND ", $va_sql_wheres)."
 									{$sort_sql}
 									", $va_sql_params);
@@ -3928,6 +3929,206 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				break;
 		}
 		return null;
+	}
+	# ----------------------------------------
+	# Type restrictions
+	# ----------------------------------------
+	/**
+	 * Adds restriction (a binding between the set and item type)
+	 *
+	 * @param int $type_id the type
+	 * @param array $settings Options include:
+	 *		includeSubtypes = automatically expand type restriction to include sub-types. [Default is false]
+	 * @return bool True on success, false on error, null if no screen is loaded
+	 * 
+	 */
+	public function addTypeRestriction($type_id, $settings=null) {
+		if (!($set_id = $this->getPrimaryKey())) { return null; }		// set must be loaded
+		if (!is_array($settings)) { $settings = []; }
+		
+		if (!($t_instance = Datamodel::getInstanceByTableNum($this->get('editor_type')))) { return false; }
+
+		$type_list = $t_instance->getTypeList();
+		if (!isset($type_list[$type_id])) { return false; }
+		
+		$t_restriction = new ca_set_type_restrictions();
+		$t_restriction->set('table_num', $this->get('editor_type'));
+		$t_restriction->set('type_id', $type_id);
+		$t_restriction->set('include_subtypes', caGetOption('includeSubtypes', $settings, 0));
+		$t_restriction->set('set_id', $this->getPrimaryKey());
+		
+		unset($settings['includeSubtypes']);
+		foreach($settings as $setting => $setting_value) {
+			$t_restriction->setSetting($setting, $setting_value);
+		}
+		$t_restriction->insert();
+		
+		if ($t_restriction->numErrors()) {
+			$this->errors = $t_restriction->errors();
+			return false;
+		}
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * Edit settings for an existing type restriction on the currently loaded row
+	 *
+	 * @param int $restriction_id
+	 * @param int $type_id New type for relationship
+	 */
+	public function editTypeRestriction(int $restriction_id, ?array $settings=null) {
+		if (!($set_id = $this->getPrimaryKey())) { return null; }		// set must be loaded
+		$t_restriction = new ca_set_type_restrictions($restriction_id);
+		if ($t_restriction->isLoaded()) {
+			$t_restriction->set('include_subtypes', caGetOption('includeSubtypes', $settings, 0));
+			$t_restriction->update();
+			if ($t_restriction->numErrors()) {
+				$this->errors = $t_restriction->errors();
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+	# ----------------------------------------
+	/**
+	 * Sets restrictions for currently loaded set
+	 *
+	 * @param array $type_ids list of types to restrict to
+	 * @param array $options Options include:
+	 *		includeSubtypes = Automatically include subtypes for all set type restrictions. [Default is false]
+	 * @return bool True on success, false on error, null if no screen is loaded
+	 * 
+	 */
+	public function setTypeRestrictions(array $type_ids, ?array $options=null) {
+		if (!($set_id = $this->getPrimaryKey())) { return null; }		// set must be loaded
+		if (!is_array($type_ids)) {
+			if (is_numeric($type_ids)) { 
+				$type_ids = array($type_ids); 
+			} else {
+				$type_ids = [];
+			}
+		}
+		
+		if (!($t_instance = Datamodel::getInstanceByTableNum($this->get('editor_type')))) { return false; }
+
+		if ($t_instance instanceof BaseRelationshipModel) { // interstitial type restrictions
+			$type_list = $t_instance->getRelationshipTypes();
+		} else { // "normal" (list-based) type restrictions
+			$type_list = $t_instance->getTypeList();
+		}
+		
+		$current_restrictions = $this->getTypeRestrictions();
+		$current_type_ids = [];
+		foreach($current_restrictions as $i => $restriction) {
+			$current_type_ids[$restriction['type_id']] = $restriction['restriction_id'];
+		}
+		
+		foreach($type_list as $type_id => $type_info) {
+			if(in_array($type_id, $type_ids)) {
+				// need to set
+				if(!isset($current_type_ids[$type_id])) {
+					$this->addTypeRestriction($type_id, $options);
+				} else {
+					$this->editTypeRestriction($current_type_ids[$type_id], $options);
+				}
+			} elseif(isset($current_type_ids[$type_id])) {	
+				// need to unset
+				$this->removeTypeRestriction($type_id);
+			}
+		}
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * Remove restriction from currently loaded set for specified type
+	 *
+	 * @param int $type_id The type of the restriction
+	 * @return bool True on success, false on error, null if no screen is loaded
+	 */
+	public function removeTypeRestriction(?int $type_id=null) {
+		if (!($set_id = (int)$this->getPrimaryKey())) { return null; }		// set must be loaded
+
+		$params = ['set_id' => $set_id];
+		if ((int)$type_id > 0) { $params['type_id'] = (int)$type_id; }
+
+		if (is_array($sets = ca_set_type_restrictions::find($params, ['returnAs' => 'modelInstances']))) {
+			foreach($sets as $t_set) {
+				$t_set->delete(true);
+				if ($t_set->numErrors()) {
+					$this->errors = $t_set->errors();
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * Remove all type restrictions from loaded set
+	 *
+	 * @return bool True on success, false on error, null if no screen is loaded 
+	 */
+	public function removeAllTypeRestrictions() {
+		return $this->removeTypeRestriction();
+	}
+	# ----------------------------------------
+	/**
+	 * Return restrictions for currently loaded set
+	 *
+	 * @param int $type_id Type to limit returned restrictions to; if omitted or null then all restrictions are returned
+	 * @return array A list of restrictions, false on error or null if no set is loaded
+	 */
+	public function getTypeRestrictions($type_id=null) {
+		if (!($set_id = (int)$this->getPrimaryKey())) { return null; }
+		
+		$params = ['set_id' => $set_id];
+		if ((int)$type_id > 0) { $params['type_id'] = (int)$type_id; }
+
+		return ca_set_type_restrictions::find($params, ['returnAs' => 'arrays']);
+	}
+	# ----------------------------------------
+	/**
+	 * Renders and returns HTML form bundle for management of type restriction in the currently loaded set
+	 * 
+	 * @param object $request The current request object
+	 * @param string $form_name The name of the form in which the bundle will be rendered
+	 *
+	 * @return string Rendered HTML bundle for display
+	 */
+	public function getTypeRestrictionsHTMLFormBundle($request, $form_name, $placement_code, $options=null) {
+		$o_view = new View($request, $request->getViewsDirectoryPath().'/bundles/');
+		
+		$o_view->setVar('t_set', $this);
+		$o_view->setVar('id_prefix', $form_name);
+		$o_view->setVar('placement_code', $placement_code);
+		$o_view->setVar('request', $request);
+		
+		$type_restrictions = $this->getTypeRestrictions();
+		$restriction_type_ids = [];
+		$vb_include_subtypes = false;
+		if (is_array($type_restrictions)) {
+			foreach($type_restrictions as $i => $restriction) {
+				$restriction_type_ids[] = $restriction['type_id'];
+				if ($restriction['include_subtypes'] && !$vb_include_subtypes) { $vb_include_subtypes = true; }
+			}
+		}
+		
+		if (!($t_instance = Datamodel::getInstanceByTableNum($table_num = $this->get('table_num')))) { return null; }
+
+		$subtype_element = caProcessTemplate($this->getAppConfig()->get('form_element_display_format_without_label'), [
+			'ELEMENT' => _t('Include subtypes?').' '.caHTMLCheckboxInput('type_restriction_include_subtypes', ['value' => '1', 'checked' => $vb_include_subtypes])
+		]);
+		
+		$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $restriction_type_ids)).$subtype_element);
+	
+		return $o_view->render('ca_set_type_restrictions.php');
+	}
+	# ----------------------------------------
+	public function saveTypeRestrictionsFromHTMLForm($request, $form_prefix, $placement_code) {
+		if (!$this->getPrimaryKey()) { return null; }
+		
+		return $this->setTypeRestrictions($request->getParameter('type_restrictions', pArray), ['includeSubtypes' => $request->getParameter('type_restriction_include_subtypes', pInteger)]);
 	}
 	# ------------------------------------------------------
 }

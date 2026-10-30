@@ -141,7 +141,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 			$status['available'] = true;
 		}
 		if (!caMeshlabServerInstalled()) {
-			$status['warnings'][] = _t("MeshLab cannot be found: you will not be able to process 3D files; you can obtain MeshLab at https://www.meshlab.net/");
+			$status['warnings'][] = _t("MeshLab cannot be found: you will not be able to process 3D files; you can obtain MeshLab at %1", 'https://www.meshlab.net/');
 		} else {
 			$status['notices'][] = _t("Found MeshLab");
 		}

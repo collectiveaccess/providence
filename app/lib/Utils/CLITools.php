@@ -649,7 +649,7 @@ class CLITools extends CLIBaseUtils {
 	 *
 	 */
 	public static function filter_invalid_xml_charactersShortHelp() {
-		return _t("Filters invalid characters from XML files that may prevent parsing and validation. Some XML producers occassionally add these invalid characters due to improper validation of source data or unintended behavior.");
+		return _t("Filters invalid characters from XML files that may prevent parsing and validation. Some XML producers occasionally add these invalid characters due to improper validation of source data or unintended behavior.");
 	}
 	# -------------------------------------------------------
 }

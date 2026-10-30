@@ -208,7 +208,7 @@ trait HistoryTrackingCurrentValueTrait {
 						$bundle_settings["{$table}_{$t}_dateElement"] = $config['date'] ?? null;
 
 						if ((sizeof($path) === 3) && ($rel_types = caGetOption(['restrictToRelationshipTypes', 'showRelationshipTypes'], $config, null)) && $path[1]) { 
-							$bundle_settings["{$table}_showRelationshipTypes"] = [];
+							if(!is_array($bundle_settings["{$table}_showRelationshipTypes"])) { $bundle_settings["{$table}_showRelationshipTypes"] = []; }
 							foreach($rel_types as $rel_type) {
 								if (($rel_type_id = $t_rel_type->getRelationshipTypeID($path[1], $rel_type)) && !in_array($rel_type_id, $bundle_settings["{$table}_showRelationshipTypes"])) { 
 									$bundle_settings["{$table}_showRelationshipTypes"][] = $rel_type_id;
@@ -2363,7 +2363,7 @@ trait HistoryTrackingCurrentValueTrait {
 	 *
 	 * @return SearchResult 
 	 */
-	public function getContents(?string $policy, array $options=null) {
+	public function getContents(?string $policy, ?array $options=null) {
 		if(!($row_id = caGetOption('row_id', $options, $this->getPrimaryKey()))) { return null; }
 		
 		$ids = caGetOption('expandHierarchically', $options, false) ? $this->getHierarchy($row_id, ['idsOnly' => true]) : [$row_id];

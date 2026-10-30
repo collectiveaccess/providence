@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2024 Whirl-i-Gig
+ * Copyright 2024-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -53,8 +53,8 @@ class CLI {
      * @param string $command An executable command
      * @return string|false The command's standard output or false on error
      */
-    public function run(string $command, $args, bool $async=true) {
-		return $this->execute($command, $args, $async);
+    public function run(string $command, $args, ?array $options=null) {
+		return $this->execute($command, $args, $options);
     }
 	# -------------------------------------------------------
     /**
@@ -72,17 +72,21 @@ class CLI {
      *
      * @return string|false The command's output, false on error or true for successful async commands (output cannot be return for aync).
      */
-    public function execute(string $command, array $args, ?bool $async=true, ?array $options=null) {
+    public function execute(string $command, array $args, ?array $options=null) {
 		$ob_setting = ini_get('output_buffering');
 		ini_set('output_buffering', 0);
 		
+		$enable_output = caGetOption('enableOutput', $options, false);
+		$background = caGetOption('background', $options, true);
+		$async = caGetOption('async', $options, false);
+		
 		$output = $error = '';
 		
-		if($async && (caGetOSFamily() == OS_WIN32)) { $async = false; }
+		if($async && (caGetOSFamily() == OS_WIN32)) { $async = false; $background = true; }
 		
 		if($async) {
 			try {
-				$this->log->logDebug(_t("Init async %1 with args %2 via Symfony/process", $command, join(', ', $args)));
+				$this->log->logDebug(_t("Init async process %1 with args %2 via Symfony/process", $command, join(', ', $args)));
 				
 				$args = array_map('escapeshellarg', $args);
 				
@@ -97,12 +101,32 @@ class CLI {
 				$this->log->logError(_t("Could not run async %1 via Symfony/process; %2", $command_str, $e->getMessage()));
 				return false;
 			}
-			sleep(1);
-			$pid = $process->getPid();
-			$this->log->logDebug(_t("Got PID %1 for %2 via Symfony/process", $pid, $command_str));
+			$this->log->logDebug(_t("Got async PID %1 for %2 via Symfony/process", $process->getPid(), $command_str));
 			
 			ini_set('output_buffering', $ob_setting);
 			return true;
+		}
+		if($background) {
+			try {
+				$this->log->logDebug(_t("Init background process %1 with args %2 via Symfony/process", $command, join(', ', $args)));
+				
+				$args = array_map('escapeshellarg', $args);
+				
+				$process = Process::fromShellCommandline($command_str = join(' ', array_merge([$command], $args)));
+				$this->log->logDebug(_t("Starting background %1 via Symphony/process", $command_str));
+				
+				if(!$enable_output) { $process->disableOutput(); }
+				$process->setTimeout(0);
+				
+				$process->start();
+			} catch (ProcessFailedException $e) {
+				$this->log->logError(_t("Could not run background process %1 via Symfony/process; %2", $command_str, $e->getMessage()));
+				return false;
+			}
+			$this->log->logDebug(_t("Got background PID %1 for %2 via Symfony/process", $process->getPid(), $command_str));
+			
+			ini_set('output_buffering', $ob_setting);
+			return $process;
 		}
 		
 		try {

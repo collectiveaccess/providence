@@ -1161,6 +1161,25 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Default type for quickadd'),
 								'description' => _t('Set default type for quickadds, overriding type list default.')
 							),
+							'alwaysQuickAdd' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => '',
+								'allowNull' => false,
+								'label' => _t('Always open quickadd window when adding relationship?'),
+								'description' => _t('If checked a quickadd window will be opened each time a relationship is added.')
+							),
+							'createRelationshipOnQuickaddSave' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_CHECKBOXES,
+								'width' => 10, 'height' => 1,
+								'takesLocale' => false,
+								'default' => '0',
+								'label' => _t('Immediately create relationship when quick add is saved?'),
+								'description' => _t('If checked saving a quick added record will immediately create a relationship to the primary record. By default the relationship is set in the primary editing form but not created until the primary record is saved.')
+							),
 							'sort' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_SELECT,
@@ -1893,7 +1912,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => 'dont_force',
 										'width' => "200px", 'height' => 1,
-										'label' => _t('Always Expand/collapse'),
+										'label' => _t('Always expand/collapse'),
 										'description' => _t('Controls the expand/collapse behavior')
 									),
 									'hide_include_child_history_controls' => array(
@@ -2761,6 +2780,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$t_screen = new ca_editor_ui_screens($this->getPrimaryKey());
 			if ($this->inTransaction()) { $t_screen->setTransaction($this->getTransaction()); }
 			$va_placements = $t_screen->getPlacements(array('user_id' => $po_request->getUserID()));
+			$table = Datamodel::getTableName($this->getTableNum());
 			
 			// remove deleted bundles
 			foreach($va_placements as $vn_placement_id => $va_bundle_info) {
@@ -2774,7 +2794,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			$va_locale_list = ca_locales::getLocaleList(array('index_by_code' => true));
-			
+		
 			$va_available_bundles = $t_screen->getAvailableBundles();
 			foreach($va_bundles as $vn_i => $vs_bundle) {
 				if (preg_match('!^(.*)_([\d]+)$!', $vs_bundle, $va_matches)) {
@@ -2783,10 +2803,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				} else {
 					$vn_placement_id = null;
 				}
-				$vs_bundle_proc = str_replace(".", "_", $vs_bundle);
+				$vs_bundle_proc = str_replace(".", "_", caConvertBundleNameToCode($vs_bundle, ['includeTablePrefix' => true, 'table' => $table]));
 				
 				$va_settings = array();
-				
 				foreach($_REQUEST as $vs_key => $vs_val) {
 					if (preg_match("!^{$vs_bundle_proc}_([\d]+)_(.*)$!", $vs_key, $va_matches)) {
 						// For newly created placements (id=0) trim extra underscores off of settings names that originate in generic settings form generator
@@ -2842,7 +2861,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 		} 
-		
 		return true;
 	}
 	# ----------------------------------------
