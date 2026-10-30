@@ -36,11 +36,13 @@ include_once(__CA_LIB_DIR__."/Media/MediaVolumes.php");
 include_once(__CA_LIB_DIR__."/Media/MediaProcessingSettings.php");
 include_once(__CA_LIB_DIR__."/Datamodel.php");
 include_once(__CA_LIB_DIR__."/ApplicationError.php");
-include_once(__CA_APP_DIR__."/helpers/avHelpers.php");
+include_once(__CA_LIB_DIR__."/TranscriptionManager.php");
+include_once(__CA_LIB_DIR__."/Plugins/Transcription/BaseTranscriptionPlugin.php");
 
 /**
- * TaskQueue handler plugin for transcription of uploaded AV media using OpenAI Whisper
- * See https://github.com/openai/whisper
+ * TaskQueue handler plugin for transcription of uploaded AV media. Transcription is performed by
+ * plugins in app/lib/Plugins/Transcription (Eg. OpenAI Whisper, Rev.ai, Sonix) selected using the
+ * app.conf transcription_service directive.
  */
 class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlugTaskQueueHandler {
 	# --------------------------------------------------------------------------------
@@ -86,13 +88,30 @@ class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlug
 			'value' => $parameters["TABLE"].':'.$parameters["FIELD"].':'.$parameters["PK_VAL"]
 		);
 		
+		$params['service'] = array(
+			'label' => _t('Transcription service'),
+			'value' => $parameters["TRANSCRIPTION_SERVICE"] ?? \CA\TranscriptionManager::getDefaultServiceName()
+		);
+		
+		if($parameters["JOB_ID"] ?? null) {
+			$params['job_id'] = array(
+				'label' => _t('Transcription job'),
+				'value' => $parameters["JOB_ID"].' ('._t('attempt %1', $parameters["ATTEMPT"] ?? 1).')'
+			);
+		}
+		
 		
 		return $params;
 	}
 	# --------------------------------------------------------------------------------
 	/**
-	 * Method invoked when the task queue needs to actually execute the task. For mediaproc this means
-	 * actually doing the processing of media!
+	 * Method invoked when the task queue needs to actually execute the task. Media is transcribed using 
+	 * the service set in the TRANSCRIPTION_SERVICE parameter, or if not set the service configured in
+	 * app.conf transcription_service.
+	 *
+	 * Asynchronous services that have not completed within transcription_max_wait seconds are re-queued 
+	 * as a new task with the service's job id, so that the next attempt resumes polling rather than resubmitting
+	 * the media.
 	 *
 	 * Return false on failure/error and sets the error property with an error description. Returns an array
 	 * with processing details on success.
@@ -106,25 +125,23 @@ class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlug
 		$pk = 				$parameters["PK"] ?? null;					// Field name of primary key of record we're processing
 		$id = 				$parameters["PK_VAL"] ?? null;				// Value of primary key
 		$is_service_call = 	$parameters['SERVICE'] ?? null;
-		$model =			$parameters['MODEL'] ?? 'base';
+		$model =			$parameters['MODEL'] ?? null;
 		$output_dir =		$parameters['OUTPUT_DIR'] ?? null;
-		
-		if(!($app_path = caWhisperInstalled())) { 
-			$logger->logError(_t("[TaskQueue::mediaTranscription::process] Whisper is not installed (see %1)", 'https://github.com/openai/whisper'));
-			$this->error->setError(551, _t("Whisper is not installed (see %1)", 'https://github.com/openai/whisper'),"mediaTranscription->process()");	
-			return false;
-		}
+		$service_name =		$parameters['TRANSCRIPTION_SERVICE'] ?? null;
+		$job_id =			$parameters['JOB_ID'] ?? null;				// Job id for in-progress transcription on asynchronous service
+		$attempt =			(int)($parameters['ATTEMPT'] ?? 1);
 		
 		$logger = caGetLogger(['logLevel' => 'INFO']);
 		$config = Configuration::load();
-		if(!$model && !($model = $config->get('whisper_model'))) { $model = 'base'; }
-		$tmp = explode('.', $model);
-		$end = array_pop($tmp);
 		
-		// Don't try to detect language if model is language-specific
-		$dont_detect = ((sizeof($tmp) > 0) && (strlen($end) >= 2) && (strlen($end) <= 3));
+		if(!$service_name) { $service_name = \CA\TranscriptionManager::getDefaultServiceName(); }
+		if(!($service = \CA\TranscriptionManager::getService($service_name))) { 
+			$logger->logError(_t("[TaskQueue::mediaTranscription::process] Transcription service %1 is not available", $service_name));
+			$this->error->setError(551, _t("Transcription service %1 is not available", $service_name),"mediaTranscription->process()");	
+			return false;
+		}
+		
 		$report = ['errors' => [], 'notes' => []];
-		$vtt_output = $vtt_output = null;
 		
 		$t = null;
 		if($is_service_call) {
@@ -137,58 +154,84 @@ class WLPlugTaskQueueHandlermediaTranscription Extends WLPlug Implements IWLPlug
 			$this->error->setError(551, _t("Invalid table or id. Table was '%1'; id was '%2'", $table, $id),"mediaTranscription->process()");	
 			return false;
 		}
-		$whisper_output = caGetTempFileName('transcription', 'json', ['useAppTmpDir' => true]);
-		$locale = __CA_DEFAULT_LOCALE__;
 		
-		if(!$dont_detect) {
-			if($detect_path = caWhisperInstalled(['returnPathToDetect' => true])) {
-				caExec("{$detect_path} --model={$model} --input={$media_input} --tmpdir=".__CA_TEMP_DIR__, $output, $return);
-				$lang = preg_quote(join('', $output ?? []), '/');
-				if(($return == 0) && strlen($lang) && !preg_match("/^{$lang}_/", $locale) && ($locales = ca_locales::localesForLanguage($lang, ['codesOnly' => true])) && is_array($locales) && sizeof($locales)) {
-					$locale = array_shift($locales);
-				} else {
-					$logger->logNotice(_t('[TaskQueue::mediaTranscription::process] Could not detect language of media. Using default locale %1.', $locale));
-				}
-			}
-		}
-		caExec("{$app_path} --model={$model}  --format=json --words=1 --input={$media_input} --output={$whisper_output} --tmpdir=".__CA_TEMP_DIR__, $output, $return);
-
-		if((int)$return == 0) {
-			// Convert JSON file to VTT
-			$vtt_output = caGetTempFileName('transcription', 'vtt', ['useAppTmpDir' => true]);
-			$content = caWhisperTranscriptionToVTT($whisper_output, $vtt_output, ['returnContent' => true]);
-			
-			$words = is_array($content) ? caWhisperTranscriptionSegmentsToWords($content) : [];
-			
-			if($is_service_call) {
-				$stub = pathinfo($media_input, PATHINFO_FILENAME);
-				copy($vtt_output, $vtt_file = "{$output_dir}/{$stub}.vtt");
-				copy($whisper_output, $whisper_file = "{$output_dir}/{$stub}.json");
-				$report['files']['vtt'] = $vtt_file;
-				$report['files']['whisper'] = $whisper_output;
-			} elseif($t) {
-				if(!$t->addCaptionFile($vtt_output, $locale, ['content' => $words])) {
-					$logger->logError(_t('[TaskQueue::mediaTranscription::process] Could not add VTT transcription file to %1::%2: %3', $table, $id, join('; ', $t->getErrors())));
-					$this->error->setError(551, _t("Could not add VTT transcription file to %1::%2: %3", $table, $id, join('; ', $t->getErrors())),"mediaTranscription->process()");	
+		$result = $service->transcribe($media_input, [
+			'model' => $model,
+			'jobId' => $job_id,
+			'language' => $config->get('transcription_language'),
+			'maxWait' => $config->get('transcription_max_wait') ?: 300,
+			'pollInterval' => $config->get('transcription_poll_interval') ?: 15
+		]);
+		
+		switch($result['status']) {
+			case \CA\Transcription\Plugins\BaseTranscriptionPlugin::STATUS_PENDING:
+				if(($max_attempts = (int)($config->get('transcription_max_attempts') ?: 288)) && ($attempt >= $max_attempts)) {
+					$logger->logError(_t('[TaskQueue::mediaTranscription::process] Gave up waiting for %1 to transcribe media %2 (job %3) after %4 attempts', $service->getServiceName(), $media_input, $result['jobId'], $attempt));
+					$this->error->setError(551, _t("Gave up waiting for %1 to transcribe media %2 (job %3) after %4 attempts", $service->getServiceName(), $media_input, $result['jobId'], $attempt),"mediaTranscription->process()");	
+					return false;
 				}
 				
-				// Attach JSON output as sidecar
-				if(method_exists($t, 'addSidecarFile')) {
-					$t->addSidecarFile($whisper_output, _t('Generated by Whisper at %1', date('c')));
-				}
-			}
-			
-			@unlink($whisper_output);
-			@unlink($vtt_output);
-			return $report;
-		} else {
-			$logger->logError(_t('[TaskQueue::mediaTranscription::process] Could not transcribe media %1. Return code was %2; message was %3', $media_input, $return, join('; ', $output)));
-			$this->error->setError(551, _t("Could not transcribe media %1. Return code was %2; message was %3", $media_input, $return, join('; ', $output)),"mediaTranscription->process()");	
+				// Re-queue as new task to resume polling later
+				$tq = new TaskQueue();
+				$task_id = $tq->addTask('mediaTranscription', array_merge($parameters, [
+						'TRANSCRIPTION_SERVICE' => $service_name,
+						'JOB_ID' => $result['jobId'],
+						'ATTEMPT' => $attempt + 1
+					]), 
+					[
+						'priority' => 200, 
+						'entity_key' => $parameters['ENTITY_KEY'] ?? ($t ? md5(join("/", [$table, $field, $id])) : $media_input), 
+						'row_key' => $t ? join("/", [$table, $id]) : '', 
+						'user_id' => $parameters['USER_ID'] ?? null
+					]
+				);
+				$logger->logInfo(_t('[TaskQueue::mediaTranscription::process] Transcription of %1 by %2 (job %3) is in progress; re-queued as task %4', $media_input, $service->getServiceName(), $result['jobId'], $task_id));
+				$report['notes'][] = _t('Transcription by %1 (job %2) is in progress; re-queued as task %3', $service->getServiceName(), $result['jobId'], $task_id);
+				$report['requeued_task_id'] = $task_id;
+				return $report;
+			case \CA\Transcription\Plugins\BaseTranscriptionPlugin::STATUS_FAILED:
+				$logger->logError(_t('[TaskQueue::mediaTranscription::process] Could not transcribe media %1 using %2: %3', $media_input, $service->getServiceName(), $result['message']));
+				$this->error->setError(551, _t("Could not transcribe media %1 using %2: %3", $media_input, $service->getServiceName(), $result['message']),"mediaTranscription->process()");	
+				return false;
 		}
 		
-		@unlink($whisper_output);
+		$vtt_output = $result['vtt'];
+		$raw_output = $result['raw'];
+		
+		$locale = __CA_DEFAULT_LOCALE__;
+		if($lang = $result['language']) {
+			$lang = preg_quote($lang, '/');
+			if(!preg_match("/^{$lang}_/", $locale) && ($locales = ca_locales::localesForLanguage($lang, ['codesOnly' => true])) && is_array($locales) && sizeof($locales)) {
+				$locale = array_shift($locales);
+			}
+		} else {
+			$logger->logNotice(_t('[TaskQueue::mediaTranscription::process] Could not detect language of media. Using default locale %1.', $locale));
+		}
+		
+		if($is_service_call) {
+			$stub = pathinfo($media_input, PATHINFO_FILENAME);
+			copy($vtt_output, $vtt_file = "{$output_dir}/{$stub}.vtt");
+			$report['files']['vtt'] = $vtt_file;
+			if($raw_output) {
+				copy($raw_output, $raw_file = "{$output_dir}/{$stub}.{$result['rawExtension']}");
+				$report['files']['transcription'] = $raw_file;
+			}
+		} elseif($t) {
+			if(!$t->addCaptionFile($vtt_output, $locale, ['content' => $result['words']])) {
+				$logger->logError(_t('[TaskQueue::mediaTranscription::process] Could not add VTT transcription file to %1::%2: %3', $table, $id, join('; ', $t->getErrors())));
+				$this->error->setError(551, _t("Could not add VTT transcription file to %1::%2: %3", $table, $id, join('; ', $t->getErrors())),"mediaTranscription->process()");	
+			}
+			
+			// Attach raw service output as sidecar
+			if($raw_output && method_exists($t, 'addSidecarFile')) {
+				$t->addSidecarFile($raw_output, _t('Generated by %1 at %2', $service->getServiceName(), date('c')), ['originalFilename' => pathinfo($media_input, PATHINFO_FILENAME).'_transcription.'.$result['rawExtension']]);
+			}
+		}
+		$report['notes'][] = _t('Transcribed by %1', $service->getServiceName());
+		
+		@unlink($raw_output);
 		@unlink($vtt_output);
-		return false;
+		return $report;
 	}
 	# --------------------------------------------------------------------------------
 	/**

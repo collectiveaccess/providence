@@ -489,7 +489,7 @@ function caExifToolInstalled($ps_exiftool_path=null, $options=null) {
  *
  * @return mixed Path to executable if installed, false if not installed
  */
-function caWhisperInstalled(array $options=null) {
+function caWhisperInstalled(?array $options=null) {
 	$detect = caGetOption('returnPathToDetect', $options, false);
 	
 	$logger = caGetLogger();
@@ -1162,7 +1162,13 @@ function caCheckMediaDirectoryPermissions() {
 }
 # ------------------------------------------------------------------------------------------------
 /**
+ * Determine if media with the specified mimetype should be transcribed. Transcription must be enabled
+ * in app.conf (create_transcriptions), the mimetype must be listed in transcription_media_types and the 
+ * service configured in transcription_service must be available.
  *
+ * @param string $mimetype
+ *
+ * @return bool
  */
 function caTranscribeAVMedia(string $mimetype) : bool {
 	$config = Configuration::load();
@@ -1172,9 +1178,9 @@ function caTranscribeAVMedia(string $mimetype) : bool {
 	$types = $config->getList('transcription_media_types') ?? ['audio', 'video'];	// assume all AV is transcribable if specific types are not configured
 	if(!caMimetypeIsValid($mimetype, $types)) { return false; }
 	
-	// Check that Whisper is installed
-	if(!caWhisperInstalled()) { return false; }
-	return true;
+	// Check that configured transcription service is available
+	require_once(__CA_LIB_DIR__.'/TranscriptionManager.php');
+	return \CA\TranscriptionManager::isAvailable();
 }
 # ------------------------------------------------------------------------------------------------
 /**
