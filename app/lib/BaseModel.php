@@ -4817,23 +4817,6 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 							$replace_with_version_opt = $skip_when_opt[$v]['replaceWithVersion'] ?? null;
 						}
 
-						if (isset($media_desc[$basis]) && isset($media_desc[$basis]['FILENAME'])) {
-							if (!isset($va_media_objects[$basis])) {
-								$o_media = new Media();
-								$basis_vi = $this->_MEDIA_VOLUMES->getVolumeInformation($media_desc[$basis]['VOLUME']);
-								if ($o_media->read($p=$basis_vi['absolutePath']."/".$media_desc[$basis]['HASH']."/".$media_desc[$basis]['MAGIC']."_".$media_desc[$basis]['FILENAME'], null, ['original_filename' => $vs_original_filename])) {
-									$va_media_objects[$basis] = $o_media;
-								} else {
-									$m = $va_media_objects['_original'];
-								}
-							} else {
-								$m = $va_media_objects[$basis];
-							}
-						} else {
-							$m = $va_media_objects['_original'];
-						}
-						$m->reset();
-				
 						# get volume
 						$vi = $this->_MEDIA_VOLUMES->getVolumeInformation($volume);
 
@@ -4862,6 +4845,23 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 							}
 							continue;
 						}
+
+						if (isset($media_desc[$basis]) && isset($media_desc[$basis]['FILENAME'])) {
+							if (!isset($va_media_objects[$basis])) {
+								$o_media = new Media();
+								$basis_vi = $this->_MEDIA_VOLUMES->getVolumeInformation($media_desc[$basis]['VOLUME']);
+								if ($o_media->read($p=$basis_vi['absolutePath']."/".$media_desc[$basis]['HASH']."/".$media_desc[$basis]['MAGIC']."_".$media_desc[$basis]['FILENAME'], null, ['original_filename' => $vs_original_filename])) {
+									$va_media_objects[$basis] = $o_media;
+								} else {
+									$m = $va_media_objects['_original'];
+								}
+							} else {
+								$m = $va_media_objects[$basis];
+							}
+						} else {
+							$m = $va_media_objects['_original'];
+						}
+						$m->reset();
 
 						# get transformation rules
 						$rules = $o_media_proc_settings->getMediaTransformationRule($rule);
