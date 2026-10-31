@@ -267,6 +267,10 @@ class RequestDispatcher extends BaseObject {
 								|| 
 								!$this->request->isServiceAuthRequest()
 							) {
+							
+								if(!(bool)trim($this->request->config->get('rest_services_enabled'))) {
+									throw new ServiceException(_t('REST services are not enabled'));
+								}
 								$this->response->setHTTPResponseCode(401,_t("Access denied"));
 								$this->response->addHeader('WWW-Authenticate','Basic realm="CollectiveAccess Service API"');
 								return true; // this is kinda stupid but otherwise the "error redirect" code of AppController kicks in, which is not what we want here!

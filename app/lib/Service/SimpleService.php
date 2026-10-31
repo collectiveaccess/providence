@@ -45,7 +45,10 @@ class SimpleService {
 	 * @throws Exception
 	 */
 	public static function dispatch($ps_endpoint, $po_request) {
-
+		$config = Configuration::load();
+		if(!(bool)trim($config->get('simple_services_enabled'))) {
+			throw new ServiceException(_t('Simple services are not enabled'));
+		}
 		$vs_cache_key = $po_request->getHash();
 
 		if(!$po_request->getParameter('noCache', pInteger) && ($po_request->getParameter('sort', pString) !== '_random_')) {

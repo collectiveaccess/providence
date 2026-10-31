@@ -50,6 +50,10 @@ class ReplicationService {
 	 * @throws Exception
 	 */
 	public static function dispatch($ps_endpoint, $po_request) {
+		$config = Configuration::load();
+		if(!(bool)trim($config->get('replication_services_enabled'))) {
+			throw new ServiceException(_t('Replication services are not enabled'));
+		}
 		if(!defined('__CA_IS_REPLICATION__')) { define('__CA_IS_REPLICATION__', true); }
 		if (is_null(ReplicationService::$s_logger)) { 
 			ReplicationService::$s_logger = new Logger('replication');
