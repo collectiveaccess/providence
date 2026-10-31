@@ -912,3 +912,24 @@ function resolveListParams(array $args, ?string $prefix=null) : array {
 	}
 	return [$identifiers, $opts];
 }
+
+/**
+ * Get GraphQL JWT key, or generate new if not set or too old
+ */
+function caGetGraphQLServicesJWTKey() {
+	$av = new \ApplicationVars();
+	
+	$config = \Configuration::load();
+	if(($interval = (int)$config->get('graphql_services_jwt_key_lifetime')) <= 0) { $interval = 60*60*24*7; }
+	if(
+		!($key = $av->getVar('graphql_services_jwt_token_key'))
+		||
+		((time() - $av->getVar('graphql_services_jwt_token_key_time')) > $interval)
+	) {
+		$key = \caGenerateGUID();
+		$av->setVar('graphql_services_jwt_token_key', $key);
+		$av->setVar('graphql_services_jwt_token_key_time', time());
+		$av->save();
+	}
+	return $key;
+}
