@@ -361,6 +361,7 @@ class ExpressionVisitor implements Visitor\Visit {
 					return $f_acc(-$a());
 				};
 
+				$va_children[1]->accept($this, $f_acc, $f_eldnah);
 				break;
 
 			case '#addition':
@@ -378,7 +379,7 @@ class ExpressionVisitor implements Visitor\Visit {
 				$va_children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					return $f_acc($a()) - $b;
+					return $f_acc($a() - $b);
 				};
 
 				$va_children[1]->accept($this, $f_acc, $f_eldnah);
@@ -408,7 +409,7 @@ class ExpressionVisitor implements Visitor\Visit {
 							);
 						}
 
-						return $f_acc($a()) / $b;
+						return $f_acc($a() / $b);
 					};
 				} else {
 					if ('#fakegroup' !== $parent->getId()) {
