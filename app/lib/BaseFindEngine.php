@@ -541,6 +541,12 @@ class BaseFindEngine extends BaseObject {
 		$direction = self::sortDirection($direction);
 		$limit_sql = self::_limitSQL($options);
 		
+		if(is_array($fi = $t_table->getFieldInfo($intrinsic))) {
+			if(in_array($fi['FIELD_TYPE'], [FT_HISTORIC_DATERANGE, FT_DATERANGE], true) && ($fi['START'] ?? null)) {
+				$intrinsic = $fi['START'];
+			}
+		}
+
 		$sql = "
 			SELECT {$table}.{$table_pk}
 			FROM {$table}
