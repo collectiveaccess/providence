@@ -580,7 +580,7 @@ class GeocodeAttributeValue extends AttributeValue implements IAttributeValue {
 						'value_longtext2' => $lat.','.$long,
 						'value_decimal1' => $lat,
 						'value_decimal2' => $long,
-						'type' => $utype
+						'source_info' => $utype
 					];
 					if(caGetOption('returnBounds', $options, false) && !$is_postcode) {
 						if($bounds = $uresult->getBounds()) {
