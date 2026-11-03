@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -133,14 +133,14 @@ class ObjectsXLocationsTest extends BaseTestWithData {
 		));
 		$this->assertEquals('A Room > My Shelf; A Room > My Cabinet', $vm_ret);
 
-		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date");
+		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date", ["sort" => ["ca_objects_x_storage_locations.effective_date"], "sortDirection" => 'desc']);
 		$this->assertEquals('2015;January 28 1985', $vm_ret);
 
-		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date", array('getDirectDate' => true));
+		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date", ['getDirectDate' => true, "sort" => ["ca_objects_x_storage_locations.effective_date"], "sortDirection" => 'desc']);
 		$this->assertEquals($vm_ret, '2015.01010000000000000000;1985.01280000000000000000');
 
 		// try legacy version of same option
-		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date", array('GET_DIRECT_DATE' => true));
+		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date", ['GET_DIRECT_DATE' => true, "sort" => ["ca_objects_x_storage_locations.effective_date"], "sortDirection" => 'desc']);
 		$this->assertEquals($vm_ret, '2015.01010000000000000000;1985.01280000000000000000');
 	}
 	# -------------------------------------------------------

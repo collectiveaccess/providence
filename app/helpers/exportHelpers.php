@@ -779,7 +779,11 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 						// Transform bundle with template including media into a media bundle as that's the only way to show media within an XLSX
 						$info['bundle_name'] = $tags[0];
 					}
-					if(!($info['template'] ?? null) && ($info['settings']['format'] ?? null)) {
+					if(
+						!$t_display &&
+						!($info['template'] ?? null) &&
+						($info['settings']['format'] ?? null)
+					) {
 						$info['template'] = $info['settings']['format'];
 					}
 			

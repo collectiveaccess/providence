@@ -96,11 +96,7 @@ class Session {
  		$o_config = Configuration::load();
  		$service_config = Configuration::load('services.conf');
  		
- 		// Use persistent (SQL-based) cache when cache back-end is file-based as Stash 
- 		// tends to invalidate keys early in some enviroments causing forced logouts
- 		if(defined('__CA_CACHE_BACKEND__') && (strtolower(__CA_CACHE_BACKEND__) === 'file')) {
- 			self::$s_cache_type = 'PersistentCache';
- 		}
+		Session::setCacheType();
 
 		# --- Init
 		if (defined("__CA_MICROTIME_START_OF_REQUEST__")) {
@@ -163,6 +159,17 @@ class Session {
 	}
 	# ----------------------------------------
 	/**
+	 *
+	 */
+	public static function setCacheType() {
+		// Use persistent (SQL-based) cache when cache back-end is file-based as Stash 
+ 		// tends to invalidate keys early in some enviroments causing forced logouts
+ 		if(defined('__CA_CACHE_BACKEND__') && (strtolower(__CA_CACHE_BACKEND__) === 'file')) {
+ 			self::$s_cache_type = 'PersistentCache';
+ 		}
+	}
+	# ----------------------------------------
+	/**
 	 * Return service authentication token for this session (and create it, if none exists yet).
 	 * These tokens usually have a much shorter lifetime than the session.
 	 * @param bool $dont_create_new_token dont create new auth token
@@ -170,6 +177,7 @@ class Session {
 	 * @throws Exception
 	 */
 	static public function getServiceAuthToken($dont_create_new_token=false) {
+		Session::setCacheType();
 		if(!($session_id = self::getSessionID())) { return false; }
 
 		if(self::$s_cache_type::contains($session_id, 'SessionIDToServiceAuthTokens')) {
@@ -201,6 +209,7 @@ class Session {
 	 * @return Session|bool The restored session, false on failure
 	 */
 	public static function restoreFromServiceAuthToken($token, $name=null) {
+		Session::setCacheType();
 		$o_config = Configuration::load();
 		$app_name = $o_config->get("app_name");
 

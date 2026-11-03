@@ -127,7 +127,6 @@ class Configuration {
 	 */
 	public function __construct($file_path=__CA_APP_CONFIG__, $die_on_error=false, $dont_cache=false, $dont_load_from_default_path=false, $dont_load_appname_specific_conf_file=false) {
 		global $g_ui_locale, $g_configuration_cache_suffix;
-$dont_cache = true;
 		$this->translated_strings = [];
 		$this->ops_config_file_path = $file_path ? $file_path : __CA_APP_CONFIG__;	# path to configuration file
 		

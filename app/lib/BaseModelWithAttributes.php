@@ -4013,7 +4013,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		$pk = $this->primaryKey();
 		
 		$guid = ca_guids::getForRow($this->tableNum(), $row_id);
-		$log = ca_change_log::getLog(0, null, ['forGUID' => $guid, 'telescope' => true, 'forceValuesForAllAttributeSlots' => true]);
+		$log = ca_change_log::getLog(0, null, ['forGUID' => $guid, 'telescope' => false, 'forceValuesForAllAttributeSlots' => true]);
 
 		$acc = [];
 		
@@ -4053,9 +4053,8 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 					break;
 			}
 		}
-		
 		foreach($acc as $id => $info) {
-			if(!isset($info['values']) || !sizeof($info['values'])) {
+			if(!isset($info['attributeValues']) || !sizeof($info['attributeValues'])) {
 				unset($acc[$id]);
 			}
 		}
