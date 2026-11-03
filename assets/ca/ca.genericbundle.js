@@ -215,8 +215,8 @@ var caUI = caUI || {};
 				templateValues.n = id;
 				jQuery.extend(templateValues, initialValues);
 
-				jQuery.each(that.templateValues, function(i, v) {
-					if (templateValues[v] == null) {  templateValues[v] = ''; }
+				jQuery.each(this.templateValues, function(i, v) {
+					if (templateValues[v] == null) {  templateValues[v] = ''; templateValues[v + '_display'] = '';  templateValues[v + '_id'] = ''; }
 				});
 			} else {
 				// new item

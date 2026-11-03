@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2025 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,7 +34,9 @@ $type_name_singular			= $this->getVar('type_name_singular');
 $table_list 				= $this->getVar('table_list');
 
 $user_id 					= $this->request->getUserID();
+$is_inventory				= (bool)$this->getVar('is_inventory');
 $can_delete					= $this->request->user->canDoAction("can_delete_sets") || $this->request->user->canDoAction("can_delete_own_sets");
+$can_delete_inventory		= $this->request->user->canDoAction("can_delete_inventories") || $this->request->user->canDoAction("can_delete_own_inventories");
 
 if (!$this->request->isAjax()) {
 	$set_type_menu = '<div class="sf-small-menu form-header-button rounded" style="padding: 6px;">'.
@@ -134,9 +136,7 @@ if (!$this->request->isAjax()) {
 				<th class="<?= (($current_sort == "access") ? "list-header-sorted-".$current_sort_direction : ""); ?> list-header-nolink">
 					<?= caNavLink($this->request, _t('Access'), '', 'manage', 'Set', 'ListSets', array('sort' => 'access', 'direction' => ((($current_sort == "access") && ($current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
 				</th>
-				<th class="<?= (($current_sort == "created") ? "list-header-sorted-".$current_sort_direction : ""); ?> list-header-nolink">
-					<?= caNavLink($this->request, _t('Created'), '', 'manage', 'Set', 'ListSets', array('sort' => 'created', 'direction' => ((($current_sort == "created") && ($current_sort_direction != "desc")) ? "desc" : "asc"))); ?>
-				</th>
+				
 				<th class="{sorter: false} list-header-nosort listtableEdit"> </th>
 			</tr>
 		</thead>
@@ -169,7 +169,8 @@ if (!$this->request->isAjax()) {
 				<td align="center">
 					<div>
 <?php 	
-					if (($set['item_count'] > 0) && ($this->request->user->canDoAction('can_batch_edit_'.Datamodel::getTableName($set['table_num'])))) {
+					if (!$is_inventory && ($set['item_count'] > 0) && ($this->request->user->canDoAction('can_batch_edit_'.Datamodel::getTableName($set['table_num'])))) {
+
 						print caNavButton($this->request, __CA_NAV_ICON_BATCH_EDIT__, _t('Batch edit'), 'batchIcon', 'batch', 'Editor', 'Edit', array('id' => 'ca_sets:'.$set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true));
 						print $set['item_count']; 
 					} else {
@@ -184,12 +185,9 @@ if (!$this->request->isAjax()) {
 				<td>
 					<div><?= $t_set->getChoiceListValue('access', $set['access']); ?></div>
 				</td>
-				<td>
-					<div><?= caGetLocalizedDate($set['created'], ['timeOmit' => true]); ?></div>
-				</td>
 				<td class="listtableEditDelete">
 					<?= caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/sets', 'SetEditor', 'Edit', array('set_id' => $set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-					<?php ($can_delete && $t_set->haveAccessToSet($user_id, __CA_SET_EDIT_ACCESS__, $set['set_id'])) ? print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/sets', 'SetEditor', 'Delete', array('set_id' => $set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : ''; ?>
+					<?php (((!$is_inventory && $can_delete) || ($is_inventory && $can_delete_inventory)) && $t_set->haveAccessToSet($user_id, __CA_SET_EDIT_ACCESS__, $set['set_id'])) ? print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/sets', 'SetEditor', 'Delete', array('set_id' => $set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : ''; ?>
 				</td>
 			</tr>
 <?php
@@ -199,7 +197,7 @@ if (!$this->request->isAjax()) {
 		<tr>
 			<td colspan='<?= $type_id ? 9 : 10; ?>'>
 				<div align="center">
-					<?= _t('No sets have been created'); ?>
+					<?= $is_inventory ? _t('No inventories have been created') : _t('No sets have been created'); ?>
 				</div>
 			</td>
 		</tr>

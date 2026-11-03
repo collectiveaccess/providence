@@ -486,45 +486,48 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 				
 				$attr_val = $o_attr_value->getDisplayValue();
 				$attr_val_idno = $o_attr_value->getDisplayValue(['output' => 'idno']);
-				if (
-					(
-						array_key_exists($vn_element_id, $pa_values) && (!in_array($pa_values[$vn_element_id], [$attr_val, $attr_val_idno], true)) 
-						&& 
-						!(($pa_values[$vn_element_id] == "") && (is_null($attr_val)))
-						&& 
-						!(is_null($pa_values[$vn_element_id]) && is_null($attr_val))
-						&&
-						!in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
-					)
-					||
-					(
-						array_key_exists($vs_element_code, $pa_values) && (!in_array($pa_values[$vs_element_code], [$attr_val, $attr_val_idno], true)) 
-						&&
-						!(($pa_values[$vs_element_code] == "") && (is_null($attr_val_idno)))
-						&& 
-						!(is_null($pa_values[$vs_element_code]) && is_null($attr_val_idno))
-						&&
-						!in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
-					)
-					||
-					(
-						in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
-						&& 
-						array_key_exists($vs_element_code, $pa_values) && is_array($pa_values[$vs_element_code]) && sizeof($pa_values[$vs_element_code])
-						
-					)
-					||
-					(
-						in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
-						&& 
-						array_key_exists($vn_element_id, $pa_values) && is_array($pa_values[$vn_element_id]) && sizeof($pa_values[$vn_element_id])
-						
-					)
-				) {
-					$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id] = true;
-					$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_element_id] = true;
-					$is_changed = true;
-					break;
+				
+				foreach([$attr_val, $attr_val_idno] as $vv) {
+					if (
+						(
+							array_key_exists($vn_element_id, $pa_values) && (!in_array($pa_values[$vn_element_id], [$vv], true)) 
+							&& 
+							!(($pa_values[$vn_element_id] == "") && (is_null($vv)))
+							&& 
+							!(is_null($pa_values[$vn_element_id]) && is_null($vv))
+							&&
+							!in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
+						)
+						||
+						(
+							array_key_exists($vs_element_code, $pa_values) && (!in_array($pa_values[$vs_element_code], [$vv], true)) 
+							&&
+							!(($pa_values[$vs_element_code] == "") && (is_null($vv)))
+							&& 
+							!(is_null($pa_values[$vs_element_code]) && is_null($vv))
+							&&
+							!in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
+						)
+						||
+						(
+							in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
+							&& 
+							array_key_exists($vs_element_code, $pa_values) && is_array($pa_values[$vs_element_code]) && sizeof($pa_values[$vs_element_code])
+							
+						)
+						||
+						(
+							in_array($vn_element_datatype, [__CA_ATTRIBUTE_VALUE_MEDIA__, __CA_ATTRIBUTE_VALUE_FILE__])
+							&& 
+							array_key_exists($vn_element_id, $pa_values) && is_array($pa_values[$vn_element_id]) && sizeof($pa_values[$vn_element_id])
+							
+						)
+					) {
+						$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_attr_element_id] = true;
+						$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_element_id] = true;
+						$is_changed = true;
+						break(2);
+					}
 				}
 			}
 			
@@ -2418,6 +2421,7 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 				'forSearch' => caGetOption('forSearch', $pa_options, true),
 				'textAreaTagName' => caGetOption('textAreaTagName', $pa_options, null),
 				'render' => $pa_options['render'] ?? $va_element['settings']['render'] ?? null,
+				'id' => $pa_options['id'] ?? null,
 				'attributes' => $attributes
 			], array_merge($pa_options, $va_override_options));
 			
@@ -2448,6 +2452,11 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 				// ... replace value
 				if(!is_array($vm_values)) {
 					$vs_form_element = str_replace('{{'.$va_element['element_id'].'}}', $vm_values, $vs_form_element);
+					
+					// @TODO: generalize/cleanup
+					$vs_form_element = str_replace('{{'.$va_element['element_id'].'_id}}', '{'.preg_replace("![\{\}]+!", "", $vm_values).'_id}', $vs_form_element);
+					$vs_form_element = str_replace('{{'.$va_element['element_id'].'_display}}', '{'.preg_replace("![\{\}]+!", "", $vm_values).'_display}', $vs_form_element);
+					$vs_form_element = str_replace('{{'.$va_element['element_id'].'_value_id}}', '{'.preg_replace("![\{\}]+!", "", $vm_values).'_value_id}', $vs_form_element);
 				}
 			
 				// escape any special characters in jQuery selectors
@@ -2459,8 +2468,12 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 					$vs_form_element
 				);
 				
-				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', str_replace('.', '_',$f), $vs_form_element);
+				// @TODO: clean up - too many special cases and tagging variants here
+				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', str_replace('.', '_', $f), $vs_form_element);
+				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'{n}', str_replace('.', '_', $f), $vs_form_element);
 				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_autocomplete{n}', str_replace('.', '_',$f).'_autocomplete', $vs_form_element);
+				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_id{n}', str_replace('.', '_',$f).'_id', $vs_form_element);
+				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_display{n}', str_replace('.', '_',$f).'_display', $vs_form_element);
 				if (caGetOption('removeTemplateNumberPlaceholders', $pa_options, true)) {
 					$vs_form_element = str_replace('{n}', '', $vs_form_element);
 				}
@@ -2488,7 +2501,6 @@ class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
 		if(caGetOption('elementsOnly', $pa_options, false)) {
 			return ['element_ids' => $va_element_ids, 'elements' => $va_elements_by_container];
 		}
-		
 		return $o_view->render(caGetOption('view', $pa_options, 'ca_search_form_attributes.php'));
 	}
 	# ------------------------------------------------------------------

@@ -73,6 +73,7 @@ class BaseInterstitialController extends BaseEditorController {
 		
 		$ps_primary_table = 		$this->request->getParameter('primary', pString);			// table name for item from which the interstitial editor was launched
 		$pn_primary_id = 			$this->request->getParameter('primary_id', pInteger);		// row_id of item from which the interstitial editor was launched
+		$key = 						$this->request->getParameter('key', pString);				// primary key of interstitial record
 		$this->view->setVar('primary_table', $ps_primary_table);
 		$this->view->setVar('primary_id', $pn_primary_id);
 		
@@ -119,6 +120,7 @@ class BaseInterstitialController extends BaseEditorController {
 	
 		$this->view->setVar('default_parent_id', $this->result_context->getParameter($t_subject->tableName().'_last_parent_id'));
 		$this->view->setVar('placement_id', $pn_placement_id);
+		$this->view->setVar('key', $key);
 		$this->view->setVar('field_name_prefix', $ps_field_name_prefix);
 		
 		$this->render('interstitial/interstitial_html.php');
@@ -138,7 +140,7 @@ class BaseInterstitialController extends BaseEditorController {
 			return false;
 		}
 		
-		if (!is_array($options)) { $options = array(); }
+		if (!is_array($options)) { $options = []; }
 		
 		//
 		// Is record of correct type?
@@ -147,7 +149,7 @@ class BaseInterstitialController extends BaseEditorController {
 		if ($t_subject->getAppConfig()->get('perform_type_access_checking')) {
 			$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__));
 		}
-		if (is_array($va_restrict_to_types) && !in_array($t_subject->get('type_id'), $va_restrict_to_types)) {
+		if (is_array($va_restrict_to_types) && !in_array($t_subject->getTypeID(), $va_restrict_to_types)) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
 			return;
 		}
@@ -308,7 +310,12 @@ class BaseInterstitialController extends BaseEditorController {
 		}
 		
 		if (!$t_ui->getPrimaryKey()) {
-			$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $t_subject->getTypeID(), array('editorPref' => 'quickadd'));
+			if($this->ops_table_name === 'ca_set_items') {
+				$t_set = new ca_sets($t_subject->get('set_id'));
+				$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $t_set->getTypeID(), ['editorPref' => 'quickadd']);
+			} else {
+				$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $t_subject->getTypeID(), ['editorPref' => 'quickadd']);
+			}
 		}
 		
 		$this->view->setVar($t_subject->primaryKey(), $t_subject->getPrimaryKey());

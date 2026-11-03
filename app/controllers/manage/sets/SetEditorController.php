@@ -105,9 +105,10 @@ class SetEditorController extends BaseEditorController {
 		if (!$this->UserCanDeleteSet($t_subject)) {
 			$this->postError(2320, _t("Access denied"), "SetsEditorController->Delete()");
 		} else {
+			$is_inventory = caIsInventory($t_subject);
 			parent::Delete($options);
 			if((bool)$this->request->getParameter('confirm', pInteger)) {
-				$this->response->setRedirect(caNavUrl($this->request, 'manage', 'Set', 'ListSets', []));
+				$this->response->setRedirect(caNavUrl($this->request, 'manage', 'Set', $is_inventory ? 'ListInventories' : 'ListSets', []));
 			}
 		}
 	}
@@ -117,15 +118,16 @@ class SetEditorController extends BaseEditorController {
 	 */
 	private function UserCanDeleteSet(BaseModel $t_subject) {
 		$can_delete = false;
+		$is_inventory = caIsInventory($t_subject);
 		
 		// If users can delete all sets, show Delete button
-		if ($this->request->user->canDoAction('can_delete_sets')) {
+		if ($this->request->user->canDoAction($is_inventory ? 'can_delete_inventories' : 'can_delete_sets')) {
 			$can_delete = true;
 		}
 		
 		// If users can delete own sets, and this set belongs to them, show Delete button
-		$user_id = $t_subject->get('user_id');
-		if ($this->request->user->canDoAction('can_delete_own_sets')) {
+		if ($this->request->user->canDoAction($is_inventory ? 'can_delete_own_inventories' : 'can_delete_own_sets')) {
+			$user_id = $t_subject->get('user_id');
 			if ($user_id == $this->request->getUserID()) {
 				$can_delete = true;
 			}
@@ -134,6 +136,94 @@ class SetEditorController extends BaseEditorController {
 	}
 	# -------------------------------------------------------
 	# Ajax handlers
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function GetInventoryItemList() {
+		$set_id = $this->request->getParameter('set_id', pInteger);
+		$start = $this->request->getParameter('start', pInteger) ?? 0;
+		$limit = $this->request->getParameter('limit', pInteger) ?? null;
+		$return_full_order_index = $this->request->getParameter('returnFullOrderIndex', pInteger) ?? null;
+		$sort = $this->request->getParameter('sort', pString) ?? null;
+		$ids_only = $this->request->getParameter('idsOnly', pInteger) ?? false;
+		$sort_direction = $this->request->getParameter('sortDirection', pString) ?? null;
+		
+		$settings = [];
+		
+		$t_set = new ca_sets($set_id);
+		if (!$t_set->getPrimaryKey()) {
+			$this->notification->addNotification(_t("The set does not exist"), __NOTIFICATION_TYPE_ERROR__);
+			return;
+		}
+		
+		// Does user have edit access to set?
+		if (!$t_set->haveAccessToSet($this->request->getUserID(), __CA_SET_EDIT_ACCESS__, null, ['request' => $this->request])) {
+			$this->notification->addNotification(_t("You cannot edit this set"), __NOTIFICATION_TYPE_ERROR__);
+			$this->Edit();
+			return;
+		}
+		
+		$set_table_name = Datamodel::getTableName($t_set->get('table_num'));
+		
+		$placement_id = $this->request->getParameter('placement_id', pString) ?? null;
+		if(preg_match('!^P([\d]+)$!', $placement_id, $m)) {
+			$placement_id = $m[1];
+			if($t_placement = ca_editor_ui_bundle_placements::findAsInstance($placement_id)) {
+				$settings = $t_placement->getSettings();
+			}
+		}
+		if(!is_array($settings)) { $settings = []; }
+		if(!($settings['display_template'] ?? null) && !($settings['displayTemplate'] ?? null)) {
+			$settings['display_template'] = $this->request->config->get("{$set_table_name}_set_item_display_template");
+		}
+		
+		$items = $t_set->getInventoryList(array_merge($settings, ['start' => $start, 'limit' => $limit, 'sort' => $sort, 'sortDirection' => $sort_direction]));
+		
+		if($return_full_order_index) {
+			$item_ids = $t_set->getInventoryList(['sort' => $sort, 'sortDirection' => $sort_direction, 'idsOnly' => true]);
+		} else {
+			$item_ids = array_keys($items);
+		}
+		$this->view->setVar('data', ['items' => $items, 'order' => $item_ids]);		
+		
+		$this->response->setContentType('application/json');
+		$this->render('json.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function addItemToInventory() {
+		if ($set_id = $this->request->getParameter('set_id', pInteger)) {
+			$t_set = new ca_sets($set_id);
+
+			if (!$t_set->getPrimaryKey()) {
+				$this->notification->addNotification(_t("The set does not exist"), __NOTIFICATION_TYPE_ERROR__);
+				return;
+			}
+
+			// does user have edit access to set?
+			if (!$t_set->haveAccessToSet($this->request->getUserID(), __CA_SET_EDIT_ACCESS__, null, array('request' => $this->request))) {
+				$this->notification->addNotification(_t("You cannot edit this set"), __NOTIFICATION_TYPE_ERROR__);
+				$this->Edit();
+				return;
+			}
+			$table_num = $t_set->get('table_num');
+		} else {
+			$table_num = $this->request->getParameter('table_num', pInteger);
+		}
+
+		$row_id = $this->request->getParameter('row_id', pInteger);
+		$t_row = Datamodel::getInstanceByTableNum($table_num, true);
+		
+		$item_id = $t_set->addItem($row_id);
+		
+		$this->view->setVar('data', ['set_id' => $set_id, 'item_id' => $item_id]);	
+		
+		$this->response->setContentType('application/json');
+		$this->render('json.php');
+	}
 	# -------------------------------------------------------
 	/**
 	 *
@@ -280,7 +370,9 @@ class SetEditorController extends BaseEditorController {
 		$t_set = new ca_sets($this->getRequest()->getParameter('set_id', pInteger));
 		if(!$t_set->getPrimaryKey()) { return; }
 		
-		if(!(bool)$this->request->config->get('ca_sets_disable_duplication_of_items') && $this->request->user->canDoAction('can_duplicate_items_in_sets') && $this->request->user->canDoAction('can_duplicate_' . $t_set->getItemType())) {
+		$is_inventory = caIsInventory($t_set);
+
+		if(!$is_inventory && !(bool)$this->request->config->get('ca_sets_disable_duplication_of_items') && $this->request->user->canDoAction('can_duplicate_items_in_sets') && $this->request->user->canDoAction('can_duplicate_' . $t_set->getItemType())) {
 			if($this->getRequest()->getParameter('setForDupes', pString) == 'current') {
 				$dupe_options = ['addToCurrentSet' => true];
 			} else {
@@ -415,6 +507,78 @@ class SetEditorController extends BaseEditorController {
 	}
 	# -------------------------------------------------------
 	/**
+	 *
+	 */
+	public function randomSetGeneration() {
+		$set_id = $this->request->getParameter('set_id', pInteger);
+		$item_count = $this->request->getParameter('count', pInteger);
+		
+		if(!$t_set = ca_sets::findAsInstance($set_id)) {
+			throw new ApplicationException(_t('Invalid set'));
+		}
+		
+		if(caIsInventory($t_set)) {
+			$set_table = Datamodel::getTableName($t_set->get('table_num'));
+			$inventory_types_by_table = $this->request->getAppConfig()->get('inventory_types');
+			$inventory_types = isset($inventory_types_by_table[$set_table]) && is_array($inventory_types_by_table[$set_table]) ? $inventory_types_by_table[$set_table] : null;
+			$type_ids = is_array($inventory_types) && sizeof($inventory_types) ? $inventory_types : $this->request->getParameter('type_id', pArray);
+		} else {
+			$type_ids = $this->request->getParameter('type_id', pArray);
+		}
+		$t_subject = $t_set->getItemTypeInstance();
+		$t_set_type = $t_set->getTypeInstance();
+		$settings = $t_set_type->getSettings();
+		
+		$mode = caGetOption('random_generation_mode', $settings, 1);
+		
+		if($item_count < 1 || $item_count > 9999) {
+			$item_count = caGetOption('random_generation_size', $settings, 10);
+   		}
+   		
+   		$options = ['restrictToTypes' => $type_ids];
+   		
+   		$error = null;
+   		switch($mode) {
+   			case 1:
+   				$options['notInSetOfType'] = null;
+   				break;
+   			case 2:
+   				$options['notInSetOfType'] = $t_set->getTypeCode();
+   				break;
+   			case 3:
+   				$options['notInSetOfType'] = $this->request->getParameter('', pInteger) ? $t_set->getTypeCode() : null;
+   				break;
+   			default:
+   				// don't add
+   				$error = _t('Random items cannot be added to sets of this type');
+   				return;
+   		}
+   		
+   		// Don't include deaccessioned items in inventory sets
+   		if(caIsInventory($t_set) && $t_subject->hasField('is_deaccessioned')) {
+   			$options['restrictByIntrinsic'] = ['is_deaccessioned' => 0];
+   		}
+   		
+   		$ids = [];
+   		if(is_null($error)) {
+   			if(!is_array($items = $t_subject->getRandomItems($item_count, $options))) { 
+   				$error = _t('Could get not random items');
+   			} else {
+				$ids = array_keys($items);
+				if(!$t_set->addItems($ids)) {
+					$error = _t('Could not add random items to set: %1', join('; ', $t_set->getErrors()));
+				}
+			}
+   		}
+   		
+   		$this->view->setVar('ids', $ids);
+   		$this->view->setVar('errors', $error ? [$error] : null);
+				
+		$this->response->setContentType('application/json');
+		$this->render('random_set_generation_json.php');
+	}
+	# -------------------------------------------------------
+	/**
 	 * Generates options form for printable template
 	 *
 	 * @param array $options Array of options passed through to _initView
@@ -495,7 +659,7 @@ class SetEditorController extends BaseEditorController {
 	public function BreadcrumbValue($parameters) {
 		if ($set_id = $this->request->getParameter('set_id', pInteger)) {
 			$t_set = new ca_sets($set_id);
-			return _t('Set');
+			return caIsInventory($t_set) ? _t('Inventory') : _t('Set');
 		}
 		return '???';
 	}

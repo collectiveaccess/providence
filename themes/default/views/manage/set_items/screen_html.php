@@ -51,3 +51,10 @@ print $control_box;
 	<input type='hidden' name='item_id' value='<?= $item_id; ?>'/>
 </form>
 </div>
+<div class="editorBottomPadding"><!-- empty --></div>
+
+<?= caSetupEditorScreenOverlays($this->request, $t_set_item, $bundle_list); ?>
+
+
+
+

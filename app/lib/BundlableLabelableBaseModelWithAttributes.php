@@ -2055,6 +2055,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$element .= $this->getSetItemHTMLFormBundle($options['request'], $options['formName'], $placement_code, $options, $bundle_settings);
 						break;
 					# -------------------------------
+					// This bundle is only available when editing objects of type ca_sets
+					case 'inventory_list':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						$element .= $this->getInventoryListHTMLFormBundle($options['request'], $options['formName'], $placement_code, $options, $bundle_settings);
+						break;
+					# -------------------------------
 					// This bundle is only available for types which support set membership
 					case 'ca_sets_checklist':
 						require_once(__CA_MODELS_DIR__."/ca_sets.php");	// need to include here to avoid dependency errors on parse/compile
@@ -3659,7 +3665,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$vs_template = caGetBundleDisplayTemplate($this, 'ca_sets', $pa_bundle_settings);
 			if(is_array($va_items) && sizeof($va_items)) {
 				foreach($va_items as $vn_id => $va_item) {
-					$va_item['_display'] = caProcessTemplateForIDs($vs_template, 'ca_sets', array($vn_id));
+					$va_item['_display'] = caProcessTemplateForIDs($vs_template, 'ca_set_items', array($va_item['item_id']));
+					$va_item['hasInterstitialUI'] = true;
 					$va_vals[$vn_id] = $va_item;
 				}
 			}
@@ -3728,7 +3735,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					break;
 				default:
 					if($ps_related_table == 'ca_sets') {
-						$t_item_rel = new ca_sets();
+						$t_item_rel = new ca_set_items();
+						$vb_is_many_many = true;
 					} else {
 						$t_item_rel = null;
 					}
@@ -5384,8 +5392,6 @@ if (!$batch) {
 					// This bundle is only available for types which support set membership
 					case 'ca_sets_checklist':
 						// check for existing labels to delete (no updating supported)
-						require_once(__CA_MODELS_DIR__.'/ca_sets.php');
-						require_once(__CA_MODELS_DIR__.'/ca_set_items.php');
 	
 						$t_set = new ca_sets();
 if (!$batch) {
@@ -5429,12 +5435,48 @@ if (!$batch) {
 					case 'ca_set_items':
 						if ($batch) { break; } // not supported in batch mode
 						// check for existing labels to delete (no updating supported)
-						require_once(__CA_MODELS_DIR__.'/ca_sets.php');
-						require_once(__CA_MODELS_DIR__.'/ca_set_items.php');
+						$rids = explode(';', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}setRowIDList", pString));
 						
-						$va_rids = explode(';', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}setRowIDList", pString));
+						$checked = [];
+						foreach($rids as $rid) {
+							$checked[$rid] = (bool)$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}checked{$rid}", pString);
+						}
+						$this->reorderItems($rids, ['user_id' => $po_request->getUserID(), 'treatRowIDsAsRIDs' => true, 'deleteExcludedItems' => true, 'checked' => $checked]);
+						break;
+					# -------------------------------------
+					// This bundle is only available ca_sets in inventory type
+					case 'inventory_list':
+						if ($vb_batch) { break; } // not supported in batch mode
+						if(!caIsInventory($this)) { break; }
 						
-						$this->reorderItems($va_rids, array('user_id' => $po_request->getUserID(), 'treatRowIDsAsRIDs' => true, 'deleteExcludedItems' => true));
+						// Delete items
+						if(is_array($item_ids_to_delete = explode(';', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}inventoryToDelete", pString)))) {
+							foreach($item_ids_to_delete as $item_id_to_delete) {
+								$this->removeItemByItemID($item_id_to_delete);
+							}
+						}
+						
+						$container_fld = $this->getAppConfig()->get('inventory_container_element_code');
+						$found_fld = $this->getAppConfig()->get('inventory_found_element_code');
+						$acc = [];
+						foreach($_REQUEST as $k => $v) {
+							if(preg_match("!^inventory_([\d]+)_{$container_fld}_(.*)$!", $k, $m)) {
+								$acc[$m[1]][$m[2]] = $v;
+							}
+						}
+						$original_name = null;
+						foreach($_FILES as $k => $v) {
+							if(preg_match("!^inventory_([\d]+)_{$container_fld}_(.*)$!", $k, $m)) {
+								$acc[$m[1]][$m[2]] = $v['tmp_name'];
+								$original_name = $v['name'] ??  null;
+							}
+						}
+						foreach($acc as $item_id => $d) {
+							if($s = ca_set_items::findAsInstance($item_id)) {
+								$s->replaceAttribute($d, $container_fld, null, ['original_name' => $original_name]);
+								$s->update();
+							}
+						}
 						break;
 					# -------------------------------------
 					// This bundle is only available for ca_search_forms 
@@ -5917,6 +5959,38 @@ if (!$batch) {
 								
 										$change_has_been_made = true;
 										SearchResult::clearResultCacheForRow('ca_places', $vn_place_id);
+										if ($t_item_rel) { SearchResult::clearResultCacheForRow($t_item_rel->tableName(), $t_item_rel->getPrimaryKey()); }
+									}
+								}
+							}
+						}
+						
+						if (!caGetOption('hide_inventory_controls', $va_bundle_settings, false)) {
+							$inventory_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_inventory_idnew_0", pInteger);
+							
+							if ($inventory_id) {
+								$t_loc = Datamodel::getInstance('ca_storage_locations', true);
+								
+								if ($this->inTransaction()) { $t_loc->setTransaction($this->getTransaction()); }
+								if ($t_loc->load($inventory_id)) {
+									if ($policy) {
+										$policy_info = $table::getHistoryTrackingCurrentValuePolicyElement($policy, 'ca_storage_locations', $t_loc->getTypeCode());
+										$relationship_type_id = caGetOption('inventoryRelationshipType', $policy_info, null);
+									}
+									
+									if ($relationship_type_id) {
+										// is effective date set?
+										$vs_effective_date = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ca_storage_locations__effective_datenew_0", pString);
+						
+										$t_item_rel = $this->addRelationship('ca_storage_locations', $vn_location_id, $relationship_type_id, $vs_effective_date);
+										if ($this->numErrors()) {
+											$po_request->addActionErrors($this->errors(), $vs_f, 'general');
+										} else {
+											ca_storage_locations::setHistoryTrackingChronologyInterstitialElementsFromHTMLForm($po_request, $vs_placement_code, $vs_form_prefix.'_inventory', $t_item_rel, $inventory_id, $processed_bundle_settings);							
+										}									
+								
+										$change_has_been_made = true;
+										SearchResult::clearResultCacheForRow('ca_storage_locations', $inventory_id);
 										if ($t_item_rel) { SearchResult::clearResultCacheForRow($t_item_rel->tableName(), $t_item_rel->getPrimaryKey()); }
 									}
 								}
@@ -6571,15 +6645,57 @@ if (!$batch) {
 			return false;
 		}
 		
+		// Crates?
+		$is_crate = (method_exists($this, 'isCrate') && $this->isCrate());
+		$crate_rel_type_config = $is_crate ? $this->getCrateRelationshipTypeConfig() : null;
+		$crate_pack_rel_type_ids = caMakeRelationshipTypeIDList('ca_objects_x_objects', [$crate_rel_type_config['packed']]);
+		
 		// Process relationships
+		
+		$unpack_list = [];
 		foreach($va_rels_to_delete as $va_rel_to_delete) {
+			if($is_crate) {
+				$rel = ca_objects_x_objects::findAsInstance(['relation_id' => $va_rel_to_delete['relation_id']]);
+			
+				$rel_type_id = $rel->get('type_id');
+				if(in_array($rel_type_id, $crate_pack_rel_type_ids)) {
+					$unpack_list[] = [
+						'relation_id' => $va_rel_to_delete['relation_id'],
+						'relationship_type_id' => $rel_type_id,
+						'relationship_type_code' => $rel_type_id,
+						'start_date' => caGetLocalizedHistoricDate($rel->get('sdatetime'), ['dateFormat' => 'iso8601']),
+						'end_date' =>  caGetLocalizedHistoricDate($rel->get('edatetime'), ['dateFormat' => 'iso8601']),
+						'effective_date' => $rel->get('effective_date', ['dateFormat' => 'iso8601'])
+					];
+					continue;	
+				}
+			}
 			$this->removeRelationship($va_rel_to_delete['bundle'], $va_rel_to_delete['relation_id']);
 			if ($this->numErrors()) {
 				$po_request->addActionErrors($this->errors(), $ps_bundle_name);
 			}
 		}
+		if($is_crate && sizeof($unpack_list)) {
+			print_R($unpack_list);
+			$ret = $this->unpackCrate(['unpackList' => $unpack_list]);
+			if ($this->numErrors()) {
+				$po_request->addActionErrors($this->errors(), $ps_bundle_name);
+			}
+		}
+		
+		$pack_list = [];
 		foreach($va_rels_to_add as $va_rel_to_add) {
-			$this->addRelationship($va_rel_to_add['bundle'], $va_rel_to_add['row_id'], $va_rel_to_add['type_id'], _t(caGetOption('effectiveDateDefault', $pa_settings, null)), null, $va_rel_to_add['direction']);
+			if($is_crate && in_array($va_rel_to_add['type_id'], $crate_pack_rel_type_ids)) {
+				$pack_list[] = $va_rel_to_add['row_id'];
+			} else {
+				$this->addRelationship($va_rel_to_add['bundle'], $va_rel_to_add['row_id'], $va_rel_to_add['type_id'], _t(caGetOption('effectiveDateDefault', $pa_settings, null)), null, $va_rel_to_add['direction']);
+			}
+			if ($this->numErrors()) {
+				$po_request->addActionErrors($this->errors(), $ps_bundle_name);
+			}
+		}
+		if($is_crate && sizeof($pack_list)) {
+			$ret = $this->packCrate(['packList' => $pack_list]);
 			if ($this->numErrors()) {
 				$po_request->addActionErrors($this->errors(), $ps_bundle_name);
 			}
@@ -6772,7 +6888,7 @@ if (!$batch) {
 		$pb_return_labels_as_array = (isset($options['returnLabelsAsArray']) && $options['returnLabelsAsArray']) ? true : false;
 		$pn_limit = (isset($options['limit']) && ((int)$options['limit'] > 0)) ? (int)$options['limit'] : 4000;
 		$pn_start = (isset($options['start']) && ((int)$options['start'] > 0)) ? (int)$options['start'] : 0;
-		
+
 
 		if (is_numeric($pm_rel_table_name_or_num)) {
 			if(!($vs_related_table_name = Datamodel::getTableName($pm_rel_table_name_or_num))) { return null; }
@@ -6845,15 +6961,16 @@ if (!$batch) {
 		}
 
 		// check for self relationship
-		$vb_self_relationship = false;
+		$is_self_relationship_traversal = false;
 		if($vs_subject_table_name == $vs_related_table_name) {
-			$vb_self_relationship = true;
+			$is_self_relationship_traversal = true;
 			$t_item_rel = Datamodel::getInstance($va_path[1], true);
 			$vs_item_rel_table_name = $va_path[1];
 			
 			$t_rel_item = Datamodel::getInstance($va_path[0], true);
 			$vs_rel_item_table_name = $va_path[0];
 		}
+		$target_is_self_relation = method_exists($t_rel_item, 'isSelfRelationship') ? $t_rel_item->isSelfRelationship() : false;
 
 		$va_wheres = [];
 		$va_selects = [];
@@ -7072,7 +7189,7 @@ if (!$batch) {
 			}
 		}
 
-		if($vb_self_relationship) {
+		if($is_self_relationship_traversal) {
 			//
 			// START - traverse self relation
 			//
@@ -7093,10 +7210,10 @@ if (!$batch) {
 					$va_joins[] = "INNER JOIN ".$vs_label_table_name." ON ".$vs_label_table_name.'.'.$va_label_rel_info[$va_path[0]][$vs_label_table_name][0][1].' = '.$va_path[0].'.'.$va_label_rel_info[$va_path[0]][$vs_label_table_name][0][0]."\n";
 				}
 
-				$vs_other_field = ($vn_i == 0) ? $va_rel_info[$va_path[0]][$va_path[1]][1][1] : $va_rel_info[$va_path[0]][$va_path[1]][0][1];
-				$vs_direction =  (preg_match('!left!', $vs_other_field)) ? 'ltor' : 'rtol';
+				$other_field = ($vn_i == 0) ? $va_rel_info[$va_path[0]][$va_path[1]][1][1] : $va_rel_info[$va_path[0]][$va_path[1]][0][1];
+				$vs_direction =  (preg_match('!left!', $other_field)) ? 'ltor' : 'rtol';
 
-				$va_selects['row_id'] = $va_path[1].'.'.$vs_other_field.' AS row_id';
+				$va_selects['row_id'] = $va_path[1].'.'.$other_field.' AS row_id';
 
 				$vs_order_by = '';
 				$vs_sort_fld = '';
@@ -7131,7 +7248,7 @@ if (!$batch) {
 					FROM ".$va_path[0]."
 					".join("\n", array_merge($va_joins, $va_joins_post_add))."
 					WHERE
-						".join(' AND ', array_merge($va_wheres, array('('.$va_path[1].'.'.$vs_other_field .' IN ('.join(',', $pa_row_ids).'))')))."
+						".join(' AND ', array_merge($va_wheres, array('('.$va_path[1].'.'.$other_field .' IN ('.join(',', $pa_row_ids).'))')))."
 					{$vs_order_by}";
 
 				$qr_res = $o_db->query($vs_sql);
@@ -7371,10 +7488,10 @@ if (!$batch) {
 			
 			//
 			// END - from self relation itself
-			//
+			//	
 		} else {
 			//
-			// BEGIN - non-self relation
+			// BEGIN - non-self relation (or case where target is self-relation)
 			//
 			$va_wheres[] = "({$vs_subject_table_name}.".$this->primaryKey()." IN (".join(",", $pa_row_ids)."))";
 			$vs_cur_table = array_shift($va_path);
@@ -7488,8 +7605,14 @@ if (!$batch) {
 			    $vb_use_is_primary = true;
 			}
 
+			$self_left_fld = $self_right_fld = null;
+			if($target_is_self_relation) {
+				$rel_info = Datamodel::getRelationships($vs_subject_table_name, $vs_related_table_name);
+				$va_selects[] = "{$vs_related_table_name}.".($self_left_fld = $rel_info[$vs_subject_table_name][$vs_related_table_name][0][1]);
+				$va_selects[] = "{$vs_related_table_name}.".($self_right_fld = $rel_info[$vs_subject_table_name][$vs_related_table_name][1][1]);
+			}
 			$va_selects[] = $vs_subject_table_name.'.'.$this->primaryKey().' AS row_id';
-
+			
 			$vs_order_by = '';
 			if ($t_item_rel && $t_item_rel->hasField('rank')) {
 				$vs_order_by = " ORDER BY {$vs_item_rel_table_name}.`rank`";
@@ -7550,6 +7673,7 @@ if (!$batch) {
 			";
 			
 			$qr_res = $o_db->query($vs_sql);
+			//print $vs_sql."\n";
 			
 			if($ps_return_as === 'count') {
 				$qr_res->nextRow();
@@ -7581,6 +7705,16 @@ if (!$batch) {
 				}
 
 				$va_row = $qr_res->getRow();
+				
+                
+                if($target_is_self_relation) {
+                	if(in_array($va_row[$self_left_fld], $pa_row_ids)) {
+                		$va_row['related_row_id'] = $va_row[$self_right_fld];
+                	} else {
+                		$va_row['related_row_id'] = $va_row[$self_left_fld];
+                	}
+                }
+                
 				$vs_v = (sizeof($va_path) <= 2) ? $va_row['row_id'].'/'.$va_row[$vs_key] : $va_row[$vs_key];
 
 				$vs_display_label = $va_row[$vs_label_display_field] ?? null;
@@ -7644,7 +7778,6 @@ if (!$batch) {
 			if ($ps_return_as !== 'data') {
 				$va_rels = caExtractArrayValuesFromArrayOfArrays($va_rels, ($ps_return_as === 'relationids') ? 'relation_id' : $t_rel_item->primaryKey());
 			}
-			
 
 			if ($ps_return_as === 'data') {
 				// Set 'label' entry - display label in current user's locale
@@ -9509,10 +9642,28 @@ side. For many self-relations the direction determines the nature and display te
 	 *
 	 * @return array|null
 	 */
-	public function getMetadataDictionaryRuleViolations($ps_bundle_name=null, $options=null) {
-	 	if (!($vn_id = $this->getPrimaryKey())) { return null; }
+	public function getMetadataDictionaryRuleViolations(?string $bundle_name=null, ?array $options=null) : ?array {
+	 	if (!($id = $this->getPrimaryKey())) { return null; }
 	 	
+	 	$violations = self::getMetadataDictionaryRuleViolationsForIds([$id], $bundle_name, $options);
+	 	
+	 	return $violations[$id] ?? null;
+	 }
+	 # --------------------------------------------------------------------------------------------
+	/**
+	 * Fetch metadata dictionary rule violations for this instance and (optionally) a given bundle
+	 * @param null|string $ps_bundle_name
+	 * @param array $options Options include:
+	 *		limitToShowAsPrompt = 
+	 *		screen_id = 
+	 *		placement_id = 
+	 *
+	 * @return array|null
+	 */
+	public static function getMetadataDictionaryRuleViolationsForIds(array $ids, ?string$bundle_name=null, ?array $options=null) : ?array {
 	 	$limit_to_show_as_prompt = caGetOption('limitToShowAsPrompt', $options, false);
+	 	if(!sizeof($ids)) { return null; }
+	 	if(!($t_instance = Datamodel::getInstance(get_called_class(), false))) { return null; }
 	 	
 	 	$bundles_on_screen = null;
 	 	$placement_id = $screen_id = null;
@@ -9524,39 +9675,38 @@ side. For many self-relations the direction determines the nature and display te
 	 			}, $screen_placements);
 	 		}
 	 	} 
-	 	$o_db = $this->getDb();
+	 	$o_db = $t_instance->getDb();
 	 	
-	 	$va_sql_params = array($vn_id, $this->tableNum());
-	 	$vs_bundle_sql = '';
-	 	
-	 	if ($ps_bundle_name && ($ps_bundle_name = caConvertBundleNameToCode($ps_bundle_name, ['includeTablePrefix' => true]))) {	 
-			$vs_bundle_sql = "AND cmde.bundle_name = ?";
-			$va_sql_params[] = $ps_bundle_name;
+	 	$sql_params = [$ids, $t_instance->tableNum()];
+		$bundle_sql = null;
+		if ($bundle_name && ($bundle_name = caConvertBundleNameToCode($bundle_name, ['includeTablePrefix' => true]))) {	 
+			$bundle_sql = "AND cmde.bundle_name = ?";
+			$sql_params[] = $bundle_name;
 	 	} 
-	 	
 	 	
 	 	$qr_res = $o_db->query("
 	 		SELECT 
-	 		    cmdr.rule_code, cmdr.rule_id,
+	 		    cmdr.rule_code, cmdr.rule_id, cmdrv.row_id,
 	 		    cmdrv.violation_id, cmdr.rule_level,
 	 		    cmdrv.created_on, cmdrv.last_checked_on, cmde.bundle_name, cmde.settings
 	 		FROM ca_metadata_dictionary_rule_violations cmdrv
 	 		INNER JOIN ca_metadata_dictionary_rules AS cmdr ON cmdr.rule_id = cmdrv.rule_id
 	 		INNER JOIN ca_metadata_dictionary_entries AS cmde ON cmde.entry_id = cmdr.entry_id
 	 		WHERE
-	 			cmdrv.row_id = ? AND cmdrv.table_num = ? {$vs_bundle_sql}
-	 	", $va_sql_params);
+	 			cmdrv.row_id IN (?) AND cmdrv.table_num = ? {$bundle_sql}
+	 	", $sql_params);
 	 	
-	 	$va_violations = $va_rule_instances = [];
+	 	$violations = $rule_instances = [];
 	 	while($qr_res->nextRow()) {
+	 		$row_id = $qr_res->get('row_id');
 	 		$bundle_name = $qr_res->get('bundle_name'); 
 	 		$bundle_elements = explode('.', $bundle_name);
 	 		$rule_settings = caUnserializeForDatabase($qr_res->get('settings'));
 	 		
-			$vn_violation_id = $qr_res->get('violation_id');
-	 		$vn_rule_id = $qr_res->get('rule_id');
+			$violation_id = $qr_res->get('violation_id');
+	 		$rule_id = $qr_res->get('rule_id');
 	 		
-	 		$t_rule = (isset($va_rule_instances[$vn_rule_id])) ? $va_rule_instances[$vn_rule_id] : ($va_rule_instances[$vn_rule_id] = new ca_metadata_dictionary_rules($vn_rule_id));
+	 		$t_rule = (isset($rule_instances[$rule_id])) ? $rule_instances[$rule_id] : ($rule_instances[$rule_id] = new ca_metadata_dictionary_rules($rule_id));
 	 		if (!$t_rule || !$t_rule->getPrimaryKey()) { continue; }
 	 		
 	 		$show_as_prompt = $t_rule->getSetting('showasprompt');
@@ -9592,15 +9742,15 @@ side. For many self-relations the direction determines the nature and display te
 	 					if (sizeof($placement_restrict_to_relationship_types) && !sizeof(array_intersect($placement_restrict_to_relationship_types, $rule_settings_restrict_to_relationship_types))) {
 	 						continue;
 	 					}
-	 					$va_violations[$vn_violation_id] = array(
-							'violation_id' => $vn_violation_id,
+	 					$violations[$row_id][$violation_id] = array(
+							'violation_id' => $violation_id,
 							'bundle_name' => $bundle_name,
 							'placement_code' => $screen_placements[$placement_id]['placement_code'],
 							'label' => $t_rule->getSetting('label', ['flatten' => true]),
 							'violationMessage' => $t_rule->getSetting('violationMessage', ['flatten' => true]),
 							'code' => $qr_res->get('rule_code'),
-							'level' => $vs_level = $qr_res->get('rule_level'),
-							'levelDisplay' => $t_rule->getChoiceListValue('rule_level', $vs_level),
+							'level' => $level = $qr_res->get('rule_level'),
+							'levelDisplay' => $t_rule->getChoiceListValue('rule_level', $level),
 							'description' => $t_rule->getSetting('description', ['flatten' => true]),
 							'showasprompt' => $show_as_prompt,
 							'created_on' => $qr_res->get('created_on'),
@@ -9609,14 +9759,14 @@ side. For many self-relations the direction determines the nature and display te
 	 				}
 	 			}
 	 		} else {
-	 			$va_violations[$vn_violation_id] = array(
-	 				'violation_id' => $vn_violation_id,
+	 			$violations[$row_id][$violation_id] = array(
+	 				'violation_id' => $violation_id,
 	 				'bundle_name' => $bundle_name,
 	 				'label' => $t_rule->getSetting('label', ['flatten' => true]),
 	 				'violationMessage' => $t_rule->getSetting('violationMessage', ['flatten' => true]),
 	 				'code' => $qr_res->get('rule_code'),
-	 				'level' => $vs_level = $qr_res->get('rule_level'),
-	 				'levelDisplay' => $t_rule->getChoiceListValue('rule_level', $vs_level),
+	 				'level' => $level = $qr_res->get('rule_level'),
+	 				'levelDisplay' => $t_rule->getChoiceListValue('rule_level', $level),
 	 				'description' => $t_rule->getSetting('description', ['flatten' => true]),
 	 				'showasprompt' => $show_as_prompt,
 	 				'created_on' => $qr_res->get('created_on'),
@@ -9624,9 +9774,8 @@ side. For many self-relations the direction determines the nature and display te
 	 			);
 	 		}
 	 	}
-	 	
-	 	return $va_violations;
-	 }
+	 	return $violations;
+	}
 	 # --------------------------------------------------------------------------------------------
 	/**
 	 * 

@@ -40,12 +40,12 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 	 * Override checkStatus() to return true - the historyMenu plugin always initializes ok
 	 */
 	public function checkStatus() {
-		return array(
+		return [
 			'description' => $this->getDescription(),
 			'errors' => [],
 			'warnings' => [],
 			'available' => true
-		);
+		];
 	}
 	# -------------------------------------------------------
 	/**
@@ -77,12 +77,12 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 			}
 			
 			$show_idno = !$req->config->get("{$table_name}_inspector_dont_display_idno");
-			$activity_list[$params['id']] = array(
+			$activity_list[$params['id']] = [
 				'time' => time(),
 				'type_id' => $params['instance']->getTypeID(),
 				'idno' => $idno = $params['instance']->get('idno'),
 				'label' => $display_template ? $params['instance']->getWithTemplate($display_template) : $params['instance']->get("{$table_name}.preferred_labels").($show_idno && (trim($idno)) ? " [{$idno}]" : '')
-			);
+			];
 			
 			Session::setVar($params['table_name'].'_history_id_list', $activity_list);
 		}
@@ -148,23 +148,72 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 				
 				$t_instance = Datamodel::getInstanceByTableName($table_name, true);
 				
-				switch($table_name) {
-					case 'ca_list_items':
-						$priv_name = 'can_edit_ca_lists';
-						break;
-					case 'ca_object_representations':
-						$priv_name = 'can_edit_ca_objects';
-						break;
-					case 'ca_tour_stops':
-						$priv_name = 'can_edit_ca_tours';
-						break;
-					case 'ca_sets':
-						$priv_name = 'can_edit_sets';
-						break;
-					default:
-						$priv_name = 'can_edit_'.$table_name;
-						break;
-				}
+				if($table_name === 'ca_sets') {
+					$keys = array_reverse(array_keys($activity_list));
+					if(sizeof($keys) > 0) {
+						$qr = caMakeSearchResult('ca_sets', $keys);
+						while($qr->nextHit()) {
+							$id = $qr->getPrimaryKey();
+							$editor_url_info = caEditorUrl($req, $table_name, $id, true);
+							
+							$t = caIsInventory($qr) ? 'INVENTORY' : 'SET';
+							$activity_menu_list[$t][$table_name.'_'.$id] = [
+								'default' => $editor_url_info,
+								'displayName' => $qr->get('ca_sets.preferred_labels'),
+								'is_enabled' => 1,
+								'requires' => [
+									'action:'.$priv_name => 'OR'
+								],
+								'parameters' => [
+									$editor_url_info['_pk'] => $id,
+									'bundle' => 'inventory_list'
+								]
+							];
+						}
+	
+						if(is_array($menu_item_names) && isset($menu_item_names[$table_name])){
+							$display_name = $menu_item_names[$table_name];
+						} else {
+							$display_name = caUcFirstUTF8Safe(_t($t_instance->getProperty('NAME_PLURAL')));
+						}
+					
+						if(is_array($activity_menu_list['SET']) && sizeof($activity_menu_list['SET'])) {
+							$activity_lists['ca_sets'] = [
+								'displayName' => $display_name,
+								'submenu' => [
+									"type" => 'static',
+									'navigation' => $activity_menu_list['SET']
+								]
+							];
+						}
+						if(is_array($activity_menu_list['INVENTORY']) && sizeof($activity_menu_list['INVENTORY'])) {
+							$activity_lists['ca_sets:inventory'] = [
+								'displayName' => _t('Inventory'),
+								'submenu' => [
+									"type" => 'static',
+									'navigation' => $activity_menu_list['INVENTORY']
+								]
+							];
+						}
+					}
+				} else
+					switch($table_name) {
+						case 'ca_list_items':
+							$priv_name = 'can_edit_ca_lists';
+							break;
+						case 'ca_object_representations':
+							$priv_name = 'can_edit_ca_objects';
+							break;
+						case 'ca_tour_stops':
+							$priv_name = 'can_edit_ca_tours';
+							break;
+						case 'ca_sets':
+							$priv_name = 'can_edit_sets';
+							break;
+						default:
+							$priv_name = 'can_edit_'.$table_name;
+							break;
+					}
 				
 				if (in_array($table_name, $breakout_by_type ?? [], true)) {
 					// Output grouped by type with types as top-level menu items
@@ -240,13 +289,12 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 						)
 					);
 				}
-				
 			}
 			if(sizeof($activity_lists)) {	// only show history menu if there's some history...
-				$activity_menu = array(
+				$activity_menu = [
 					'displayName' => _t('History'),
 					'navigation' => $activity_lists
-				);
+				];
 				$menu_bar['activity_menu'] = $activity_menu;
 			}
 		} 
