@@ -452,6 +452,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 	public function htmlFormElement($pa_element_info, $pa_options=null) {
 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'suggestExistingValues', 'useDatePicker', 'datePickerDateFormat'));
 		$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : 'dateBg');
+		$id = $pa_options['id'] ?? "{fieldNamePrefix}".$pa_element_info['element_id']."_{n}";
 		
 		if (isset($pa_options['useDatePicker'])) {
 			$va_settings['useDatePicker'] = $pa_options['useDatePicker'];
@@ -460,9 +461,9 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 
 		$vn_max_length = 255;
 		$vs_element = caHTMLTextInput(
-			'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
+			$id,
 			array_merge($attributes ?? [], [
-				'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
+				'id' => $id,
 				'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
 				'value' => '{{'.$pa_element_info['element_id'].'}}',
 				'maxlength' => $vn_max_length,
@@ -482,7 +483,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 		
 		if ((bool)$va_settings['suggestExistingValues'] && $vs_lookup_url && $vs_bundle_name) { 
 			$vs_element .= "<script type='text/javascript'>
-				jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').autocomplete( 
+				jQuery('#{$id}').autocomplete( 
 					{ source: '{$vs_lookup_url}', minLength: 3, delay: 800}
 				);
 			</script>\n";
@@ -518,8 +519,8 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 					"firstDay" =>  1
 				];
 				
-				$date_picker = "jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}').daterangepicker({'autoUpdateInput': false, 'parentEl': parentEl, locale: localeSettings, datepickerOptions: { minDate: null, maxDate: null}});";
-				$date_picker .= "jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}').on('apply.daterangepicker', function(ev, picker) {
+				$date_picker = "jQuery('#{$id}').daterangepicker({'autoUpdateInput': false, 'parentEl': parentEl, locale: localeSettings, datepickerOptions: { minDate: null, maxDate: null}});";
+				$date_picker .= "jQuery('#{$id}').on('apply.daterangepicker', function(ev, picker) {
 					let s = picker.startDate.format('{$dp_format}');
 					let e = picker.endDate.format('{$dp_format}');
 					let r = '';
@@ -531,12 +532,12 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
       				jQuery(this).val(r);
   				});";
 			} else {
-				$date_picker = "jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}').datepicker({dateFormat: '{$vs_date_format}', constrainInput: false});";
+				$date_picker = "jQuery('#{$id}').datepicker({dateFormat: '{$vs_date_format}', constrainInput: false});";
 			}
 
 			$vs_element .= "<script type='text/javascript'>
 				jQuery(document).ready(function() {
-					let parentEl = jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').parents('.caRelationQuickAddPanel');
+					let parentEl = jQuery('#{$id}').parents('.caRelationQuickAddPanel');
 					let localeSettings = ".json_encode($locale_settings).";
 					{$date_picker}
 				});
@@ -611,6 +612,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 			$dates = DateRangeAttributeValue::$o_tep->getHistoricTimestamps();
 			if(!($dates[0] ?? null)) { $dates[0] = ($sort_undated_at === 'start') ? "-9999999999.999999999999" : "9999999999.999999999999"; }
 			if(!($dates[1] ?? null)) { $dates[1] = ($sort_undated_at === 'start') ? "-9999999999.999999999999" : "9999999999.999999999999"; }
+
 			$sdate_bits = explode('.', $dates[0] ?? '.');
 			$edate_bits = explode('.', $dates[1] ?? '.');
 			

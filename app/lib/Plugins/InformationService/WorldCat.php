@@ -237,7 +237,7 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 						throw new Exception(_t('WorldCat web API key is not configured'));
 					}
 				}
-				$o_feed = Zend_Feed::import(WLPlugInformationServiceWorldCat::$s_worldcat_search_url."?start={$vn_start}&count={$vn_count}&q=".urlencode($ps_search)."&wskey=".$va_config['APIKey']);
+				$feed = FeedReader::import(WLPlugInformationServiceWorldCat::$s_worldcat_search_url."?start={$vn_start}&count={$vn_count}&q=".urlencode($ps_search)."&wskey=".$va_config['APIKey']);
 			} catch (Exception $e) {
 				$va_data['results'][] = array(
 					'label' => _t('Could not query WorldCat: %1', $e->getMessage()),
@@ -246,11 +246,11 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 				);
 				return $va_data;
 			}
-			$va_data = array('count' => $o_feed->count(), 'results' => array());
-			foreach ($o_feed as $o_entry) {
-				$vs_author = (string)$o_entry->author->name();
-				$vs_title = (string)$o_entry->title();
-				$vs_url = $o_entry->id();
+			$va_data = array('count' => sizeof($feed['items']), 'results' => array());
+			foreach ($feed['items'] as $entry) {
+				$vs_author = (string)$entry['author'];
+				$vs_title = (string)$entry['title'];
+				$vs_url = $entry['id'];
 				$va_tmp = explode("/", $vs_url);
 				$vs_id = array_pop($va_tmp);
 

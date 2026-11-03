@@ -49,11 +49,10 @@ class BaseEditorController extends ActionController {
 	# -------------------------------------------------------
 	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
 		parent::__construct($po_request, $po_response, $pa_view_paths);
-
-		AssetLoadManager::register('bundleListEditorUI');
+		
 		AssetLoadManager::register('panel');
- 		AssetLoadManager::register('leaflet');
- 		AssetLoadManager::register('3dmodels');
+		AssetLoadManager::register('imageScroller');
+		AssetLoadManager::register('bundleListEditorUI');
 
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		$this->opo_result_context = new ResultContext($po_request, $this->ops_table_name, ResultContext::getLastFind($po_request, $this->ops_table_name));
@@ -67,21 +66,23 @@ class BaseEditorController extends ActionController {
 	 *
 	 */
 	public function Edit($pa_values=null, $pa_options=null) {
-		AssetLoadManager::register('panel');
-
 		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vn_after_id) = $this->_initView($pa_options);
 		$vs_mode = $this->request->getParameter('mode', pString);
+		
+		if($this->request->getParameter('cancel', pInteger)) {
+			ca_unsaved_edits::clearUnsavedEdits($this->request, $t_subject->tableName(), $t_subject->getPrimaryKey());
+		}
 
 		if (!($vs_type_name = $t_subject->getTypeName())) {
 			$vs_type_name = $t_subject->getProperty('NAME_SINGULAR');
 		}
 		
-		if(!$this->verifyAccess($t_subject)) { return; }
+		if(!$this->verifyAccess($t_subject, __CA_BUNDLE_ACCESS_READONLY__)) { return; }
 
 		//
 		// Are we duplicating?
 		//
-		if (($vs_mode == 'dupe') && $this->request->user->canDoAction('can_duplicate_'.$t_subject->tableName()) && $t_subject->isLoaded()) {
+		if (($vs_mode == 'dupe') && $this->request->user->canDoAction('can_duplicate_'.$this->_privTableName($t_subject)) && $t_subject->isLoaded()) {
 			if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
 				throw new ApplicationException(_t('CSRF check failed'));
 				return;
@@ -186,8 +187,8 @@ class BaseEditorController extends ActionController {
 					$this->notification->addNotification(_t('Duplicated %1 "%2" (%3)', $vs_type_name, $t_subject->getLabelForDisplay(), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
 				}
 							
+				// Redirect to edit first newly created dupe
 				if($t_first) {
-					// Redirect to edit first newly created dupe.
 					$this->response->setRedirect(caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), [$t_subject->primaryKey() => $t_first->getPrimaryKey()]));
 					return;
 				}
@@ -347,7 +348,7 @@ class BaseEditorController extends ActionController {
 		}
 		
 		
-		if(!$this->verifyAccess($t_subject)) { return; }
+		if(!$this->verifyAccess($t_subject, __CA_BUNDLE_ACCESS_EDIT__)) { return; }
 		
 		$orig_access = $t_subject->get('access');
 		
@@ -589,6 +590,8 @@ class BaseEditorController extends ActionController {
 		$violations_to_prompt = $t_subject->getMetadataDictionaryRuleViolations(null, ['limitToShowAsPrompt' => true, 'screen_id' => $this->request->getActionExtra()]);
 		$this->getView()->setVar('show_show_notifications', is_array($violations_to_prompt) && (sizeof($violations_to_prompt) > 0));
 		
+		ca_unsaved_edits::clearUnsavedEdits($this->request, $t_subject->tableName(), $t_subject->getPrimaryKey());
+		
 		$this->render('screen_html.php');
 	}
 	# -------------------------------------------------------
@@ -606,16 +609,12 @@ class BaseEditorController extends ActionController {
 			$vs_type_name = $t_subject->getProperty('NAME_SINGULAR');
 		}
 		
-		if(!$this->verifyAccess($t_subject)) { return; }
-
 		//
 		// Does user have access to row?
 		//
-		if (caACLIsEnabled($t_subject)) {
-			if ($t_subject->checkACLAccessForUser($this->request->user) < __CA_ACL_EDIT_DELETE_ACCESS__) {
-				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
-				return;
-			}
+		if(!$this->verifyAccess($t_subject, __CA_BUNDLE_ACCESS_EDIT_DELETE__)) { 
+			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));	
+			return; 
 		}
 		
 		$subject_table = $t_subject->tableName();
@@ -713,39 +712,37 @@ class BaseEditorController extends ActionController {
 			foreach($t_subject->errors() as $o_e) {
 				$this->notification->addNotification($o_e->getErrorDescription(), __NOTIFICATION_TYPE_ERROR__);
 			}
-		} else {
-			if ($vb_confirm) {
-				$this->notification->addNotification(_t("%1 was deleted", caUcFirstUTF8Safe($vs_type_name)), __NOTIFICATION_TYPE_INFO__);
+		} elseif ($vb_confirm) {
+			$this->notification->addNotification(_t("%1 was deleted", caUcFirstUTF8Safe($vs_type_name)), __NOTIFICATION_TYPE_INFO__);
 
-				// update result list since it has changed
-				$this->opo_result_context->removeIDFromResults($vn_subject_id);
-				$this->opo_result_context->invalidateCache();
-				$this->opo_result_context->saveContext();
+			// update result list since it has changed
+			$this->opo_result_context->removeIDFromResults($vn_subject_id);
+			$this->opo_result_context->invalidateCache();
+			$this->opo_result_context->saveContext();
 
-				$this->view->setVar($t_subject->primaryKey(), null);
-				$this->request->setParameter($t_subject->primaryKey(), null, 'PATH');
+			$this->view->setVar($t_subject->primaryKey(), null);
+			$this->request->setParameter($t_subject->primaryKey(), null, 'PATH');
 
-				// set last browse id for hierarchy browser
-				Session::setVar($this->ops_table_name.'_browse_last_id', $vn_parent_id);
+			// set last browse id for hierarchy browser
+			Session::setVar($this->ops_table_name.'_browse_last_id', $vn_parent_id);
 
-				// Clear out row_id so sidenav is disabled
-				$this->request->setParameter($t_subject->primaryKey(), null, 'POST');
+			// Clear out row_id so sidenav is disabled
+			$this->request->setParameter($t_subject->primaryKey(), null, 'POST');
 
-				# trigger "DeleteItem" hook
-				$this->opo_app_plugin_manager->hookDeleteItem(
-					[
-						'id' => $vn_subject_id, 
-						'table_num' => $t_subject->tableNum(), 
-						'table_name' => $subject_table, 
-						'instance' => $t_subject,
-						'request' => $this->request
-					]
-				);
+			# trigger "DeleteItem" hook
+			$this->opo_app_plugin_manager->hookDeleteItem(
+				[
+					'id' => $vn_subject_id, 
+					'table_num' => $t_subject->tableNum(), 
+					'table_name' => $subject_table, 
+					'instance' => $t_subject,
+					'request' => $this->request
+				]
+			);
 
-				# redirect
-				$this->redirectAfterDelete($t_subject);
-				return;
-			}
+			# redirect
+			$this->redirectAfterDelete($t_subject);
+			return;
 		}
 
 		$this->view->setVar('subject_name', $t_subject->getLabelForDisplay(false));
@@ -764,12 +761,13 @@ class BaseEditorController extends ActionController {
 		$this->getRequest()->close();
 		
 		$redirect_url = $this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $t_subject->tableName());
-		if (($t_subject->getHierarchyType() === __CA_HIER_TYPE_ADHOC_MONO__) && ($parent_id = $t_subject->get('parent_id')) > 0) {
+		if (!$redirect_url && ($t_subject->getHierarchyType() === __CA_HIER_TYPE_ADHOC_MONO__) && ($parent_id = $t_subject->get('parent_id')) > 0) {
 			$redirect_url = caEditorUrl($this->request, $t_subject->tableName(), $parent_id);
 		} elseif(!$redirect_url) {
 			$redirect_url = ResultContext::getResultsUrl($this->request, $t_subject->tableName(), 'basic_search');
 		}
 		Session::save();
+		AppController::getInstance()->removeAllPlugins();
 		caSetRedirect($redirect_url);
 	}
 	# -------------------------------------------------------
@@ -783,7 +781,7 @@ class BaseEditorController extends ActionController {
 		AssetLoadManager::register('tableList');
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 		
-		if(!$this->verifyAccess($t_subject)) { return; }
+		if(!$this->verifyAccess($t_subject, __CA_BUNDLE_ACCESS_READONLY__)) { return; }
 
 		if((defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) || (bool)$this->request->config->get('display_template_debugger') || ($this->request->user->getPreference('show_template_debugger') !== 'hide')) {
 			$this->render('../template_test_html.php');
@@ -875,7 +873,7 @@ class BaseEditorController extends ActionController {
 		list($vn_subject_id, $t_subject) = $this->_initView($options);
 		$is_preview = caGetOption('preview', $options, false);
 		
-		if(!$this->verifyAccess($t_subject)) { return; }
+		if(!$this->verifyAccess($t_subject, __CA_BUNDLE_ACCESS_READONLY__)) { return; }
 
         if (!is_array($last_settings = Session::getVar($t_subject->tableName().'_summary_last_settings'))) { $last_settings = []; }
         
@@ -978,7 +976,7 @@ class BaseEditorController extends ActionController {
 	public function PrintBundle($pa_options=null) {
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 
-		if(!$this->verifyAccess($t_subject)) { return; }
+		if(!$this->verifyAccess($t_subject, __CA_BUNDLE_ACCESS_READONLY__)) { return; }
 
 		//
 		// PDF output
@@ -1093,9 +1091,9 @@ class BaseEditorController extends ActionController {
 		AssetLoadManager::register('tableList');
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 
-		if(!$this->verifyAccess($t_subject)) { return; }
+		if(!$this->verifyAccess($t_subject, __CA_BUNDLE_ACCESS_READONLY__)) { return; }
 
-		if (ca_user_roles::isValidAction('can_view_change_log_'.$t_subject->tableName()) && (!$this->request->user->canDoAction('can_view_change_log_'.$t_subject->tableName()))) {
+		if (ca_user_roles::isValidAction('can_view_change_log_'.$this->_privTableName($t_subject)) && (!$this->request->user->canDoAction('can_view_change_log_'.$this->_privTableName($t_subject)))) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2575?r='.urlencode($this->request->getFullUrlPath()));
 			return;
 		}
@@ -1115,9 +1113,9 @@ class BaseEditorController extends ActionController {
 		list($subject_id, $t_subject) = $this->_initView($options);
 		
 		if(!caShowAccessControlScreen($t_subject, ['anywhere' => true])) { throw new ApplicationException(_t('ACL not enabled')); }
-		if(!$this->verifyAccess($t_subject)) { return; }
+		if(!$this->verifyAccess($t_subject, __CA_BUNDLE_ACCESS_EDIT__)) { return; }
 
-		if ((!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) {
+		if ((!$this->request->user->canDoAction('can_change_acl_'.$this->_privTableName($t_subject)))) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2570?r='.urlencode($this->request->getFullUrlPath()));
 			return;
 		}
@@ -1160,9 +1158,9 @@ class BaseEditorController extends ActionController {
 	    }
 		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
 
-		if(!$this->verifyAccess($t_subject)) { return; }
+		if(!$this->verifyAccess($t_subject, __CA_BUNDLE_ACCESS_EDIT__)) { return; }
 
-		if ($this->request->user->canDoAction("can_change_type_".$t_subject->tableName())) {
+		if ($this->request->user->canDoAction("can_change_type_".$this->_privTableName($t_subject))) {
 			if (method_exists($t_subject, "changeType")) {
 				$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => &$t_subject, 'is_insert' => false));
 
@@ -1220,8 +1218,6 @@ class BaseEditorController extends ActionController {
 	protected function _initView($pa_options=null) {
 		// load required javascript
 		AssetLoadManager::register('bundleableEditor');
-		AssetLoadManager::register('imageScroller');
-		AssetLoadManager::register('datePickerUI');
 
 
 		$t_subject = Datamodel::getInstanceByTableName($this->ops_table_name);
@@ -1590,7 +1586,7 @@ class BaseEditorController extends ActionController {
 	    }
 		list($vn_subject_id, $t_subject) = $this->_initView();
 
-		if(!$this->verifyAccess($t_subject)) { return; }
+		if(!$this->verifyAccess($t_subject, __CA_BUNDLE_ACCESS_READONLY__)) { return; }
 
 		$pn_mapping_id = $this->request->getParameter('mapping_id', pInteger);
 
@@ -1610,7 +1606,7 @@ class BaseEditorController extends ActionController {
 		list($vn_subject_id, $t_subject) = $this->_initView();
 		require_once(__CA_MODELS_DIR__.'/ca_watch_list.php');
 
-		if(!$this->verifyAccess($t_subject)) { return; }
+		if(!$this->verifyAccess($t_subject, __CA_BUNDLE_ACCESS_READONLY__)) { return; }
 
 		$va_errors = [];
 		$t_watch_list = new ca_watch_list();
@@ -1654,7 +1650,7 @@ class BaseEditorController extends ActionController {
 	public function getHierarchyForDisplay($pa_options=null) {
 		list($vn_subject_id, $t_subject) = $this->_initView();
 
-		if(!$this->verifyAccess($t_subject)) { return; }
+		if(!$this->verifyAccess($t_subject, __CA_BUNDLE_ACCESS_READONLY__)) { return; }
 
 		$vs_hierarchy_display = $t_subject->getHierarchyNavigationHTMLFormBundle($this->request, 'caHierarchyOverviewPanelBrowser', [], array('open_hierarchy' => true, 'no_close_button' => true, 'hierarchy_browse_tab_class' => 'foo'));
 		$this->view->setVar('hierarchy_display', $vs_hierarchy_display);
@@ -1669,7 +1665,7 @@ class BaseEditorController extends ActionController {
 	public function reload() {
 		list($subject_id, $t_subject) = $this->_initView();
 
-		if(!$this->verifyAccess($t_subject)) { return; }
+		if(!$this->verifyAccess($t_subject, __CA_BUNDLE_ACCESS_READONLY__)) { return; }
 
 		$bundle = $this->request->getParameter("bundle", pString);
 		$placement_id = $this->request->getParameter("placement_id", pInteger);
@@ -1722,7 +1718,7 @@ class BaseEditorController extends ActionController {
 	public function loadBundleValues() {
 		list($subject_id, $t_subject) = $this->_initView();
 
-		if(!$this->verifyAccess($t_subject)) { return; }
+		if(!$this->verifyAccess($t_subject, __CA_BUNDLE_ACCESS_READONLY__)) { return; }
 		
 		$bundle_name = $this->request->getParameter("bundle", pString);
 		if ($this->request->user->getBundleAccessLevel($t_subject->tableName(), $bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
@@ -1748,7 +1744,7 @@ class BaseEditorController extends ActionController {
 	public function processTemplate() {
 		list($vn_subject_id, $t_subject) = $this->_initView();
 
-		if(!$this->verifyAccess($t_subject)) { return; }
+		if(!$this->verifyAccess($t_subject, __CA_BUNDLE_ACCESS_READONLY__)) { return; }
 
 		// http://providence.dev/index.php/editor/objects/ObjectEditor/processTemplate/object_id/1/template/^ca_objects.idno
 		$ps_template = $this->request->getParameter("template", pString);
@@ -1766,7 +1762,7 @@ class BaseEditorController extends ActionController {
 	public function getMediaAttributeList() {
 	    list($vn_subject_id, $t_subject) = $this->_initView();
 
-		if(!$this->verifyAccess($t_subject)) { return; }
+		if(!$this->verifyAccess($t_subject, __CA_BUNDLE_ACCESS_READONLY__)) { return; }
 		
 		$ps_bundle_name = $this->request->getParameter("bundle", pString);
 		if ($this->request->user->getBundleAccessLevel($t_subject->tableName(), $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
@@ -1817,8 +1813,8 @@ class BaseEditorController extends ActionController {
 	 * @param array $pa_parameters Array of parameters as specified in navigation.conf, including primary key value and type_id
 	 */
 	public function info($pa_parameters) {
-		$t_item 			= Datamodel::getInstanceByTableName($this->ops_table_name, true);
-		$vs_pk 				= $t_item->primaryKey();
+		$t_item 				= Datamodel::getInstanceByTableName($this->ops_table_name, true);
+		$vs_pk 					= $t_item->primaryKey();
 		if ($vs_label_table 	= $t_item->getLabelTableName()) {
 			$t_label 			= $t_item->getLabelTableInstance();
 			$vs_display_field	= $t_label->getDisplayField();
@@ -1829,7 +1825,7 @@ class BaseEditorController extends ActionController {
 
 		$t_item->load($vn_item_id);
 
-		if(!$this->verifyAccess($t_item)) { 
+		if(!$this->verifyAccess($t_item, __CA_BUNDLE_ACCESS_READONLY__)) { 
 			$t_item->clear();
 			$t_item->clearErrors();
 		}
@@ -1945,98 +1941,27 @@ class BaseEditorController extends ActionController {
 		// override with your own behavior as required
 		return true;
 	}
-	# ------------------------------------------------------------------
-	/**
-	 * Called just after record is deleted. Individual editor controllers can override this to implement their
-	 * own post-deletion cleanup logic.
-	 *
-	 * @param BaseModel $subject Model instance of row that was deleted
-	 * @param array $options 
-	 * @return bool True if post-deletion cleanup was successful, false if not
-	 *
-	 * @throws ItemNotFoundException, AccessEception
-	 */
-	protected function _checkAccess(BaseModel $subject, ?array $options=null) : bool {
-		//
-		// Is record deleted?
-		//
-		if ($subject->hasField('deleted') && $subject->get('deleted')) {
-			if (!caGetOption('dontRedirectOnDelete', $options, false)) {
-				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2550?r='.urlencode($this->request->getFullUrlPath()));
-			}
-			throw new ItemNotFoundException(_t('Item was deleted'), 'DELETED');
-		}
-
-		//
-		// Is record of correct type?
-		//
-		$va_restrict_to_types = null;
-		if ($subject->getAppConfig()->get('perform_type_access_checking')) {
-			$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_READONLY__));
-		}
-		if (
-			is_array($va_restrict_to_types) && sizeof($va_restrict_to_types)
-			&&
-			(
-				($subject->get('type_id')) && ($subject->getPrimaryKey() && !in_array($subject->get('type_id'), $va_restrict_to_types))
-				//||
-				//(!$subject->getPrimaryKey() && !in_array($this->request->getParameter('type_id', pInteger), $va_restrict_to_types))
-			)
-		) {
-			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
-			throw new AccessException();
-		}
-
-		//
-		// Is record from correct source?
-		//
-		$va_restrict_to_sources = null;
-		if (caSourceAccessControlIsEnabled($subject) && $subject->hasField('source_id')) {
-			if (is_array($va_restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_READONLY__)))) {
-				if (is_array($va_restrict_to_sources) && $subject->get('source_id') && !in_array($subject->get('source_id'), $va_restrict_to_sources)) {
-					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2562?r='.urlencode($this->request->getFullUrlPath()));
-					return false;
-				}
-				if (
-					(!$subject->get('source_id'))
-					||
-					($subject->get('source_id') && !in_array($subject->get('source_id'), $va_restrict_to_sources))
-					||
-					((strlen($vn_source_id = $this->request->getParameter('source_id', pInteger))) && !in_array($vn_source_id, $va_restrict_to_sources))
-				) {
-					$subject->set('source_id', $subject->getDefaultSourceID(array('request' => $this->request)));
-				}
-			}
-		}
-
-		//
-		// Does user have access to row?
-		//
-		if (caACLIsEnabled($subject) && $subject->getPrimaryKey()) {
-			if (method_exists($subject, 'checkACLAccessForUser') && $subject->checkACLAccessForUser($this->request->user) < __CA_BUNDLE_ACCESS_READONLY__) {
-				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
-				throw new AccessException();
-			}
-		}
-
-		return true;
-	}
 	# -------------------------------------------------------
 	/**
+	 * Verify that user has at least specified access to subject. If user does not have access
+	 * emit error notification.
 	 *
+	 * @param BaseModel $t_subject Model instance of row to edit
+	 * 
+	 * @return bool
 	 */
-	public function verifyAccess(BaseModel $t_subject) : bool {
+	public function verifyAccess(BaseModel $t_subject, int $min_access=__CA_BUNDLE_ACCESS_READONLY__) : bool {
 		if (!($type_name = $t_subject->getTypeName())) {
 			$type_name = $t_subject->getProperty('NAME_SINGULAR');
 		}
 		try {
-			$this->_checkAccess($t_subject, ['dontRedirectOnDelete' => true]);
+			return $this->_checkAccess($t_subject, ['access' => $min_access, 'dontRedirectOnDelete' => true]);
 		} catch(ItemNotFoundException $e) {
 			$this->notification->addNotification($e->getDisplayMessage($type_name), __NOTIFICATION_TYPE_ERROR__);
 			$this->redirectAfterDelete($t_subject);
 			return false;
 		} catch(AccessException $e) {
-			$this->notification->addNotification(_t('You do not have access to this %1', $type_name), __NOTIFICATION_TYPE_ERROR__);
+			$this->notification->addNotification(_t('You do not have access to this %1: %2', $type_name, $e->getMessage()), __NOTIFICATION_TYPE_ERROR__);
 			$this->redirectAfterDelete($t_subject);
 			return false;
 		} catch(Exception $e) {
@@ -2044,7 +1969,62 @@ class BaseEditorController extends ActionController {
 			$this->redirectAfterDelete($t_subject);
 			return false;
 		}
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Check if user has at least read access to subject
+	 *
+	 * @param BaseModel $t_subject Model instance of row to edit
+	 * @param array $options Options include:
+	 *		dontRedirectOnDelete = Don't redirect to error message if record has been deleted. [Default is false]
+	 *		access = Minimum access required. [Default is __CA_BUNDLE_ACCESS_EDIT_DELETE__]
+	 *
+	 * @return bool
+	 *
+	 * @throws ItemNotFoundException, AccessEception
+	 */
+	protected function _checkAccess(BaseModel $t_subject, ?array $options=null) : bool {
+		//
+		// Is record deleted?
+		//
+		if ($t_subject->hasField('deleted') && $t_subject->get('deleted')) {
+			if (!caGetOption('dontRedirectOnDelete', $options, false)) {
+				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2550?r='.urlencode($this->request->getFullUrlPath()));
+			}
+			throw new ItemNotFoundException(_t('Item was deleted'), 'DELETED');
+		}
 		
+		//
+		// Does record have a source?
+		//
+		$restrict_to_sources = null;
+		if (caSourceAccessControlIsEnabled($t_subject) && $t_subject->hasField('source_id')) {
+			if (is_array($restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_table_name, ['access' => __CA_BUNDLE_ACCESS_READONLY__]))) {
+				if (!$t_subject->get('source_id')) {
+					$t_subject->set('source_id', $t_subject->getDefaultSourceID(['request' => $this->request]));
+				}
+			}
+		}
+		
+		$access = caGetOption('access', $options, __CA_BUNDLE_ACCESS_READONLY__);
+		switch($access) {
+			case __CA_BUNDLE_ACCESS_READONLY__:
+				$ret = method_exists($t_subject, 'isReadable') ? $t_subject->isReadable($this->request) : true;
+				break;
+			case __CA_BUNDLE_ACCESS_EDIT__:
+				$ret = method_exists($t_subject, 'isSaveable') ? $t_subject->isSaveable($this->request) : true;
+				break;
+			case __CA_BUNDLE_ACCESS_EDIT_DELETE__:
+			default:
+				$ret = method_exists($t_subject, 'isDeletable') ? $t_subject->isDeletable($this->request) : true;
+				break;
+		}
+			
+		if(!$ret) {
+			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
+			throw new AccessException();
+		}
+
 		return true;
 	}
 	# -------------------------------------------------------
@@ -2699,10 +2679,10 @@ class BaseEditorController extends ActionController {
 		$t_attr = new ca_attributes($t_attr_val->get('attribute_id'));
 
 		$vn_table_num = Datamodel::getTableNum($this->ops_table_name);
-		if ($t_attr->get('table_num') !=  $vn_table_num) {
-			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
-			return;
-		}
+		// if ($t_attr->get('table_num') !=  $vn_table_num) {
+// 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+// 			return;
+// 		}
 		$t_element = new ca_metadata_elements($t_attr->get('element_id'));
 		$this->request->setParameter(Datamodel::primaryKey($vn_table_num), $t_attr->get('row_id'));
 
@@ -2710,7 +2690,7 @@ class BaseEditorController extends ActionController {
 		$ps_version = $this->request->getParameter('version', pString);
 
 
-		if(!$this->verifyAccess($t_subject)) { return; }
+		if(!$this->verifyAccess($t_subject, __CA_BUNDLE_ACCESS_READONLY__)) { return; }
 
 		//
 		// Does user have access to bundle?
@@ -2832,7 +2812,7 @@ class BaseEditorController extends ActionController {
 			throw new ApplicationException(_t('Invalid id %1', $vn_subject_id));
 		}
 		
-		if(!$this->verifyAccess($t_subject)) { return; }
+		if(!$this->verifyAccess($t_subject, __CA_BUNDLE_ACCESS_EDIT__)) { return; }
 		
 		$table = $t_subject->tableName();
 		$location_id = $this->request->getParameter('home_location_id', pInteger);
@@ -3119,6 +3099,22 @@ class BaseEditorController extends ActionController {
 	}
 	# -------------------------------------------------------
 	/**
+	 *
+	 */
+	public function persistUnsavedEdits() {
+		$this->response->setContentType('application/json');
+		
+		$table = $this->request->getParameter('table', pString);
+		$row_id = $this->request->getParameter('id', pInteger);
+		$data = $this->request->getParameter('data', pArray);
+		
+		$ret = ca_unsaved_edits::saveForm($this->request, $table, $row_id, $data);
+	
+		$this->view->setVar('data', ['ret' => $ret ? $ret->getPrimaryKey():  false, 'data' => $ret->get('snapshot')]);	
+		$this->render('json.php');
+	}
+	# -------------------------------------------------------
+	/**
 	 * Handle sort requests from form editor.
 	 * Gets passed a table name, a list of ids and a key to sort on. Will return a JSON list of the same IDs, just sorted.
 	 *
@@ -3171,6 +3167,17 @@ class BaseEditorController extends ActionController {
 	}
 	# -------------------------------------------------------
 	/**
+	 *
+	 */
+	private function _privTableName($t_subject) {
+		$t = $t_subject->tableName();
+		if($t === 'ca_sets') {
+			return caIsInventory($t_subject) ? 'inventories' : 'sets';
+		}
+		return $t;
+	}
+	# -------------------------------------------------------
+	/*
 	 * 
 	 */
 	public function setAccessForRelated(?array $options=null) {
@@ -3188,7 +3195,7 @@ class BaseEditorController extends ActionController {
 	    	return;
 		}
 		
-		if(!$this->verifyAccess($t_subject)) { return; }
+		if(!$this->verifyAccess($t_subject, __CA_BUNDLE_ACCESS_EDIT__)) { return; }
 		
 		$target = $this->request->getParameter('target', pString);
 		$access = $this->request->getParameter('access', pInteger);

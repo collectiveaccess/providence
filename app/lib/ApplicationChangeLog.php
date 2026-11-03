@@ -537,6 +537,7 @@ class ApplicationChangeLog {
 						if (sizeof($va_keys) > 0) {
 							if (method_exists($t_obj, 'getLeftTableNum')) {
 								if ($t_obj->getLeftTableNum() == $t_item->tableNum()) {
+									if(!$t_obj->getRightTableNum()) { continue; }
 									// other side of rel is on right
 									$t_related_table = Datamodel::getInstanceByTableNum($t_obj->getRightTableNum(), true);
 									

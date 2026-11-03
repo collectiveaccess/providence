@@ -69,17 +69,15 @@
 						
 			$vs_feed_url_md5 = md5($vs_feed_url);
 
-			if(ExternalCache::contains($vs_feed_url_md5, 'Meow')) {
-				$feed = ExternalCache::fetch($vs_feed_url_md5, 'Meow');
-			} else {
+			$feed = ExternalCache::contains($vs_feed_url_md5, 'Meow') ? ExternalCache::fetch($vs_feed_url_md5, 'Meow') : null;
+			if(!is_array($feed)) {	// feeds cached by previous versions are objects; refetch them
 				try {
-					$feed = Zend_Feed::import($vs_feed_url);
+					$feed = FeedReader::import($vs_feed_url);
 				} catch (Exception $e) {
 					return null;
 				}
 
 				ExternalCache::save($vs_feed_url_md5, $feed, 'Meow');
-				$feed->__wakeup();
 			}
 			
 
@@ -100,24 +98,24 @@
 			$description="";
 						
 			// Reading RSS feeds title, URL and description
-			$this->opo_view->setVar('title', $feed->title());
-			$this->opo_view->setVar('description', $feed->description());
-			$this->opo_view->setVar('link', $feed->link());
+			$this->opo_view->setVar('title', $feed['title']);
+			$this->opo_view->setVar('description', $feed['description']);
+			$this->opo_view->setVar('link', $feed['link']);
 			
-			$rssViewContent .= "<h1><a href=\"".$feed->link()."\" target=\"_blank\">"
-				.$feed->title()."</a></h1>\n"
-				.$feed->description();
+			$rssViewContent .= "<h1><a href=\"".$feed['link']."\" target=\"_blank\">"
+				.$feed['title']."</a></h1>\n"
+				.$feed['description'];
 			
 			// Main loop : reading the items
-			foreach($feed as $item){
+			foreach($feed['items'] as $item){
 				$vn_c++;
 				if ($vn_c <= $pa_settings['number_of_feeds'])	{
 					// retrieve content
-					$this->opo_view->setVar('item_title', $item->title());
-					$this->opo_view->setVar('item_description', $item->description());
-					$this->opo_view->setVar('item_link', $item->link());
+					$this->opo_view->setVar('item_title', $item['title']);
+					$this->opo_view->setVar('item_description', $item['description']);
+					$this->opo_view->setVar('item_link', $item['link']);
 					
-					$description = $item->description();
+					$description = $item['description'];
 					// when filtering images is on, remove IMG tags from description
 					// when filtering HTML is on, remove all HTML tags
 					if ($pa_settings['filter_html'] == 2 ) {
@@ -128,7 +126,7 @@
 					
 					// HTML generation of the content to display, 1 span surrounding each feed
 					$rssViewContent .= "" .
-							"<h3><a href=\"".$item->link()."\" target=\"blank\">".$item->title()."</a></h3>\n" .
+							"<h3><a href=\"".$item['link']."\" target=\"blank\">".$item['title']."</a></h3>\n" .
 							"".$description."\n";					
 				}
 				$rssViewContent .= "</span>";	

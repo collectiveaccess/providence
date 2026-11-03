@@ -1761,10 +1761,8 @@ class ca_users extends BaseModel {
 					break;
 				case 'FT_TEXT':
 					if ($va_pref_info['displayType'] == 'DT_CURRENCIES') {
-						// this respects the global UI locale which is set using Zend_Locale
-						
-						$o_currency = new Zend_Currency($_locale);
-						return ($vs_currency_specifier = $o_currency->getShortName()) ? $vs_currency_specifier : "CAD";
+						// this respects the global UI locale
+						return ($vs_currency_specifier = LocaleFormat::getCurrencyCode($_locale)) ? $vs_currency_specifier : "CAD";
 					}
 					return $va_pref_info["default"] ? $va_pref_info["default"] : null;
 					break;
@@ -1883,20 +1881,18 @@ class ca_users extends BaseModel {
 			if (isset($va_pref_info["choiceList"]) && is_array($va_pref_info["choiceList"])) {
 				if (is_array($ps_value)) {
 					foreach($ps_value as $vs_value) {
-						if (!in_array($vs_value, array_values($va_pref_info["choiceList"]))) {
+						if (!in_array($vs_value, array_values($va_pref_info["choiceList"]), true)) {
 							if ($pb_post_errors) {
 								$this->postError(921, _t("%1 is not a valid value for %2", $vs_value, $va_pref_info["label"]),"User->isValidPreferenceValue()");
 							}
 							return false;
 						}
 					}
-				} else {
-					if (!in_array($ps_value, array_values($va_pref_info["choiceList"]))) {
-						if ($pb_post_errors) {
-							$this->postError(921, _t("%1 is not a valid value for %2", $ps_value, $va_pref_info["label"]),"User->isValidPreferenceValue()");
-						}
-						return false;
+				} elseif (!in_array($ps_value, array_values($va_pref_info["choiceList"]), true)) {
+					if ($pb_post_errors) {
+						$this->postError(921, _t("%1 is not a valid value for %2", $ps_value, $va_pref_info["label"]),"User->isValidPreferenceValue()");
 					}
+					return false;
 				}
 			}
 			
@@ -2160,8 +2156,8 @@ class ca_users extends BaseModel {
 							foreach($va_locales as $vs_code => $va_parts) {
 								if (is_array($va_restrict_to_ui_locales) && sizeof($va_restrict_to_ui_locales) && !in_array($vs_code, $va_restrict_to_ui_locales)) { continue; }
 								try {
-									$vs_lang_name = Zend_Locale::getTranslation(strtolower($va_parts[0]), 'language', strtolower($va_parts[0]));
-									$vs_country_name = Zend_Locale::getTranslation($va_parts[1], 'Country', $vs_code);
+									$vs_lang_name = LocaleFormat::getLanguageName(strtolower($va_parts[0]), strtolower($va_parts[0]));
+									$vs_country_name = LocaleFormat::getCountryName($va_parts[1], $vs_code);
 								} catch (Exception $e) {
 									$vs_lang_name = strtolower($va_parts[0]);
 									$vs_country_name = $vs_code;
@@ -2345,6 +2341,45 @@ class ca_users extends BaseModel {
 									$output .= "</div></td></tr>\n";
 								}
 								$output .= "</table>";
+							}
+							break;
+						case 'FT_INVENTORY_BUNDLE_LIST':
+							if(caInventoryIsEnabled()) {
+								$config = Configuration::load();
+								$inventory_container_element_code = $config->get('inventory_container_element_code');
+								$inventory_found_element_code = $config->get('inventory_found_element_code');
+								if(is_array($md = ca_metadata_elements::getElementsForSet($inventory_container_element_code))) {
+									if(!is_array($vs_current_value)) { $vs_current_value = []; }
+									foreach($md as $e) {
+										if($e['datatype'] == __CA_ATTRIBUTE_VALUE_CONTAINER__) { continue; }
+										if($e['element_code'] === $inventory_found_element_code) { continue; }
+										
+										$opts = ['value' => $e['element_code']];
+										if(in_array($e['element_code'], $vs_current_value, true)) { $opts['CHECKED'] = 1; }
+										$output .= "<div>".caHTMLCheckboxInput("pref_{$ps_pref}[]", $opts, [])." ".$e['display_label']."</div>\n";
+									}
+								}
+							}
+							break;
+						case 'FT_INVENTORY_TYPE_LIST':
+							if(caInventoryIsEnabled()) {
+								$config = Configuration::load();
+								$inventory_type_by_table = $config->get('inventory_types') ?? [];
+								
+								if(!is_array($vs_current_value)) { $vs_current_value = []; }
+								$vs_current_value = array_map('intval', $vs_current_value);
+								foreach($inventory_type_by_table as $t => $types) {
+									if(!($t_instance = Datamodel::getInstance($t))) { continue; }
+									$table_name = Datamodel::getTableProperty($t, 'NAME_PLURAL');
+									$output .= "<div>"._t('<em>For %1:</em>', $table_name)."</div>\n";
+									foreach($types as $type) {
+										$typename = $t_instance->getTypeName($type);
+										
+										$opts['value'] = $type_id = $t_instance->getTypeIDForCode($type);
+										if(in_array((int)$type_id, $vs_current_value, true)) { $opts['CHECKED'] = 1; }
+										$output .= "<div style='margin-left: 5px;'>".caHTMLCheckboxInput("pref_{$ps_pref}[]", $opts, [])." ".$typename."</div>\n";
+									}
+								}
 							}
 							break;
 						default:
@@ -3771,6 +3806,7 @@ class ca_users extends BaseModel {
 	/**
 	 * Returns the type of access the user has to the specified type.
 	 * Types of access are:
+	 *		__CA_BUNDLE_ACCESS_EDIT_DELETE__ (implies ability to view change and delete content)
 	 *		__CA_BUNDLE_ACCESS_EDIT__ (implies ability to view and change bundle content)
 	 *		__CA_BUNDLE_ACCESS_READONLY__ (implies ability to view bundle content only)
 	 *		__CA_BUNDLE_ACCESS_NONE__ (indicates that the user has no access to bundle)
@@ -3788,10 +3824,10 @@ class ca_users extends BaseModel {
 			} else {
 				$t_list = new ca_lists();
 				$t_instance = Datamodel::getInstanceByTableName($ps_table_name, true);
-				if(!($vs_type_list_code = $t_instance->getTypeListCode())) { return __CA_BUNDLE_ACCESS_EDIT__; } // no type-level acces control for tables without type lists (like ca_lists)
+				if(!($vs_type_list_code = $t_instance->getTypeListCode())) { return __CA_BUNDLE_ACCESS_EDIT_DELETE__; } // no type-level acces control for tables without type lists (like ca_lists)
 				$vn_type_id = (int)$t_list->getItemIDFromList($vs_type_list_code, $pm_type_code_or_id);
 			}
-			if($vn_type_id === 0) { return __CA_BUNDLE_ACCESS_EDIT__; }
+			if($vn_type_id === 0) { return __CA_BUNDLE_ACCESS_EDIT_DELETE__; }
 			$vn_access = -1;
 			foreach($va_roles as $vn_role_id => $va_role_info) {
 				$va_vars = $va_role_info['vars'];
@@ -3800,7 +3836,7 @@ class ca_users extends BaseModel {
 					if (isset($va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id]) && ((int)$va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id] > $vn_access)) {
 						$vn_access = (int)$va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id];
 						
-						if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
+						if ($vn_access == __CA_BUNDLE_ACCESS_EDIT_DELETE__) { break; }	// already at max
 					}
 				} else {
 					// for roles that don't have 'type_access_settings' set, use default.
@@ -3808,7 +3844,7 @@ class ca_users extends BaseModel {
 					// access settings set in the profile and haven't been saved through the UI
 					$vn_access = $this->getAppConfig()->get('default_type_access_level');
 
-					if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
+					if ($vn_access == __CA_BUNDLE_ACCESS_EDIT_DELETE__) { break; }	// already at max
 				}
 			}
 			
@@ -3821,13 +3857,14 @@ class ca_users extends BaseModel {
 		} else {
 			// no type level access control for tables not explicitly listed in $s_bundlable_tables
 			ca_users::$s_user_type_access_cache[$ps_table_name.'/'.$vn_type_id."/".$this->getPrimaryKey()] = ca_users::$s_user_type_access_cache[$vs_cache_key] = __CA_BUNDLE_ACCESS_EDIT__;
-			return __CA_BUNDLE_ACCESS_EDIT__;
+			return __CA_BUNDLE_ACCESS_EDIT_DELETE__;
 		}
 	}
 	# ----------------------------------------
 	/**
 	 * Returns list of type_ids for specified table for which user has at least the specified access
 	 * Types of access are:
+	 *		__CA_BUNDLE_ACCESS_EDIT_DELETE__ (implies ability to view change and delete content)
 	 *		__CA_BUNDLE_ACCESS_EDIT__ (implies ability to view and change bundle content)
 	 *		__CA_BUNDLE_ACCESS_READONLY__ (implies ability to view bundle content only)
 	 *		__CA_BUNDLE_ACCESS_NONE__ (indicates that the user has no access to bundle)
@@ -3873,6 +3910,7 @@ class ca_users extends BaseModel {
 	/**
 	 * Returns the type of access the user has to the specified source.
 	 * Types of access are:
+	 *		__CA_BUNDLE_ACCESS_EDIT_DELETE__ (implies ability to view change and delete content)
 	 *		__CA_BUNDLE_ACCESS_EDIT__ (implies ability to view and change bundle content)
 	 *		__CA_BUNDLE_ACCESS_READONLY__ (implies ability to view bundle content only)
 	 *		__CA_BUNDLE_ACCESS_NONE__ (indicates that the user has no access to bundle)
@@ -3900,7 +3938,7 @@ class ca_users extends BaseModel {
 					if (isset($va_vars['source_access_settings'][$ps_table_name.'.'.$vn_source_id]) && ((int)$va_vars['source_access_settings'][$ps_table_name.'.'.$vn_source_id] > $vn_access)) {
 						$vn_access = (int)$va_vars['source_access_settings'][$ps_table_name.'.'.$vn_source_id];
 						
-						if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
+						if ($vn_access == __CA_BUNDLE_ACCESS_EDIT_DELETE__) { break; }	// already at max
 					}
 				} else {
 					// for roles that don't have 'source_access_settings' set, use default.
@@ -3908,7 +3946,7 @@ class ca_users extends BaseModel {
 					// access settings set in the profile and haven't been saved through the UI
 					$vn_access = $this->getAppConfig()->get('default_source_access_level');
 
-					if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
+					if ($vn_access == __CA_BUNDLE_ACCESS_EDIT_DELETE__) { break; }	// already at max
 				}
 			}
 			
@@ -3920,14 +3958,15 @@ class ca_users extends BaseModel {
 			return $vn_access;
 		} else {
 			// no source level access control for tables not explicitly listed in $s_bundlable_tables
-			ca_users::$s_user_source_access_cache[$ps_table_name.'/'.$vn_source_id."/".$this->getPrimaryKey()] = ca_users::$s_user_source_access_cache[$vs_cache_key] = __CA_BUNDLE_ACCESS_EDIT__;
-			return __CA_BUNDLE_ACCESS_EDIT__;
+			ca_users::$s_user_source_access_cache[$ps_table_name.'/'.$vn_source_id."/".$this->getPrimaryKey()] = ca_users::$s_user_source_access_cache[$vs_cache_key] = __CA_BUNDLE_ACCESS_EDIT_DELETE__;
+			return __CA_BUNDLE_ACCESS_EDIT_DELETE__;
 		}
 	}
 	# ----------------------------------------
 	/**
 	 * Returns list of source_ids for specified table for which user has at least the specified access
 	 * Types of access are:
+	 *		__CA_BUNDLE_ACCESS_EDIT_DELETE__ (implies ability to view change and delete content)
 	 *		__CA_BUNDLE_ACCESS_EDIT__ (implies ability to view and change bundle content)
 	 *		__CA_BUNDLE_ACCESS_READONLY__ (implies ability to view bundle content only)
 	 *		__CA_BUNDLE_ACCESS_NONE__ (indicates that the user has no access to bundle)

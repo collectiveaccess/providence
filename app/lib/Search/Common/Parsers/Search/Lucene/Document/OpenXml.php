@@ -24,9 +24,6 @@
 /** Zend_Search_Lucene_Document */
 #require_once 'Zend/Search/Lucene/Document.php';
 
-/** Zend_Xml_Security */
-#require_once 'Zend/Xml/Security.php';
-
 /**
  * OpenXML document.
  *
@@ -74,6 +71,22 @@ abstract class Zend_Search_Lucene_Document_OpenXml extends Zend_Search_Lucene_Do
     const SCHEMA_DUBLINCORETERMS = 'http://purl.org/dc/terms/';
 
     /**
+     * Load XML, refusing documents that declare entities, to prevent XXE and entity expansion attacks.
+     * Replaces self::_scanXml()
+     *
+     * @param string $xml
+     * @return SimpleXMLElement|false
+     * @throws Zend_Search_Lucene_Document_Exception
+     */
+    protected static function _scanXml($xml)
+    {
+        if (preg_match('/<!ENTITY/i', (string)$xml)) {
+            throw new Zend_Search_Lucene_Document_Exception('Detected use of ENTITY in XML, disabled to prevent XXE/XEE attacks');
+        }
+        return simplexml_load_string((string)$xml, 'SimpleXMLElement', LIBXML_NONET);
+    }
+
+    /**
      * Extract metadata from document
      *
      * @param ZipArchive $package    ZipArchive OpenXML package
@@ -85,11 +98,11 @@ abstract class Zend_Search_Lucene_Document_OpenXml extends Zend_Search_Lucene_Do
         $coreProperties = array();
 
         // Read relations and search for core properties
-        $relations = Zend_Xml_Security::scan($package->getFromName("_rels/.rels"));
+        $relations = self::_scanXml($package->getFromName("_rels/.rels"));
         foreach ($relations->Relationship as $rel) {
             if ($rel["Type"] == Zend_Search_Lucene_Document_OpenXml::SCHEMA_COREPROPERTIES) {
                 // Found core properties! Read in contents...
-                $contents = Zend_Xml_Security::scan(
+                $contents = self::_scanXml(
                     $package->getFromName(dirname($rel["Target"]) . "/" . basename($rel["Target"]))
                 );
 

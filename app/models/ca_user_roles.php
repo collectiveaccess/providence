@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -452,15 +452,15 @@ class ca_user_roles extends BaseModel {
 	/**
 	 * Get type access settings for current role
 	 */
-	public function getTypeAccessSettings() {
-		if(!$this->getPrimaryKey()) { return array(); }
-		if(!$this->getAppConfig()->get('perform_type_access_checking')) { array(); }
+	public function getTypeAccessSettings() : array {
+		if(!$this->getPrimaryKey()) { return []; }
+		if(!$this->getAppConfig()->get('perform_type_access_checking')) { return []; }
 
 		$va_vars = $this->get('vars');
- 		if(isset($va_vars['type_access_settings'])){
+ 		if(is_array($va_vars['type_access_settings'] ?? null)){
  			return $va_vars['type_access_settings'];
  		} else {
- 			return array();
+ 			return [];
  		}
 	}
 	# ------------------------------------------------------
@@ -470,7 +470,7 @@ class ca_user_roles extends BaseModel {
 	 * @param array $access_settings List of access settings; each list entry is an array with the following keys: 
 	 *		table = table name
 	 *		type = type code or id
-	 *		access = Access level to grant; one of __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__ or __CA_BUNDLE_ACCESS_EDIT__
+	 *		access = Access level to grant; one of __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__ or __CA_BUNDLE_ACCESS_EDIT_DELETE__
 	 * 
 	 * @return mixed true on success, array with errors on error
 	 */
@@ -490,7 +490,7 @@ class ca_user_roles extends BaseModel {
 			}
 			$table = $a['table'];
 			$type = $a['type'];
-			if(!in_array($access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { 
+			if(!in_array($access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__, __CA_BUNDLE_ACCESS_EDIT_DELETE__))) { 
 				$errors[] = [
 					'type' => $type, 'access' => $a['access'], 'table' => $table, 'message' => _t('Invalid access value')
 				];
@@ -550,13 +550,13 @@ class ca_user_roles extends BaseModel {
 	 *
 	 * @param string $table the table the bundle belongs to
 	 * @param string $type_id_or_code the primary key or code for the type list item
-	 * @param int $access access level, __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__ or __CA_BUNDLE_ACCESS_EDIT__
+	 * @param int $access access level, __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__ or __CA_BUNDLE_ACCESS_EDIT_DELETE__
 	 * @return boolean success or not
 	 */
 	public function setAccessSettingForType($table, $type_id_or_code, $access) {
-		if(!in_array($access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
+		if(!in_array($access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__, __CA_BUNDLE_ACCESS_EDIT_DELETE__))) { return false; }
 		if(!$this->getPrimaryKey()) { return false; }
-		//if(!$this->getAppConfig()->get('perform_type_access_checking')) { return false; }
+		if(!$this->getAppConfig()->get('perform_type_access_checking')) { return false; }
 		$t_list = new ca_lists();	
 
 		$vars = $this->get('vars');
@@ -609,7 +609,7 @@ class ca_user_roles extends BaseModel {
 	 * @param array $access_settings List of access settings; each list entry is an array with the following keys: 
 	 *		table = table name
 	 *		source = source code or id
-	 *		access = Access level to grant; one of __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__ or __CA_BUNDLE_ACCESS_EDIT__
+	 *		access = Access level to grant; one of __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__ or __CA_BUNDLE_ACCESS_EDIT_DELETE__
 	 *		default = Is default source?
 	 * 
 	 * @return mixed true on success, array with errors on error
@@ -632,7 +632,7 @@ class ca_user_roles extends BaseModel {
 			$source = $a['source'];
 			$is_default = $a['default'] ?? false;
 		
-			if(!in_array($access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { 
+			if(!in_array($access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__, __CA_BUNDLE_ACCESS_EDIT_DELETE__))) { 
 				$errors[] = [
 					'source' => $source, 'access' => $a['access'], 'table' => $table, 'message' => _t('Invalid access value')
 				];
@@ -695,12 +695,12 @@ class ca_user_roles extends BaseModel {
 	 *
 	 * @param string $table the table the bundle belongs to
 	 * @param string $source_id_or_code the primary key or code for the type list item
-	 * @param int $access access level, __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__ or __CA_BUNDLE_ACCESS_EDIT__
+	 * @param int $access access level, __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__ or __CA_BUNDLE_ACCESS_EDIT_DELETE__
 	 * @param bool $is_default Mark source as default for this table
 	 * @return boolean success or not
 	 */
 	public function setAccessSettingForSource($table, $source_id_or_code, $access, $is_default=false) {
-		if(!in_array($access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
+		if(!in_array($access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__, __CA_BUNDLE_ACCESS_EDIT_DELETE__))) { return false; }
 		if(!$this->getPrimaryKey()) { return false; }
 		//if(!caSourceAccessControlIsEnabled()) { return false; }
 		$t_list = new ca_lists();	

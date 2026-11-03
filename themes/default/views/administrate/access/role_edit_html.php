@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2021 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,37 +26,37 @@
  * ----------------------------------------------------------------------
  */
 $t_role = $this->getVar('t_role');
-$vn_role_id = $this->getVar('role_id');
+$role_id = $this->getVar('role_id');
 
-$va_bundle_list = $this->getVar('bundle_list');
-$va_source_list = $this->getVar('source_list');
-$va_type_list = $this->getVar('type_list');
-$va_access_status_list = $this->getVar('access_status_list');
+$bundle_list = $this->getVar('bundle_list');
+$source_list = $this->getVar('source_list');
+$type_list = $this->getVar('type_list');
+$access_status_list = $this->getVar('access_status_list');
 
-$va_table_names = $this->getVar('table_display_names');
+$table_names = $this->getVar('table_display_names');
 ?>
 <div class="sectionBox">
 <?php
-	print $vs_control_box = caFormControlBox(
+	print $control_box = caFormControlBox(
 		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'RolesForm').' '.
 		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/access', 'Roles', 'ListRoles', array('role_id' => 0)), 
 		'', 
-		($vn_role_id > 0) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/access', 'Roles', 'Delete', array('role_id' => $vn_role_id)) : ''
+		($role_id > 0) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/access', 'Roles', 'Delete', array('role_id' => $role_id)) : ''
 	);
 ?>
 <?php
 	print caFormTag($this->request, 'Save', 'RolesForm');
 
-		foreach($t_role->getFormFields() as $vs_f => $va_role_info) {
-			print $t_role->htmlFormElement($vs_f, null, array('field_errors' => $this->request->getActionErrors('field_'.$vs_f)));
+		foreach($t_role->getFormFields() as $f => $role_info) {
+			print $t_role->htmlFormElement($f, null, array('field_errors' => $this->request->getActionErrors('field_'.$f)));
 		}
 		
-		$va_actions = $t_role->getRoleActionList();
+		$actions = $t_role->getRoleActionList();
 		
-		$vn_num_cols = 5;
-		$vn_c = 0;
+		$num_cols = 5;
+		$c = 0;
 		
-		$va_tooltips = array();
+		$tooltips = array();
 ?>
 	<div id="role_tabs"  class="tabContainer">
 		<ul>
@@ -79,68 +79,73 @@ $va_table_names = $this->getVar('table_display_names');
 		<div id="role_actions">
 			<table>
 <?php
-			$va_current_actions = $t_role->getRoleActions();
+			$current_actions = $t_role->getRoleActions();
 			
-			foreach($va_actions as $vs_group => $va_group_info) {
-				if ((caTableIsActive($vs_group) === false) && ($vs_group != 'ca_object_representations')) { continue; }		// will return null if group name is not a table name; true if it's an enabled table and false if it's a disabled table
-				$vs_check_all_link = '<a href="#" onclick="jQuery(\'.role_action_group_'.$vs_group.'\').attr(\'checked\', true); return false;" class="roleCheckAllNoneButton">'._t('All').'</a>';
-				$vs_check_none_link = '<a href="#" onclick="jQuery(\'.role_action_group_'.$vs_group.'\').attr(\'checked\', false); return false;" class="roleCheckAllNoneButton">'._t('None').'</a>';
+			foreach($actions as $group => $group_info) {
+				if ((caTableIsActive($group) === false) && ($group != 'ca_object_representations')) { continue; }		// will return null if group name is not a table name; true if it's an enabled table and false if it's a disabled table
+				$check_all_link = '<a href="#" onclick="jQuery(\'.role_action_group_'.$group.'\').attr(\'checked\', true); return false;" class="roleCheckAllNoneButton">'._t('All').'</a>';
+				$check_none_link = '<a href="#" onclick="jQuery(\'.role_action_group_'.$group.'\').attr(\'checked\', false); return false;" class="roleCheckAllNoneButton">'._t('None').'</a>';
 				
-				print "<tr><td colspan='".($vn_num_cols * 2)."' class='formLabel roleCheckGroupHeading'><span id='group_label_".$vs_group."'>".$va_group_info['label']."</span> <span class='roleCheckAllNoneButtons'>{$vs_check_all_link}/{$vs_check_none_link}</span></td></tr>\n";
-				TooltipManager::add('#group_label_'.$vs_group, "<div class='tooltipHead'>".$va_group_info['label']."</div>".$va_group_info['description']);
+				print "<tr><td colspan='".($num_cols * 2)."' class='formLabel roleCheckGroupHeading'><span id='group_label_".$group."'>".$group_info['label']."</span> <span class='roleCheckAllNoneButtons'>{$check_all_link}/{$check_none_link}</span></td></tr>\n";
+				TooltipManager::add('#group_label_'.$group, "<div class='tooltipHead'>".$group_info['label']."</div>".$group_info['description']);
 
-				foreach($va_group_info['actions'] as $vs_action => $va_action_info) {
-					if ($vn_c == 0) {
+				foreach($group_info['actions'] as $action => $action_info) {
+					if ($c == 0) {
 						print "<tr valign='top'>";
 					} 
-					$va_attributes = array('value' => 1);
-					if (in_array($vs_action, $va_current_actions)) {
-						$va_attributes['checked'] = 1;
+					$attributes = array('value' => 1);
+					if (in_array($action, $current_actions)) {
+						$attributes['checked'] = 1;
 					}
-					$va_attributes['class'] = 'role_action_group_'.$vs_group;
+					$attributes['class'] = 'role_action_group_'.$group;
 					
-					print "<td>".caHTMLCheckboxInput($vs_action, $va_attributes)."</td><td width='120'><span id='role_label_".$vs_action."'>".$va_action_info['label']."</span></td>";
-					TooltipManager::add('#role_label_'.$vs_action, "<div class='tooltipHead'>".$va_action_info['label']."</div>".$va_action_info['description']);
+					print "<td>".caHTMLCheckboxInput($action, $attributes)."</td><td width='120'><span id='role_label_".$action."'>".$action_info['label']."</span></td>";
+					TooltipManager::add('#role_label_'.$action, "<div class='tooltipHead'>".$action_info['label']."</div>".$action_info['description']);
 					
-					$vn_c++;
+					$c++;
 					
-					if ($vn_c >= $vn_num_cols) {
-						$vn_c = 0;
+					if ($c >= $num_cols) {
+						$c = 0;
 						print "</tr>\n";
 					}
 				}
 									
-				if ($vn_c > 0) {
+				if ($c > 0) {
 					print "</tr>\n";
 				}
-				$vn_c = 0;
+				$c = 0;
 			}
 ?>
 			</table>
 		</div>
 		<div id="role_bundles">
 <?php
-	foreach($va_bundle_list as $vs_table => $va_bundles_by_table) {
-		if (!caTableIsActive($vs_table) && ($vs_table != 'ca_object_representations')) { continue; }
+	foreach($bundle_list as $table => $bundles_by_table) {
+		if (!caTableIsActive($table) && ($table != 'ca_object_representations')) { continue; }
 		print "<table width='100%'>\n";
-		print "<tr><td colspan='4'><h1>".$va_table_names[$vs_table]."</h1></td></tr>\n";				
-		print "<tr align='center' valign='middle'><th width='180' align='left'>"._t('Element')."</th><th width='180'><a href='#' onclick='jQuery(\".{$vs_table}_bundle_access_none\").prop(\"checked\", 1); return false;'>"._t('No access')."</a></th><th width='180'><a href='#' onclick='jQuery(\".{$vs_table}_bundle_access_readonly\").prop(\"checked\", 1); return false;'>"._t('Read-only access')."</a></th><th><a href='#' onclick='jQuery(\".{$vs_table}_bundle_access_edit\").prop(\"checked\", 1); return false;'>"._t('Read/edit access')."</a></th></tr>\n";
+		print "<tr><td colspan='4'><h1>".$table_names[$table]."</h1></td></tr>\n";				
+		print "<tr align='center' valign='middle'>
+			<th width='180' align='left'>"._t('Element')."</th>
+			<th width='180'><a href='#' onclick='jQuery(\".{$table}_bundle_access_none\").prop(\"checked\", 1); return false;'>"._t('No access')."</a></th>
+			<th width='180'><a href='#' onclick='jQuery(\".{$table}_bundle_access_readonly\").prop(\"checked\", 1); return false;'>"._t('Read-only access')."</a></th>
+			<th><a href='#' onclick='jQuery(\".{$table}_bundle_access_edit\").prop(\"checked\", 1); return false;'>"._t('Edit access')."</a></th>
+		</tr>\n";
 		
-		$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
-		$vs_pk = $t_instance->primaryKey();
-		foreach($va_bundles_by_table as $vs_bundle_name => $va_info) {
+		$t_instance = Datamodel::getInstanceByTableName($table, true);
+		$pk = $t_instance->primaryKey();
+		foreach($bundles_by_table as $bundle_name => $info) {
 			print "<tr align='center' valign='middle'>";
-			print "<td align='left'>".$va_info['bundle_info']['display']."</td>";
+			print "<td align='left'>".$info['bundle_info']['display']."</td>";
 			
-			$vs_access = $va_info['access'];
+			$access = $info['access'];
 			
-			if (in_array($vs_bundle_name, array('preferred_labels', $vs_pk))) {	// don't allow preferred labels and other critical UI fields to be set to no access
+			if (in_array($bundle_name, array('preferred_labels', $pk))) {	// don't allow preferred labels and other critical UI fields to be set to no access
 				print "<td>-</td>\n";
 			} else {
-				print "<td>".caHTMLRadioButtonInput($vs_table.'_'.$vs_bundle_name, array('value' => __CA_BUNDLE_ACCESS_NONE__, 'class' => "{$vs_table}_bundle_access_none"), array('checked' => ($vs_access == __CA_BUNDLE_ACCESS_NONE__)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput($table.'_'.$bundle_name, array('value' => __CA_BUNDLE_ACCESS_NONE__, 'class' => "{$table}_bundle_access_none"), array('checked' => ($access == __CA_BUNDLE_ACCESS_NONE__)))."</td>\n";
 			}
-			print "<td>".caHTMLRadioButtonInput($vs_table.'_'.$vs_bundle_name, array('value' => __CA_BUNDLE_ACCESS_READONLY__, 'class' => "{$vs_table}_bundle_access_readonly"), array('checked' => ($vs_access == __CA_BUNDLE_ACCESS_READONLY__)))."</td>\n";
-			print "<td>".caHTMLRadioButtonInput($vs_table.'_'.$vs_bundle_name, array('value' => __CA_BUNDLE_ACCESS_EDIT__, 'class' => "{$vs_table}_bundle_access_edit"), array('checked' => ($vs_access == __CA_BUNDLE_ACCESS_EDIT__)))."</td>\n";
+			print "<td>".caHTMLRadioButtonInput($table.'_'.$bundle_name, array('value' => __CA_BUNDLE_ACCESS_READONLY__, 'class' => "{$table}_bundle_access_readonly"), array('checked' => ($access == __CA_BUNDLE_ACCESS_READONLY__)))."</td>\n";
+			print "<td>".caHTMLRadioButtonInput($table.'_'.$bundle_name, array('value' => __CA_BUNDLE_ACCESS_EDIT__, 'class' => "{$table}_bundle_access_edit"), array('checked' => ($access == __CA_BUNDLE_ACCESS_EDIT__)))."</td>\n";
 		}
 		print "</tr>\n";
 		print "</table>\n";
@@ -153,25 +158,32 @@ $va_table_names = $this->getVar('table_display_names');
 		<div id="type_list">
 <?php
 		$t_list = new ca_lists();
-		foreach($va_type_list as $vs_table => $va_types_by_table) {
+		foreach($type_list as $table => $types_by_table) {
 			print "<table width='100%'>\n";
-			print "<tr><td colspan='4'><h1>".$va_table_names[$vs_table]."</h1></td></tr>\n";	
-			print "<tr align='center' valign='middle'><th width='180' align='left'>"._t('Type')."</th><th width='180'>"._t('No access')."</th><th width='180'>"._t('Read-only access')."</th><th>"._t('Read/edit access')."</th></tr>\n";
+			print "<tr><td colspan='4'><h1>".$table_names[$table]."</h1></td></tr>\n";	
+			print "<tr align='center' valign='middle'>
+				<th width='180' align='left'>"._t('Type')."</th>
+				<th width='180'><a href='#' onclick='jQuery(\".{$table}_types_bundle_access_none\").prop(\"checked\", 1); return false;'>"._t('No access')."</a></th>
+				<th width='180'><a href='#' onclick='jQuery(\".{$table}_types_bundle_access_readonly\").prop(\"checked\", 1); return false;'>"._t('Read-only access')."</a></th>
+				<th width='180'><a href='#' onclick='jQuery(\".{$table}_types_bundle_access_edit\").prop(\"checked\", 1); return false;'>"._t('Edit access')."</a></th>
+				<th width='180'><a href='#' onclick='jQuery(\".{$table}_types_bundle_access_edit_delete\").prop(\"checked\", 1); return false;'>"._t('Edit/delete access')."</a></th>
+			</tr>\n";
 			
-			$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
-			$vs_pk = $t_instance->primaryKey();
+			$t_instance = Datamodel::getInstanceByTableName($table, true);
+			$pk = $t_instance->primaryKey();
 			
-			foreach($va_types_by_table as $vn_id => $va_type) {
-				if (!$va_type['type_info']['parent_id']) { continue; } 
+			foreach($types_by_table as $id => $type) {
+				if (!$type['type_info']['parent_id']) { continue; } 
 				print "<tr align='center' valign='middle'>";
-				if (($vn_indent = 5*((int)$va_type['type_info']['level'])) < 0) { $vn_indent = 0; }
-				print "<td align='left'>".str_repeat("&nbsp;", $vn_indent).$va_type['type_info']['name_plural']."</td>";
+				if (($indent = 5*((int)$type['type_info']['level'])) < 0) { $indent = 0; }
+				print "<td align='left'>".str_repeat("&nbsp;", $indent).$type['type_info']['name_plural']."</td>";
 				
-				$vs_access = $va_type['access'];
+				$access = $type['access'];
 				
-				print "<td>".caHTMLRadioButtonInput($vs_table.'_type_'.$va_type['type_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_NONE__), array('checked' => ($vs_access == __CA_BUNDLE_ACCESS_NONE__)))."</td>\n";
-				print "<td>".caHTMLRadioButtonInput($vs_table.'_type_'.$va_type['type_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_READONLY__), array('checked' => ($vs_access == __CA_BUNDLE_ACCESS_READONLY__)))."</td>\n";
-				print "<td>".caHTMLRadioButtonInput($vs_table.'_type_'.$va_type['type_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_EDIT__), array('checked' => ($vs_access == __CA_BUNDLE_ACCESS_EDIT__)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput($table.'_type_'.$type['type_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_NONE__, 'class' => "{$table}_types_bundle_access_none"), array('checked' => ($access == __CA_BUNDLE_ACCESS_NONE__)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput($table.'_type_'.$type['type_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_READONLY__, 'class' => "{$table}_types_bundle_access_readonly"), array('checked' => ($access == __CA_BUNDLE_ACCESS_READONLY__)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput($table.'_type_'.$type['type_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_EDIT__, 'class' => "{$table}_types_bundle_access_edit"), array('checked' => ($access == __CA_BUNDLE_ACCESS_EDIT__)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput($table.'_type_'.$type['type_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_EDIT_DELETE__, 'class' => "{$table}_types_bundle_access_edit_delete"), array('checked' => ($access == __CA_BUNDLE_ACCESS_EDIT_DELETE__)))."</td>\n";
 	
 			}
 			
@@ -188,31 +200,38 @@ $va_table_names = $this->getVar('table_display_names');
 		<div id="source_list">
 <?php
 		$t_list = new ca_lists();
-		foreach($va_source_list as $vs_table => $va_sources_by_table) {
-			if(!is_array($va_sources_by_table) || (sizeof($va_sources_by_table) <= 1)) { continue; }
+		foreach($source_list as $table => $sources_by_table) {
+			if(!is_array($sources_by_table) || (sizeof($sources_by_table) <= 1)) { continue; }
 			print "<table width='100%'>\n";
-			print "<tr><td colspan='4'><h1>".$va_table_names[$vs_table]."</h1></td></tr>\n";	
-			print "<tr align='center' valign='middle'><th>"._t('Default')."</th><th width='180' align='left'>"._t('Source')."</th><th width='180'>"._t('No access')."</th><th width='180'>"._t('Read-only access')."</th><th>"._t('Read/edit access')."</th></tr>\n";
+			print "<tr><td colspan='4'><h1>".$table_names[$table]."</h1></td></tr>\n";	
+			print "<tr align='center' valign='middle'>
+				<th>"._t('Default')."</th><th width='180' align='left'>"._t('Source')."</th>
+				<th width='180'><a href='#' onclick='jQuery(\".{$table}_sources_bundle_access_none\").prop(\"checked\", 1); return false;'>"._t('No access')."</a></th>
+				<th width='180'><a href='#' onclick='jQuery(\".{$table}_sources_bundle_access_readonly\").prop(\"checked\", 1); return false;'>"._t('Read-only access')."</a></th>
+				<th width='180'><a href='#' onclick='jQuery(\".{$table}_sources_bundle_access_edit\").prop(\"checked\", 1); return false;'>"._t('Edit access')."</a></th>
+				<th width='180'><a href='#' onclick='jQuery(\".{$table}_sources_bundle_access_edit_delete\").prop(\"checked\", 1); return false;'>"._t('Edit/delete access')."</a></th>
+			</tr>\n";
 			
-			$t_instance = Datamodel::getInstanceByTableName($vs_table, true);
-			$vs_pk = $t_instance->primaryKey();
+			$t_instance = Datamodel::getInstanceByTableName($table, true);
+			$pk = $t_instance->primaryKey();
 			
-			foreach($va_sources_by_table as $vn_id => $va_source) {
-				if (!$va_source['source_info']['parent_id']) { continue; } 
-				$vb_is_default = (isset($va_source['default']) && $va_source['default']) ? true : false;
+			foreach($sources_by_table as $id => $source) {
+				if (!$source['source_info']['parent_id']) { continue; } 
+				$is_default = (isset($source['default']) && $source['default']) ? true : false;
 				
 				print "<tr align='center' valign='middle'>";
-				$va_opts = array('value' => $va_source['source_info']['item_id']);
-				if ($vb_is_default) { $va_opts['checked'] = 1; }
-				print "<td>".caHTMLRadioButtonInput($vs_table.'_default_source', $va_opts)."</td>";
-				if (($vn_indent = 5 * ((int)$va_source['source_info']['level'])) < 0) { $vn_indent = 0; }
-				print "<td align='left'>".str_repeat("&nbsp;", $vn_indent).$va_source['source_info']['name_plural']."</td>";
+				$opts = array('value' => $source['source_info']['item_id']);
+				if ($is_default) { $opts['checked'] = 1; }
+				print "<td>".caHTMLRadioButtonInput($table.'_default_source', $opts)."</td>";
+				if (($indent = 5 * ((int)$source['source_info']['level'])) < 0) { $indent = 0; }
+				print "<td align='left'>".str_repeat("&nbsp;", $indent).$source['source_info']['name_plural']."</td>";
 				
-				$vs_access = $va_source['access'];
+				$access = $source['access'];
 				
-				print "<td>".caHTMLRadioButtonInput($vs_table.'_source_'.$va_source['source_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_NONE__), array('checked' => ($vs_access == __CA_BUNDLE_ACCESS_NONE__)))."</td>\n";
-				print "<td>".caHTMLRadioButtonInput($vs_table.'_source_'.$va_source['source_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_READONLY__), array('checked' => ($vs_access == __CA_BUNDLE_ACCESS_READONLY__)))."</td>\n";
-				print "<td>".caHTMLRadioButtonInput($vs_table.'_source_'.$va_source['source_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_EDIT__), array('checked' => ($vs_access == __CA_BUNDLE_ACCESS_EDIT__)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput($table.'_source_'.$source['source_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_NONE__, 'class' => "{$table}_sources_bundle_access_none"), array('checked' => ($access == __CA_BUNDLE_ACCESS_NONE__)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput($table.'_source_'.$source['source_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_READONLY__, 'class' => "{$table}_sources_bundle_access_readonly"), array('checked' => ($access == __CA_BUNDLE_ACCESS_READONLY__)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput($table.'_source_'.$source['source_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_EDIT__, 'class' => "{$table}_sources_bundle_access_edit"), array('checked' => ($access == __CA_BUNDLE_ACCESS_EDIT__)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput($table.'_source_'.$source['source_info']['item_id'], array('value' => __CA_BUNDLE_ACCESS_EDIT_DELETE__, 'class' => "{$table}_sources_bundle_access_edit_delete"), array('checked' => ($access == __CA_BUNDLE_ACCESS_EDIT_DELETE__)))."</td>\n";
 	
 			}
 			
@@ -229,17 +248,22 @@ $va_table_names = $this->getVar('table_display_names');
 	print "<p>"._t('Access values are used to control if and to whom a record should be displayed in a public-facing Pawtucket-based interface. Users logged into the Pawtucket interface will be given the levels of access specified here. If you wish to use the default Pawtucket access policy for an access value set the level to "Use Pawtucket default."')."</p>\n";
 ?>
 			<table width='100%'>
-				<tr align='center' valign='middle'><th width='180' align='left'><?= _t('Access status'); ?></th><th width='180'><?= _t('No access'); ?></th><th width='180'><?= _t('Read access'); ?></th><th><?= _t('Use Pawtucket default'); ?></th></tr>
+				<tr align='center' valign='middle'>
+					<th width='180' align='left'><?= _t('Access status'); ?></th>
+					<th width='180'><a href='#' onclick='jQuery(".pawtucket_bundle_access_none").prop("checked", 1); return false;'><?= _t('No access'); ?></a></th>
+					<th width='180'><a href='#' onclick='jQuery(".pawtucket_bundle_access_read").prop("checked", 1); return false;'><?= _t('Read access'); ?></a></th>
+					<th><a href='#' onclick='jQuery(".pawtucket_bundle_access_default").prop("checked", 1); return false;'><?= _t('Use Pawtucket default'); ?></a></th>
+				</tr>
 <?php
-			foreach($va_access_status_list as $vn_id => $va_access_status) {
+			foreach($access_status_list as $id => $access_status) {
 				print "<tr align='center' valign='middle'>";
-				if (($vn_indent = 5*((int)($va_access_status_list['access_status_info']['level'] ?? 0))) < 0) { $vn_indent = 0; }
-				print "<td align='left'>".str_repeat("&nbsp;", $vn_indent).($va_access_status['access_status_info']['name_plural'] ?? null)."</td>";
+				if (($indent = 5*((int)($access_status_list['access_status_info']['level'] ?? 0))) < 0) { $indent = 0; }
+				print "<td align='left'>".str_repeat("&nbsp;", $indent).($access_status['access_status_info']['name_plural'] ?? null)."</td>";
 				
-				$vn_access = !strlen($va_access_status['access']) ? null : (int)$va_access_status['access'];
-				print "<td>".caHTMLRadioButtonInput('access_status_'.$va_access_status['access_status_info']['item_id'] ?? null, array('value' => 0), array('checked' => ($vn_access === 0)))."</td>\n";
-				print "<td>".caHTMLRadioButtonInput('access_status_'.$va_access_status['access_status_info']['item_id'] ?? null, array('value' => 1), array('checked' => ($vn_access === 1)))."</td>\n";
-				print "<td>".caHTMLRadioButtonInput('access_status_'.$va_access_status['access_status_info']['item_id'] ?? null, array('value' => null), array('checked' => (is_null($vn_access))))."</td>\n";
+				$access = !strlen($access_status['access']) ? null : (int)$access_status['access'];
+				print "<td>".caHTMLRadioButtonInput('access_status_'.$access_status['access_status_info']['item_id'] ?? null, array('value' => 0, 'class' => "pawtucket_bundle_access_none"), array('checked' => ($access === 0)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput('access_status_'.$access_status['access_status_info']['item_id'] ?? null, array('value' => 1, 'class' => "pawtucket_bundle_access_read"), array('checked' => ($access === 1)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput('access_status_'.$access_status['access_status_info']['item_id'] ?? null, array('value' => null, 'class' => "pawtucket_bundle_access_default"), array('checked' => (is_null($access))))."</td>\n";
 			}
 ?>			
 				</tr>
@@ -250,7 +274,7 @@ $va_table_names = $this->getVar('table_display_names');
 	
 	<div class="editorBottomPadding"><!-- empty --></div>
 <?php
-	print $vs_control_box;
+	print $control_box;
 ?>
 </div>
 

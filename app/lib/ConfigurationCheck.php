@@ -418,12 +418,15 @@ final class ConfigurationCheck {
 	}
 	# -------------------------------------------------------
 	public static function PHPModuleRequirementQuickCheck() {
-		//mbstring, JSON, mysql, iconv, zlib, PCRE are required
+		//mbstring, intl, JSON, mysql, iconv, zlib, PCRE are required
 		if (!function_exists("json_encode")) {
 			self::addError(_t("PHP JSON module is required for CollectiveAccess to run. Please install it."));
 		}
 		if (!function_exists("mb_strlen")) {
 			self::addError(_t("PHP mbstring module is required for CollectiveAccess to run. Please install it."));
+		}
+		if (!class_exists("NumberFormatter")) {
+			self::addError(_t("PHP intl module is required for CollectiveAccess to run. Please install it."));
 		}
 		if (!function_exists("iconv")) {
 			self::addError(_t("PHP iconv module is required for CollectiveAccess to run. Please install it."));

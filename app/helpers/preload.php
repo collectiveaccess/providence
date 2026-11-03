@@ -65,7 +65,7 @@
         }
     }
     
-    // Zend?
+    // Bundled Lucene query parser (derived from Zend_Search_Lucene)?
     if(preg_match("!^Zend_Search_(.*)$!", $base, $m)) {
     	$path_to_zend_lib = __CA_LIB_DIR__."/Search/Common/Parsers/Search/".str_replace("_", "/", $m[1]).".php";
     	if(require_once($path_to_zend_lib)) { $loaded = true; }  

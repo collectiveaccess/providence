@@ -300,25 +300,25 @@ class LCSHAttributeValue extends AttributeValue implements IAttributeValue {
 				}
 				
 				if($service_url) {
-					$o_client = new Zend_Http_Client($service_url);
-					$o_client->setConfig(array(
-						'maxredirects' => 5,
-						'timeout'      => 30));
-				
+					$o_client = new \GuzzleHttp\Client(['timeout' => 30, 'http_errors' => false, 'allow_redirects' => false]);
+
+					// follow up to 5 redirects, stopping at the first response with label headers
 					try {
-						$o_response = $o_client->request(Zend_Http_Client::HEAD);
+						$request_url = $service_url;
+						for($i = 0; $i <= 5; $i++) {
+							$o_response = $o_client->request('HEAD', $request_url);
+							if ($o_response->hasHeader('X-PrefLabel') || !in_array($o_response->getStatusCode(), [301, 302, 303, 307, 308]) || !$o_response->hasHeader('Location')) { break; }
+							$request_url = (string)\GuzzleHttp\Psr7\UriResolver::resolve(new \GuzzleHttp\Psr7\Uri($request_url), new \GuzzleHttp\Psr7\Uri($o_response->getHeaderLine('Location')));
+						}
 					} catch (Exception $e) {
 						$this->postError(1970, _t('Could not connect to LCSH service for %1: %2', $value, $e->getMessage()), 'LCSHAttributeValue->parseValue()');
 						return false;
 					}
 
-					$headers = $o_response->getHeaders();
-		
-					if ((isset($headers['X-preflabel'])) && $headers['X-preflabel']) {
-						$url = trim($headers['X-uri']);
+					if ($label = $o_response->getHeaderLine('X-PrefLabel')) {
+						$url = trim($o_response->getHeaderLine('X-URI'));
 						$url_bits = explode("/", $url);
 						$id = array_pop($url_bits);
-						$label = $headers['X-preflabel'];
 						
 						$url = str_replace('https://id.loc.gov/', 'info:lc/', $url);
 				

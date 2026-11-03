@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/Service/RestClient.php
+ * app/lib/Utils/MeasureWeight.php : weight measurement
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,24 +24,38 @@
  * http://www.CollectiveAccess.org
  *
  * @package CollectiveAccess
- * @subpackage WebServices
+ * @subpackage utils
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
-class RestClient extends Zend_Rest_Client {
-	# -------------------------------------------------------
-	/**
-	 * @param string $ps_url The url to connect to
-	 * @param array $ps_options An array of options:
-	 *		timeout = the number of seconds to wait for a response before throwing an exception. Default is 30 seconds.
-	 */
-	public function  __construct($ps_uri = null, $pa_options=null) {
-		self::getHttpClient()->setCookieJar(true);
-		self::getHttpClient()->setConfig(array(
-			"timeout" => (isset($pa_options['timeout']) && ((int)$pa_options['timeout'] > 0)) ? (int)$pa_options['timeout'] : 30
-		));
-		parent::__construct($ps_uri);
-	}
-	# -------------------------------------------------------
+require_once(__DIR__.'/Measure.php');
+
+/**
+ * Weight measurement. Type codes and conversion factors are the same as those used by Zend_Measure_Weight,
+ * so values stored by previous versions are interpreted identically.
+ */
+class MeasureWeight extends Measure {
+	const STANDARD = 'KILOGRAM';
+
+	const GRAIN = 'GRAIN';
+	const GRAM = 'GRAM';
+	const KILOGRAM = 'KILOGRAM';
+	const MILLIGRAM = 'MILLIGRAM';
+	const OUNCE = 'OUNCE';
+	const POUND = 'POUND';
+	const STONE = 'STONE';
+	const TON = 'TON';
+
+	protected static $units = [
+		'GRAIN' => [0.00006479891, 'gr'],
+		'GRAM' => [0.001, 'g'],
+		'KILOGRAM' => [1, 'kg'],
+		'MILLIGRAM' => [0.000001, 'mg'],
+		'OUNCE' => [0.028349523125, 'oz'],		// 1/16 pound
+		'POUND' => [0.45359237, 'lb'],
+		'STONE' => [6.35029318, 'st'],
+		'TON' => [1000, 't'],
+		'STANDARD' => 'KILOGRAM'
+	];
 }

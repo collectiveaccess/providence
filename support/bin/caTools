@@ -58,7 +58,7 @@
 		), method_exists("CLITools", "{$vs_cmd}ParamList") ? call_user_func("CLITools::{$vs_cmd}ParamList") : array());
 
 	try {
-		$o_opts = new Zend_Console_Getopt($va_available_cli_opts);
+		$o_opts = new CLIGetopt($va_available_cli_opts);
 		$o_opts->parse();
 	} catch(Exception $e) {
 		die("Invalid options specified. Try 'caTools help' to view list of valid options.\n");

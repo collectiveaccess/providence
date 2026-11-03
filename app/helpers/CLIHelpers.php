@@ -29,20 +29,21 @@
  *
  * ----------------------------------------------------------------------
  */
+require_once(__CA_LIB_DIR__.'/Logging/PriorityLog.php');
 
 # ---------------------------------------------------------------------
 /**
- * Log message through global Zend_Log facilities (usually set up in caSetupCLIScript())
+ * Log message through global log facilities (usually set up in caSetupCLIScript())
  * @param string $ps_message the log message
- * @param int $pn_level log level as Zend_Log level integer:
- *        one of Zend_Log::DEBUG, Zend_Log::INFO, Zend_Log::WARN, Zend_Log::ERR
+ * @param int $pn_level log level as PriorityLog level integer:
+ *        one of PriorityLog::DEBUG, PriorityLog::INFO, PriorityLog::WARN, PriorityLog::ERR
  * @return bool success state
  */
 function caCLILog($ps_message, $pn_level) {
 	global $g_logger;
-	if(!$g_logger instanceof Zend_Log) { return false; }
+	if(!$g_logger instanceof PriorityLog) { return false; }
 
-	if(!in_array($pn_level, array(Zend_Log::DEBUG, Zend_Log::INFO, Zend_Log::WARN, Zend_Log::ERR))){
+	if(!PriorityLog::isValidPriority($pn_level)){
 		return false;
 	}
 	$g_logger->log($ps_message,$pn_level);
@@ -55,15 +56,15 @@ function caCLILog($ps_message, $pn_level) {
  */
 function caCLILogCritError($ps_message) {
 	CLIUtils::addError("\t".$ps_message.PHP_EOL);
-	caCLILog($ps_message, Zend_Log::ERR);
+	caCLILog($ps_message, PriorityLog::ERR);
 	exit(255);
 }
 # ---------------------------------------------------------------------
 /**
  * Do general setup for a CLI script
  * @param array $pa_additional_parameters Additional command line parameters. You don't have to add
- * --log/-l for the log file and --log-level/-d for the Zend_Log log level. They're always set up automatically
- * @return Zend_Console_Getopt
+ * --log/-l for the log file and --log-level/-d for the log level. They're always set up automatically
+ * @return CLIGetopt
  */
 function caSetupCLIScript($pa_additional_parameters) {
 
@@ -73,55 +74,46 @@ function caSetupCLIScript($pa_additional_parameters) {
 	), $pa_additional_parameters);
 
 	try {
-		$o_opts = new Zend_Console_Getopt($va_available_cli_opts);
+		$o_opts = new CLIGetopt($va_available_cli_opts);
 		$o_opts->parse();
 	} catch(Exception $e) {
 		die("Invalid command line options: ".$e->getMessage().PHP_EOL);
 	}
 
-	// set up logging
-	$o_writer = null;
-	if($vs_log = $o_opts->getOption('log')) {
-		// log to file
-		try {
-			$o_writer = new Zend_Log_Writer_Stream($vs_log);
-			$o_writer->setFormatter(new Zend_Log_Formatter_Simple('%timestamp% %priorityName%: %message%'.PHP_EOL));
-		} catch (Zend_Log_Exception $e) { // error while opening the file (usually permissions)
-			$o_writer = null;
-			print CLIUtils::textWithColor("Couldn't open log file. Now logging via system log.", "bold_red").PHP_EOL.PHP_EOL;
-		}
-	}
-
-	// default: log everything to syslog
-	if(!$o_writer) {
-		$o_writer = new Zend_Log_Writer_Syslog(array('application' => 'CollectiveAccess CLI', 'facility' => LOG_USER));
-		// no need for timespamps in syslog ... the syslog itsself provides that
-		$o_writer->setFormatter(new Zend_Log_Formatter_Simple('%priorityName%: %message%'.PHP_EOL));
-	}
-
-	// was a loglevel set via command line? -> add filter to Zend logger, otherwise use WARN
-	$vs_level = $o_opts->getOption('log-level');
-	switch($vs_level) {
+	// was a loglevel set via command line? otherwise use WARN
+	switch($o_opts->getOption('log-level')) {
 		case 'ERR':
-			$o_filter = new Zend_Log_Filter_Priority(Zend_Log::ERR);
+			$vn_priority = PriorityLog::ERR;
 			break;
 		case 'DEBUG':
-			$o_filter = new Zend_Log_Filter_Priority(Zend_Log::DEBUG);
+			$vn_priority = PriorityLog::DEBUG;
 			break;
 		case 'INFO':
-			$o_filter = new Zend_Log_Filter_Priority(Zend_Log::INFO);
+			$vn_priority = PriorityLog::INFO;
 			break;
 		case 'WARN':
 		default:
-			$o_filter = new Zend_Log_Filter_Priority(Zend_Log::WARN);
+			$vn_priority = PriorityLog::WARN;
 			break;
 	}
 
 	// set up global logger. can be used by importing 'global $g_logger' anywhere, but it's recommended to use the caCLILog() helper instead
 	global $g_logger;
-	$g_logger = new Zend_Log($o_writer);
-	$g_logger->setTimestampFormat('D Y-m-d H:i:s');
-	$g_logger->addFilter($o_filter);
+	$g_logger = null;
+	$va_log_options = ['application' => 'CollectiveAccess CLI', 'priority' => $vn_priority];
+	if(($vs_log = $o_opts->getOption('log')) && is_string($vs_log)) {
+		// log to file
+		try {
+			$g_logger = new PriorityLog($vs_log, $va_log_options);
+		} catch (PriorityLogException $e) { // error while opening the file (usually permissions)
+			print CLIUtils::textWithColor("Couldn't open log file. Now logging via system log.", "bold_red").PHP_EOL.PHP_EOL;
+		}
+	}
+
+	// default: log everything to syslog
+	if(!$g_logger) {
+		$g_logger = new PriorityLog(null, $va_log_options);
+	}
 
 	return $o_opts;
 }

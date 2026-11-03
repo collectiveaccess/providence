@@ -1,12 +1,12 @@
 <?php
 # CollectiveAccess major version number; don't change
-define('__CollectiveAccess__', '2.0');
+define('__CollectiveAccess__', '2.1');
 
 # CollectiveAccess minor version number; don't change
-define('__CollectiveAccess_Version__', '2.0.12');
+define('__CollectiveAccess_Version__', '2.1.0');
 
 # Schema revision
-define('__CollectiveAccess_Schema_Rev__', 216);
+define('__CollectiveAccess_Schema_Rev__', 218);
 
 # Release type
 define('__CollectiveAccess_Release_Type__', 'GIT');

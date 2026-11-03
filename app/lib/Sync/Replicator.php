@@ -248,11 +248,11 @@ class Replicator {
 	/**
 	 * Write message to log with given log level
 	 * @param string $msg
-	 * @param int $level log level as Zend_Log level integer:
-	 *        one of Zend_Log::DEBUG, Zend_Log::INFO, Zend_Log::WARN, Zend_Log::ERR
+	 * @param int $level log level as PriorityLog level integer:
+	 *        one of PriorityLog::DEBUG, PriorityLog::INFO, PriorityLog::WARN, PriorityLog::ERR
 	 */
 	public function log(string $msg, int $level, ?bool $is_fatal=false) : void {
-		if($level == Zend_Log::ERR) {
+		if($level == PriorityLog::ERR) {
 			$this->setErrorForSourceOnSyncList($this->source_key, $this->target_key, ['error' => $msg, 'level' => $level], $is_fatal);
 		}
 		Replicator::$s_log->log($msg, $level);
@@ -261,8 +261,8 @@ class Replicator {
 	/**
 	 * Write message to debug log with given log level
 	 * @param string $msg
-	 * @param int $level log level as Zend_Log level integer:
-	 *        one of Zend_Log::DEBUG, Zend_Log::INFO, Zend_Log::WARN, Zend_Log::ERR
+	 * @param int $level log level as PriorityLog level integer:
+	 *        one of PriorityLog::DEBUG, PriorityLog::INFO, PriorityLog::WARN, PriorityLog::ERR
 	 */
 	public function logDebug(string $msg, int $level) : void {
 		Replicator::$s_debug_log->log($msg, $level);
@@ -402,7 +402,7 @@ class Replicator {
 		if(!caGetOption('dontCheckLock', $options, false) && !self::lockAcquire()) {
 			$this->log(
 				_t("Replication process is already running. Aborting."),
-				Zend_Log::INFO
+				PriorityLog::INFO
 			);
 		}
 		
@@ -533,7 +533,7 @@ class Replicator {
 		if(!caGetOption(['dontCheckLock', 'multiple'], $options, false) && !self::lockAcquire()) {
 			$this->log(
 				_t("Replication process is already running. Aborting."),
-				Zend_Log::INFO
+				PriorityLog::INFO
 			);
 		}
 		$start_time = time();
@@ -551,7 +551,7 @@ class Replicator {
 			if(caGetOption('source', $options, null) && ($single_log_id = caGetOption('log_id', $options, null))) {
 				$single_log_id_mode = 1;
 				
-				$this->logDebug(_t("[%1] Set single log mode.", $source_key), Zend_Log::INFO);
+				$this->logDebug(_t("[%1] Set single log mode.", $source_key), PriorityLog::INFO);
 			}
 
 			$this->source = $o_source;
@@ -562,7 +562,7 @@ class Replicator {
 			if(!$o_result || !($res = $o_result->getRawData()) || !(strlen($source_system_guid = $res['system_guid']))) {
 				$this->log(
 					_t("[%1] Could not get system GUID for one of the configured replication sources: {$source_key}. Skipping source.", $source_key),
-					Zend_Log::ERR
+					PriorityLog::ERR
 				);
 				continue;
 			}
@@ -600,7 +600,7 @@ class Replicator {
 					->request();
 				;
 				if (!$o_result || !is_array($res = $o_result->getRawData()) || isset($res['errors'])) {
-				    $this->log(_t("[%1] There were errors getting last replicated log id for source %1 and target %2: %3.", $source_key, $target_key, join('; ', $res['errors'])), Zend_Log::ERR, true);
+				    $this->log(_t("[%1] There were errors getting last replicated log id for source %1 and target %2: %3.", $source_key, $target_key, join('; ', $res['errors'])), PriorityLog::ERR, true);
 				    continue;
 				}
 				
@@ -612,7 +612,7 @@ class Replicator {
 					$chunk_size = 1;
 				} elseif($force_log_id = (int) $this->opo_replication_conf->get('sources')[$source_key]['force_from_log_id']) {
 					$replicated_log_id = $force_log_id;
-					$this->log(_t("[%1] Set log id to forced value (%2).", $source_key, $replicated_log_id), Zend_Log::INFO);
+					$this->log(_t("[%1] Set log id to forced value (%2).", $source_key, $replicated_log_id), PriorityLog::INFO);
 				} else {
 					$replicated_log_id = (int)$res['replicated_log_id'];
 
@@ -620,7 +620,7 @@ class Replicator {
 						$replicated_log_id = ((int) $replicated_log_id) + 1;
 					} else {
 						$this->log(_t("[%1] Couldn't get last replicated log id for source %1 and target %2. Starting at the beginning.",
-							$source_key, $target_key), Zend_Log::WARN);
+							$source_key, $target_key), PriorityLog::WARN);
 						$replicated_log_id = 1;
 					}
 					
@@ -642,7 +642,7 @@ class Replicator {
 					}
 					if($min_log_id > $replicated_log_id) { 
 						$replicated_log_id = $min_log_id; 
-						$this->log(_t("[%1] Set log id to minimum (%2).", $source_key, $replicated_log_id), Zend_Log::INFO);
+						$this->log(_t("[%1] Set log id to minimum (%2).", $source_key, $replicated_log_id), PriorityLog::INFO);
 					}
 				}
 				
@@ -655,7 +655,7 @@ class Replicator {
 				$this->addSourceToSyncList($source_key, $target_key);
 				
 				$this->log(_t("[%1] Starting replication for source %1 and target %2, log id is %3.",
-					$source_key, $target_key, $replicated_log_id), Zend_Log::INFO);
+					$source_key, $target_key, $replicated_log_id), PriorityLog::INFO);
 				$this->setSyncListValueForSource($source_key, $target_key, ['start_log_id' => $replicated_log_id, 'status' => _t("Starting replication at log ID %1", $replicated_log_id)]);
 						
 
@@ -740,10 +740,10 @@ class Replicator {
 					
 				    $this->last_log_id = null;
 				    if (sizeof($this->sent_log_ids) > 1000000) {
-				    	$this->logDebug(_t("[%1] Reset sent log list because it was over 1000000 entries. Memory usage was %2", $source_key, caGetMemoryUsage()), Zend_Log::DEBUG);
+				    	$this->logDebug(_t("[%1] Reset sent log list because it was over 1000000 entries. Memory usage was %2", $source_key, caGetMemoryUsage()), PriorityLog::DEBUG);
 				    	$this->sent_log_ids = [];
 				    }
-				    $this->logDebug(_t("[%1] Memory usage: %2", $source_key, caGetMemoryUsage()), Zend_Log::DEBUG);
+				    $this->logDebug(_t("[%1] Memory usage: %2", $source_key, caGetMemoryUsage()), PriorityLog::DEBUG);
 				
 					// get change log from source, starting with the log id we got above
 					$this->source_log_entries = $o_source->setEndpoint('getlog')->clearGetParameters()
@@ -761,7 +761,7 @@ class Replicator {
 									
 					if (!is_array($this->source_log_entries) || !sizeof($this->source_log_entries)) {
 						$this->logDebug(_t("[%1] No new log entries found for source %1 and target %2. Skipping this combination now.",
-							$source_key, $target_key), Zend_Log::INFO);
+							$source_key, $target_key), PriorityLog::INFO);
 						break;
 					}
 					
@@ -770,7 +770,7 @@ class Replicator {
                     $end_log_id = $this->end_log_id = array_pop($log_ids);
                     if(!$end_log_id) { $end_log_id = $start_log_id; }
                     
-                    $this->logDebug(_t("[%1] Found %2 source log entries starting at [%4 - %5].", $this->source_key, sizeof($this->source_log_entries), $replicated_log_id, $start_log_id, $end_log_id), Zend_Log::DEBUG);
+                    $this->logDebug(_t("[%1] Found %2 source log entries starting at [%4 - %5].", $this->source_key, sizeof($this->source_log_entries), $replicated_log_id, $start_log_id, $end_log_id), PriorityLog::DEBUG);
  
                     $filtered_log_entries = null;
 					if ($is_push_missing) {
@@ -802,7 +802,7 @@ class Replicator {
 				
 						    if($this->sent_log_ids[$log_id]) { continue; }	// Don't send a source entry more than once (should never happen)
 						   	if($source_log_entry['SKIP'] ?? null) { 
-						   		//$this->logDebug(_t("[%1] Skipping log_id %2 because is marked as SKIP", $this->source_key, $log_id), Zend_Log::DEBUG);
+						   		//$this->logDebug(_t("[%1] Skipping log_id %2 because is marked as SKIP", $this->source_key, $log_id), PriorityLog::DEBUG);
 						   		continue; 
 						   	}
 						   	
@@ -881,7 +881,7 @@ class Replicator {
                             
                             $last_log_entry = array_pop($this->source_log_entries);
                             
-					        $this->logDebug(_t("[%1] Nothing to push. Incrementing log index to %2 (%3)", $this->source_key, $replicated_log_id, date(DATE_RFC2822, $last_log_entry['log_datetime'])), Zend_Log::DEBUG);
+					        $this->logDebug(_t("[%1] Nothing to push. Incrementing log index to %2 (%3)", $this->source_key, $replicated_log_id, date(DATE_RFC2822, $last_log_entry['log_datetime'])), PriorityLog::DEBUG);
 					        
 					        $o_resp = $o_target->setRequestMethod('POST')->setEndpoint('setLastLogID')
 								->addGetParameter('system_guid', $source_system_guid)
@@ -895,7 +895,7 @@ class Replicator {
 					
 					if (!is_array($this->source_log_entries) || !sizeof($this->source_log_entries)) {
 						$this->logDebug(_t("[1] No new log entries found for source %1 and target %2. Will try pulling new ones.",
-							$source_key, $target_key), Zend_Log::INFO);
+							$source_key, $target_key), PriorityLog::INFO);
 					}
 
 					// Apply that log at the current target
@@ -904,7 +904,7 @@ class Replicator {
 					// Remove anything that has already been sent
 					foreach($this->source_log_entries as $mlog_id => $entry) {						
 						if($this->sent_log_ids[$mlog_id]) {
-							$this->logDebug(_t("[%1] Removing log_id %2 because it has already been sent via the missing guid queue", $this->source_key, $mlog_id), Zend_Log::DEBUG);
+							$this->logDebug(_t("[%1] Removing log_id %2 because it has already been sent via the missing guid queue", $this->source_key, $mlog_id), PriorityLog::DEBUG);
 							unset($this->source_log_entries[$mlog_id]);
 						}
 					}
@@ -918,17 +918,17 @@ class Replicator {
 							->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
 							->request();
 							
-						$this->logDebug(_t("[%1] Pushed %2 primary entries: %3", $this->source_key, sizeof($this->source_log_entries), print_r($this->source_log_entries, true)), Zend_Log::DEBUG);
+						$this->logDebug(_t("[%1] Pushed %2 primary entries: %3", $this->source_key, sizeof($this->source_log_entries), print_r($this->source_log_entries, true)), PriorityLog::DEBUG);
 						$response_data = $o_resp->getRawData();
 					} else {
 						$o_resp = null;
 						$response_data = ['replicated_log_id' => $end_log_id];
 						$this->logDebug(_t("[%1] Nothing to send (all filtered) so incrementing to last log_id (%2)",
-								$source_key, $end_log_id), Zend_Log::DEBUG);
+								$source_key, $end_log_id), PriorityLog::DEBUG);
 					}
 					
 					if (($o_resp && !$o_resp->isOk()) || !isset($response_data['replicated_log_id'])) {
-						$this->log(_t("[%1] There were errors while processing sync for source %1 and target %2: %3", $source_key, $target_key, join(' ', $o_resp->getErrors())), Zend_Log::ERR, true);
+						$this->log(_t("[%1] There were errors while processing sync for source %1 and target %2: %3", $source_key, $target_key, join(' ', $o_resp->getErrors())), PriorityLog::ERR, true);
 						break;
 					} else {
 						foreach($this->source_log_entries as $mlog_id => $entry) {						
@@ -938,14 +938,14 @@ class Replicator {
 							$this->sent_log_ids[$mlog_id] = true;
 						}
 						$replicated_log_id = $end_log_id + 1;
-						$this->log(_t("[%1] Sync for source %1 and target %2 successful.", $source_key, $target_key), Zend_Log::DEBUG);
+						$this->log(_t("[%1] Sync for source %1 and target %2 successful.", $source_key, $target_key), PriorityLog::DEBUG);
 						$num_log_entries = sizeof($this->source_log_entries);
 						$last_log_entry = array_pop($this->source_log_entries);
 						
 					   	$this->setSyncListValueForSource($source_key, $target_key, ['end_log_id' => $end_log_id, 'status' => _t("Replication at log ID %1 (%2)", $response_data['replicated_log_id'], date(DATE_RFC2822, $last_log_entry['log_datetime']))]);
 						
-					   	$this->log(_t("[%1] Pushed %2 log entries. Incrementing log index to %3 (%4).", $source_key, $num_log_entries, $replicated_log_id, date(DATE_RFC2822, $last_log_entry['log_datetime'])), Zend_Log::DEBUG);
-						$this->log(_t("[%1] Last replicated log ID is: %2 (%3).", $source_key, $response_data['replicated_log_id'], date(DATE_RFC2822, $last_log_entry['log_datetime'])), Zend_Log::DEBUG);
+					   	$this->log(_t("[%1] Pushed %2 log entries. Incrementing log index to %3 (%4).", $source_key, $num_log_entries, $replicated_log_id, date(DATE_RFC2822, $last_log_entry['log_datetime'])), PriorityLog::DEBUG);
+						$this->log(_t("[%1] Last replicated log ID is: %2 (%3).", $source_key, $response_data['replicated_log_id'], date(DATE_RFC2822, $last_log_entry['log_datetime'])), PriorityLog::DEBUG);
 																					
 						// try to push unresolved guids
 						$this->_processUnresolvedGUIDs($single_log_id_mode, $is_push_missing);  
@@ -954,13 +954,13 @@ class Replicator {
 					if (isset($response_data['warnings']) && is_array($response_data['warnings']) && sizeof($response_data['warnings'])) {
 						foreach ($response_data['warnings'] as $log_id => $warns) {
 							$this->log(_t("[%1] There were warnings while processing sync for source %1, target %2, log id %3: %4.",
-								$source_key, $target_key, $log_id, join(' ', $warns)), Zend_Log::WARN);
+								$source_key, $target_key, $log_id, join(' ', $warns)), PriorityLog::WARN);
 						}
 					}
 				}
 
 				if($is_ok) {
-					$this->log(_t("[%1] Sync for source %1 and target %2 successful.", $source_key, $target_key), Zend_Log::INFO);
+					$this->log(_t("[%1] Sync for source %1 and target %2 successful.", $source_key, $target_key), PriorityLog::INFO);
 
 					// run dedup if configured
 					$dedup_after_replication = $this->opo_replication_conf->get('targets')[$target_key]['deduplicateAfterReplication'];
@@ -977,25 +977,25 @@ class Replicator {
 						$dedup_response = $o_dedup_response->getRawData();
 
 						if (!$o_dedup_response->isOk()) {
-							$this->log(_t("[%1] There were errors while processing deduplication for at target %2: %3.", $source_key, $target_key, join(' ', $o_dedup_response->getErrors())), Zend_Log::ERR);
+							$this->log(_t("[%1] There were errors while processing deduplication for at target %2: %3.", $source_key, $target_key, join(' ', $o_dedup_response->getErrors())), PriorityLog::ERR);
 						} else {
-							$this->log(_t("[%1] Dedup at target %2 successful.", $source_key, $target_key), Zend_Log::INFO);
+							$this->log(_t("[%1] Dedup at target %2 successful.", $source_key, $target_key), PriorityLog::INFO);
 							if(isset($dedup_response['report']) && is_array($dedup_response['report'])) {
 								foreach($dedup_response['report'] as $t => $c) {
-									$this->log(_t("[%1] De-duped %2 records for %3.", $source_key, $c, $t), Zend_Log::DEBUG);
+									$this->log(_t("[%1] De-duped %2 records for %3.", $source_key, $c, $t), PriorityLog::DEBUG);
 								}
 							}
 						}
 					}
 				} else {
-					$this->log(_t("[%1] Sync for source %1 and target %2 finished, but there were errors.", $source_key, $target_key), Zend_Log::ERR);
+					$this->log(_t("[%1] Sync for source %1 and target %2 finished, but there were errors.", $source_key, $target_key), PriorityLog::ERR);
 				}
 			}
-			$this->log(_t("[%1] Sync for source %1 and target %2 took %3.", $source_key, $target_key, caFormatInterval(time() - $start_time)), Zend_Log::DEBUG);
+			$this->log(_t("[%1] Sync for source %1 and target %2 took %3.", $source_key, $target_key, caFormatInterval(time() - $start_time)), PriorityLog::DEBUG);
 			$this->closeSyncListForSource($source_key, $target_key, []);
 		}
 	} catch(Exception $e) {
-		$this->setErrorForSourceOnSyncList($this->source_key, $this->target_key, ['error' => $e->getMessage(), 'level' => Zend_Log::ERR], true);	
+		$this->setErrorForSourceOnSyncList($this->source_key, $this->target_key, ['error' => $e->getMessage(), 'level' => PriorityLog::ERR], true);	
 	}
 	
 		if(!caGetOption(['dontCheckLock', 'multiple'], $options, false)) {
@@ -1017,7 +1017,7 @@ class Replicator {
 		if(isset($this->no_access_guids[$missing_guid])) { return false; }
 		
 		if ($this->source_log_entries_for_missing_guids_seen_guids[$missing_guid]) { 
-			$this->logDebug(_t("[%1] Skipped %2 because we've seen it already.", $this->source_key, $missing_guid), Zend_Log::DEBUG);
+			$this->logDebug(_t("[%1] Skipped %2 because we've seen it already.", $this->source_key, $missing_guid), PriorityLog::DEBUG);
 			return $this->missing_guid_created[$missing_guid] ?? false; 
 		} 
 		
@@ -1025,7 +1025,7 @@ class Replicator {
 		
 		$access_by_guid = $this->_hasAccess($this->source, [$missing_guid]);
 		if(is_array($this->access_list) && isset($access_by_guid[$missing_guid]) && ($access_by_guid[$missing_guid] !== '?') && !in_array((int)$access_by_guid[$missing_guid], $this->access_list, true)) {
-			$this->logDebug(_t("[%1] Skip missing guid %2 because it is not accessible.", $this->source_key, $missing_guid), Zend_Log::DEBUG);
+			$this->logDebug(_t("[%1] Skip missing guid %2 because it is not accessible.", $this->source_key, $missing_guid), PriorityLog::DEBUG);
 			$this->no_access_guids[$missing_guid] = true;
 			return false;
 		}
@@ -1033,7 +1033,7 @@ class Replicator {
 		$seen_list = [];
 		
 		// Pull log for "missing" guid we need to replicate on target
-		$this->logDebug(_t("[%1] Fetching log for missing guid %2.", $this->source_key, $missing_guid), Zend_Log::DEBUG);
+		$this->logDebug(_t("[%1] Fetching log for missing guid %2.", $this->source_key, $missing_guid), PriorityLog::DEBUG);
 		$log_for_missing_guid = $this->source->setEndpoint('getlog')
 			->clearGetParameters()
 			->addGetParameter('forGUID', $missing_guid)
@@ -1062,12 +1062,12 @@ class Replicator {
 			$filtered_log_for_missing_guid = [];  
 			ksort($log_for_missing_guid, SORT_NUMERIC);
 		   
-			$this->logDebug(_t("[%1] Missing log for %2 is %3", $this->source_key, $missing_guid, print_R($log_for_missing_guid, true)), Zend_Log::DEBUG);
+			$this->logDebug(_t("[%1] Missing log for %2 is %3", $this->source_key, $missing_guid, print_R($log_for_missing_guid, true)), PriorityLog::DEBUG);
 			
 			// was missing guid eventually deleted?
 			foreach($log_for_missing_guid as $missing_entry) {
 				if(($missing_entry['changetype'] === 'D') && ($missing_entry['guid'] === $missing_guid)) {
-					$this->logDebug(_t("[%1] Skipped %2 because it was eventually deleted.", $this->source_key, $missing_guid), Zend_Log::DEBUG);
+					$this->logDebug(_t("[%1] Skipped %2 because it was eventually deleted.", $this->source_key, $missing_guid), PriorityLog::DEBUG);
 					return true;
 				}
 			}
@@ -1076,11 +1076,11 @@ class Replicator {
 			$unresolved_dependent_guids = [];
 			foreach($log_for_missing_guid as $missing_entry) {
 				if (!$single_log_id_mode && ($missing_entry['log_id'] > 1) && ($missing_entry['log_id'] > $this->end_log_id)) {
-					$this->logDebug(_t("[%1] Skipped missing log_id %2 because it is in the future; current log_id is %3", $this->source_key, $missing_entry['log_id'], $this->last_log_id), Zend_Log::WARN);    
+					$this->logDebug(_t("[%1] Skipped missing log_id %2 because it is in the future; current log_id is %3", $this->source_key, $missing_entry['log_id'], $this->last_log_id), PriorityLog::WARN);    
 					continue;
 				}
 				if (($missing_entry['log_id'] != 1) && $this->sent_log_ids[$missing_entry['log_id']]) { 
-					$this->logDebug(_t("[%1] Skipped missing log_id %2 because it has already been sent.", $this->source_key, $missing_entry['log_id']), Zend_Log::WARN);    
+					$this->logDebug(_t("[%1] Skipped missing log_id %2 because it has already been sent.", $this->source_key, $missing_entry['log_id']), PriorityLog::WARN);    
 					continue; 
 				}	
 				
@@ -1089,7 +1089,7 @@ class Replicator {
 				}
 				
 				if(isset($skip_guids[$missing_entry['guid']])) {
-					$this->logDebug(_t("[%1] Skip log_id %2 for %3 in the missing log because the guid was previously skipped.", $this->source_key, $missing_entry['log_id'], $missing_entry['guid']),Zend_Log::DEBUG);
+					$this->logDebug(_t("[%1] Skip log_id %2 for %3 in the missing log because the guid was previously skipped.", $this->source_key, $missing_entry['log_id'], $missing_entry['guid']),PriorityLog::DEBUG);
 					continue;
 				}
 				
@@ -1101,7 +1101,7 @@ class Replicator {
 						if(!in_array((int)$parent_access[$parent_guid], $this->access_list, true)) {
 							$missing_entry['snapshot']['parent_id_guid'] = null;
 							$missing_entry['snapshot']['parent_id'] = null;	
-							$this->logDebug(_t("[%1] Removed parent_id_guid %2 in log_id %3 for %4 because it is not accessible.", $this->source_key, $parent_guid, $missing_entry['log_id'], $missing_entry['guid']),Zend_Log::DEBUG);
+							$this->logDebug(_t("[%1] Removed parent_id_guid %2 in log_id %3 for %4 because it is not accessible.", $this->source_key, $parent_guid, $missing_entry['log_id'], $missing_entry['guid']),PriorityLog::DEBUG);
 						}
 					}
 					
@@ -1110,7 +1110,7 @@ class Replicator {
 						if(!in_array((int)$user_access[$user_guid], $this->access_list, true)) {
 							$missing_entry['snapshot']['user_id_guid'] = null;
 							$missing_entry['snapshot']['user_id'] = null;	
-							$this->logDebug(_t("[%1] Removed user_id_guid %2 in log_id %3 for %4 because it is not accessible.", $this->source_key, $user_guid, $missing_entry['log_id'], $missing_entry['guid']),Zend_Log::DEBUG);
+							$this->logDebug(_t("[%1] Removed user_id_guid %2 in log_id %3 for %4 because it is not accessible.", $this->source_key, $user_guid, $missing_entry['log_id'], $missing_entry['guid']),PriorityLog::DEBUG);
 						}
 					}
 					
@@ -1149,7 +1149,7 @@ class Replicator {
 						if(isset($missing_entry['snapshot']['value_longtext1_guid']) && ($missing_entry['snapshot']['value_longtext1_guid'] === $dep_guid)) { continue; }
 						
 						if(!is_array($dep_guid_already_exists[$dep_guid])) { 
-							$this->logDebug(_t("[%1] Skipped log entry %2 because dependent guid %3 for %4 does not yet exist on target", $this->source_key, $missing_entry['log_id'], $dep_guid, $missing_entry['guid']),Zend_Log::DEBUG);
+							$this->logDebug(_t("[%1] Skipped log entry %2 because dependent guid %3 for %4 does not yet exist on target", $this->source_key, $missing_entry['log_id'], $dep_guid, $missing_entry['guid']),PriorityLog::DEBUG);
 							$this->unresolved_guids[$dep_guid] = 1;
 							continue(2);
 						}
@@ -1162,7 +1162,7 @@ class Replicator {
 						if(isset($missing_entry['snapshot']['lot_id_guid']) && ($missing_entry['snapshot']['lot_id_guid'] === $dep_guid)) { continue; }
 						if($this->access_list && ($dep_access_value !== '?') && !in_array((int)$dep_access_value, $this->access_list, true)){
 							// dependency in this log entry is not accessible so skip it
-							$this->logDebug(_t("[%1] Skipped log entry %2 because dependent guid %3 for %4 is not accessible.", $this->source_key, $missing_entry['log_id'], $dep_guid, $missing_entry['guid']),Zend_Log::DEBUG);
+							$this->logDebug(_t("[%1] Skipped log entry %2 because dependent guid %3 for %4 is not accessible.", $this->source_key, $missing_entry['log_id'], $dep_guid, $missing_entry['guid']),PriorityLog::DEBUG);
 							$skip_guids[$dep_guid] = true;
 							continue(2);
 						}
@@ -1174,7 +1174,7 @@ class Replicator {
 					// We will only replicate rows meeting access requirements and not already on the target
 					//
 					if(sizeof($dependent_guids) > 0) {
-						$this->logDebug(_t("[%1] Processing %2 dependent guids for %3: %4.", $this->source_key, sizeof($dependent_guids), $missing_entry['guid'], print_R($dependent_guids, true)),Zend_Log::DEBUG);
+						$this->logDebug(_t("[%1] Processing %2 dependent guids for %3: %4.", $this->source_key, sizeof($dependent_guids), $missing_entry['guid'], print_R($dependent_guids, true)),PriorityLog::DEBUG);
 						$tries = 0; $guids_exist_for_dependencies = null;
 				
 						while(($tries < 5) && (!is_array($guids_exist_for_dependencies)))  {
@@ -1196,30 +1196,30 @@ class Replicator {
 								$filter_on_access_settings = $this->access_list;
 								$dependent_guids = array_unique(array_filter(array_keys(array_filter($access_for_missing, function($v) use ($filter_on_access_settings) { return (($v == '?') || (in_array((int)$v, $filter_on_access_settings, true))); })), 'strlen'));
 							} else {
-								$this->logDebug(_t("[%1] Failed to retrieve access values for missing GUID.", $this->source_key),Zend_Log::DEBUG);
+								$this->logDebug(_t("[%1] Failed to retrieve access values for missing GUID.", $this->source_key),PriorityLog::DEBUG);
 							}
 						}
-						$this->logDebug(_t("[%1] Processing %2 *filtered* dependent guids for %3: %4.", $this->source_key, sizeof($dependent_guids), $missing_entry['guid'], print_R($dependent_guids, true)),Zend_Log::DEBUG);
+						$this->logDebug(_t("[%1] Processing %2 *filtered* dependent guids for %3: %4.", $this->source_key, sizeof($dependent_guids), $missing_entry['guid'], print_R($dependent_guids, true)),PriorityLog::DEBUG);
 				
 						
 						if($level < 5) {	// TODO: do we need this level limit?
 							$new_dependent_guids = [];
 							foreach($dependent_guids as $dep_guid) {
-								$this->logDebug(_t("[%1] Run _findMissingGUID for dependency %2 of %3", $this->source_key, $dep_guid, $missing_guid),Zend_Log::DEBUG);
+								$this->logDebug(_t("[%1] Run _findMissingGUID for dependency %2 of %3", $this->source_key, $dep_guid, $missing_guid),PriorityLog::DEBUG);
 								if($skip_guids[$dep_guid] || !$this->_findMissingGUID($dep_guid, $level+1, $single_log_id_mode, $is_push_missing)) {
 									$new_dependent_guids[] = $dep_guid;
 									$unresolved_dependent_guids[$dep_guid]++;
 									
 									if(!$skip_guids[$dep_guid]) {
 										$skip_guids[$dep_guid] = true;
-										$this->logDebug(_t("[%1] _findMissingGUID failed dependency %2 of %3", $this->source_key, $dep_guid, $missing_guid),Zend_Log::DEBUG);
+										$this->logDebug(_t("[%1] _findMissingGUID failed dependency %2 of %3", $this->source_key, $dep_guid, $missing_guid),PriorityLog::DEBUG);
 									}
 								}
 							}	
 						}
 			
 						if(sizeof($new_dependent_guids) > 0) {
-							$this->logDebug(_t("[%1] %2 dependent guids remain after processing: %3", $this->source_key, sizeof($new_dependent_guids), print_r($this->_dumpDependencies($this->source, $new_dependent_guids), true)),Zend_Log::WARN);
+							$this->logDebug(_t("[%1] %2 dependent guids remain after processing: %3", $this->source_key, sizeof($new_dependent_guids), print_r($this->_dumpDependencies($this->source, $new_dependent_guids), true)),PriorityLog::WARN);
 						}
 					} 
 				}
@@ -1228,14 +1228,14 @@ class Replicator {
 			}
 			
 			if (sizeof($filtered_log_for_missing_guid) == 0) { 
-				$this->logDebug(_t("[%1] Empty missing log for %2 at level %3.", $this->source_key, $missing_guid, $level),Zend_Log::DEBUG);
+				$this->logDebug(_t("[%1] Empty missing log for %2 at level %3.", $this->source_key, $missing_guid, $level),PriorityLog::DEBUG);
 				unset($this->source_log_entries_for_missing_guids_seen_guids[$missing_guid]);
 				return false; 
 			}
 			
 			// @TODO: bad idea?
 			if (sizeof($unresolved_dependent_guids) > 0) { 
-				$this->logDebug(_t("[%1] %2 unresolved dependent guids for %3: %4; skipping guid.", $this->source_key, sizeof($unresolved_dependent_guids), $missing_guid, print_r($this->_dumpDependencies($this->source, array_keys($unresolved_dependent_guids)), true)),Zend_Log::DEBUG);
+				$this->logDebug(_t("[%1] %2 unresolved dependent guids for %3: %4; skipping guid.", $this->source_key, sizeof($unresolved_dependent_guids), $missing_guid, print_r($this->_dumpDependencies($this->source, array_keys($unresolved_dependent_guids)), true)),PriorityLog::DEBUG);
 				unset($this->source_log_entries_for_missing_guids_seen_guids[$missing_guid]);
 				return null; 
 			}
@@ -1243,7 +1243,7 @@ class Replicator {
 			ksort($filtered_log_for_missing_guid, SORT_NUMERIC);   
 			                                     
 			// Missing guid has no outstanding dependencies so push it immediately
-			$this->logDebug(_t("[%1] Immediately pushing %2 missing entries for %3.", $this->source_key, sizeof($filtered_log_for_missing_guid), $missing_guid), Zend_Log::DEBUG);
+			$this->logDebug(_t("[%1] Immediately pushing %2 missing entries for %3.", $this->source_key, sizeof($filtered_log_for_missing_guid), $missing_guid), PriorityLog::DEBUG);
 			
 			$has_attr_guids = [];
 			while(sizeof($filtered_log_for_missing_guid) > 0) {
@@ -1259,17 +1259,17 @@ class Replicator {
 					// (can happen with attributes where they can be pulled as missing on the primary record 
 					//  and then as dependencies of the primary record)
 					if($this->sent_log_ids[$mlog_id]) { 
-						$this->logDebug(_t("[%1] Skipped log_id %2 because it has already been sent.", $this->source_key, $mlog_id), Zend_Log::WARN);
+						$this->logDebug(_t("[%1] Skipped log_id %2 because it has already been sent.", $this->source_key, $mlog_id), PriorityLog::WARN);
 						continue; 
 					} 
 
 					if (!$mlog_id) { 
-						$this->logDebug(_t("[%1] Skipped entry because it lacks a log_id.", $this->source_key), Zend_Log::WARN);
+						$this->logDebug(_t("[%1] Skipped entry because it lacks a log_id.", $this->source_key), PriorityLog::WARN);
 						continue; 
 					}
 					
 					if (!$single_log_id_mode && ($mlog_id > $this->last_log_id)) { 
-						$this->logDebug(_t("[%1] Skipped entry (%2) because it's in the future.", $this->source_key, $mlog_id),Zend_Log::DEBUG);
+						$this->logDebug(_t("[%1] Skipped entry (%2) because it's in the future.", $this->source_key, $mlog_id),PriorityLog::DEBUG);
 						continue; 
 					}
 					
@@ -1308,7 +1308,7 @@ class Replicator {
 								}
 								$size = sizeof($acc);
 								if ($size > 0) {
-									$this->logDebug(_t("[%1] Adding %4 unpushed attribute log entries starting with %2 for %3 for immediate push.", $this->source_key, $first_missing_log_id, $missing_guid, $size), Zend_Log::DEBUG);
+									$this->logDebug(_t("[%1] Adding %4 unpushed attribute log entries starting with %2 for %3 for immediate push.", $this->source_key, $first_missing_log_id, $missing_guid, $size), PriorityLog::DEBUG);
 								}
 							}
 						}
@@ -1327,7 +1327,7 @@ class Replicator {
 				
 				$size = sizeof($entries);
 				if ($size > 0) {
-					$this->logDebug(_t("[%1] Immediately pushing missing log entries starting with %2 for %3: %4", $this->source_key, $first_missing_log_id, $missing_guid, print_r($entries, true)), Zend_Log::DEBUG);
+					$this->logDebug(_t("[%1] Immediately pushing missing log entries starting with %2 for %3: %4", $this->source_key, $first_missing_log_id, $missing_guid, print_r($entries, true)), PriorityLog::DEBUG);
 		
 					$o_backlog_resp = $this->target->setRequestMethod('POST')->setEndpoint('applylog')
 						->addGetParameter('system_guid', $this->source_guid)
@@ -1340,7 +1340,7 @@ class Replicator {
 					$response_data = $o_backlog_resp->getRawData();
 					
 					if(!isset($response_data['replicated_log_id'])) {
-						$this->logDebug(_t("[%1] _findMissingGUID applylog with %3 entries failed: %2.", $this->source_key, print_R($response_data, true), sizeof($entries)), Zend_Log::DEBUG);
+						$this->logDebug(_t("[%1] _findMissingGUID applylog with %3 entries failed: %2.", $this->source_key, print_R($response_data, true), sizeof($entries)), PriorityLog::DEBUG);
 					} else {
 						foreach($entries as $mlog_id => $entry) {                                                        	
 							// Mark log entry as sent, to ensure we don't send it again in this session
@@ -1354,7 +1354,7 @@ class Replicator {
 				}
 			}
 		} else {
-			$this->logDebug(_t("[%1] No log for %2.", $this->source_key, $missing_guid), Zend_Log::WARN);
+			$this->logDebug(_t("[%1] No log for %2.", $this->source_key, $missing_guid), PriorityLog::WARN);
 		}
 		
 		$this->missing_guid_created[$missing_guid] = true;
@@ -1387,7 +1387,7 @@ class Replicator {
 				}
 			}
 				
-			$this->log(_t("[%1] Trying to push %2 unresolved guids", $this->source_key, sizeof($this->unresolved_guids)), Zend_Log::DEBUG);
+			$this->log(_t("[%1] Trying to push %2 unresolved guids", $this->source_key, sizeof($this->unresolved_guids)), PriorityLog::DEBUG);
 			$o_guid_already_exists = $this->target->setRequestMethod('POST')->setEndpoint('hasGUID')
 				->setRequestBody(array_keys($this->unresolved_guids))
 				->setRetries($this->max_retries)->setRetryDelay($this->retry_delay)
@@ -1397,10 +1397,10 @@ class Replicator {
 			foreach($guid_already_exists as $guid => $guid_info) {
 				if(!is_array($guid_info)) {
 					if(is_null($this->_findMissingGUID($guid, 0, $single_log_id_mode, $is_push_missing))) {
-						$this->log(_t("[%1] Could not push unresolved guid %2", $this->source_key, $guid), Zend_Log::DEBUG);
+						$this->log(_t("[%1] Could not push unresolved guid %2", $this->source_key, $guid), PriorityLog::DEBUG);
 						$failed++;
 					} else {
-						$this->log(_t("[%1] Pushed unresolved guid %2", $this->source_key, $guid), Zend_Log::DEBUG);
+						$this->log(_t("[%1] Pushed unresolved guid %2", $this->source_key, $guid), PriorityLog::DEBUG);
 						unset($this->unresolved_guids[$guid]);
 						$pushed++;
 					}
@@ -1411,7 +1411,7 @@ class Replicator {
 			}
 		}
 		if($pushed || $skipped || $failed) {
-			$this->log(_t("[%1] Pushed %2; skipped %3; %4 failed unresolved guids; list is now %5", $this->source_key, $pushed, $skipped, $failed, print_R($this->unresolved_guids, true)), Zend_Log::DEBUG);
+			$this->log(_t("[%1] Pushed %2; skipped %3; %4 failed unresolved guids; list is now %5", $this->source_key, $pushed, $skipped, $failed, print_R($this->unresolved_guids, true)), PriorityLog::DEBUG);
 		}
 		return true;
 	}
@@ -1480,7 +1480,7 @@ class Replicator {
 			->request();
 		;
 		if (!$o_result || !is_array($source_locales = $o_result->getRawData()) || isset($source_locales['errors'])) {
-			$this->log(_t("There were errors getting locale list for source %1: %2.", $source_key, join('; ', $source_locales['errors'])), Zend_Log::ERR);
+			$this->log(_t("There were errors getting locale list for source %1: %2.", $source_key, join('; ', $source_locales['errors'])), PriorityLog::ERR);
 			return false;
 		}
 		$o_result = $o_target->setEndpoint('getGUIDsForTable')
@@ -1489,12 +1489,12 @@ class Replicator {
 			->request();
 		;
 		if (!$o_result || !is_array($target_locales = $o_result->getRawData()) || isset($target_locales['errors'])) {
-			$this->log(_t("There were errors getting locale list for target %1: %2.", $target_key, join('; ', $target_locales['errors'])), Zend_Log::ERR);
+			$this->log(_t("There were errors getting locale list for target %1: %2.", $target_key, join('; ', $target_locales['errors'])), PriorityLog::ERR);
 			return false;
 		}
 		if(!sizeof(array_intersect($source_locales, $target_locales))) {
 			$this->log(_t("Locales appear to be mis-aligned for source %1 and target %2. Skipping target.",
-				$source_key, $target_key), Zend_Log::WARN);
+				$source_key, $target_key), PriorityLog::WARN);
 			return false;
 		}
 		return true;
@@ -1515,7 +1515,7 @@ class Replicator {
 			if(!$o_result || !($res = $o_result->getRawData()) || !(strlen($source_system_guid = $res['system_guid']))) {
 				$this->log(
 					_t("[%1] Could not get system GUID for one of the configured replication sources: {$source_key}. Skipping source.", $source_key),
-					Zend_Log::ERR
+					PriorityLog::ERR
 				);
 				return;
 			}
@@ -1580,7 +1580,7 @@ class Replicator {
 			$res = $resp->getRawData();
 			
 			foreach($res as $r) {
-				$this->log(_t("[%1] Replicating from %2.", $source, $r['log_id']), Zend_Log::INFO);
+				$this->log(_t("[%1] Replicating from %2.", $source, $r['log_id']), PriorityLog::INFO);
 				$this->replicate(['source' => $source, 'log_id' => $r['log_id']]);
 			}
 			return true;
@@ -1606,7 +1606,7 @@ class Replicator {
 				$guid_filter_list = array_map('trim', preg_split('![;,]+!', $guid));
 				$guids = array_intersect($guids, $guid_filter_list);
 			}
-			$this->log(_t("[%1] There are %2 public records for source.", $source, sizeof($guids)), Zend_Log::INFO);
+			$this->log(_t("[%1] There are %2 public records for source.", $source, sizeof($guids)), PriorityLog::INFO);
 			
 			$targets = $this->getTargetsAsServiceClients();
 			
@@ -1635,7 +1635,7 @@ class Replicator {
 				
 				$guids_to_sync = array_unique($guids_to_sync);
 			}
-			$this->log(_t("[%1] Found %2 unsynced public records.", $source, sizeof($guids_to_sync)), Zend_Log::INFO);
+			$this->log(_t("[%1] Found %2 unsynced public records.", $source, sizeof($guids_to_sync)), PriorityLog::INFO);
 			self::syncGUIDs($source, $guids_to_sync);
 			return true;
 		}
@@ -1661,7 +1661,7 @@ class Replicator {
 					->request();
 				
 				$guids = $resp->getRawData();
-				$this->log(_t("[%1] There are %2 public records for source.", $source_name, sizeof($guids)), Zend_Log::INFO);
+				$this->log(_t("[%1] There are %2 public records for source.", $source_name, sizeof($guids)), PriorityLog::INFO);
 				
 				$targets = $this->getTargetsAsServiceClients();
 				

@@ -211,7 +211,7 @@ class NumericAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
 	public function loadTypeSpecificValueFromRow($pa_value_array) {
 		global $g_ui_locale;
-		$this->ops_text_value = (strlen($pa_value_array['value_longtext1']) && is_numeric($pa_value_array['value_longtext1'])) ? Zend_Locale_Format::toNumber((float)$pa_value_array['value_longtext1'], ['locale' => $g_ui_locale ?? (defined('__CA_DEFAULT_LOCALE__') ? __CA_DEFAULT_LOCALE__ : 'en_US')]) : null;
+		$this->ops_text_value = (strlen($pa_value_array['value_longtext1']) && is_numeric($pa_value_array['value_longtext1'])) ? LocaleFormat::toNumber((float)$pa_value_array['value_longtext1'], ['locale' => $g_ui_locale ?? (defined('__CA_DEFAULT_LOCALE__') ? __CA_DEFAULT_LOCALE__ : 'en_US')]) : null;
 		$this->opn_numeric_value = $pa_value_array['value_decimal1'];
 	}
 	# ------------------------------------------------------------------
@@ -242,7 +242,7 @@ class NumericAttributeValue extends AttributeValue implements IAttributeValue {
 		}
 		
 		try {
-			$pn_value = strlen($ps_value) ? Zend_Locale_Format::getNumber($ps_value, ['locale' => $g_ui_locale]) : null;
+			$pn_value = strlen($ps_value) ? LocaleFormat::getNumber($ps_value, ['locale' => $g_ui_locale]) : null;
 		} catch(Exception $e) {			
 			if($ps_value && !(is_numeric($ps_value))){
 				// This is not an number, it contains symbols other than [0-9]

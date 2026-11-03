@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2023 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -84,14 +84,13 @@ if(($t_element->get('datatype') == __CA_ATTRIBUTE_VALUE_CONTAINER__) && isset($v
 
 // generate list of inital form values; the bundle Javascript call will
 // use the template to generate the initial form
-$va_initial_values = array();
-$va_errors = array();
+$va_initial_values = [];
+$va_errors = [];
 $vs_bundle_preview = '';
 
 if(!is_array($va_template_tags = $va_element_ids)) {
 	$va_template_tags = [];
 }
-
 if(!($vs_display_template = trim(caGetOption('displayTemplate', $settings)))) {
 	$vs_display_template = caGetOption('displayTemplate', $va_element_settings, null);
 }
@@ -129,19 +128,17 @@ if (is_array($va_attribute_list) && sizeof($va_attribute_list)) {
 				// copy value from failed update into form (so user can correct it)
 				$vs_display_val = $va_failed_updates[$vn_attr_id][$vn_element_id];
 			} else {
-				$vs_display_val = $o_value->getDisplayValue(array('request' => $this->request, 'includeID' => true, 'showMediaInfo' => true));
+				$vs_display_val = $o_value->getDisplayValue(['request' => $this->request, 'includeID' => true, 'showMediaInfo' => true]);
 			}
 			
-			switch($dt) {
-				case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
-					// Emit display values for InformationService attributes that support additional 
-					// user interface elements beyond the value entry fields (Eg. Numishare)
-					// 
-					foreach($o_value->getAdditionalDisplayValues() as $k => $v) {
-						if(!in_array($k, $va_template_tags)) { $va_template_tags[] = $k; }
-						$va_initial_values[$vn_attr_id][$k] = $v;
-					}
-					break;	
+			if(method_exists($o_value, 'getAdditionalDisplayValues')) {
+				// Emit display values for attributes that support additional 
+				// user interface elements beyond the value entry fields (Eg. InformationService plugins such as Numishare)
+				// 
+				foreach($o_value->getAdditionalDisplayValues() as $k => $v) {
+					if(!in_array($k, $va_template_tags)) { $va_template_tags[] = $k; }
+					$va_initial_values[$vn_attr_id][$o_value->getElementID().'_'.$k] = $v;
+				}
 			}
 			
 			$va_initial_values[$vn_attr_id][$vn_element_id] = $vs_display_val;
@@ -184,18 +181,19 @@ if (is_array($va_attribute_list) && sizeof($va_attribute_list)) {
 } else {
 	$va_template_tags[] = 'value_source';
 	
-	// set labels for replacement in blank lookups	
-	if (is_array($va_element_ids)) {
-		foreach($va_element_ids as $vn_element_id) {
-			$va_template_tags[] = "{$vn_element_id}_label";
-		}
-	}
-	
 	// Set element errors an unsaved/new elements
 	if(is_array($va_action_errors = $this->request->getActionErrors($vs_error_source_code))) {
 		foreach($va_action_errors as $o_error) {
 			$va_errors['new_0'][] = array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber());
 		}
+	}
+}
+// set labels for replacement in blank lookups	
+if (is_array($va_element_ids)) {
+	foreach($va_element_ids as $vn_element_id) {
+		$va_template_tags[] = "{$vn_element_id}_id";
+		$va_template_tags[] = "{$vn_element_id}_label";
+		$va_template_tags[] = "{$vn_element_id}_display";
 	}
 }
 

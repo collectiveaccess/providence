@@ -87,7 +87,7 @@ $available_cli_opts = array_merge(array(
     ), $command_opts);
 
 try {
-    $o_opts = new Zend_Console_Getopt($available_cli_opts);
+    $o_opts = new CLIGetopt($available_cli_opts);
     $o_opts->parse();
 } catch(Exception $e) {
     die(_t("Invalid options specified (%1). Try 'caUtils help' to view list of valid options.", $e->getMessage())."\n");

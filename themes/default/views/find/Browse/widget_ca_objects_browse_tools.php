@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2025 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,10 +24,9 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
-  
-  	$vo_result_context 			= $this->getVar('result_context');
- 	$vo_result					= $this->getVar('result');
+ */  
+$vo_result_context 			= $this->getVar('result_context');
+$vo_result					= $this->getVar('result');
 ?>
 <h3 class='searchType' >
 	<?= _t("Browse %1", $this->getVar('mode_type_plural'))."<br/>\n"; ?>
@@ -56,5 +55,9 @@
 		}
 		
 		print $this->render('Search/search_sets_html.php');
+		
+		if($this->request->config->get('enable_inventories')) {
+			print $this->render('Search/inventory_html.php');
+		}
 	}
 ?>

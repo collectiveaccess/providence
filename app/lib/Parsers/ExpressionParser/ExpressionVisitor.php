@@ -40,7 +40,7 @@ use Hoa\Visitor;
  */
 class ExpressionVisitor implements Visitor\Visit {
 
-	protected $opa_functions = array();
+	protected $functions = array();
 	protected $opa_variables = array();
 	protected $opo_app_plugin_manager = null;
 
@@ -55,69 +55,67 @@ class ExpressionVisitor implements Visitor\Visit {
 	 */
 	protected function initializeFunctions() {
 
-		if(sizeof($this->opa_functions) > 0) { return; }
+		if(sizeof($this->functions) > 0) { return; }
 
-		$average = function () {
-			$arguments = func_get_args();
-
-			return array_sum($arguments) / count($arguments);
-		};
-
-		$implode = function () {
-			$va_args = func_get_args();
-			if(count($va_args)<2){
-				throw new Exception(_t('Invalid number of arguments. Number of arguments passed: %1', count($va_args)));
-			}
-			$vs_glue = array_shift($va_args);
-			return implode($vs_glue, $va_args);
-		};
-
-		$this->opa_functions  = array(
-			'abs'			=> xcallable('abs'),
-			'ceil'			=> xcallable('ceil'),
-			'floor'			=> xcallable('floor'),
-			'int'			=> xcallable('intval'),
-			'max'			=> xcallable('max'),
-			'min'			=> xcallable('min'),
-			'rand'			=> xcallable('rand'),
-			'round'			=> xcallable('round'),
-			'random'		=> xcallable('rand'),
-			'current'		=> xcallable('caIsCurrentDate'),
-			'isvaliddate'	=> xcallable('caIsValidDate'),
-			'future'		=> xcallable('caDateEndsInFuture'),
-			'past'		=> xcallable('caDateStartsInPast'),
-			'wc'			=> xcallable('str_word_count'),
-			'length'		=> xcallable('strlen'),
-			'date'			=> xcallable('caDateToHistoricTimestamp'),
-			'formatdate'	=> xcallable('caFormatDate'),
-			'formatgmdate'	=> xcallable('caFormatGMDate'),
-			'sizeof'		=> xcallable('caExpressionCount'),
-			'count'			=> xcallable('caExpressionCount'),
-			'valueCount'	=> xcallable('caValueCount'),
-			'uniqueValueCount'	=> xcallable('caUniqueValueCount'),
-			'age'			=> xcallable('caCalculateAgeInYears'),
-			'ageyears'		=> xcallable('caCalculateAgeInYears'),
-			'agedays'		=> xcallable('caCalculateAgeInDays'),
-			'avgdays'		=> xcallable('caCalculateDateRangeAvgInDays'),
-			'earliestDate'	=> xcallable('caGetEarliestDate'),
-			'latestDate'	=> xcallable('caGetLatestDate'),
-			'average' 		=> xcallable($average),
-			'avg'     		=> xcallable($average),
-			'sum'			=> xcallable(function () { return array_sum(func_get_args()); }),
-			'replace'		=> xcallable('preg_replace'),
-			'join'			=> xcallable($implode),
-			'implode'		=> xcallable($implode),
-			'trim'			=> xcallable('trim'),
-			'idnoUseCount'	=> xcallable('caIdnoUseCount'),
-			'dateIsRange'	=> xcallable('caDateIsRange'),
-			'fromUnixtime'	=> xcallable(function($arg) { return date('c', $arg); }),
-			'existsInList'	=> xcallable(function($arg1, $arg2) { return caItemExists($arg1, $arg2); })
+		$this->functions  = array(
+			'abs'			=> xcallable('caExpressionFunctionAbsValue'),
+			'ceil'			=> xcallable('caExpressionFunctionCeilValue'),
+			'floor'			=> xcallable('caExpressionFunctionFloorValue'),
+			'int'			=> xcallable('caExpressionFunctionIntValue'),
+			'max'			=> xcallable('caExpressionFunctionMaxValue'),
+			'min'			=> xcallable('caExpressionFunctionMinValue'),
+			'rand'			=> xcallable('caExpressionFunctionRandomValue'),
+			'round'			=> xcallable('caExpressionFunctionRoundValue'),
+			'random'		=> xcallable('caExpressionFunctionRandomValue'),
+			
+			'wc'			=> xcallable('caExpressionFunctionStringWordCount'),
+			'length'		=> xcallable('caExpressionFunctionStringLength'),
+			'replace'		=> xcallable('caExpressionFunctionStringReplace'),
+			'trim'			=> xcallable('caExpressionFunctionStringTrim'),
+			
+			'date'			=> xcallable('caExpressionDate'),
+			'formatdate'	=> xcallable('caExpressionFormatDate'),
+			'formatDate'	=> xcallable('caExpressionFormatDate'),
+			'formatgmdate'	=> xcallable('caExpressionFormatGMDate'),
+			'formatGMDate'	=> xcallable('caExpressionFormatGMDate'),
+			'current'		=> xcallable('caExpressionIsCurrentDate'),
+			'isCurrentDate'	=> xcallable('caExpressionIsCurrentDate'),
+			'isvaliddate'	=> xcallable('caExpressionIsValidDate'),
+			'isValidDate'	=> xcallable('caExpressionIsValidDate'),
+			'future'		=> xcallable('caExpressionDateEndsInFuture'),
+			'past'			=> xcallable('caExpressionDateStartsInPast'),
+			'age'			=> xcallable('caExpressionDateAgeInYears'),
+			'ageyears'		=> xcallable('caExpressionDateAgeInYears'),
+			'ageInYears'	=> xcallable('caExpressionDateAgeInYears'),
+			'agedays'		=> xcallable('caExpressionDateAgeInDays'),
+			'ageInDays'		=> xcallable('caExpressionDateAgeInDays'),
+			'avgdays'		=> xcallable('caExpressionDateAverageInDays'),
+			'avgInDays'		=> xcallable('caExpressionDateAverageInDays'),
+			'earliestDate'	=> xcallable('caExpressionEarliestDate'),
+			'latestDate'	=> xcallable('caExpressionLatestDate'),
+			'dateIsRange'	=> xcallable('caExpressionDateIsRange'),
+			'fromUnixtime'	=> xcallable('caExpressionFromUnixTime'),
+			'fromUnixTime'	=> xcallable('caExpressionFromUnixTime'),
+			
+			'sizeof'		=> xcallable('caExpressionFunctionValueCount'),
+			'count'			=> xcallable('caExpressionFunctionValueCount'),
+			'valueCount'	=> xcallable('caExpressionFunctionValueCount'),
+			'uniqueValueCount'	=> xcallable('caExpressionFunctionUniqueValueCount'),
+			'join'			=> xcallable('caExpressionFunctionJoinList'),
+			'implode'		=> xcallable('caExpressionFunctionJoinList'),
+			'existsInList'	=> xcallable('caExpressionFunctionExistsInList'),
+			
+			'average' 		=> xcallable('caExpressionFunctionAverageValues'),
+			'avg'     		=> xcallable('caExpressionFunctionAverageValues'),
+			'sum'			=> xcallable('caExpressionFunctionSumValues'),
+			
+			'idnoUseCount'	=> xcallable('caExpressionFunctionIdnoUseCount'),
 		);
 
 		// Let application plugins add their own expression functions
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
-		$va_tmp = $this->opo_app_plugin_manager->hookRegisterExpressions(array('expressions' => $this->opa_functions, 'instance' => $this));
-		$this->opa_functions = $va_tmp['expressions'];
+		$va_tmp = $this->opo_app_plugin_manager->hookRegisterExpressions(['expressions' => $this->functions, 'instance' => $this]);
+		$this->functions = $va_tmp['expressions'];
 		return;
 	}
 
@@ -151,7 +149,7 @@ class ExpressionVisitor implements Visitor\Visit {
 	 * @return bool|mixed
 	 */
 	public function getVariable($ps_var) {
-		return isset($this->opa_variables[$ps_var]) ? $this->opa_variables[$ps_var] : false;
+		return $this->opa_variables[$ps_var.':array'] ?? $this->opa_variables[$ps_var] ?? false;
 	}
 
 	/**
@@ -168,7 +166,7 @@ class ExpressionVisitor implements Visitor\Visit {
 		$a = null;
 		$in = null;
 		$vs_type = $po_element->getId();
-		$va_children = $po_element->getChildren();
+		$children = $po_element->getChildren();
 
 		// if no handle passed, use identity
 		if ($f_handle === null) {
@@ -178,284 +176,424 @@ class ExpressionVisitor implements Visitor\Visit {
 		}
 
 		$f_acc = &$f_handle;
-
 		switch ($vs_type) {
-
 			case '#function':
-				$vs_name = array_shift($va_children)->accept($this, $_, $f_eldnah);
-				$f_function = $this->getFunction($vs_name);
-				$va_args = array();
-
-				foreach ($va_children as $o_child) {
+				$f = array_shift($children);
+				
+				$name = $f->accept($this, $_, $f_eldnah);
+				$f_function = $this->getFunction($name);
+				
+				// First argument to function handler is array of context information
+				$args = [[
+					'variables' => $this->opa_variables
+				]];
+				
+				$fparams = [];
+				foreach ($children as $o_child) {
+					$token = $o_child->getValue();
+					switch($token['token']) {
+						case 'string_single_quote':
+						case 'string':
+							$token['value'] = trim(trim($token['value'], '"'), "'");
+							$vtags = caGetTemplateTags($token['value']);
+							$etypes = (is_array($vtags) && sizeof($vtags) && ('^'.$vtags[0] == trim($token['value']))) ? caGetTagDatatypes([$token['value'] => true], []) : null;
+							$fparams[] = [
+								'type' => $etypes[$token['value']] ?? '_LITERAL_',
+								'value' => $token['value']
+							];
+							break;
+						case 'variable':
+							$etypes = caGetTagDatatypes([$token['value'] => true], []);
+							$fparams[] = [
+								'type' => $etypes[$token['value']] ?? '_UNKNOWN_',
+								'value' => $token['value']
+							];
+							break;
+						case 'true':
+						case 'false':
+							$fparams[] = [
+								'type' => '_LITERAL_',
+								'value' => (bool)$token['value']
+							];
+							break;
+						case 'number':
+							$fparams[] = [
+								'type' => '_LITERAL_',
+								'value' => (float)$token['value']
+							];
+							break;
+						default:
+							if(is_null($token)) {
+								// Nested function
+								$ret = $this->visit($o_child, $_, $f_eldnah);
+								$fparams[] = [
+									'type' => '_LITERAL_',
+									'value' => $ret
+								];
+							} else {
+								$fparams[] = [
+									'type' => '_LITERAL_',
+									'value' => $token['value']
+								];
+							}
+							break;
+					}
 					$o_child->accept($this, $_, $f_eldnah);
-					$va_args[] = $_();
+					$args[] = $_();
 					unset($_);
 				}
+				$args[0]['params'] = $fparams;
 
-				$f_acc = function () use ($f_function, $va_args, $f_acc) {
-					return $f_acc($f_function->distributeArguments($va_args));
+				$f_acc = function () use ($f_function, $args, $f_acc, $name) {
+					$z = $f_acc($f_function->distributeArguments($args));
+					return $z;
 				};
-
 				break;
 
 			case '#bool_and':
-				$va_children[0]->accept($this, $a, $f_eldnah);
+				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					return $f_acc($a() && $b);
+					$v = $a(); if(is_array($v)) { $v = join(";", $v); }		// join multiples together before eval
+					return $f_acc($v && $b);
 				};
 
-				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				$children[1]->accept($this, $f_acc, $f_eldnah);
 				break;
 
 			case '#bool_or':
-				$va_children[0]->accept($this, $a, $f_eldnah);
+				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					return $f_acc($a() || $b);
+					$v = $a(); if(is_array($v)) { $v = join(";", $v); }		// join multiples together before eval
+					return $f_acc($v || $b);
 				};
 
-				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				$children[1]->accept($this, $f_acc, $f_eldnah);
 				break;
 
 			case '#regex_match':
-				$va_children[0]->accept($this, $a, $f_eldnah);
+				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					return $f_acc((bool)@preg_match($b, $a()));
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// test multiple values
+					foreach($vv as $v) {
+						if($f_acc((bool)@preg_match($b, $v))) { return true; }
+					}
+					return false;
 				};
 
-				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				$children[1]->accept($this, $f_acc, $f_eldnah);
 				break;
 
 			case '#regex_nomatch':
-				$va_children[0]->accept($this, $a, $f_eldnah);
+				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					return $f_acc(!((bool) @preg_match($b, $a())));
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// test multiple values
+					foreach($vv as $v) {
+						if($f_acc(!((bool) @preg_match($b, $v)))) { return true; }
+					}
+					return false;
 				};
 
-				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				$children[1]->accept($this, $f_acc, $f_eldnah);
 				break;
 
 			case '#comp_gt':
-				$va_children[0]->accept($this, $a, $f_eldnah);
+				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					return $f_acc($a() > $b);
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// test multiple values
+					
+					foreach($vv as $v) {
+						if($f_acc($v > $b)) { return true; }
+					}
+					return false;
 				};
 
-				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				$children[1]->accept($this, $f_acc, $f_eldnah);
 				break;
 
 			case '#comp_gte':
-				$va_children[0]->accept($this, $a, $f_eldnah);
+				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					return $f_acc($a() >= $b);
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// test multiple values
+					
+					foreach($vv as $v) {
+						if($f_acc($v >= $b)) { return true; }
+					}
+					return false;
 				};
 
-				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				$children[1]->accept($this, $f_acc, $f_eldnah);
 				break;
 
 			case '#comp_lt':
-				$va_children[0]->accept($this, $a, $f_eldnah);
+				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					return $f_acc($a() < $b);
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// test multiple values
+					
+					foreach($vv as $v) {
+						if($f_acc($v < $b)) { return true; }
+					}
+					return false;
 				};
 
-				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				$children[1]->accept($this, $f_acc, $f_eldnah);
 				break;
 
 			case '#comp_lte':
-				$va_children[0]->accept($this, $a, $f_eldnah);
+				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					return $f_acc($a() <= $b);
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// test multiple values
+					
+					foreach($vv as $v) {
+						if($f_acc($v <= $b)) { return true; }
+					}
+					return false;
 				};
 
-				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				$children[1]->accept($this, $f_acc, $f_eldnah);
 				break;
 
 			case '#comp_neq':
-				$va_children[0]->accept($this, $a, $f_eldnah);
+				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					return $f_acc($a() != $b);
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// test multiple values
+					
+					foreach($vv as $v) {
+						if($f_acc($v != $b)) { return true; }
+					}
+					return false;
 				};
 
-				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				$children[1]->accept($this, $f_acc, $f_eldnah);
 				break;
 
 			case '#comp_eq':
-				$va_children[0]->accept($this, $a, $f_eldnah);
+				$children[0]->accept($this, $a, $f_eldnah);
 				$f_acc = function ($b) use ($a, $f_acc) {
-					return $f_acc($a() == $b);
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// test multiple values
+					
+					foreach($vv as $v) {
+						if($f_acc($v == $b)) { return true; }
+					}
+					return false;
 				};
 
-				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				$children[1]->accept($this, $f_acc, $f_eldnah);
 				break;
 
 			case '#in_op':
-				$vs_needle = array_shift($va_children)->accept($this, $in, $f_eldnah);
-				$va_haystack = array();
+				$needle = array_shift($children)->accept($this, $in, $f_eldnah);
+				if(!is_array($needle)) { $needle = [$needle]; }
+				$haystack = [];
 
 				$in = $f_handle;
 
-				$o_op = array_shift($va_children);
+				$o_op = array_shift($children);
 				if ($o_op->getValueToken() !== 'in_op') {
 					throw new Exception('invalid syntax');
 				}
 
-				foreach ($va_children as $o_child) {
+				foreach ($children as $o_child) {
 					$o_child->accept($this, $in, $f_eldnah);
-					$va_haystack[] = $in();
+					
+					$vv = $in(); if(!is_array($vv)) { $vv = [$vv]; }
+					$haystack = array_merge($haystack, $vv);
 					unset($in);
 				}
-
-				$f_acc = function () use ($vs_needle, $va_haystack, $f_acc) {
-					return $f_acc(in_array($vs_needle, $va_haystack));
+				$f_acc = function () use ($needle, $haystack, $f_acc) {
+					foreach($needle as $n) {
+						if($f_acc(in_array($n, $haystack))) { return true; }
+					}
+					return false;
 				};
 
 				break;
 
 			case '#notin_op':
-				$vs_needle = array_shift($va_children)->accept($this, $in, $f_eldnah);
-				$va_haystack = array();
+				$needle = array_shift($children)->accept($this, $in, $f_eldnah);
+				if(!is_array($needle)) { $needle = [$needle]; }
+				$haystack = [];
 
 				$in = $f_handle;
 
-				$o_op = array_shift($va_children);
+				$o_op = array_shift($children);
 				if ($o_op->getValueToken() !== 'notin_op') {
 					throw new Exception('invalid syntax');
 				}
 
-				foreach ($va_children as $o_child) {
+				foreach ($children as $o_child) {
 					$o_child->accept($this, $in, $f_eldnah);
-					$va_haystack[] = $in();
+					
+					$vv = $in(); if(!is_array($vv)) { $vv = [$vv]; }
+					$haystack = array_merge($haystack, $vv);
 					unset($in);
 				}
 
-				$f_acc = function () use ($vs_needle, $va_haystack, $f_acc) {
-					return $f_acc(!in_array($vs_needle, $va_haystack));
+				$f_acc = function () use ($needle, $haystack, $f_acc) {
+					foreach($needle as $n) {
+						if($f_acc(!in_array($n, $haystack))) { return true; }
+					}
+					return false;
 				};
 
 				break;
 
 
 			case '#stradd':
-				$va_children[0]->accept($this, $a, $f_eldnah);
+				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					return $f_acc($a() . $b);
+					$v = $a(); if(is_array($v)) { $v = array_shift($v); }
+					return $f_acc($v . $b);
 				};
 
-				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				$children[1]->accept($this, $f_acc, $f_eldnah);
 				break;
 
 			case '#negative':
-				$va_children[0]->accept($this, $a, $f_eldnah);
+				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function () use ($a, $f_acc) {
-					return $f_acc(-$a());
+					$v = $a(); if(is_array($v)) { $v = array_shift($v); }
+					return $f_acc(-$v);
 				};
 
 				break;
 
 			case '#addition':
-				$va_children[0]->accept($this, $a, $f_eldnah);
+				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					return $f_acc($a() + $b);
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// multiple values
+					
+					$v = array_reduce($vv, function($c, $i) {
+						return $c + $i;
+					}, 0);
+					
+					return $f_acc($v + $b);
 				};
 
-				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				$children[1]->accept($this, $f_acc, $f_eldnah);
 
 				break;
 
 			case '#substraction':
-				$va_children[0]->accept($this, $a, $f_eldnah);
+				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					return $f_acc($a()) - $b;
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// multiple values
+					
+					$v = array_reduce($vv, function($c, $i) {
+						return $c + $i;
+					}, 0);
+					
+					return $f_acc($v - $b);
 				};
 
-				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				$children[1]->accept($this, $f_acc, $f_eldnah);
 
 				break;
 
 			case '#multiplication':
-				$va_children[0]->accept($this, $a, $f_eldnah);
+				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					return $f_acc($a() * $b);
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// multiple values
+					
+					$v = array_reduce($vv, function($c, $i) {
+						return $c + $i;
+					}, 0);
+					return $f_acc($v * $b);
 				};
 
-				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				$children[1]->accept($this, $f_acc, $f_eldnah);
 
 				break;
 
 			case '#division':
-				$va_children[0]->accept($this, $a, $f_eldnah);
+				$children[0]->accept($this, $a, $f_eldnah);
 				$parent = $po_element->getParent();
 
 				if (null === $parent || (null === $parent->getId())) {
 					$f_acc = function ($b) use ($a, $f_acc) {
+						$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// multiple values
+					
+						$v = array_reduce($vv, function($c, $i) {
+							return $c + $i;
+						}, 0);
+						if (0 === $b) {
+							throw new \RuntimeException(
+								'Division by zero is not possible.'
+							);
+						}
+						return $f_acc($v / $b);
+					};
+				} elseif ('#fakegroup' !== $parent->getId()) {
+					$classname = get_class($po_element);
+					$group = new $classname(
+						'#fakegroup',
+						null,
+						[$po_element],
+						$parent
+					);
+					$po_element->setParent($group);
+					$this->visit($group, $f_acc, $f_eldnah);
+
+					break;
+				} else {
+					$f_acc = function ($b) use ($a, $f_acc) {
+						$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// multiple values
+				
+						$v = array_reduce($vv, function($c, $i) {
+							return $c + $i;
+						}, 0);
 						if (0 === $b) {
 							throw new \RuntimeException(
 								'Division by zero is not possible.'
 							);
 						}
 
-						return $f_acc($a()) / $b;
+						return $f_acc($v / $b);
 					};
-				} else {
-					if ('#fakegroup' !== $parent->getId()) {
-						$classname = get_class($po_element);
-						$group = new $classname(
-							'#fakegroup',
-							null,
-							[$po_element],
-							$parent
-						);
-						$po_element->setParent($group);
-
-						$this->visit($group, $f_acc, $f_eldnah);
-
-						break;
-					} else {
-						$f_acc = function ($b) use ($a, $f_acc) {
-							if (0 === $b) {
-								throw new \RuntimeException(
-									'Division by zero is not possible.'
-								);
-							}
-
-							return $f_acc($a() / $b);
-						};
-					}
 				}
 
-				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				$children[1]->accept($this, $f_acc, $f_eldnah);
 
 				break;
 			case '#modulus':
-				$va_children[0]->accept($this, $a, $f_eldnah);
+				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function ($b) use ($a, $f_acc) {
-					return $f_acc($a() % $b);
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// multiple values
+					
+					$v = array_reduce($vv, function($c, $i) {
+						return $c + $i;
+					}, 0);
+					return $f_acc($v % $b);
 				};
 
-				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				$children[1]->accept($this, $f_acc, $f_eldnah);
 
 				break;
 			case '#fakegroup':
 			case '#group':
-				$va_children[0]->accept($this, $a, $f_eldnah);
+				$children[0]->accept($this, $a, $f_eldnah);
 
 				$f_acc = function () use ($a, $f_acc) {
-					return $f_acc($a());
+					$vv = $a(); if(!is_array($vv)) { $vv = [$vv]; }			// multiple values
+					
+					$v = array_reduce($vv, function($c, $i) {
+						return (float)$c + (float)$i;
+					}, 0);
+					return $f_acc($v);
 				};
 
 				break;
@@ -464,24 +602,23 @@ class ExpressionVisitor implements Visitor\Visit {
 				$value = $po_element->getValueValue();
 				$token = $po_element->getValueToken();
 				$out = null;
-				
 				switch($token) {
 					case 'id':
 						return $value;
+						break;
 					case 'string':
-						$out = preg_replace('/(^"|"$)/', '', $value);
+						$out = $this->_processVarsInString(preg_replace('/(^"|"$)/', '', $value));
 						break;
 					case 'string_single_quote':
-						$out = preg_replace("/(^'|'$)/", '', $value);
+						$out = $this->_processVarsInString(preg_replace("/(^'|'$)/", '', $value));
 						break;
 					case 'regex':
 						// @todo maybe mangle regex?
 						$out = (string) $value;
 						break;
 					case 'variable':
-						$vs_var = mb_substr((string) $value, 1); // get rid of caret ^
-						$out = $this->getVariable($vs_var);
-						if(is_array($out)) { $out = join("", $out); }	// we need to join multiple values
+						$var = mb_substr((string) $value, 1); // get rid of caret ^
+						$out = $this->getVariable($var);
 						break;
 					case 'true':
 						$out = true;
@@ -497,11 +634,18 @@ class ExpressionVisitor implements Visitor\Visit {
 				$f_acc = function () use ($out, $f_acc) {
 					return $f_acc($out);
 				};
-
 				break;
 		}
 
 		return $f_acc();
+	}
+	
+	/**
+	 *
+	 */
+	private function _processVarsInString(string $str) {
+		$str = DisplayTemplateParser::processSimpleTemplate($str, $this->opa_variables);
+		return $str;
 	}
 
 	/**
@@ -511,10 +655,10 @@ class ExpressionVisitor implements Visitor\Visit {
 	 * @throws Exception
 	 */
 	public function getFunction($ps_name) {
-		if(!isset($this->opa_functions[$ps_name])) {
+		if(!isset($this->functions[$ps_name])) {
 			throw new Exception('Invalid function name');
 		}
-		return $this->opa_functions[$ps_name];
+		return $this->functions[$ps_name];
 	}
 
 }

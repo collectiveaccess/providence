@@ -223,20 +223,20 @@ class CurrencyAttributeValue extends AttributeValue implements IAttributeValue {
 			return $cur_spec.$this->opn_value;
 		}
 		
-		$o_locale = $_locale ? $_locale : new Zend_Locale(__CA_DEFAULT_LOCALE__);
+		$o_locale = $_locale ? $_locale : __CA_DEFAULT_LOCALE__;
 		
 		if (!$this->ops_currency_specifier) { return null; }
-		$vs_format = Zend_Locale_Data::getContent($o_locale, 'currencynumber');
+		$vs_format = LocaleFormat::getCurrencyPattern($o_locale);
 
 		// this returns a string like '50,00 ¤' for locale de_DE
-		$vs_decimal_with_placeholder = Zend_Locale_Format::toNumber($this->opn_value, array('locale' => $o_locale, 'number_format' => $vs_format, 'precision' => 2));
+		$vs_decimal_with_placeholder = LocaleFormat::toNumber($this->opn_value, array('locale' => $o_locale, 'number_format' => $vs_format, 'precision' => 2));
 
 		$cur_spec = caGetCurrencySymbol($this->ops_currency_specifier, $this->getElementID());
 		$cur_spec_add_space = !in_array($cur_spec, ['$', "£", "¥", "€"]);
 		
 		// if the currency placeholder is the first character, for instance in en_US locale ($10), insert a space.
-		// we do this because we don't print "$10" (which is expected in the Zend locale rules) but "USD 10" ... and that looks nicer with an additional space.
-		// we also replace the weird multibyte nonsense Zend uses as placeholder with something more reasonable so that
+		// we do this because we don't print "$10" (which is expected in the locale rules) but "USD 10" ... and that looks nicer with an additional space.
+		// we also replace the "¤" currency placeholder with something more reasonable so that
 		// whatever we output here isn't rejected if thrown into parseValue() again
 		if(substr($vs_decimal_with_placeholder,0,2)=="¤") { // '¤' has length 2
 			$vs_decimal_with_placeholder = preg_replace("!¤[^\d]*!u", ($cur_spec_add_space ? '% ' : '%'), $vs_decimal_with_placeholder);
@@ -258,7 +258,7 @@ class CurrencyAttributeValue extends AttributeValue implements IAttributeValue {
 	public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
 		global $_locale;
 		// If the locale is valid, locale is set
-		$o_locale = $_locale ? $_locale : new Zend_Locale(__CA_DEFAULT_LOCALE__);
+		$o_locale = $_locale ? $_locale : __CA_DEFAULT_LOCALE__;
 		
 		$o_config = Configuration::load();
 		
@@ -291,17 +291,16 @@ class CurrencyAttributeValue extends AttributeValue implements IAttributeValue {
 			$vs_currency_specifier = $o_config->get('default_currency');
 		}
 		if(!$vs_currency_specifier){
-			// this respects the global UI locale which is set using Zend_Locale
-			$o_currency = new Zend_Currency($o_locale);
-			$vs_currency_specifier = $o_currency->getShortName();
+			// this respects the global UI locale
+			$vs_currency_specifier = LocaleFormat::getCurrencyCode($o_locale);
 		}
 
 		// get UI locale from registry and convert string to actual php float
 		// based on rules for this locale (e.g. most non-US locations use 10.000,00 as notation)
 		
 		try {
-			$vn_value = preg_match("!^[\d\.]+$!", $vs_decimal_value) ? (float)$vs_decimal_value : Zend_Locale_Format::getFloat($vs_decimal_value, ['locale' => $o_locale, 'precision' => 2]);
-		} catch (Zend_Locale_Exception $e){
+			$vn_value = preg_match("!^[\d\.]+$!", $vs_decimal_value) ? (float)$vs_decimal_value : LocaleFormat::getFloat($vs_decimal_value, ['locale' => $o_locale, 'precision' => 2]);
+		} catch (LocaleFormatException $e){
 			$this->postError(1970, _t('%1 does not use a valid decimal notation for your locale', $pa_element_info['displayLabel']), 'CurrencyAttributeValue->parseValue()');
 			return false;
 		}

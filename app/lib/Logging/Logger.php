@@ -36,6 +36,7 @@
    
 require_once(__CA_LIB_DIR__.'/Configuration.php');
 require_once(__CA_LIB_DIR__."/Utils/CLIUtils.php");
+require_once(__DIR__."/PriorityLog.php");
  
  # ----------------------------------------------------------------------
 class Logger {
@@ -55,29 +56,29 @@ class Logger {
 	/**
 	 * Log message with given log level
 	 * @param string $ps_msg
-	 * @param int $pn_level log level as Zend_Log level integer:
-	 *        one of Zend_Log::DEBUG, Zend_Log::INFO, Zend_Log::WARN, Zend_Log::ERR
+	 * @param int $pn_level log level as PriorityLog level integer:
+	 *        one of PriorityLog::DEBUG, PriorityLog::INFO, PriorityLog::WARN, PriorityLog::ERR
 	 */
-	public function log($ps_msg, $pn_level=Zend_Log::INFO) {
-		if(!in_array($pn_level, array(Zend_Log::DEBUG, Zend_Log::INFO, Zend_Log::WARN, Zend_Log::ERR))){
-			$pn_level = Zend_Log::INFO;
+	public function log($ps_msg, $pn_level=PriorityLog::INFO) {
+		if(!PriorityLog::isValidPriority($pn_level)){
+			$pn_level = PriorityLog::INFO;
 		}
 
 		$this->opo_replication_log->log($ps_msg, $pn_level);
 
 		switch($pn_level) {
-			case Zend_Log::DEBUG:
+			case PriorityLog::DEBUG:
 				if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
 					//print CLIUtils::textWithColor($ps_msg, 'purple') . PHP_EOL;
 				}
 				break;
-			case Zend_Log::INFO:
+			case PriorityLog::INFO:
 				//print CLIUtils::textWithColor($ps_msg, 'green') . PHP_EOL;
 				break;
-			case Zend_Log::WARN:
+			case PriorityLog::WARN:
 				//print CLIUtils::textWithColor($ps_msg, 'yellow') . PHP_EOL;
 				break;
-			case Zend_Log::ERR:
+			case PriorityLog::ERR:
 				CLIUtils::addError($ps_msg);
 				break;
 		}
@@ -88,7 +89,8 @@ class Logger {
 	 */
 	public function setLogger($ps_log_type, $pa_options=null) {
 	
-		$o_writer = $vs_log = null;
+		$vs_log = null;
+		$vs_app = 'CollectiveAccess';
 		
 		switch($ps_log_type) {
 			case 'replication':
@@ -103,26 +105,20 @@ class Logger {
 				break;
 		}
 		
+		$this->opo_replication_log = null;
 		if($vs_log) {
 			try {
-				$o_writer = new Zend_Log_Writer_Stream($vs_log);
-				$o_writer->setFormatter(new Zend_Log_Formatter_Simple('%timestamp% %priorityName%: %message%' . PHP_EOL));
-			} catch (Zend_Log_Exception $e) { // error while opening the file (usually permissions)
-				$o_writer = null;
+				$this->opo_replication_log = new PriorityLog($vs_log, ['application' => $vs_app]);
+			} catch (PriorityLogException $e) { // error while opening the file (usually permissions)
 				//print CLIUtils::textWithColor("Couldn't open log file. Now logging via system log.", "bold_red") . PHP_EOL . PHP_EOL;
 			}
 		}
 
 		// default: log everything to syslog
-		if(!$o_writer) {
-			$o_writer = new Zend_Log_Writer_Syslog(array('application' => $vs_app, 'facility' => LOG_USER));
-			// no need for timestamps in syslog ... the syslog itsself provides that
-			$o_writer->setFormatter(new Zend_Log_Formatter_Simple('%priorityName%: %message%'.PHP_EOL));
+		if(!$this->opo_replication_log) {
+			$this->opo_replication_log = new PriorityLog(null, ['application' => $vs_app]);
 		}
 
-		$this->opo_replication_log = new Zend_Log($o_writer);
-		$this->opo_replication_log->setTimestampFormat('D Y-m-d H:i:s');
-		
 		return $this->opo_replication_log;
 	}
 	# --------------------------------------------------------------------------------------------
