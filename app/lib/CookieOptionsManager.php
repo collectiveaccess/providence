@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021-2025 Whirl-i-Gig
+ * Copyright 2021-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -93,6 +93,7 @@ class CookieOptionsManager {
 		if(!self::cookieManagerEnabled()) { return false; }
 		global $g_request;
 		if($g_request && strtolower($g_request->getController()) === 'cookies') { return false; }
+		if($g_request && (strtolower($g_request->getController()) === 'ban')) { return false; }
 		return !Session::getVar("cookie_options_accepted");
 	}
 	# -------------------------------------------------------
