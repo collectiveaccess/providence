@@ -17,21 +17,21 @@ Version 2.0.12 provides many bug fixes, minor improvements and a handful of new 
 * Cleaned up user interface translations and implemented new built-in system for generating GNU GetText-compatible locale files. (Thanks @yelto)
 * Expanded display template system now supports display of previous metadata values and value histories.
 * Updated Getty vocabularies support (AAT, TGN and ULAN) for operation with new-architecture Getty services.
-* JWT signing keys are now automatically generated, removing need for configuration.
+* Added integration with FotoWare DAMS application. FotoWare URLs entered into media representation bundle URL field will cause FotoWare-hosted media to be pulled into CollectiveAccess.
 * Whisper-generated transcriptions for audio and video files are now indexed with timecode for search, enabling the search engine to return audio/video matches cued to specified timecode.
-* Added support for HTML5 elements in HTMLPurifier-filtered content. (Thanks @Monica-Wood)
-* MP4 videos that are not encoded for playback in web browsers are now detected and transcoded.
 * Added additional fine-grain options to control where`prepopulate` plugin rules are applied.
 * Extended `prepopulate` plugin to support triggering of rules when related (dependent) records are modified.
+* Added support for HTML5 elements in HTMLPurifier-filtered content. (Thanks @Monica-Wood)
+* MP4 videos that are not encoded for playback in web browsers are now detected and transcoded.
 * Replication framework now supports simultaneous synchronization of multiple systems.
 * Expanded checks to prevent unintended multiple-submission of forms.
-* Added integration with FotoWare DAMS application. FotoWare URLs entered into media representation bundle URL field will cause FotoWare-hosted media to be pulled into CollectiveAccess.
+* JWT signing keys are now automatically generated, removing need for configuration.
 * Implemented support for Orbitvu 360 degree image format.
 * Implemented support for Japanese Gengo dates
 
-Thanks to @behnaz-zarriz, @peterjanssens, @mthsps, @mark1ewis and @wrockwood for contributions to version 2.0.12
+Thanks to @behnaz-zarriz, @peterjanssens, @mthsps, @mark1ewis and @wrockwood for contributions to version 2.0.12.
 
-Please note that updating to 2.0.12 will clear the search index and require a *full reindex*. For very large systems reindexing may take several hours during which search functionality will be degraded. Please plan the timing of your update accordingly.
+Please note that updating to 2.0.12 will clear the search index and require a _full reindex_. For very large systems reindexing may take several hours during which search functionality will be degraded. Please plan the timing of your update accordingly.
 
 
 ### What's New in 2.0
