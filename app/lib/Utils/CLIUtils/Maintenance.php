@@ -482,7 +482,7 @@ trait CLIUtilsMaintenance {
 				foreach($row_ids as $row_id) {
 					print CLIProgressBar::next();
 					$t_instance->load($row_id);
-					$t_instance->removeAllLabels();
+					if(method_exists($t_instance, 'removeAllLabels')) { $t_instance->removeAllLabels(); }
 					$t_instance->delete(true, array('hard' => true));
 					$c++;
 				}
