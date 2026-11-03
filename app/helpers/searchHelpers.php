@@ -2896,3 +2896,86 @@ function caExtractTextLocationsFromPDF(string $filepath) : ?array {
 	return null;
 }
 # ---------------------------------------
+/**
+ *
+ */
+function caGetResultDescWordList(mixed $table, int $id, array $result_desc, ?array $options=null) : ?array {
+	if(!isset($result_desc[$id])) { return null; }
+	if(isset($result_desc[$id]['desc'])) { $result_desc[$id] = $result_desc[$id]['desc']; }
+	
+	if(!($first = caGetOption('first', $options, false))) {
+		$limit = caGetOption('limit', $options, null);
+		$unique = caGetOption('unique', $options, false);
+	} else {
+		$limit = 1;
+	}
+	
+	if($t = caGetOption('table', $options, null)) {
+		$result_desc[$id] = array_filter($result_desc[$id], function($v) use ($t) {
+			return ($v['table'] == $t);
+		});
+	}
+	
+	$request = caGetOption('request', $options, null);
+	$class = caGetOption('class', $options, null);
+	$result_desc[$id] = array_map(function($v) use ($request, $table, $id) { 
+		$acc = [];
+		foreach(['index_id', 'timecode_start', 'timecode_end', 'word', 'field_table_num', 'field_row_id', 'table'] as $f) {
+			$acc[$f] = $v[$f] ?? null;
+		}
+		return $acc;
+	}, $result_desc[$id]);
+	
+	// Coalesce
+	$acc = [];
+	foreach($result_desc[$id] as $word) {
+		if(isset($acc[$word['field_table_num']][$word['field_row_id']][$word['index_id'] - 1])) {
+			$acc[$word['field_table_num']][$word['field_row_id']][$word['index_id']] = array_merge($acc[$word['field_table_num']][$word['field_row_id']][$word['index_id'] - 1], [$word]);
+			unset($acc[$word['field_table_num']][$word['field_row_id']][$word['index_id'] - 1]);
+		} else {
+			$acc[$word['field_table_num']][$word['field_row_id']][$word['index_id']] = [$word];
+		}
+	}
+	$group_list = [];
+	foreach($acc as $ft => $by_row) {
+		$t_anno = (in_array(Datamodel::getTableName($ft), ['ca_object_representation_captions', 'ca_representation_annotations'], true)) ? Datamodel::getInstance($ft, true) : null;
+				
+		foreach($by_row as $row_id => $groups) {
+			if($t_anno) { $t_anno->load($row_id); }
+			foreach($groups as $words) {
+				$start = $end = null;
+				$phrase = [];
+				foreach($words as $w) {
+					$phrase[] = trim($w['word']);
+					if(is_null($start)) { $start = $w['timecode_start']; }
+					$end = $w['timecode_end']; 
+				}
+				$group = [
+					'text' => join(' ', $phrase),
+					'start' => $start,
+					'end' => $end,
+					'params' => ['transcription' => join(':', [$ft, $row_id, $start])]
+				];
+				if($t_anno) {
+					$group['representation_id'] = $t_anno->get('representation_id');
+				}
+				if($request) {
+					$group['detail_link'] = caDetailLink($request, $group['text'], $class, $table, $id, ['transcription' => join(':', [$ft, $row_id, $start])]);
+				}
+				
+				if($unique) {
+					if(!isset($group_list[$group['text']])) { 
+						$group_list[$group['text']] = $group;
+					}
+				} else {
+					$group_list[] = $group;
+				}
+				
+				if($limit && (sizeof($group_list) >= $limit)) { break(3); }
+			}
+		}
+	}
+	if($first) { return array_shift($group_list); }
+	return $group_list;
+}
+# ---------------------------------------
