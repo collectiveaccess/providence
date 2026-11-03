@@ -216,12 +216,12 @@ if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], fa
 	$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'restrictToTypes' => $t_instance->getTypeID(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
 	if (sizeof($va_template_list) > 0) {
 ?>
-	<div class='iconButton'>
+	<div class='iconButton'><nobr>
 <?php
 		print (sizeof($va_template_list) > 1) ? caHTMLSelect('template', $va_template_list, array('class' => 'dontTriggerUnsavedChangeWarning', 'id' => "{$vs_id_prefix}PrintTemplate")) : caHTMLHiddenInput('template', array('value' => array_pop($va_template_list), 'id' => "{$vs_id_prefix}PrintTemplate"));
 		print "<a href='#' onclick='{$vs_id_prefix}Print(); return false;'>".caNavIcon(__CA_NAV_ICON_PDF__, 1)."</a>";
 ?>
-	</div>
+	</nobr></div>
 <?php
 	}
 }
@@ -254,12 +254,12 @@ if (caGetOption('canMakePDF', $va_element_info[$root_element_id]['settings'], fa
 		$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'restrictToTypes' => $t_instance->getTypeID(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
 		if (sizeof($va_template_list) > 0) {
 ?>
-		<div class='editorBundleValuePrintControl iconButton' id='<?= $vs_id_prefix; ?>_print_control_{n}'>
+		<div class='editorBundleValuePrintControl iconButton' id='<?= $vs_id_prefix; ?>_print_control_{n}'><nobr>
 <?php
 			print (sizeof($va_template_list) > 1) ? caHTMLSelect('template', $va_template_list, array('class' => 'dontTriggerUnsavedChangeWarning', 'id' => "{$vs_id_prefix}PrintTemplate{n}")) : caHTMLHiddenInput('template', array('value' => array_pop($va_template_list), 'id' => "{$vs_id_prefix}PrintTemplate{n}"));
 			print "<a href='#' onclick='{$vs_id_prefix}Print({n}); return false;'>".caNavIcon(__CA_NAV_ICON_PDF__, 1)."</a>";
 ?>
-		</div>
+		</nobr></div>
 <?php
 		}
 	}

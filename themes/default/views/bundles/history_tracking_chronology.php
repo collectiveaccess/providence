@@ -818,11 +818,12 @@ if($show_entity_controls) {
 				listSortItems: 'div.roundedRel',			
 				autocompleteInputID: '<?= $vs_id_prefix; ?>_autocomplete',
 				quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-				quickaddUrl: '<?= caNavUrl($this->request, 'editor/storage_locations', 'StorageLocationQuickAdd', 'Form', array('location_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? false))); ?>',
+				quickaddUrl: '<?= caNavUrl($this->request, 'editor/storage_locations', 'StorageLocationQuickAdd', 'Form', ['location_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? false)]); ?>',
 				minRepeats: 0,
 				maxRepeats: 2,
 				addMode: 'prepend',
 				useAnimation: 1,
+				subjectTypeID: <?= json_encode((int)$t_subject->getTypeID()); ?>,
 				onAddItem: function(id, options, isNew) {
 					jQuery("#<?= $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideUp(250);
 				},
@@ -856,6 +857,7 @@ if($show_entity_controls) {
 				minRepeats: 0,
 				maxRepeats: 2,
 				useAnimation: 1,
+				subjectTypeID: <?= json_encode((int)$t_subject->getTypeID()); ?>,
 				onAddItem: function(id, options, isNew) {
 					jQuery("#<?= $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideUp(250);
 					jQuery("#<?= $vs_id_prefix; ?>_ca_storage_locations_return_homenew_0").val(1);
@@ -896,11 +898,12 @@ if($show_entity_controls) {
 				listSortItems: 'div.roundedRel',			
 				autocompleteInputID: '<?= $vs_id_prefix; ?>_autocomplete',
 				quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-				quickaddUrl: '<?= caNavUrl($this->request, 'editor/places', 'PlaceQuickAdd', 'Form', array('place_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? false))); ?>',
+				quickaddUrl: '<?= caNavUrl($this->request, 'editor/places', 'PlaceQuickAdd', 'Form', ['place_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? false)]); ?>',
 				minRepeats: 0,
 				maxRepeats: 2,
 				addMode: 'prepend',
 				useAnimation: 1,
+				subjectTypeID: <?= json_encode((int)$t_subject->getTypeID()); ?>,
 				onAddItem: function(id, options, isNew) {
 					jQuery("#<?= $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideUp(250);
 				},
@@ -912,91 +915,93 @@ if($show_entity_controls) {
     }
 	if($show_loan_controls) {
 ?>			
-			caRelationBundle<?= $vs_id_prefix; ?>_ca_loans = caUI.initRelationBundle('#<?= $vs_id_prefix; ?>', {
-				fieldNamePrefix: '<?= $vs_id_prefix; ?>_ca_loans_',
-				templateValues: ['label', 'id', 'type_id', 'typename', 'idno_sort'],
-				initialValues: [],
-				initialValueOrder: [],
-				itemID: '<?= $vs_id_prefix; ?>_ca_loans_',
-				placementID: '<?= $vn_placement_id; ?>',
-				templateClassName: 'caHistoryTrackingSetLoanTemplate',
-				initialValueTemplateClassName: null,
-				itemListClassName: 'caLoanList',
-				listItemClassName: 'caRelatedLoan',
-				addButtonClassName: 'caAddLoanButton',
-				deleteButtonClassName: 'caDeleteLoanButton',
-				hideOnNewIDList: [],
-				showEmptyFormsOnLoad: 0,
-				minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_loans_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
-				relationshipTypes: <?= json_encode($this->getVar('loan_relationship_types_by_sub_type')); ?>,
-				autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Loan', 'Get', ['types' => $loan_types]); ?>',
-				types: <?= json_encode($settings['restrict_to_types']); ?>,
-				readonly: <?= $read_only ? "true" : "false"; ?>,
-				isSortable: <?= ($read_only || $vs_sort) ? "false" : "true"; ?>,
-				listSortOrderID: '<?= $vs_id_prefix; ?>LoanBundleList',
-				listSortItems: 'div.roundedRel',
-				autocompleteInputID: '<?= $vs_id_prefix; ?>_autocomplete',
-				quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-				quickaddUrl: '<?= caNavUrl($this->request, 'editor/loans', 'LoanQuickAdd', 'Form', array('loan_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$settings['dont_include_subtypes_in_type_restriction'])); ?>',
-				minRepeats: 0,
-				maxRepeats: 2,
-				useAnimation: 1,
-				onAddItem: function(id, options, isNew) {
-					jQuery("#<?= $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideUp(250);
-				},
-				onDeleteItem: function(id) {
-					jQuery("#<?= $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideDown(250);
-				}
-			});
-<?php	
-			if(caGetOption('always_create_new_loan', $settings, false)) {
-?>
-				jQuery('#<?= $vs_id_prefix; ?> div.bundleContainer div.caHistoryTrackingButtonBar div.caAddLoanButton').on('click', '#<?= $vs_id_prefix; ?>AddLoan', function(e) {
-					caRelationBundle<?= $vs_id_prefix; ?>_ca_loans.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true });
-					e.preventDefault();
-					return false;
-				});
-<?php
+		caRelationBundle<?= $vs_id_prefix; ?>_ca_loans = caUI.initRelationBundle('#<?= $vs_id_prefix; ?>', {
+			fieldNamePrefix: '<?= $vs_id_prefix; ?>_ca_loans_',
+			templateValues: ['label', 'id', 'type_id', 'typename', 'idno_sort'],
+			initialValues: [],
+			initialValueOrder: [],
+			itemID: '<?= $vs_id_prefix; ?>_ca_loans_',
+			placementID: '<?= $vn_placement_id; ?>',
+			templateClassName: 'caHistoryTrackingSetLoanTemplate',
+			initialValueTemplateClassName: null,
+			itemListClassName: 'caLoanList',
+			listItemClassName: 'caRelatedLoan',
+			addButtonClassName: 'caAddLoanButton',
+			deleteButtonClassName: 'caDeleteLoanButton',
+			hideOnNewIDList: [],
+			showEmptyFormsOnLoad: 0,
+			minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_loans_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
+			relationshipTypes: <?= json_encode($this->getVar('loan_relationship_types_by_sub_type')); ?>,
+			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Loan', 'Get', ['types' => $loan_types]); ?>',
+			types: <?= json_encode($settings['restrict_to_types']); ?>,
+			readonly: <?= $read_only ? "true" : "false"; ?>,
+			isSortable: <?= ($read_only || $vs_sort) ? "false" : "true"; ?>,
+			listSortOrderID: '<?= $vs_id_prefix; ?>LoanBundleList',
+			listSortItems: 'div.roundedRel',
+			autocompleteInputID: '<?= $vs_id_prefix; ?>_autocomplete',
+			quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
+			quickaddUrl: '<?= caNavUrl($this->request, 'editor/loans', 'LoanQuickAdd', 'Form', ['loan_id' => 0, 'types' => join(',', $loan_types), 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0)]); ?>',
+			minRepeats: 0,
+			maxRepeats: 2,
+			useAnimation: 1,
+			subjectTypeID: <?= json_encode((int)$t_subject->getTypeID()); ?>,
+			onAddItem: function(id, options, isNew) {
+				jQuery("#<?= $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideUp(250);
+			},
+			onDeleteItem: function(id) {
+				jQuery("#<?= $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideDown(250);
 			}
+		});
+<?php	
+		if(caGetOption('always_create_new_loan', $settings, false)) {
+?>
+			jQuery('#<?= $vs_id_prefix; ?> div.bundleContainer div.caHistoryTrackingButtonBar div.caAddLoanButton').on('click', '#<?= $vs_id_prefix; ?>AddLoan', function(e) {
+				caRelationBundle<?= $vs_id_prefix; ?>_ca_loans.triggerQuickAdd('', 'new_0', { usePolicy: <?= json_encode($policy); ?> }, {'addBundle': true });
+				e.preventDefault();
+				return false;
+			});
+<?php
+		}
     }
 	if($show_movement_controls) {
 ?>			
-			caRelationBundle<?= $vs_id_prefix; ?>_ca_movements = caUI.initRelationBundle('#<?= $vs_id_prefix; ?>', {
-				fieldNamePrefix: '<?= $vs_id_prefix; ?>_ca_movements_',
-				templateValues: ['label', 'id', 'type_id', 'typename', 'idno_sort'],
-				initialValues: [],
-				initialValueOrder: [],
-				itemID: '<?= $vs_id_prefix; ?>_ca_movements_',
-				placementID: '<?= $vn_placement_id; ?>',
-				templateClassName: 'caHistoryTrackingSetMovementTemplate',
-				initialValueTemplateClassName: null,
-				itemListClassName: 'caMovementList',
-				listItemClassName: 'caRelatedMovement',
-				addButtonClassName: 'caAddMovementButton',
-				deleteButtonClassName: 'caDeleteMovementButton',
-				hideOnNewIDList: [],
-				showEmptyFormsOnLoad: 0,
-				minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_movements_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
-				relationshipTypes: <?= json_encode($this->getVar('movement_relationship_types_by_sub_type')); ?>,
-				autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Movement', 'Get', ['types' => $movement_types]); ?>',
-				types: <?= json_encode($settings['restrict_to_types']); ?>,
-				readonly: <?= $read_only ? "true" : "false"; ?>,
-				isSortable: <?= ($read_only || $vs_sort) ? "false" : "true"; ?>,
-				listSortOrderID: '<?= $vs_id_prefix; ?>MovementBundleList',
-				listSortItems: 'div.roundedRel',
-				autocompleteInputID: '<?= $vs_id_prefix; ?>_autocomplete',
-				quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-				quickaddUrl: '<?= caNavUrl($this->request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$settings['dont_include_subtypes_in_type_restriction'])); ?>',
-				minRepeats: 0,
-				maxRepeats: 2,
-				useAnimation: 1,
-				onAddItem: function(id, options, isNew) {
-					jQuery("#<?= $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideUp(250);
-				},
-				onDeleteItem: function(id) {
-					jQuery("#<?= $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideDown(250);
-				}
-			});
+		caRelationBundle<?= $vs_id_prefix; ?>_ca_movements = caUI.initRelationBundle('#<?= $vs_id_prefix; ?>', {
+			fieldNamePrefix: '<?= $vs_id_prefix; ?>_ca_movements_',
+			templateValues: ['label', 'id', 'type_id', 'typename', 'idno_sort'],
+			initialValues: [],
+			initialValueOrder: [],
+			itemID: '<?= $vs_id_prefix; ?>_ca_movements_',
+			placementID: '<?= $vn_placement_id; ?>',
+			templateClassName: 'caHistoryTrackingSetMovementTemplate',
+			initialValueTemplateClassName: null,
+			itemListClassName: 'caMovementList',
+			listItemClassName: 'caRelatedMovement',
+			addButtonClassName: 'caAddMovementButton',
+			deleteButtonClassName: 'caDeleteMovementButton',
+			hideOnNewIDList: [],
+			showEmptyFormsOnLoad: 0,
+			minChars: <?= (int)$t_subject->getAppConfig()->get(["ca_movements_autocomplete_minimum_search_length", "autocomplete_minimum_search_length"]); ?>,
+			relationshipTypes: <?= json_encode($this->getVar('movement_relationship_types_by_sub_type')); ?>,
+			autocompleteUrl: '<?= caNavUrl($this->request, 'lookup', 'Movement', 'Get', ['types' => $movement_types]); ?>',
+			types: <?= json_encode($settings['restrict_to_types']); ?>,
+			readonly: <?= $read_only ? "true" : "false"; ?>,
+			isSortable: <?= ($read_only || $vs_sort) ? "false" : "true"; ?>,
+			listSortOrderID: '<?= $vs_id_prefix; ?>MovementBundleList',
+			listSortItems: 'div.roundedRel',
+			autocompleteInputID: '<?= $vs_id_prefix; ?>_autocomplete',
+			quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
+			quickaddUrl: '<?= caNavUrl($this->request, 'editor/movements', 'MovementQuickAdd', 'Form', ['movement_id' => 0, 'types' => join(',', $movement_types ?? []), 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0)]); ?>',
+			minRepeats: 0,
+			maxRepeats: 2,
+			useAnimation: 1,
+			subjectTypeID: <?= json_encode((int)$t_subject->getTypeID()); ?>,
+			onAddItem: function(id, options, isNew) {
+				jQuery("#<?= $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideUp(250);
+			},
+			onDeleteItem: function(id) {
+				jQuery("#<?= $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideDown(250);
+			}
+		});
 <?php	
 			if(caGetOption('always_create_new_movement', $settings, false)) {
 ?>
@@ -1035,10 +1040,11 @@ if($show_entity_controls) {
 				listSortItems: 'div.roundedRel',
 				autocompleteInputID: '<?= $vs_id_prefix; ?>_autocomplete',
 				quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-				quickaddUrl: '<?= caNavUrl($this->request, 'editor/objects', 'ObjectQuickAdd', 'Form', array('object_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$settings['dont_include_subtypes_in_type_restriction'])); ?>',
+				quickaddUrl: '<?= caNavUrl($this->request, 'editor/objects', 'ObjectQuickAdd', 'Form', ['object_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0)]); ?>',
 				minRepeats: 0,
 				maxRepeats: 2,
 				useAnimation: 1,
+				subjectTypeID: <?= json_encode((int)$t_subject->getTypeID()); ?>,
 				onAddItem: function(id, options, isNew) {
 					jQuery("#<?= $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideUp(250);
 				},
@@ -1076,10 +1082,11 @@ if($show_entity_controls) {
 				listSortItems: 'div.roundedRel',
 				autocompleteInputID: '<?= $vs_id_prefix; ?>_occurrence_<?= $vn_type_id; ?>_autocomplete',
 				quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-				quickaddUrl: '<?= caNavUrl($this->request, 'editor/occurrences', 'OccurrenceQuickAdd', 'Form', array('types' => $vn_type_id,'occurrence_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? null))); ?>',
+				quickaddUrl: '<?= caNavUrl($this->request, 'editor/occurrences', 'OccurrenceQuickAdd', 'Form', ['types' => $vn_type_id, 'occurrence_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0)]); ?>',
 				minRepeats: 0,
 				maxRepeats: 2,
 				useAnimation: 1,
+				subjectTypeID: <?= json_encode((int)$t_subject->getTypeID()); ?>,
 				onAddItem: function(id, options, isNew) {
 					jQuery("#<?= $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideUp(250);
 				},
@@ -1127,10 +1134,11 @@ if($show_entity_controls) {
 				listSortItems: 'div.roundedRel',
 				autocompleteInputID: '<?= $vs_id_prefix; ?>_collection_<?= $vn_type_id; ?>_autocomplete',
 				quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-				quickaddUrl: '<?= caNavUrl($this->request, 'editor/collections', 'collectionQuickAdd', 'Form', array('types' => $vn_type_id,'collection_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$settings['dont_include_subtypes_in_type_restriction'])); ?>',
+				quickaddUrl: '<?= caNavUrl($this->request, 'editor/collections', 'collectionQuickAdd', 'Form', ['types' => $vn_type_id,'collection_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0)]); ?>',
 				minRepeats: 0,
 				maxRepeats: 2,
 				useAnimation: 1,
+				subjectTypeID: <?= json_encode((int)$t_subject->getTypeID()); ?>,
 				onAddItem: function(id, options, isNew) {
 					jQuery("#<?= $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideUp(250);
 				},
@@ -1169,10 +1177,11 @@ if($show_entity_controls) {
 				listSortItems: 'div.roundedRel',
 				autocompleteInputID: '<?= $vs_id_prefix; ?>_entity_<?= $vn_type_id; ?>_autocomplete',
 				quickaddPanel: caRelationQuickAddPanel<?= $vs_id_prefix; ?>,
-				quickaddUrl: '<?= caNavUrl($this->request, 'editor/entities', 'entityQuickAdd', 'Form', array('types' => $vn_type_id,'entity_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$settings['dont_include_subtypes_in_type_restriction'])); ?>',
+				quickaddUrl: '<?= caNavUrl($this->request, 'editor/entities', 'entityQuickAdd', 'Form', ['types' => $vn_type_id,'entity_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)($settings['dont_include_subtypes_in_type_restriction'] ?? 0)]); ?>',
 				minRepeats: 0,
 				maxRepeats: 2,
 				useAnimation: 1,
+				subjectTypeID: <?= json_encode((int)$t_subject->getTypeID()); ?>,
 				onAddItem: function(id, options, isNew) {
 					jQuery("#<?= $vs_id_prefix; ?>").find(".caHistoryTrackingButtonBar").slideUp(250);
 				},

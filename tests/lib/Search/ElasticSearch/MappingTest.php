@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2020 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,7 +40,7 @@ class MappingTest extends TestCase {
 		$o_mapping = new ElasticSearch\Mapping();
 		$va_fields = $o_mapping->getFieldsToIndex('ca_objects');
 		$this->assertIsArray($va_fields);
-		$this->assertEquals(122, sizeof($va_fields));
+		$this->assertEquals(121, sizeof($va_fields));
 
 		foreach($va_fields as $vs_fld => $va_options) {
 			$this->assertMatchesRegularExpression("/^ca[\_a-z]+\.(I|A)[0-9]+$/", $vs_fld);

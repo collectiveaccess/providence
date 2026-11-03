@@ -1012,13 +1012,13 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				FROM ca_list_items cli
 				INNER JOIN ca_list_item_labels AS clil ON cli.item_id = clil.item_id
 				WHERE
-					(cli.deleted = 0) AND (cli.list_id = ?) AND (cli.item_value = ?) AND (clil.is_preferred = 1) {$vs_access_sql}
+					(cli.deleted = 0) AND (cli.list_id = ?) AND (cli.item_value = ?) AND (clil.is_preferred = 1) AND (cli.parent_id IS NOT NULL){$vs_access_sql}
 			", $va_params);
 			
 			$va_items = array();
 			while($qr_res->nextRow()) {
 				$pn_item_id = $qr_res->get('item_id');
-				 $va_items[$pn_item_id][$qr_res->get('locale_id')] = $qr_res->getRow();
+				$va_items[$pn_item_id][$qr_res->get('locale_id')] = $qr_res->getRow();
 			}
 			ca_lists::$s_list_item_value_display_cache[$vs_cache_key] =  $va_items;
 		}

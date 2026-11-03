@@ -113,12 +113,3 @@ function formatSettings($settings) : array {
 		}, $settings, array_keys($settings)
 	);
 }
-
-// 'table_name' 		=> $vs_table_name,
-// 'field_name' 		=> $vs_field_name,
-// 'subfield_name' 	=> $vs_subfield_name,
-// 'num_components'	=> sizeof($va_tmp),
-// 'components'		=> $va_tmp,
-// 'related'			=> $vb_is_related,
-// 'is_count'			=> $vb_is_count,
-// 'hierarchical_modifier' => $vs_hierarchical_modifier

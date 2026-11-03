@@ -40,6 +40,8 @@ $sort			=	caGetOption('sort', $settings, '');
 $allow_drag_sort = 	caGetOption('allowDragSort', $settings, false);
 
 $read_only		=	(caGetOption('readonly', $settings, false)  || ($this->request->user->getBundleAccessLevel($t_subject->tableName(), 'ca_objects') == __CA_BUNDLE_ACCESS_READONLY__));
+
+$dont_show_add	=caGetOption('dontShowAddButton', $settings, false);
 $dont_show_del	=	caGetOption('dontShowDeleteButton', $settings, false);
 
 $color 			= 	caGetOption('colorItem', $settings, '');
@@ -274,7 +276,7 @@ $make_link = !caTemplateHasLinks(caGetOption('display_template', $settings, null
 		<input type="hidden" name="<?= $id_prefix; ?>BundleList" id="<?= $id_prefix; ?>BundleList" value=""/>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 <?php
-	if (!$read_only) {
+	if (!$read_only && !$dont_show_add) {
 ?>	
 		<div class='button labelInfo caAddItemButton'><a href='#'><?= caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?= $add_label ? $add_label : _t("Add relationship"); ?></a></div>
 <?php

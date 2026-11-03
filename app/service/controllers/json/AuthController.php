@@ -31,6 +31,10 @@ require_once(__CA_LIB_DIR__.'/Service/ModelService.php');
 class AuthController extends BaseServiceController {
 	# -------------------------------------------------------
 	public function __construct(&$po_request, &$po_response, $pa_view_paths) {
+		$config = Configuration::load();
+		if(!(bool)trim($config->get('rest_services_enabled'))) {
+			throw new ServiceException(_t('REST services are not enabled'));
+		}
 		parent::__construct($po_request, $po_response, $pa_view_paths);
 	}
 	# -------------------------------------------------------

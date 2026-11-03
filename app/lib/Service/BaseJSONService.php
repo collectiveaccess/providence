@@ -47,6 +47,10 @@ class BaseJSONService {
 	protected $opa_valid_tables = array();
 	# -------------------------------------------------------
 	public function __construct($po_request,$ps_table=""){
+		$config = Configuration::load();
+		if(!(bool)trim($config->get('rest_services_enabled'))) {
+			throw new ServiceException(_t('REST services are not enabled'));
+		}
 		$this->opo_request = $po_request;
 		$this->ops_table = $ps_table;
 		$this->opa_errors = array();

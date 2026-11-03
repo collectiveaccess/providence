@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2017-2020 Whirl-i-Gig
+ * Copyright 2017-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,6 +33,14 @@
 
 require_once(__CA_LIB_DIR__.'/Import/BaseRefinery.php');
 require_once(__CA_LIB_DIR__.'/Import/DataReaders/ExcelDataReader.php');
+
+final class TestReader {
+    public function __construct(private bool $repeating) {}
+    public function valuesCanRepeat(): bool { return $this->repeating; }
+    public function get($field, $options = null) {
+        throw new RuntimeException("Unexpected reader lookup: {$field}");
+    }
+}
 
 class RefineryTest extends TestCase {
     protected $data;
@@ -122,20 +130,18 @@ class RefineryTest extends TestCase {
 		$this->assertEquals('Visited: Verdun, Cambrai, Somme', $vm_ret[0]);
 		$this->assertEquals('Visited: , Arras,', $vm_ret[1]);
 			
-		// // returnDelimitedValueAt set with index
-// 		$vm_ret = BaseRefinery::parsePlaceholder("Got ^7", $this->data, $this->item, 1, ['returnDelimitedValueAt' => 1, 'delimiter' => ['|'], 'returnAsString' => false, 'reader' => new ExcelDataReader()]);
-//         $this->assertEquals('Got Charleois', $vm_ret);
-// 		
-// 		// returnDelimitedValueAt set with index
-// 		$vm_ret = BaseRefinery::parsePlaceholder("Got ^7", $this->data, $this->item, 1, ['returnDelimitedValueAt' => 2, 'delimiter' => ['|'], 'returnAsString' => false, 'reader' => new ExcelDataReader()]);
-//         $this->assertEquals('Got Paschendale', $vm_ret);
-// 		
-	// 	// returnDelimitedValueAt with out of bounds index
-// 		$vm_ret = BaseRefinery::parsePlaceholder("Got ^7", $this->data, $this->item, 1, ['returnDelimitedValueAt' => 5, 'delimiter' => ['|'], 'returnAsString' => false, 'reader' => new ExcelDataReader()]);
-//         $this->assertIsArray( $vm_ret);
-// 		$this->assertCount(1, $vm_ret);
-// 		$this->assertEquals('Got', $vm_ret[0]);
-// 		
+		// returnDelimitedValueAt set with index
+		$vm_ret = BaseRefinery::parsePlaceholder("Got ^7", $this->data, $this->item, 1, ['returnDelimitedValueAt' => 1, 'delimiter' => ['|'], 'returnAsString' => false, 'reader' => new ExcelDataReader()]);
+        $this->assertEquals('Got Charleois', $vm_ret);
+		
+		// returnDelimitedValueAt set with index
+		$vm_ret = BaseRefinery::parsePlaceholder("Got ^7", $this->data, $this->item, 1, ['returnDelimitedValueAt' => 2, 'delimiter' => ['|'], 'returnAsString' => false, 'reader' => new ExcelDataReader()]);
+        $this->assertEquals('Got Paschendale', $vm_ret);
+		
+		// returnDelimitedValueAt with out of bounds index
+		$vm_ret = BaseRefinery::parsePlaceholder("Got ^7", $this->data, $this->item, 1, ['returnDelimitedValueAt' => 5, 'delimiter' => ['|'], 'returnAsString' => false, 'reader' => new ExcelDataReader()]);
+        $this->assertEquals('Got ', $vm_ret);
+		
 		// single placeholder as array
 		$vm_ret = BaseRefinery::parsePlaceholder("^1", $this->data, $this->item, null, ['delimiter' => [';'], 'returnAsString' => false, 'reader' => new ExcelDataReader()]);
         $this->assertIsArray( $vm_ret);
@@ -178,10 +184,50 @@ class RefineryTest extends TestCase {
 		$this->assertEquals('Cambrai', $vm_ret[0]);
 		
 		// single placeholder for repeating values with index
-		// $vm_ret = BaseRefinery::parsePlaceholder("^7", $this->data, $this->item, 1, ['delimiter' => ['|'], 'returnDelimitedValueAt' => 2, 'returnAsString' => false, 'reader' => new ExcelDataReader()]);
-//         $this->assertIsArray( $vm_ret);
-// 		$this->assertCount(1, $vm_ret);
-// 		$this->assertEquals('Paschendale', $vm_ret[0]);
+		$vm_ret = BaseRefinery::parsePlaceholder("^7", $this->data, $this->item, 1, ['delimiter' => ['|'], 'returnDelimitedValueAt' => 2, 'returnAsString' => false, 'reader' => new ExcelDataReader()]);
+        $this->assertIsString( $vm_ret);
+		$this->assertEquals('Paschendale', $vm_ret);
 	}
-
+	
+	
+	public function testDelimiterValues() {
+		// Adapted from test cases provised by wrockwood
+		// See https://github.com/collectiveaccess/providence/issues/1998
+		
+		$test_settings = [
+			'blank type preserves position' => ['mill;;township', 0, ['returnDelimitedValueAt' => 1], ''],
+			'type after blank stays aligned' => ['mill;;township', 0, ['returnDelimitedValueAt' => 2], 'township'],
+			'out-of-bounds subvalue' => ['mill;place', 0, ['returnDelimitedValueAt' => 2], null],
+			'single type' => ['mill', 0, ['returnDelimitedValueAt' => 0], 'mill'],
+			'ordinary indexed scalar' => ['mill;place;township', 1, [], 'place'],
+			'nonzero outer index keeps virtual repeat' => ['mill;place;township', 1, ['returnDelimitedValueAt' => 0], 'place'],
+			'ordinary unindexed array' => ['mill;place;township', null, ['returnAsString' => false], ['mill', 'place', 'township']],
+			'ordinary unindexed string' => ['mill;place;township', null, [], 'mill;place;township'],
+			'null outer index ignores subvalue selection' => ['mill;place;township', null, ['returnDelimitedValueAt' => 1, 'returnAsString' => false], ['mill', 'place', 'township']],
+			'repeating source selects outer and inner index' => [['mill;place', 'township;city'], 1, ['reader' => $repeating, 'returnDelimitedValueAt' => 1], 'city'],
+			'repeating source first occurrence' => [['mill;place', 'township;city'], 0, ['reader' => $repeating, 'returnDelimitedValueAt' => 1], 'place'],
+			'array source with flat reader' => [['mill;place', 'township;city'], 1, ['returnDelimitedValueAt' => 1], 'city'],
+			'literal relationship type' => ['', 0, ['returnDelimitedValueAt' => 0], 'depicts', 'depicts'],
+			'single pipe delimiter' => ['mill|place|township', 0, ['delimiter' => '|', 'returnDelimitedValueAt' => 2], 'township']
+		];
+		foreach(['mill', 'place', 'township'] as $index => $type) {
+		 	$test_settings["mixed types: subvalue {$index}"] = ['mill;place;township', 0, ['returnDelimitedValueAt' => $index], $type];
+		}
+		foreach(['mill', 'mill', 'township'] as $index => $type) {
+			$test_settings["repeated types: subvalue {$index}"] = ['mill;mill;township', 0, ['returnDelimitedValueAt' => $index], $type];
+		}
+		
+		
+		$flat = new TestReader(false);
+		$repeating = new TestReader(true);
+		$item = ['settings' => ['original_values' => [], 'replacement_values' => []]];
+    	$base = ['reader' => $flat, 'delimiter' => ';', 'returnAsString' => true, 'applyImportItemSettings' => false];
+   		
+		foreach($test_settings as $n => $p) {
+			[$value, $index, $options, $expected, $placeholder] = $p;
+			$parsed_value = BaseRefinery::parsePlaceholder($placeholder ?? '^42', [42 => $value], $item, $index, array_replace($base, $options));
+            
+            $this->assertEquals($expected, $parsed_value);
+		}	
+	}
 }

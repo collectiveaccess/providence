@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -223,7 +223,7 @@ class DelimitedDataParser implements IDataParser {
 			//
 			$this->opn_current_row++;
 			// Use fgetcsv to read file, it will handle delimiter, marker and escaping.
-			$line = fgetcsv($this->opr_file, 0, $this->getDelimiter(), $this->getTextMarker());
+			$line = fgetcsv($this->opr_file, 0, $this->getDelimiter(), $this->getTextMarker(), '');
 			if (!is_array($line)) { return false; }
 			$this->opa_current_row = array_slice($line, 0, $this->opn_max_columns);
 			
@@ -269,7 +269,7 @@ class DelimitedDataParser implements IDataParser {
 			
 			$r = fopen($this->filepath, "r");
 			$count = 0;
-			while($line = fgetcsv($r, 0, $this->getDelimiter(), $this->getTextMarker())) {
+			while($line = fgetcsv($r, 0, $this->getDelimiter(), $this->getTextMarker(), '')) {
 				$count++;
 			}
 			fclose($r);

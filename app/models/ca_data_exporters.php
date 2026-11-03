@@ -439,7 +439,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param array $settings array of user settings
 	 * @return ca_data_exporter_items BaseModel representation of the new record
 	 */
-	public function addItem($parent_id, $element, $source, $settings=[]) {
+	public function addItem($parent_id=null, $element, $source, $settings=[]) {
 		if (!($exporter_id = $this->getPrimaryKey())) { return null; }
 
 		$t_item = new ca_data_exporter_items();
@@ -1532,8 +1532,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					'text' => trim($matches[1]),
 					'element' => $element,
 				];
-			}
-			else if(in_array($source, ["relationship_type_id", "relationship_type_code", "relationship_typename"])) {
+			} else if(in_array($source, ["relationship_type_id", "relationship_type_code", "relationship_typename"])) {
 				// Relationship type
 				if(isset($options[$source]) && strlen($options[$source])>0) {							
 					$o_log->logDebug(_t("Source refers to relationship type information. Value for this mapping is '%1'", $options[$source]));
@@ -2212,7 +2211,7 @@ itemOutput:
 						$errors = [];
 						$mapping_options = @json_decode($options_json, true);
 						if (is_null($mapping_options)) {
-							$errors[] = $m = _t("Warning: options for element %1 at row %2 are not in proper JSON", $element, $row_num);
+							$errors[] = $m = _t("Warning: options for element %1 at row %2 are not in proper JSON: %3", $element, $row_num, $options_json);
 							$o_log->logWarn($m);
 						} elseif(!caValidateJSON($mapping_options,  __CA_LIB_DIR__.'/Export/Schema/ExporterItemOptions.json', $errors)) {
 							$o_log->logWarn(_t("JSON for element %1 at row %2 does not conform to schema: %3", $element, $row_num, join('; ', $errors)));

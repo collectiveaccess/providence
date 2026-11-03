@@ -1069,10 +1069,11 @@ function caEditorInspector($view, $options=null) {
 	$component_count = 0;
 
 	$item_id 			= $t_item->getPrimaryKey();
-	$o_result_context		= $view->getVar('result_context');
-	$t_ui 					= $view->getVar('t_ui');
-	$t_type 				= method_exists($t_item, "getTypeInstance") ? $t_item->getTypeInstance() : null;
+	$o_result_context	= $view->getVar('result_context');
+	$t_ui 				= $view->getVar('t_ui');
+	$t_type 			= method_exists($t_item, "getTypeInstance") ? $t_item->getTypeInstance() : null;
 	$type_name			= method_exists($t_item, "getTypeName") ? $t_item->getTypeName() : '';
+	$type_code			= method_exists($t_item, "getTypeCode") ? $t_item->getTypeCode() : '';
 	if (!$type_name) { $type_name = $t_item->getProperty('NAME_SINGULAR'); }
 
 	if (!is_array($va_reps = $view->getVar('representations'))) { $va_reps = []; }
@@ -1176,7 +1177,7 @@ function caEditorInspector($view, $options=null) {
 			$label = '';
 			$dont_use_labels_for_ca_objects = (bool)$t_item->getAppConfig()->get('ca_objects_dont_use_labels');
 			if(!(($table_name === 'ca_objects') && $dont_use_labels_for_ca_objects)){
-				if ($vs_get_spec = $view->request->config->get("{$table_name}_inspector_display_title")) {
+				if ($vs_get_spec = $view->request->config->get(["{$table_name}_{$type_code}_inspector_display_title", "{$table_name}_inspector_display_title"])) {
 					$label = caProcessTemplateForIDs($vs_get_spec, $table_name, array($t_item->getPrimaryKey()));
 				} else {
 					$va_object_collection_collection_ancestors = $view->getVar('object_collection_collection_ancestors');
@@ -1411,18 +1412,6 @@ function caEditorInspector($view, $options=null) {
 				}
 			}
 
-			if($view->request->user->canDoAction("can_duplicate_{$table_name}") && $t_item->getPrimaryKey()) {
-				$tools[] = "<div id='caDuplicateItemButton' class='inspectorActionButton'>".
-				           caFormTag($view->request, 'Edit', 'DuplicateItemForm', $view->request->getModulePath().'/'.$view->request->getController(), 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true]).
-				           "<div>".caFormSubmitLink($view->request, caNavIcon(__CA_NAV_ICON_DUPLICATE__, '20px'), '', 'DuplicateItemForm', null, ['aria-label' => _t('Duplicate item')])."</div>".
-				           caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey())).
-				           caHTMLHiddenInput('mode', array('value' => 'dupe')).
-				           "	</form>
-						</div>\n";
-
-				TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($type_name, 'UTF-8')));
-			}
-
 			if (method_exists($t_item, 'getTypeCode') && caHomeLocationsEnabled($t_item->tableName(), $t_item->getTypeCode()) && $view->request->user->canDoAction("can_set_home_location_".$table_name)) {
 				$tools[] = "<div id='inspectorSetHomeLocation' class='inspectorActionButton'><div id='inspectorSetHomeLocationButton'><a href='#' onclick='_initSetHomeLocationHierarchyBrowser(); return false;'>".caNavIcon(__CA_NAV_ICON_HOME__, '20px', array('title' => _t('Set home location')))."</a></div></div>\n";
 
@@ -1439,13 +1428,56 @@ function caEditorInspector($view, $options=null) {
 				TooltipManager::add('#inspectorLotMediaDownloadButton', _t("Download all media associated with objects in this lot"));
 			}
 
+			if($view->request->user->canDoAction("can_duplicate_{$table_name}") && $t_item->getPrimaryKey()) {
+				if(!$view->request->user->getPreference($t_item->tableName().'_extended_duplication_options')) {
+					$tools[] = "<div id='caDuplicateItemButton' class='inspectorActionButton'>".
+								caFormTag($view->request, 'Edit', 'DuplicateItemForm', $view->request->getModulePath().'/'.$view->request->getController(), 'post', 'multipart/form-data', '_top', ['noCSRFToken' => false, 'disableUnsavedChangesWarning' => true, 'noTimestamp' => true]).
+								"<div>".caFormSubmitLink($view->request, caNavIcon(__CA_NAV_ICON_DUPLICATE__, '20px'), '', 'DuplicateItemForm', null, ['aria-label' => _t('Duplicate item')])."</div>".
+								caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey())).
+								caHTMLHiddenInput('mode', array('value' => 'dupe')).
+							"	</form>
+							</div>\n";
+	
+					TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($type_name, 'UTF-8')));
+				} else {
+					$tools[] = "<div id='caDuplicateItem' class='inspectorActionButton'><div id='caDuplicateItemButton'><a href='#' onclick='caDuplicationSettingsPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_DUPLICATE__, '20px', ['title' => _t('Duplicate item')])."</a></div></div>\n";
+					
+					$duplication_settings_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
+					$duplication_settings_view->setVar('t_item', $t_item);
+					$duplication_settings_view->setVar('type_name', $type_name ?? $t_item->getPropery('NAME_SINGULAR'));
+					$duplication_settings_view->setVar('last_duplication_mode', Session::getVar($t_item->tableName().'_editor_last_duplication_mode') ?? 'create');
+					
+					$duplication_settings_view->setVar('set_select', caHTMLSelect('pair_with_set_id', [], ['id' => 'caDuplicateItemFormSetList', 'class' => ''], ['width' => '200px']));
+					
+					FooterManager::add($duplication_settings_view->render("duplication_html.php"));
+		
+					TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($type_name, 'UTF-8')));
+				}
+			}
+			
+			if (method_exists($t_item, 'getTypeCode') && caHomeLocationsEnabled($t_item->tableName(), $t_item->getTypeCode()) && $view->request->user->canDoAction("can_set_home_location_".$table_name)) {	
+				$tools[] = "<div id='inspectorSetHomeLocation' class='inspectorActionButton'><div id='inspectorSetHomeLocationButton'><a href='#' onclick='_initSetHomeLocationHierarchyBrowser(); return false;'>".caNavIcon(__CA_NAV_ICON_HOME__, '20px', array('title' => _t('Set home location')))."</a></div></div>\n";
+	
+				$change_type_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
+				$change_type_view->setVar('t_item', $t_item);
+	
+				FooterManager::add($change_type_view->render("set_home_location_html.php"));
+				TooltipManager::add("#inspectorSetHomeLocation", _t('Set home location'));
+			}
+	
+			// Download media in lot ($num_objects is only set for object lots)
+			if ($num_objects > 0) {
+				$tools[] = "<div id='inspectorLotMediaDownloadButton' class='inspectorActionButton'>".caNavLink($view->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, '20px'), "button", $view->request->getModulePath(), $view->request->getController(), 'getLotMedia', array('lot_id' => $t_item->getPrimaryKey(), 'download' => 1), array())."</div>\n";
+				TooltipManager::add('#inspectorLotMediaDownloadButton', _t("Download all media associated with objects in this lot"));
+			}
+			
 			// Download media in set
 			if(($table_name == 'ca_sets') && (sizeof($t_item->getItemRowIDs() ?? []) > 0)) {
 				$tools [] = "<div id='inspectorSetMediaDownloadButton' class='inspectorActionButton'>".caNavLink($view->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, '20px'), "button", $view->request->getModulePath(), $view->request->getController(), 'getSetMedia', array('set_id' => $t_item->getPrimaryKey(), 'download' => 1), array())."</div>\n";
-
+	
 				TooltipManager::add('#inspectorSetMediaDownloadButton', _t("Download all media associated with records in this set"));
 			}
-
+		
 			// Auto-delete set?
 			if(($table_name == 'ca_sets') && ($view->request->user->getPreference('autodelete_sets') === 'yes')) {
 				$autodelete = "<div class='inspectorActionButton'><div><a href='#' title='"._t('Set auto-deletion of set.')."' onclick='caToggleAutoDelete(); return false;' id='inspectorSetAutoDeleteButton'>".caNavIcon($t_item->willAutoDelete() ? __CA_NAV_ICON_AUTO_DELETE__ : __CA_NAV_ICON_NO_AUTO_DELETE__, '20px')."</a></div></div>";
@@ -1605,11 +1637,11 @@ function caEditorInspector($view, $options=null) {
 				if (method_exists($t_item, 'getComponentCount')) {
 					$component_count = $t_item->getComponentCount();
 					if ($t_ui && ($component_list_screen = $t_ui->getScreenWithBundle("ca_objects_components_list", $view->request)) && ($vs_component_list_screen !== $view->request->getActionExtra())) {
-						$component_count_link = caNavLink($view->request, $component_count, '', '*', '*', $view->request->getAction().'/'.$component_list_screen, [$t_item->primaryKey() => $t_item->getPrimaryKey()]);
+						$component_count_link = caEditorLink($view->request, $component_count, '', $t_item->tableName(), $t_item->getPrimaryKey(), [], [], ['bundle' => 'ca_objects_components_list']);
 					} else {
 						$component_count_link = $component_count;
 					}
-					$components_tools[] = "<div><strong>"._t('Components').":</strong> {$component_count_link}</div>";
+					$components_tools[] = "<div><strong>".($view->request->config->get(['ca_objects_'.$t_item->getTypeCode().'_component_count_label', 'ca_objects_component_count_label']) ?? _t('Components')).":</strong> {$component_count_link}</div>";
 				}
 
 				// Component hierarchy tools
@@ -1627,7 +1659,7 @@ function caEditorInspector($view, $options=null) {
 				}
 			}
 			if ($can_add_component) {
-				$label = $view->request->config->get('ca_objects_component_add_button_text');
+				$label = $view->request->config->get(['ca_objects_'.$t_item->getTypeCode().'_component_add_button_text', 'ca_objects_component_add_button_text']);
 				$components_tools[] = '<div><a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($view->request, '*', 'ObjectComponent', 'Form', ['parent_id' => $t_item->getPrimaryKey()]).'"); return false;\')>'.caNavIcon(__CA_NAV_ICON_ADD__, '12px').($label ? " {$label}" : '').'</a></div>';
 
 				$change_type_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
@@ -4488,16 +4520,6 @@ function caProcessBottomLineTemplateForPlacement($request, $placement, $res, $op
 	// Post processing
 	foreach($subelements_to_process as $subelement => $subelement_datatype) {
 		$value_name = ($is_multiple) ? "Value_{$subelement_datatype}" : $subelement;
-		// [0] => Array
-//         (
-//             [originalTag] => COUNT%filter=loan_out
-//             [tag] => COUNT
-//             [options] => Array
-//                 (
-//                     [filter] => loan_out
-//                 )
-// 
-//         )
 
 		switch($subelement_datatype) {
 			case __CA_ATTRIBUTE_VALUE_LIST__:
@@ -4695,7 +4717,10 @@ function caRepresentationList($request, $subject, ?array $options=null) : ?array
 
 	$t_rep = new ca_object_representations();
 	$reps = [];
-
+	
+	$trans_start_rep_id = caGetOption('transcription_start_representation_id', $options, null);
+	$trans_start = caGetOption('transcription_start', $options, null);
+	
 	$caption_template = caGetOption('mediaCaptionTemplate', $options, '???');
 	while($qr->nextHit()) {
 		$rep_id = $qr->get('ca_object_representations.representation_id');
@@ -4725,6 +4750,20 @@ function caRepresentationList($request, $subject, ?array $options=null) : ?array
 				];
 			}
 		}
+		$sidecars = null;
+		if(is_array($sidecar_list = $t_rep->getSidecarFileList($rep_id))) {
+			$sidecars = [];
+			foreach($sidecar_list as $sid => $sf) {
+				$sidecars[] = [
+					'url' => $sf['url'],
+					'mimetype' => $sf['mimetype'],
+					'typename' => $sf['typename'],
+					'filesize' => $sf['filesize'],
+					'original_filename' => $sf['original_filename'],
+					'sidecarUrl' => caNavUrl($request, '*', '*', 'getMediaSidecarData', ['sidecar_id' => $sid], ['absolute' => true]).'/filename/'.$sf['original_filename']
+				];
+			}
+		}
 
 		$embedded_player = null;
 		if(is_array($media_data = $qr->getMediaInfo('ca_object_representations.media')) && is_array($media_data['INPUT'] ?? null)) {
@@ -4735,8 +4774,10 @@ function caRepresentationList($request, $subject, ?array $options=null) : ?array
 		$use_embedded_player = ($embedded_player && (!$mimetype || $display_info['use_embedded_when_available'] ?? false));
 
 		$rep = [
+			'id' => $rep_id,
 			'representation_id' => $rep_id,
-			'mimetype' => $mimetype,
+			'original_mimetype' => $mimetype,
+			'mimetype' => $qr->get("ca_object_representations.media.{$display_version}.mimetype"),
 			'media_class' => $use_embedded_player ? 'embed' : caGetMediaClass($mimetype),
 			'original_url' => $qr->get("ca_object_representations.media.original.url"),
 			'url' => $qr->get("ca_object_representations.media.{$display_version}.url"),
@@ -4747,10 +4788,15 @@ function caRepresentationList($request, $subject, ?array $options=null) : ?array
 			'no_overlay' => (bool)($display_info['no_overlay'] ?? false),
 			'caption' => caProcessTemplateForIDs($caption_template, $qr->tableName(), [$rep_id]),
 			'vttCaptions' => $vtt_captions,
+			'sidecars' => $sidecars,
 			'embeddedPlayer' => $embedded_player,
 			'download_version' => $allow_download ? caGetOption('download_version', $download_info, null) : null
 		];
-
+		
+		if($rep_id == $trans_start_rep_id) {
+			$rep['start'] = $trans_start;
+		}
+		
 		if(is_array($file_list = $qr->getFileList()) && sizeof($file_list)) {
 			$pages = array_map(function($v) {
 				return $v['preview_url'];
@@ -4823,7 +4869,8 @@ function caRepresentationViewer($request, $subject, ?array $options=null) {
 	$media_list = caRepresentationList($request, $t_instance, $options);
 
 	$o_view->setVar('media_list', $media_list);
-
+	$o_view->setVar('detail_options', $options['detail_options'] ?? []);
+	
 	if (is_null($index) || !isset($media_list[$index])) {
 		$t_rep = $t_instance->getPrimaryRepresentationInstance($options);
 	} else {
@@ -6359,7 +6406,7 @@ function caGetFindViewList($table_name_or_num) : ?array {
 				'list' => _t('list'),
 				'full' => _t('full'),
 				'thumbnail' => _t('thumbnails'),
-				'list_with_thumbnail' => _t('list + thumbnails'),
+				'list_with_thumbnail' => _t('list').' + '._t('thumbnails'),
 			];
 			break;
 		case 'ca_object_representations':
@@ -6607,7 +6654,7 @@ function caEditorFormControls(View $view, string $form_id, ?array $options=null)
 	$labels = $view->request->config->getAssoc("{$table}_{$type}_editor_control_labels") ?? $view->request->config->getAssoc("{$table}_editor_control_labels") ?? $view->request->config->getAssoc("editor_control_labels") ?? [];
 
 	$buf = caFormControlBox(
-		caFormSubmitButton($view->request, __CA_NAV_ICON_SAVE__, $labels['save'] ?? _t("Save"), $form_id).' '.
+		caFormSubmitButton($view->request, __CA_NAV_ICON_SAVE__, $labels['save'] ?? _t("Save"), $form_id, ['preventDuplicateSubmits' => true]).' '.
 		($view->getVar('show_save_and_return') ? caFormSubmitButton($view->request, __CA_NAV_ICON_SAVE__, $labels['save_and_return'] ?? _t("Save and return"), $form_id, ['isSaveAndReturn' => true]) : '').' '.
 		caFormNavButton($view->request, __CA_NAV_ICON_CANCEL__, $labels['cancel'] ?? _t("Cancel"), '', $url['module'], $url['controller'], 'Edit/'.$view->request->getActionExtra(), $cancel_parameters),
 		($view->getVar('show_show_notifications') ? caFormJSButton($view->request, __CA_NAV_ICON_ALERT__, $labels['alerts'] ?? _t("Show editor alerts"), '', ['class' => 'caEditorFormNotifications']) : ''),

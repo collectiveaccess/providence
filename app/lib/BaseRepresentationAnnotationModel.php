@@ -448,7 +448,7 @@ class BaseRepresentationAnnotationModel extends BundlableLabelableBaseModelWithA
 	 *
 	 */
 	public function useInEditor() {
-		return $this->opo_annotations_properties->useInEditor();
+		return $this->opo_annotations_properties ? $this->opo_annotations_properties->useInEditor() : false;
 	}
 	# ------------------------------------------------------
 	public function getTypeList($pa_options=null) {

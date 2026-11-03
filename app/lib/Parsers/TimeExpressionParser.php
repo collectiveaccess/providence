@@ -2184,9 +2184,13 @@ class TimeExpressionParser {
 		
 		// EXIF time
 		if (preg_match("/^([\d]{2}):([\d]{2}):([\d]{2}[\.]{0,1}[\d]*)$/", $vs_token, $va_matches)) {
-			// year-month
+			$tz_sep = $this->peekToken();
+			$tz = $this->peekToken(2);
+			
+			$tz_offset = ((($tz_sep['type'] ?? null) === TEP_TOKEN_RANGE_CONJUNCTION) && (($tz['type'] ?? null) === TEP_TOKEN_TIME)) ? $tz['value'] : null;
 			if ((($va_matches[1] >= 0) && ($va_matches[1] <= 23)) && (($va_matches[2] >= 0) && ($va_matches[2] <= 59))  && (($va_matches[3] >= 0) && ($va_matches[3] < 60))) {
-				return(array('value' => $vs_token, 'minutes' => $va_matches[2], 'seconds' => floor($va_matches[3]), 'hours' => $va_matches[1], 'type' => TEP_TOKEN_TIME));
+				if($tz_offset) { $this->skipToken(); $this->skipToken(); }
+				return(array('value' => $vs_token, 'minutes' => $va_matches[2], 'seconds' => floor($va_matches[3]), 'hours' => $va_matches[1], 'iso8601_tz' => $tz_offset, 'type' => TEP_TOKEN_TIME));
 			}
 		}
 		

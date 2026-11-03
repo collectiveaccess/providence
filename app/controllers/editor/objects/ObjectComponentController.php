@@ -87,7 +87,7 @@ class ObjectComponentController extends ActionController {
 		
 		
 		// Set type restrictions to component types
-		$component_types = $t_parent->getComponentTypes(); 
+		$component_types = $t_parent->getValidChildTypes(null, ['components' => true]);
 		if (is_array($component_types) && sizeof($component_types) && !in_array('*', $component_types)) {
 			$this->view->setVar('restrict_to_types', $component_types);
 		}

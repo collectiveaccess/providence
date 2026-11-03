@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021-2025 Whirl-i-Gig
+ * Copyright 2021-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -110,7 +110,9 @@ function fetchDataForBundles($sresult, array $bundles, array $options=null) : ar
 			return [];
 		}
 		
-		$sresult->filterNonPrimaryRepresentations(caGetOption('filterNonPrimaryRepresentations', $options, false));
+		if (method_exists($sresult, 'filterNonPrimaryRepresentations')) {
+			$sresult->filterNonPrimaryRepresentations(caGetOption('filterNonPrimaryRepresentations', $options, false));
+		}
 		while($sresult->nextHit()) {
 			// ladder up hierarchy looking for matches
 			if(is_array($ancestor_filters) && (sizeof($ancestor_filters) > 0)) {
@@ -909,4 +911,25 @@ function resolveListParams(array $args, ?string $prefix=null) : array {
 		$identifiers = $args[$identifier_key] ?? null;
 	}
 	return [$identifiers, $opts];
+}
+
+/**
+ * Get GraphQL JWT key, or generate new if not set or too old
+ */
+function caGetGraphQLServicesJWTKey() {
+	$av = new \ApplicationVars();
+	
+	$config = \Configuration::load();
+	if(($interval = (int)$config->get('graphql_services_jwt_key_lifetime')) <= 0) { $interval = 60*60*24*7; }
+	if(
+		!($key = $av->getVar('graphql_services_jwt_token_key'))
+		||
+		((time() - $av->getVar('graphql_services_jwt_token_key_time')) > $interval)
+	) {
+		$key = \caGenerateGUID();
+		$av->setVar('graphql_services_jwt_token_key', $key);
+		$av->setVar('graphql_services_jwt_token_key_time', time());
+		$av->save();
+	}
+	return $key;
 }
