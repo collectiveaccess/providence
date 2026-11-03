@@ -823,8 +823,7 @@ class Installer {
 				}
 			}
 		}
-		\MemoryCache::flush('ElementInstances');
-		\CompositeCache::flush('metadataElements');
+		\ca_metadata_elements::flushCache();
 		return true;
 	}
 	# --------------------------------------------------
@@ -1402,19 +1401,17 @@ class Installer {
 
 		// get list items
 		$qr_list_item_result = $this->db->query("
-			SELECT * 
+			SELECT cli.list_id, cli.item_value, cli.item_id
 			FROM ca_list_items cli 
-			INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id
 		");
 		while($qr_list_item_result->nextRow()) {
 			$type_code = $list_names[$qr_list_item_result->get('list_id')];
 			$list_item_ids[trim(mb_strtolower($type_code))][trim(mb_strtolower($qr_list_item_result->get('item_value')))] = $qr_list_item_result->get('item_id');
 		}
-
 		foreach($relationship_types as $rel_table => $types) {
 			$table_num = \Datamodel::getTableNum($rel_table);
 			$this->logStatus(_t('Processing relationship types for table %1', $rel_table));
-
+			ob_flush();
 			$t_rel_table = \Datamodel::getInstance($rel_table);
 
 			if (!method_exists($t_rel_table, 'getLeftTableName')) {
@@ -1423,7 +1420,6 @@ class Installer {
 			$left_table = $t_rel_table->getLeftTableName();
 			$right_table = $t_rel_table->getRightTableName();
 
-
 			$root_type_code = "root_for_{$table_num}";
 
 			/** @var ca_relationship_types $t_rel_type */
@@ -1431,7 +1427,6 @@ class Installer {
 				['type_code' => $root_type_code, 'table_num' => $table_num, 'parent_id' => null],
 				['returnAs' => 'firstModelInstance']
 			);
-
 			$t_rel_type = $t_rel_type ? $t_rel_type : new \ca_relationship_types();
 			// create relationship type root if necessary
 			$t_rel_type->set('parent_id', null);
@@ -1447,9 +1442,7 @@ class Installer {
 				$this->addError('processRelationshipTypes', _t("Errors inserting relationship root for %1: %2", $rel_table, join("; ",$t_rel_type->getErrors())));
 				return false;
 			}
-
 			$parent_id = $t_rel_type->getPrimaryKey();
-
 			$this->processRelationshipTypesForTable($types, $table_num, $left_table, $right_table, $parent_id, $list_item_ids);
 		}
 		return true;

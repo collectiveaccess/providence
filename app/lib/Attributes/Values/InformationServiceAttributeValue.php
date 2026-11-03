@@ -306,7 +306,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 						'value_sortable' => $this->sortableValue($display_text)
 					);
 				} else {
-					$this->postError(1970, _t('Value for InformationService lookup has to be an ID or URL that returns exactly 1 hit. We got more or no hits. Value was %1', $value), 'ListAttributeValue->parseValue()');
+					$this->postError(1970, _t('Value for InformationService lookup has to be an ID or URL that returns at least 1 match. No matches were found. Value was %1', $value), 'ListAttributeValue->parseValue()');
 					return false;
 				}
 

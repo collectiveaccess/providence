@@ -29,10 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
 require_once(__CA_LIB_DIR__.'/ObjectRelationshipBaseModel.php');
 require_once(__CA_LIB_DIR__."/HistoryTrackingCurrentValueTrait.php");
 require_once(__CA_LIB_DIR__."/LocationRelationshipBaseModel.php");

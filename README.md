@@ -1,4 +1,4 @@
-# README: Providence version 2.0.11
+# README: Providence version 2.0.12
 
 ### About CollectiveAccess
 
@@ -8,11 +8,33 @@ A web-based suite of applications providing a framework for management, descript
 
 CollectiveAccess is freely available under the open source GNU Public License version 3, meaning that it is free to download, use and share without licensing restrictions.
 
-### About CollectiveAccess 2.0
+### About CollectiveAccess 2.0.12
 
-This version of CollectiveAccess is compatible with PHP versions 8.2 and 8.3. We are currently testing compatibility with PHP 8.4, but it should be usable with that version as well.  It can be made to work with PHP versions as old as 7.4 if need be, but it is unsupported when used with pre 8.2 versions of PHP.
+This version of CollectiveAccess is compatible with PHP versions 8.2, 8.3, 8.4 and 8.5. It cannot be run with PHP versions prior to 8.2. 
 
-### What's New
+Version 2.0.12 provides many bug fixes, minor improvements and a handful of new features:
+
+* Cleaned up user interface translations and implemented new built-in system for generating GNU GetText-compatible locale files. (Thanks @yelto)
+* Expanded display template system now supports display of previous metadata values and value histories.
+* Updated Getty vocabularies support (AAT, TGN and ULAN) for operation with new-architecture Getty services.
+* Added integration with FotoWare DAMS application. FotoWare URLs entered into media representation bundle URL field will cause FotoWare-hosted media to be pulled into CollectiveAccess.
+* Whisper-generated transcriptions for audio and video files are now indexed with timecode for search, enabling the search engine to return audio/video matches cued to specified timecode.
+* Added additional fine-grain options to control where`prepopulate` plugin rules are applied.
+* Extended `prepopulate` plugin to support triggering of rules when related (dependent) records are modified.
+* Added support for HTML5 elements in HTMLPurifier-filtered content. (Thanks @Monica-Wood)
+* MP4 videos that are not encoded for playback in web browsers are now detected and transcoded.
+* Replication framework now supports simultaneous synchronization of multiple systems.
+* Expanded checks to prevent unintended multiple-submission of forms.
+* JWT signing keys are now automatically generated, removing need for configuration.
+* Implemented support for Orbitvu 360 degree image format.
+* Implemented support for Japanese Gengo dates
+
+Thanks to @yelto, @monica-wood, @behnaz-zarriz, @peterjanssens, @mthsps, @mark1ewis and @wrockwood for contributions to version 2.0.12.
+
+Please note that updating to 2.0.12 will clear the search index and require a **full reindex**. For very large systems reindexing may take several hours during which search functionality will be degraded. Please plan the timing of your update accordingly.
+
+
+### What's New in 2.0
 
 It has been a while since the previous version, 1.7, was released. CollectiveAccess version 2.0 offers a wide range of new and improved features and functionality, including: 
 

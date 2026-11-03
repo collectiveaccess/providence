@@ -386,6 +386,30 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$this->resetElasticSearchMappingRefresh();
 	}
 	# ------------------------------------------------------
+	/**
+	 * Flushes all metadata element-related caches
+	 */
+	static public function flushCache() {
+		CompositeCache::flush('ElementSets');
+		CompositeCache::flush('ElementTypeRestrictions');
+		CompositeCache::flush('ElementList');
+		CompositeCache::flush('MetadataElements');
+		CompositeCache::flush('ElementSettings');
+		CompositeCache::flush('SearchBuilder');
+		
+		MemoryCache::flush('ElementInstances');
+		MemoryCache::flush('ElementDataTypes');
+		MemoryCache::flush('ElementDataTypeStrings');
+		MemoryCache::flush('ElementDefaultValues');
+		MemoryCache::flush('ElementSettings');
+		MemoryCache::flush('ElementHierarchyIDs');
+		MemoryCache::flush('ElementIsDeleted');
+		MemoryCache::flush('ElementIDs');
+		MemoryCache::flush('ElementParentCodes');
+		MemoryCache::flush('ElementLabels');
+		MemoryCache::flush('ElementCodes');
+	}
+	# ------------------------------------------------------
 	# Element set methods
 	# ------------------------------------------------------
 	/**
