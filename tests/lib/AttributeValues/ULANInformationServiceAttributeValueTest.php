@@ -44,7 +44,7 @@ class ULANInformationServiceAttributeValueTest extends TestCase {
 
 	public function testGetExtendedInfo() {
 		$o_service = new WLPlugInformationServiceULAN();
-		$vm_ret = $o_service->getExtendedInformation(array(), 'http://vocab.getty.edu/ulan/500024253');
+		$vm_ret = $o_service->getExtendedInformation(array(), 'https://vocab.getty.edu/ulan/500024253');
 
 		$this->assertArrayHasKey('display', $vm_ret);
 		$this->assertIsString($vm_ret['display']);
@@ -53,7 +53,7 @@ class ULANInformationServiceAttributeValueTest extends TestCase {
 
 	public function testGetIndexingInfo() {
 		$o_service = new WLPlugInformationServiceULAN();
-		$vm_ret = $o_service->getDataForSearchIndexing(array(), 'http://vocab.getty.edu/ulan/500024253');
+		$vm_ret = $o_service->getDataForSearchIndexing(array(), 'https://vocab.getty.edu/ulan/500024253');
 
 		$this->assertIsArray($vm_ret);
 		$this->assertGreaterThan(0, sizeof($vm_ret));

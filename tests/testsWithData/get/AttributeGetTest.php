@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2017 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -52,7 +52,7 @@ class AttributeGetTest extends BaseTestWithData {
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
-		$vn_test_record = $this->addTestRecord('ca_objects', array(
+		$test_record = $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
 			),
@@ -122,115 +122,140 @@ class AttributeGetTest extends BaseTestWithData {
 					),
 				),
 
-				// Georeference
-				// 'georeference' => array(
-// 					array(
-// 						'georeference' => '1600 Amphitheatre Parkway, Mountain View, CA',
-// 					),
-// 				),
-
+ 				// Georeference
+				'georeference' => array(
+					array(
+						'georeference' => '1600 Amphitheatre Parkway, Mountain View, CA',
+					),
+				),
+ 
 				// InformationService/TGN
 				'tgn' => array(
 					array(
-						'tgn' => 'http://vocab.getty.edu/tgn/7015849',
+						'tgn' => 'https://vocab.getty.edu/tgn/7015849',
 					),
 				),
 
 				// InformationService/Wikipedia
 				'wikipedia' => array(
 					array(
-						'wikipedia' => 'http://en.wikipedia.org/wiki/Aaron_Burr'
+						'wikipedia' => 'https://en.wikipedia.org/wiki/Aaron_Burr'
 					),
 				),
 
-				// InformationService/Container - Wikipedia and ULAN
+ 				// InformationService/Container - Wikipedia and ULAN
 				'informationservice' => array(
 					array(
-						'wiki' => 'http://en.wikipedia.org/wiki/Aaron_Burr',
-						'ulan_container' => 'http://vocab.getty.edu/ulan/500024253'
+						'wiki' => 'https://en.wikipedia.org/wiki/Aaron_Burr',
+						'ulan_container' => 'https://vocab.getty.edu/ulan/500024253'
 					),
 				),
 			)
 		));
 
-		$this->assertGreaterThan(0, $vn_test_record);
+		$this->assertGreaterThan(0, $test_record);
 
-		$this->opt_object = new ca_objects($vn_test_record);
+		$this->opt_object = new ca_objects($test_record);
 	}
 	# -------------------------------------------------------
-	public function testGets() {
-		// TODO: break this into smaller tests, one per get()
-		$vm_ret = $this->opt_object->get('ca_objects.date.dc_dates_types', array('returnIdno' => true));
-		$this->assertEquals('created', $vm_ret);
+	public function testGetListAsIdno() {
+		$ret = $this->opt_object->get('ca_objects.date.dc_dates_types', array('returnIdno' => true));
+		$this->assertEquals('created', $ret);
+	}
+	# -------------------------------------------------------
+	public function testGetTypeForDisplay() {
+		$ret = $this->opt_object->get('ca_objects.type_id', array('convertCodesToDisplayText' => true));
+		$this->assertEquals('Image', $ret);
+	}
 
-		$vm_ret = $this->opt_object->get('ca_objects.type_id', array('convertCodesToDisplayText' => true));
-		$this->assertEquals('Image', $vm_ret);
-
+	# -------------------------------------------------------
+	public function testGetText() {
 		// there are two internal notes but we assume that only the current UI locale is returned, unless we explicitly say otherwise
-		$vm_ret = $this->opt_object->get('ca_objects.internal_notes');
-		$this->assertEquals("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ullamcorper sapien nec velit porta luctus.;More meat.", $vm_ret);
+		$ret = $this->opt_object->get('ca_objects.internal_notes');
+		$this->assertEquals("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ullamcorper sapien nec velit porta luctus.;More meat.", $ret);
 
-		$vm_ret = $this->opt_object->get('internal_notes');
-		$this->assertEquals("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ullamcorper sapien nec velit porta luctus.;More meat.", $vm_ret);
-
-		$vm_ret = $this->opt_object->get('ca_objects.external_link.url_source');
-		$this->assertEquals("My URL source;Another URL source", $vm_ret);
-
-		$vm_ret = $this->opt_object->get('ca_objects.dimensions.dimensions_length', ['returnAsArray' => true]);
-		$this->assertEquals("10 in", $vm_ret[0]);
-		$this->assertEquals("5 ft", $vm_ret[1]);
-		$vm_ret = $this->opt_object->get('ca_objects.dimensions.dimensions_weight', ['returnAsArray' => true]);
-		$this->assertEquals("2 lb", $vm_ret[0]);
-		$this->assertEquals("10 g", $vm_ret[1]);
-
-		$vm_ret = $this->opt_object->get('ca_objects.integer_test', array('delimiter' => ' / '));
-		$this->assertEquals("23 / 1984", $vm_ret);
-
-		$vm_ret = $this->opt_object->get('ca_objects.currency_test');
-		$this->assertEquals("$ 100.00", $vm_ret);
-
-		//$vm_ret = $this->opt_object->get('ca_objects.georeference');
-		//$this->assertMatchesRegularExpression("/^1600 Amphitheatre Parkway, Mountain View, CA \[[\d\.\,\-]+\]/", $vm_ret);
-
+		$ret = $this->opt_object->get('internal_notes');
+		$this->assertEquals("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ullamcorper sapien nec velit porta luctus.;More meat.", $ret);
+	}
+	# -------------------------------------------------------
+	public function testGetUrlInContainer() {
+		$ret = $this->opt_object->get('ca_objects.external_link.url_source');
+		$this->assertEquals("My URL source;Another URL source", $ret);
+	}
+	# -------------------------------------------------------
+	public function testGetLength() {
+		$ret = $this->opt_object->get('ca_objects.dimensions.dimensions_length', ['returnAsArray' => true]);
+		$this->assertEquals("10 in", $ret[0]);
+		$this->assertEquals("5 ft", $ret[1]);
+	}
+	# -------------------------------------------------------
+	public function testGetWeight() {
+		$ret = $this->opt_object->get('ca_objects.dimensions.dimensions_weight', ['returnAsArray' => true]);
+		$this->assertEquals("2 lb", $ret[0]);
+		$this->assertEquals("10 g", $ret[1]);
+	}
+	# -------------------------------------------------------
+	public function testGetInteger() {
+		$ret = $this->opt_object->get('ca_objects.integer_test', array('delimiter' => ' / '));
+		$this->assertEquals("23 / 1984", $ret);
+	}
+	# -------------------------------------------------------
+	public function testGetCurrency() {
+		$ret = $this->opt_object->get('ca_objects.currency_test');
+		$this->assertEquals("$100.00", $ret);
+	}
+	# -------------------------------------------------------
+	public function testGetAttriburesForDisplay() {
 		// This is how we fetch the bundle preview for containers:
-		$vs_template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /foo/'>^ca_objects.dimensions.dimensions_length</if></unit>";
-		$vm_ret = $this->opt_object->getAttributesForDisplay('dimensions', $vs_template);
-		$this->assertEquals('10 in', $vm_ret);
+		$template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /foo/'>^ca_objects.dimensions.dimensions_length</if></unit>";
+		$ret = $this->opt_object->getAttributesForDisplay('dimensions', $template);
+		$this->assertEquals('10 in', $ret);
 
-		$vs_template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /foo/'>^dimensions_length</if></unit>";
-		$vm_ret = $this->opt_object->getAttributesForDisplay('dimensions', $vs_template);
-		$this->assertEquals('10 in', $vm_ret);
+		$template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /foo/'>^dimensions_length</if></unit>";
+		$ret = $this->opt_object->getAttributesForDisplay('dimensions', $template);
+		$this->assertEquals('10 in', $ret);
 
 		// shouldn't return anything because the expression is false
-		$vs_template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /bar/'>^ca_objects.dimensions.dimensions_length</if></unit>";
-		$vm_ret = $this->opt_object->getAttributesForDisplay('dimensions', $vs_template);
-		$this->assertEmpty($vm_ret);
-
+		$template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /bar/'>^ca_objects.dimensions.dimensions_length</if></unit>";
+		$ret = $this->opt_object->getAttributesForDisplay('dimensions', $template);
+		$this->assertEmpty($ret);
+	}
+	# -------------------------------------------------------
+	public function testGetTGNTextValue() {
 		// 'flat' informationservice attribues
 		$this->assertEquals('Coney Island', $this->opt_object->get('ca_objects.tgn'));
-		$this->assertStringContainsString('Aaron Burr', $this->opt_object->get('ca_objects.wikipedia'));
+	}
+	# -------------------------------------------------------
+	public function testGetTGNExtendedInfo() {
 		// subfield notation for "extra info"
 		$this->assertEquals('40.5667', $this->opt_object->get('ca_objects.tgn.lat'));
-
+	}
+	# -------------------------------------------------------
+	public function testGetULANInContainer() {
 		// informationservice attributes in container
-		$this->assertEquals('[500024253] Haring, Keith (Persons, Artists) - American painter, muralist, and cartoonist, 1958-1990', $this->opt_object->get('ca_objects.informationservice.ulan_container'));
+		$this->assertEquals('[500024253] Haring, Keith (Persons) - American painter, muralist, and cartoonist, 1958-1990', $this->opt_object->get('ca_objects.informationservice.ulan_container'));
+	}
+	# -------------------------------------------------------
+	public function testGetWikipedia() {
+		$this->assertStringContainsString('Aaron Burr', $this->opt_object->get('ca_objects.wikipedia'));
 		$this->assertStringContainsString('Aaron Burr', $this->opt_object->get('ca_objects.informationservice.wiki'));
-        $vs_expected_abstract_wikipedia_burr = 'Aaron Burr Jr.';
-        $this->assertStringContainsString($vs_expected_abstract_wikipedia_burr, $this->opt_object->get('ca_objects.wikipedia.abstract'));
-		$this->assertStringContainsString($vs_expected_abstract_wikipedia_burr, $this->opt_object->get('ca_objects.informationservice.wiki.abstract'));
+        
+        $expected_abstract_wikipedia_burr = 'Aaron Burr Jr.';
+        $this->assertStringContainsString($expected_abstract_wikipedia_burr, $this->opt_object->get('ca_objects.wikipedia.abstract'));
+		$this->assertStringContainsString($expected_abstract_wikipedia_burr, $this->opt_object->get('ca_objects.informationservice.wiki.abstract'));
 	}
 	# -------------------------------------------------------
 	public function testGetCounts() {
-		$vm_ret = $this->opt_object->get('ca_objects.internal_notes._count');
-		$this->assertEquals(2, $vm_ret);
+		$ret = $this->opt_object->get('ca_objects.internal_notes._count');
+		$this->assertEquals(2, $ret);
 		
-		$vm_ret = $this->opt_object->get('ca_objects.internal_notes._count', ['returnAsArray' => true]);
-		$this->assertIsArray($vm_ret);
-		$this->assertCount(1, $vm_ret);
-		$this->assertEquals(2, $vm_ret[0]);
+		$ret = $this->opt_object->get('ca_objects.internal_notes._count', ['returnAsArray' => true]);
+		$this->assertIsArray($ret);
+		$this->assertCount(1, $ret);
+		$this->assertEquals(2, $ret[0]);
 		
-		$vm_ret = $this->opt_object->get('ca_objects.internal_notes', ['returnAsCount' => true]);
-		$this->assertEquals(2, $vm_ret);
+		$ret = $this->opt_object->get('ca_objects.internal_notes', ['returnAsCount' => true]);
+		$this->assertEquals(2, $ret);
 	}
 	# -------------------------------------------------------
 }

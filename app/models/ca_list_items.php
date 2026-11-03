@@ -948,6 +948,17 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
  	# ------------------------------------------------------
  	/**
 	 *
+	 * @param mixed $pm_id primary key value of the record to load (assuming we have no composed primary key)
+	 * @return bool success state
+	 */
+	public function load($pm_id=null, $pb_use_cache=true) {
+		$ret = parent::load($pm_id, $pb_use_cache);
+		$this->_setSettingsForList();
+		return $ret;
+	}
+ 	# ------------------------------------------------------
+ 	/**
+	 *
 	 */
 	public function insert($options=null) {
 		if(!is_array($options)) { $options = []; }

@@ -346,9 +346,11 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		if ( CompositeCache::contains( $ps_uri, 'GettyLinkedDataRDFGraphs' ) ) {
 			return CompositeCache::fetch( $ps_uri, 'GettyLinkedDataRDFGraphs' );
 		}
-
 		try {
-			$o_graph = \EasyRdf\Graph::newAndLoad("{$ps_uri}.rdf", "ntriples");
+			$rdf = caFetchFileFromUrl($ps_uri, null, ['headers' => ['Accept: application/n-triples']]);
+			$o_graph = new \EasyRdf\Graph();
+			$o_graph->parseFile($rdf, 'ntriples');
+			@unlink($rdf);
 		} catch ( Exception $e ) {
 			return false;
 		}

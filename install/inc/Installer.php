@@ -823,8 +823,7 @@ class Installer {
 				}
 			}
 		}
-		\MemoryCache::flush('ElementInstances');
-		\CompositeCache::flush('metadataElements');
+		\ca_metadata_elements::flushCache();
 		return true;
 	}
 	# --------------------------------------------------

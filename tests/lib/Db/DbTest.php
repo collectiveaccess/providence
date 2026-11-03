@@ -6,8 +6,8 @@
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
- * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2025 Whirl-i-Gig
+ * Software by Whirl--Gig (http://www.whirl-i-gig.com)
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -173,7 +173,7 @@ class DbTest extends TestCase {
 		$this->assertContains('foo', $va_tables);
 		$this->assertContains('bar', $va_tables);
 		
-		$this->assertEquals(236, sizeof($va_tables)); // 224 CA tables plus 2 we created!
+		$this->assertEquals(238, sizeof($va_tables)); // 224 CA tables plus 2 we created!
 	}
 
 	public function testQuote() {

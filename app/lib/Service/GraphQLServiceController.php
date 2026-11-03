@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2023 Whirl-i-Gig
+ * Copyright 2020-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,6 +36,7 @@ use GraphQL\Error\FormattedError;
 use \Firebase\JWT\JWT;
 
 require_once(__CA_LIB_DIR__.'/Service/BaseServiceController.php');
+require_once(__CA_APP_DIR__.'/service/helpers/ServiceHelpers.php');
 
 class GraphQLServiceController extends \BaseServiceController {
 	# -------------------------------------------------------
@@ -48,6 +49,11 @@ class GraphQLServiceController extends \BaseServiceController {
 	 *
 	 */
 	public function __construct(&$request, &$response, $view_paths) {
+		$config = \Configuration::load();
+		if(!(bool)trim($config->get('graphql_services_enabled'))) {
+			throw new \ServiceException(_t('GraphQL services are not enabled'));
+		}
+		
 		parent::__construct($request, $response, $view_paths);
 	}
 	# -------------------------------------------------------
@@ -134,7 +140,7 @@ class GraphQLServiceController extends \BaseServiceController {
 		if(!is_array($options)) { $options = []; }
 		
 		$config = \Configuration::load();
-		$key = $config->get('graphql_services_jwt_token_key');
+		$key = \GraphQLServices\Helpers\caGetGraphQLServicesJWTKey();
 		$exp_offset = caGetOption('refresh', $options, false) ? 
 			(int)$config->get('graphql_services_jwt_refresh_token_lifetime') 
 			: 
@@ -161,7 +167,7 @@ class GraphQLServiceController extends \BaseServiceController {
 	 */
 	public static function decodeJWT(?string $jwt) {
 		if(!$jwt) { return false; }
-		$key = \Configuration::load()->get('graphql_services_jwt_token_key');
+		$key = \GraphQLServices\Helpers\caGetGraphQLServicesJWTKey();
 		
 		return \Session::decodeJWT($jwt, $key);
 	}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -80,7 +80,8 @@ class EntityReferencesForSetsTemplateTest extends BaseTestWithData {
 		$vn_set_id = $this->addTestRecord('ca_sets', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'user',
-				'set_code' => 'TEST'
+				'set_code' => 'TEST',
+				'table_num' =>  57
 			),
 			'preferred_labels' => array(
 				array(

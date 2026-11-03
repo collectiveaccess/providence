@@ -507,7 +507,7 @@ class ImportHelpersTest extends TestCase {
         $pa_options = array();
         $result = caProcessRefineryAttributes($pa_attributes, $pa_source_data, $pa_item, $pn_c, $pa_options);
         $this->assertNotNull($result);
-        $this->assertEquals($this->data[3], $result["preferred_label"][0]);
+        $this->assertEquals($this->data[3], $result["preferred_label"][0][0]);
     }
 
     public function testCaProcessRefineryAttributesWithAssociativeArray() {
