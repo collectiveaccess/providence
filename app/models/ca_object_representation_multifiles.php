@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2024 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -242,8 +242,8 @@ class ca_object_representation_multifiles extends BaseModel {
 		
  		// Check type restrictions
  		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
-			$vn_type_access = $po_request->user->getTypeAccessLevel('ca_object_representations', $t_rep->getTypeID());
-			if ($vn_type_access != __CA_BUNDLE_ACCESS_EDIT__) {
+			$vn_type_access = (int)$po_request->user->getTypeAccessLevel('ca_object_representations', $t_rep->getTypeID());
+			if (!in_array($vn_type_access, [__CA_BUNDLE_ACCESS_EDIT__, __CA_BUNDLE_ACCESS_EDIT_DELETE__])) {
 				return false;
 			}
 		}
@@ -282,8 +282,8 @@ class ca_object_representation_multifiles extends BaseModel {
  		
  		// Check type restrictions
  		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
-			$vn_type_access = $po_request->user->getTypeAccessLevel('ca_object_representations', $t_rep->getTypeID());
-			if ($vn_type_access != __CA_BUNDLE_ACCESS_EDIT__) {
+			$vn_type_access = (int)$po_request->user->getTypeAccessLevel('ca_object_representations', $t_rep->getTypeID());
+			if (!in_array($vn_type_access, [__CA_BUNDLE_ACCESS_EDIT__, __CA_BUNDLE_ACCESS_EDIT_DELETE__])) {
 				return false;
 			}
 		}

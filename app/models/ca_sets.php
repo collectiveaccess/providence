@@ -3161,16 +3161,16 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	public function isSaveable($po_request, $ps_bundle_name=null) {
 		// Check type restrictions
 		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
-			$vn_type_access = $po_request->user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
-			if ($vn_type_access != __CA_BUNDLE_ACCESS_EDIT__) {
+			$vn_type_access = (int)$po_request->user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
+			if (!in_array($vn_type_access, [__CA_BUNDLE_ACCESS_EDIT__, __CA_BUNDLE_ACCESS_EDIT_DELETE__])) {
 				return false;
 			}
 		}
 
 		// Check source restrictions
 		if (caSourceAccessControlIsEnabled($this)) {
-			$vn_source_access = $po_request->user->getSourceAccessLevel($this->tableName(), $this->getSourceID());
-			if ($vn_source_access < __CA_BUNDLE_ACCESS_EDIT__) {
+			$vn_source_access = (int)$po_request->user->getSourceAccessLevel($this->tableName(), $this->getSourceID());
+			if (!in_array($vn_source_access, [__CA_BUNDLE_ACCESS_EDIT__, __CA_BUNDLE_ACCESS_EDIT_DELETE__])) {
 				return false;
 			}
 		}
