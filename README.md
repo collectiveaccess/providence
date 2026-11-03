@@ -29,9 +29,9 @@ Version 2.0.12 provides many bug fixes, minor improvements and a handful of new 
 * Implemented support for Orbitvu 360 degree image format.
 * Implemented support for Japanese Gengo dates
 
-Thanks to @behnaz-zarriz, @peterjanssens, @mthsps, @mark1ewis and @wrockwood for contributions to version 2.0.12.
+Thanks to @yelto, @monica-wood, @behnaz-zarriz, @peterjanssens, @mthsps, @mark1ewis and @wrockwood for contributions to version 2.0.12.
 
-Please note that updating to 2.0.12 will clear the search index and require a _full reindex_. For very large systems reindexing may take several hours during which search functionality will be degraded. Please plan the timing of your update accordingly.
+Please note that updating to 2.0.12 will clear the search index and require a **full reindex**. For very large systems reindexing may take several hours during which search functionality will be degraded. Please plan the timing of your update accordingly.
 
 
 ### What's New in 2.0
