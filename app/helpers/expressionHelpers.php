@@ -298,7 +298,7 @@ function caExpressionFunctionSumValues(...$args) : mixed {
 			}
 		}
 	}
-	print_R($scc);
+	
 	$ret =  caGetQuantityForExpressionDisplay($type, $acc, ['returnAs' => $return_as]);
 	return $ret['value'] ?? null;
 }
