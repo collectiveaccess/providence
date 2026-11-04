@@ -229,6 +229,15 @@ if (!defined('__CA_CACHE_BACKEND__')) {
 #define('__DEEPL_API_KEY__', '<API KEY>');
 #define('__GOOGLE_TRANSLATE_API_KEY__', '<API KEY>');
 
+# Media transcription API keys. If you are using a third-party transcription service 
+# (set in app.conf transcription_service) uncomment and set the API key for the service below.
+#
+# __REV_AI_ACCESS_TOKEN__ = Rev.ai access token (see https://www.rev.ai/access-token)
+# __SONIX_API_KEY__ = Sonix API key (see https://my.sonix.ai/api)
+#
+#define('__REV_AI_ACCESS_TOKEN__', '<ACCESS TOKEN>');
+#define('__SONIX_API_KEY__', '<API KEY>');
+
 
 # __CA_DB_USE_SSL__ = Use SSL encryption for database connections
 #

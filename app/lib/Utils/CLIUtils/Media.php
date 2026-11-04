@@ -946,7 +946,7 @@ trait CLIUtilsMedia {
 	 *
 	 */
 	public static function transcribeShortHelp() {
-		return _t("Force Whisper-based transcription of audio/visual media.");
+		return _t("Force transcription of audio/visual media using the configured transcription service.");
 	}
 	# -------------------------------------------------------
 	/**

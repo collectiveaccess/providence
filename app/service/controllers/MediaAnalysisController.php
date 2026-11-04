@@ -81,7 +81,8 @@ class MediaAnalysisController extends BaseServiceController {
 					}
 					$copied[$rpath] = filesize("{$path}/{$name}");
 					
-					$ret = $tq->addTask('mediaTranscription', ['SERVICE' => true, 'FILE' => "{$path}/{$name}", 'MODEL' => 'medium', 'OUTPUT_DIR' => $path], ['user_id' => $user_id, 
+					$ret = $tq->addTask('mediaTranscription', ['SERVICE' => true, 'FILE' => "{$path}/{$name}", 'MODEL' => 'medium', 'OUTPUT_DIR' => $path, 
+						'USER_ID' => $user_id, 'ENTITY_KEY' => $entity_key ? $entity_key : $user_id.$rpath], ['user_id' => $user_id, 
 						'entity_key' => $entity_key ? $entity_key : $user_id.$rpath]);
 					$task_ids["{$path}/{$name}"] = ['task_id' => $ret, 'entity_key' => md5($user_id.$rpath)];
 				}
