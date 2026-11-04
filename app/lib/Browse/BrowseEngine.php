@@ -4876,7 +4876,8 @@ class BrowseEngine extends BaseFindEngine {
 							$display_config = $this->getTableEntryFromMap($va_facet_info, 'display', $current_table_name);
 							$vs_template = isset($display_config['template']) ? $display_config['template'] : "^{$current_table_name}.preferred_labels";
 
-							unset($va_config['template']);
+							$tconfig = $va_config;
+							unset($tconfig['template']);
 							while($qr_res->nextHit()) {
 								$row_id = $qr_res->getPrimaryKey();
 								$type_id = $qr_res->get("{$current_table_name}.type_id");
@@ -4892,7 +4893,7 @@ class BrowseEngine extends BaseFindEngine {
 							
 								$vs_label = null;
 								if($vs_template) {
-									$vs_label = trim($qr_res->getWithTemplate($vs_template, $va_config));
+									$vs_label = trim($qr_res->getWithTemplate($vs_template, $tconfig));
 								}
 								if(!$vs_label) {
 									$vs_label = trim(join(" → ", $qr_res->get("{$current_table_name}.hierarchy.preferred_labels", ['returnAsArray' => true])));
