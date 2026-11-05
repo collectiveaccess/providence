@@ -6131,18 +6131,20 @@ function caGetMediaDownloadArchiveName($table, $id, $options=null) {
  *
  * @param string $content Content where logo will be used. Possible values are: "menuBar" (application menu bar); "login" (application login screen), "report" (report headers)
  *
- * @return string
+ * @return string 
  */
 function caGetBrandingLogo(string $type, array $options=null) : ?string {
-	//if(!in_array($type, ['menuBar', 'login', 'report'], true)) { return null; }
-
 	$abs = caGetOption('absolute', $options, false);
 
 	global $g_request;
 	$config = Configuration::load();
 
 	if(is_array($branding = $config->getAssoc('branding')) && is_array($logo = caGetOption($type, $branding, null)) && !empty($logo['src'])) {
-		return caHTMLImage(($abs ? __CA_BASE_DIR__ : __CA_URL_ROOT__).'/'.caGetOption('src', $logo), ['alt' => caGetOption('alt', $logo), 'class' => caGetOption('class', $logo), 'style' => caGetOption('style', $logo), 'id' => caGetOption('id', $logo), 'scaleCSSWidthTo' => caGetOption('width', $logo), 'scaleCSSHeightTo' => caGetOption('height', $logo)]);
+		$path = ($abs ? __CA_BASE_DIR__ : __CA_URL_ROOT__).'/'.caGetOption('src', $logo);
+		if(caGetOption('returnAsPath', $options, null)) { 
+			return $path;
+		}
+		return caHTMLImage($path, ['alt' => caGetOption('alt', $logo), 'class' => caGetOption('class', $logo), 'style' => caGetOption('style', $logo), 'id' => caGetOption('id', $logo), 'scaleCSSWidthTo' => caGetOption('width', $logo), 'scaleCSSHeightTo' => caGetOption('height', $logo)]);
 	}
 
 	if(!$g_request) { return null; }
@@ -6163,7 +6165,11 @@ function caGetBrandingLogo(string $type, array $options=null) : ?string {
 
 	}
 	if ($img) {
-		return caHTMLImage($g_request->getUrlPathForThemeFile("graphics/logos/{$img}"), ['alt' => _t("CollectiveAccess Logo"), 'class' => 'headerImg']);
+		$path = $g_request->getUrlPathForThemeFile("graphics/logos/{$img}");
+		if(caGetOption('returnAsPath', $options, null)) { 
+			return $path;
+		}
+		return caHTMLImage($path, ['alt' => _t("Logo"), 'class' => 'headerImg']);
 	}
 	return null;
 }
@@ -6187,15 +6193,17 @@ function caGetLoginLogo() {
 }
 # ------------------------------------------------------------------
 /**
- * Return currently configured logo graphic for report headers
+ * Return currently configured logo graphic for report headers as HTML <img> tag or path (if returnAsPath option is set)
  *
  * @param array $options Options include:
  *		name = key in branding configuration to use; if omitted "report" is used
+ *		absolute = use absolute path to logo. [Default is true]
+ *		returnAsPath = return as path to logo. If not set value is returned as HTML <img> tag. [Default is false]
  *
  * @return string
  */
 function caGetReportLogo(?array $options=null) {
-	return caGetBrandingLogo(caGetOption('name', $options, 'report'), ['absolute' => true]);
+	return caGetBrandingLogo(caGetOption('name', $options, 'report'), array_merge(['absolute' => true], $options));
 }
 # ------------------------------------------------------------------
 /**

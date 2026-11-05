@@ -959,7 +959,8 @@ function caExportResult(RequestHTTP $request, $result, string $template, string 
 			// Add header for all pages
 			$header = $section->addHeader();
 
-			$headerimage =  ($request && $config->get('report_img')) ? $request->getThemeDirectoryPath()."/graphics/logos/".$request->config->get('report_img') : '';
+			$headerimage = caGetReportLogo(['name' => 'report', 'absolute' => true, 'returnAsPath' => true]);
+			
 			if(file_exists($headerimage)){
 				$header->addImage($headerimage,array('height' => 30,'wrappingStyle' => 'inline'));
 			}
