@@ -6930,7 +6930,6 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 
 		// get subject ids
 		$subjects = [];
-		$subject_tablename = null;
 		if ($is_metadata) {
 			// special case for logging attribute changes
 			if (($id = $this->get('row_id')) > 0) {
