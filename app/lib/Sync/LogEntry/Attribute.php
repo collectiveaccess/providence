@@ -82,7 +82,7 @@ class Attribute extends Base {
 		} elseif($this->isUpdate()) {
 			$this->getModelInstance()->update();
 		} elseif($this->isDelete()) {
-			$this->getModelInstance()->delete(false);
+			$this->getModelInstance()->delete(true);
 		}
 
 		$this->checkModelInstanceForErrors();
