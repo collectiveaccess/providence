@@ -6519,7 +6519,7 @@ function caGetCK5Toolbar(array $options=null) : ?array {
 
 		'blockquote' => ['code' => 'blockQuote'],
 		'link' => ['code' => 'link'],
-		'image' => ['code' => 'linkImage'],
+		'image' => ['code' => 'insertImage'],
 		'video' => ['code' => 'mediaEmbed'],
 		'formula' => ['code' => 'formula'],
 		'align' => ['code' => 'alignment'],
