@@ -85,7 +85,7 @@ class SitemapGenerator {
 			switch($mn = mb_strtolower($m)) {
 				// -----------------------------------------------------
 				case 'detail':
-					if(!isset($minfo['pages']) || !is_array($minfo['pages'])) { continue; }
+					if(!isset($minfo['pages']) || !is_array($minfo['pages'])) { break; }
 					
 					$dconfig = caGetDetailConfig();
 					$dtypes = $dconfig->get('detailTypes');
@@ -160,7 +160,7 @@ class SitemapGenerator {
 				case 'front':
 				case 'gallery':
 				default:
-					if(!isset($minfo['pages']) || !is_array($minfo['pages'])) { continue; }
+					if(!isset($minfo['pages']) || !is_array($minfo['pages'])) { break; }
 					$acc = [];
 					$sitemap_name = caGetOption('sitemap_name', $minfo['options'] ?? [], "{$mn}.xml");
 					if(!pathinfo($sitemap_name, PATHINFO_EXTENSION) === 'xml') { $sitemap_name .= '.xml'; }
