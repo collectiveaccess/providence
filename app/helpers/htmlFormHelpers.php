@@ -237,15 +237,32 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 								allow: [
 									{
 										name: 'a',
-										attributes: ['name', 'id'] 
+										attributes: ['name', 'id'],
+										classes: true
 									},
 									{
 										name: /(div|p|h[1-6])/,
-										attributes: ['id', 'class']
+										attributes: ['id'],
+										classes: true
 									},
-									{ name: 'details' },
-									{ name: 'summary' }
+									{ name: 'details', classes: true },
+									{ name: 'summary', classes: true }
 								]
+							},
+							fontSize: {
+								options: [ 8, 9, 10, 11, 12, 'default', 14, 18, 24, 30 ]
+							},
+							link: {
+								decorators: {
+									openInNewTab: {
+										mode: 'manual',
+										label: 'Open in a new tab',
+										attributes: {
+											target: '_blank',
+											rel: 'noopener noreferrer'
+										}
+									}
+								}
 							},
 							toolbar: {
 								items: ".json_encode($toolbar).",
