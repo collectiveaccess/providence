@@ -28,30 +28,30 @@
 AssetLoadManager::register("jcarousel");
 
 $t_rep 						= $this->getVar('t_subject');
-$vn_representation_id 		= $this->getVar('subject_id');
+$representation_id 		= $this->getVar('subject_id');
 $va_annotation_map 			= $this->getVar('annotation_map');
 
-$vn_annotation_count		= $this->getVar('annotation_count');
+$annotation_count		= $this->getVar('annotation_count');
 $default_annotation_id		= $this->getVar('default_annotation_id');
-$vn_timecode_offset 		= $this->getVar('timecode_offset');
+$timecode_offset 		= $this->getVar('timecode_offset');
 
-$vb_can_edit	 			= $t_rep->isSaveable($this->request);
-$vb_can_delete				= $t_rep->isDeletable($this->request);
+$can_edit	 			= $t_rep->isSaveable($this->request);
+$can_delete				= $t_rep->isDeletable($this->request);
 
-$vn_player_height			= (int)$this->getVar('player_height');
+$player_height			= (int)$this->getVar('player_height');
 
 $t_media = new Media();
-$vs_media_type = $t_media->getMimetypeTypename($vs_mime_type = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE'));
+$media_type = $t_media->getMimetypeTypename($mime_type = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE'));
 ?>
 
 <div class="caMediaOverlayControls">
-	<div class="objectInfo"><?= "{$vs_media_type}; ".caGetRepresentationDimensionsForDisplay($t_rep, 'original'); ?></div>
+	<div class="objectInfo"><?= "{$media_type}; ".caGetRepresentationDimensionsForDisplay($t_rep, 'original'); ?></div>
 	<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close"><?= caNavIcon(__CA_NAV_ICON_CLOSE__, "18px", [], ['color' => 'white']).' '._t('Close'); ?></a></div>
 </div>
 	
 <div class="caAnnoEditorTlContainer">
 	<div class="caAnnoEditorTlInfo">
-		<div class="caAnnoEditorInfo"><?= _t("%1 clips", $vn_annotation_count); ?></div>
+		<div class="caAnnoEditorInfo"><?= _t("%1 clips", $annotation_count); ?></div>
 		<div class="caAnnoEditorTlSyncControl">
 			<a href='#' id='caAnnoEditorTlSyncButton'><?= caNavIcon(__CA_NAV_ICON_CLOCK__); ?></a>
 		</div>
@@ -103,7 +103,7 @@ $vs_media_type = $t_media->getMimetypeTypename($vs_mime_type = $t_rep->getMediaI
 	
 		jQuery("#caAnnoEditorInButton, #caAnnoEditorOutPauseButton, #caAnnoEditorOutAndSavePauseButton, #caAnnoEditorInOutButtonLabel").hide();
 		
-		var c = <?= (int)$vn_annotation_count + 1; ?> - visibleItems;
+		var c = <?= (int)$annotation_count + 1; ?> - visibleItems;
 		if (c < 1) { c = 1; }
 		jQuery('#caAnnoEditorTlSyncSlider').slider({min:0, max: c, animate: 'fast', 
 			start: function(event, ui) {
@@ -167,8 +167,8 @@ $vs_media_type = $t_media->getMimetypeTypename($vs_mime_type = $t_rep->getMediaI
 				}
 			
 				// we're past the last clip
-				jQuery('#caAnnoEditorTlCarousel').jcarousel('scroll', <?= (int)$vn_annotation_count - 1; ?>);
-				jQuery('#caAnnoEditorTlSyncSlider').slider("value", (<?= (int)$vn_annotation_count + 1; ?> - visibleItems));
+				jQuery('#caAnnoEditorTlCarousel').jcarousel('scroll', <?= (int)$annotation_count - 1; ?>);
+				jQuery('#caAnnoEditorTlSyncSlider').slider("value", (<?= (int)$annotation_count + 1; ?> - visibleItems));
 				return false;
 			}
 		);
@@ -183,7 +183,7 @@ $vs_media_type = $t_media->getMimetypeTypename($vs_mime_type = $t_rep->getMediaI
 
 	function caAnnoEditorTlLoad(theCarousel, start, count, isInit=0) {
 		if (!count) count = 0;
-		jQuery.getJSON('<?= caNavUrl($this->request, '*', '*', 'getAnnotationList'); ?>', { representation_id: <?= (int)$vn_representation_id; ?>, s: start, n: count}, function(data) {
+		jQuery.getJSON('<?= caNavUrl($this->request, '*', '*', 'getAnnotationList'); ?>', { representation_id: <?= (int)$representation_id; ?>, s: start, n: count}, function(data) {
 			
 			if ((start == 0) && (count == 0)) {
 				jQuery(theCarousel).find("ul").empty();
@@ -297,7 +297,7 @@ $vs_media_type = $t_media->getMimetypeTypename($vs_mime_type = $t_rep->getMediaI
 		if(!annotation_id) { caAnnoEditorDisableAnnotationForm(); return; }
 		caAnnoEditorEnableAnnotationForm();
 		caAnnoSetEditFormSize();
-		jQuery("#caAnnoEditorEditorScreen").load("<?= caNavUrl($this->request, 'editor/representation_annotations', 'RepresentationAnnotationQuickAdd', 'Form', array('representation_id' => $vn_representation_id, 'annotation_id' => '')); ?>" + annotation_id, {startTimecode: inTime, endTimecode: outTime}).show();
+		jQuery("#caAnnoEditorEditorScreen").load("<?= caNavUrl($this->request, 'editor/representation_annotations', 'RepresentationAnnotationQuickAdd', 'Form', ['representation_id' => $representation_id, 'annotation_id' => ''], ['allowEmptyParameters' => true]); ?>" + annotation_id, {startTimecode: inTime, endTimecode: outTime}).show();
 		
 		if(annotation_id > 0) {
 			jQuery("#caAnnoEditorInButton, #caAnnoEditorOutPauseButton, #caAnnoEditorOutAndSavePauseButton, #caAnnoEditorInOutButtonLabel").show();
@@ -341,14 +341,14 @@ $vs_media_type = $t_media->getMimetypeTypename($vs_mime_type = $t_rep->getMediaI
 	
 	function caAnnoEditorSetInTime(inTime, state) {
 		caAnnoEditorEnableAnnotationForm();
-		jQuery("input#startTimecode").val(caConvertSecondsToTimecode(inTime + <?= $vn_timecode_offset; ?>));
+		jQuery("input#startTimecode").val(caConvertSecondsToTimecode(inTime + <?= $timecode_offset; ?>));
 		if (state === 'PLAY') caAnnoEditorPlayerPlay();
 		if (state === 'PAUSE') caAnnoEditorPlayerPause();
 	}
 
 	function caAnnoEditorSetOutTime(outTime, state, save) {
 		caAnnoEditorEnableAnnotationForm();
-		jQuery("input#endTimecode").val(caConvertSecondsToTimecode(outTime + <?= $vn_timecode_offset; ?>));
+		jQuery("input#endTimecode").val(caConvertSecondsToTimecode(outTime + <?= $timecode_offset; ?>));
 		if (state === 'PLAY') caAnnoEditorPlayerPlay();
 		if (state === 'PAUSE') caAnnoEditorPlayerPause();
 		if (save) {
@@ -442,7 +442,7 @@ $vs_media_type = $t_media->getMimetypeTypename($vs_mime_type = $t_rep->getMediaI
 		var ct;
 		if (p) { 
 			ct = p.currentTime; 
-			return includeTimecodeOffset ? (<?= $vn_timecode_offset; ?> + ct) : ct;
+			return includeTimecodeOffset ? (<?= $timecode_offset; ?> + ct) : ct;
 		}
 		
 		return null;
@@ -455,7 +455,7 @@ $vs_media_type = $t_media->getMimetypeTypename($vs_mime_type = $t_rep->getMediaI
 			
 	function caAnnoEditorDisableAnnotationForm() {
 		caAnnoSetEditFormSize();
-		jQuery("#caAnnoEditorEditorScreen").load('<?= caNavUrl($this->request, 'editor/representation_annotations', 'RepresentationAnnotationQuickAdd', 'Form', array('representation_id' => $vn_representation_id, 'annotation_id' => '0')); ?>', {}, function() { 
+		jQuery("#caAnnoEditorEditorScreen").load('<?= caNavUrl($this->request, 'editor/representation_annotations', 'RepresentationAnnotationQuickAdd', 'Form', array('representation_id' => $representation_id, 'annotation_id' => '0')); ?>', {}, function() { 
 			jQuery(".caAnnoEditorPanel").css("overflow", "hidden"); 
 			jQuery(this).css("overflow", "hidden").block({message: null, theme: true, css: { opacity: 0.5 }}); 
 		});

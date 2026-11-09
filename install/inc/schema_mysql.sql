@@ -4757,6 +4757,7 @@ create table ca_editor_uis (
 	editor_code varchar(100) null,
 	color char(6) null,
 	icon longblob not null,
+    settings longtext not null,
 	
 	primary key 				(ui_id),
 	index i_user_id				(user_id),
@@ -5191,6 +5192,24 @@ create table ca_sets_x_anonymous_access (
 	unique index u_name				(set_id, name),
 	
    constraint fk_ca_sets_x_anonymous_access_set_id foreign key (set_id)
+      references ca_sets (set_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+
+/*==========================================================================*/
+create table ca_set_type_restrictions (
+   restriction_id                 int unsigned                   not null AUTO_INCREMENT,
+   table_num                      tinyint unsigned               not null,
+   type_id                        int unsigned,
+   set_id                          int unsigned                   not null,
+   include_subtypes               tinyint unsigned               not null default 0,
+   settings                       longtext                       not null,
+   `rank`                           smallint unsigned              not null default 0,
+   primary key (restriction_id),
+   
+   index i_set_id				(set_id),
+   index i_type_id				(type_id),
+   constraint fk_ca_set_type_restrictions_set_id foreign key (set_id)
       references ca_sets (set_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
@@ -8020,10 +8039,13 @@ create table ca_user_export_downloads (
 /*==========================================================================*/
 create table ca_schema_updates (
 	version_num		int unsigned not null,
+	modifier        int unsigned not null default 0,
 	datetime		int unsigned not null,
+	schema_name     char(20) not null default 'CORE',
 	
-	UNIQUE KEY u_version_num (version_num)
+	UNIQUE KEY u_version_num (schema_name, version_num, modifier),
+	KEY i_schema_name (schema_name)
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (213, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, modifier, datetime, schema_name) VALUES (216, 0, unix_timestamp(), 'CORE');

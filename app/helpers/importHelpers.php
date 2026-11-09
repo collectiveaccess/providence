@@ -96,7 +96,8 @@ function caProcessRefineryParents($ps_refinery_name, $ps_table, $pa_parents, $pa
 				$hier_delimiter[$index] = preg_quote($delim, "!");
 			}
 		}
-					
+		if(!$vs_name && !$vs_idno) { continue; }
+				
 		if(is_array($hier_delimiter)) {	
 			$name_hier = array_map(function($v) { return trim($v); }, preg_split("!(".join("|", $hier_delimiter).")!", $vs_name));
 			$idno_hier = array_map(function($v) { return trim($v); }, preg_split("!(".join("|", $hier_delimiter).")!", $vs_idno));							
@@ -394,8 +395,7 @@ function caProcessRefineryAttributes($pa_attributes, $pa_source_data, $pa_item, 
 						
 						$va_vals = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('delimiter' => $delimiter, 'reader' => $o_reader, 'applyImportItemSettings' => $apply_import_item_settings));
 
-						if (sizeof($va_vals) > 1) { $vb_is_repeating = true; }
-					
+						if ((sizeof($va_vals) > 1) || (sizeof($va_attrs))) { $vb_is_repeating = true; }
 						if ($vb_is_repeating) {
 							if (is_null($vn_num_repeats)) { $vn_num_repeats = sizeof($va_vals); }
 						
@@ -522,7 +522,6 @@ function caProcessRefineryAttributes($pa_attributes, $pa_source_data, $pa_item, 
 				 if ($o_log) { $o_log->logDebug(_t('[importHelpers:caProcessRefineryAttributes] Unhandled refinery %1 attribute %2: value was %3', $ps_refinery_name, $vs_element_code, print_r($va_attrs, true))); }
 			}
 		}
-		
 		return $va_attr_vals;
 	}
 	return null;
@@ -912,7 +911,6 @@ function caGenericImportSplitter($ps_refinery_name, $ps_item_prefix, $ps_table, 
 				// Set label
 				$va_val = [];       // values for current item
 				$vs_item = caProcessImportItemSettingsForValue($vs_item, $pa_item);	// apply replacement values
-				
 				$vs_laddered_type = null;
 				if (!($vs_item = trim($vs_item))) { 
 					if (is_array($va_parents) && (sizeof($va_parents) > 0)) {

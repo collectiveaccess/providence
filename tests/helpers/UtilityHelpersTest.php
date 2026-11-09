@@ -212,7 +212,7 @@ JSON;
         $pw = caGenerateRandomPassword(12);
         
         for($i=0; $i < 500; $i++) {
-			$this->assertEquals(20, strlen($pw), 'Password length does not confirm to policy');	// policy minimum is 20, so that is what we should get no matter what was passsed
+			$this->assertEquals(12, strlen($pw), 'Password length does not confirm to policy');	// policy minimum is 10, so that is what we should get no matter what was passsed
 			$this->assertTrue(ca_users::applyPasswordPolicy($pw), 'Password does not confirm to policy');
 		}
     }

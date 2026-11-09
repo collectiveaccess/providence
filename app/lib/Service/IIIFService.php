@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016-2025 Whirl-i-Gig
+ * Copyright 2016-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -53,12 +53,14 @@ class IIIFService {
 		}
 		$response->addHeader('Cache-Control', 'max-age=3600, private', true); // Cache all responses for 1 hour.
 
-		$va_path = array_filter(array_slice(explode("/", $request->getPathInfo()), 3), 'strlen');
-		$vs_key = $identifier."/".join("/", $va_path);
+		$path = array_filter(array_slice(explode("/", $request->getPathInfo()), 3), 'strlen');
+		$user_id = $request->getUserID();
+		$key = "{$identifier}/{$user_id}/".join("/", $path);
+		$ukey = "{$identifier}/{$user_id}";
 		
-		if ($vs_tile = CompositeCache::fetch($vs_key, 'IIIFTiles')) {
-		    $response->setContentType(CompositeCache::fetch($vs_key, 'IIIFTileTypes'));
-		    $response->addContent($vs_tile);
+		if (CompositeCache::contains($ukey, 'IIIFUserKeys') && ($tile = CompositeCache::fetch($key, 'IIIFTiles'))) {
+		    $response->setContentType(CompositeCache::fetch($key, 'IIIFTileTypes'));
+		    $response->addContent($tile);
 		    return true;
 		}
 		
@@ -66,40 +68,38 @@ class IIIFService {
 		// INFO: 		{scheme}://{server}{/prefix}/{identifier}/info.json
 		// IMAGE:		{scheme}://{server}{/prefix}/{identifier}/{region}/{size}/{rotation}/{quality}.{format}
 		
-		if (sizeof($va_path) == 0) { 
+		if (sizeof($path) == 0) { 
 			$response->setRedirect($request->getFullUrlPath()."/info.json");
 			return;
 		}
 		
-		$vb_cache = true;
-		$pb_is_info_request = false;
-		if (($ps_region = array_shift($va_path)) == 'info.json') {
-			$pb_is_info_request = true;
-			$vb_cache = false;
+		$cache = true;
+		$is_info_request = false;
+		if (($region = array_shift($path)) == 'info.json') {
+			$is_info_request = true;
+			$cache = false;
 		} else {
-			$ps_size = array_shift($va_path);
-			$ps_rotation = array_shift($va_path);
-			list($ps_quality, $ps_format) = explode('.', array_shift($va_path));
+			$size = array_shift($path);
+			$rotation = array_shift($path);
+			list($quality, $format) = explode('.', array_shift($path));
 		}
 		// Load image
-		$pa_identifier = explode(':', $identifier);
-		
-		list($ps_type, $pn_id, $page) = self::parseIdentifier($identifier);
+		list($type, $pn_id, $page) = self::parseIdentifier($identifier);
 
 		$vs_image_path = null;
 		$highlight = $request->getParameter('highlight', pString);
 		$highlight_md5 = $highlight ? md5($highlight) : '';
 		
 		$highlight_op = null;
-		if ($vb_cache && CompositeCache::contains($identifier.$highlight_md5, 'IIIFMediaInfo')) {
-			$va_cache = CompositeCache::fetch($identifier.$highlight_md5,'IIIFMediaInfo');
-			$va_sizes = $va_cache['sizes'];
-			$va_image_info = $va_cache['imageInfo'];
-			$va_tilepic_info = $va_cache['tilepicInfo'];
-			$va_versions = $va_cache['versions'];
-			$va_media_paths = $va_cache['mediaPaths'];
-			$vn_width = $va_cache['width'];
-			$vn_height = $va_cache['height'];
+		if ($cache && CompositeCache::contains($identifier.$highlight_md5, 'IIIFMediaInfo')) {
+			$cache = CompositeCache::fetch($identifier.$highlight_md5,'IIIFMediaInfo');
+			$sizes = $cache['sizes'];
+			$image_info = $cache['imageInfo'];
+			$tilepic_info = $cache['tilepicInfo'];
+			$versions = $cache['versions'];
+			$media_paths = $cache['mediaPaths'];
+			$width = $cache['width'];
+			$height = $cache['height'];
 		} else {
 			if($highlight) {
 				$tmp = explode(':', $identifier);
@@ -114,7 +114,7 @@ class IIIFService {
 					
 					$highlight_region = str_replace("xywh=", "", $tmp[1]);
 					$highlight_region_tmp = explode(',', $highlight_region);
-					$ps_region = $highlight_region;
+					$region = $highlight_region;
 					
 					$identifier = $base_identifier.':'.$page;
 					
@@ -135,7 +135,7 @@ class IIIFService {
 					if($highlight_region_tmp[0] < 0) { $highlight_region_tmp[0] = 0; }
 					if($highlight_region_tmp[1] < 0) { $highlight_region_tmp[1] = 0; }
 					
-					$ps_region = join(',', $highlight_region_tmp);
+					$region = join(',', $highlight_region_tmp);
 				}
 			}
 			$media = self::getMediaInstance($identifier, $request);
@@ -152,130 +152,131 @@ class IIIFService {
 			}
 			
 			$minfo = $t_media->getMediaInfo($vs_fldname);
-			$vn_width = (int)$minfo['INPUT']['WIDTH'];
-			$vn_height = (int)$minfo['INPUT']['HEIGHT'];
+			$width = (int)$minfo['INPUT']['WIDTH'];
+			$height = (int)$minfo['INPUT']['HEIGHT'];
 			
-			$va_sizes = IIIFService::getAvailableSizes($t_media, $vs_fldname, ['indexByVersion' => true]);
-			$va_image_info = IIIFService::imageInfo($t_media, $vs_fldname, $request);
-			$va_tilepic_info = $t_media->getMediaInfo($vs_fldname, 'tilepic');
-			$va_versions = $t_media->getMediaVersions($vs_fldname);
+			$sizes = IIIFService::getAvailableSizes($t_media, $vs_fldname, ['indexByVersion' => true]);
+			$image_info = IIIFService::imageInfo($t_media, $vs_fldname, $request);
+			$tilepic_info = $t_media->getMediaInfo($vs_fldname, 'tilepic');
+			$versions = $t_media->getMediaVersions($vs_fldname);
 			
-			$va_media_paths = [];
-			foreach($va_versions as $vs_version) {
-				$va_media_paths[$vs_version] = $t_media->getMediaPath($vs_fldname, $vs_version);
+			$media_paths = [];
+			foreach($versions as $vs_version) {
+				$media_paths[$vs_version] = $t_media->getMediaPath($vs_fldname, $vs_version);
 			}
 			
 			CompositeCache::save($identifier.$highlight_md5, [
-				'sizes' => $va_sizes,
-				'imageInfo' => $va_image_info,
-				'tilepicInfo' => $va_tilepic_info,
-				'versions' => $va_versions,
-				'mediaPaths' => $va_media_paths,
-				'width' => $vn_width,
-				'height' => $vn_height
+				'sizes' => $sizes,
+				'imageInfo' => $image_info,
+				'tilepicInfo' => $tilepic_info,
+				'versions' => $versions,
+				'mediaPaths' => $media_paths,
+				'width' => $width,
+				'height' => $height
 			],'IIIFMediaInfo');
 		}
 	
-		if ($pb_is_info_request) {
+		if ($is_info_request) {
 			// Return JSON-format IIIF metadata
 		    $response->setContentType('application/json');
 			header("Access-Control-Allow-Origin: *");
-			$response->addContent(caFormatJson(json_encode($va_image_info)));
+			$response->addContent(caFormatJson(json_encode($image_info)));
 			return true;
 		} else {
-			$va_operations = [];
+			$operations = [];
 			
 			if(is_array($highlight_op)) {
-				$va_operations[] = ['HIGHLIGHT' => $highlight_op];
+				$operations[] = ['HIGHLIGHT' => $highlight_op];
 			}
 			
 			// region
 			$is_cropped = false;
-			$va_region = IIIFService::calculateRegion($vn_width, $vn_height, $ps_region);
-			if (($va_region['width'] != $vn_width) && ($va_region['height'] != $vn_height)) {
-				$va_operations[] = ['CROP' => $va_region];
+			$region = IIIFService::calculateRegion($width, $height, $region);
+			if (($region['width'] != $width) && ($region['height'] != $height)) {
+				$operations[] = ['CROP' => $region];
 				$is_cropped = true;
 			}
 			
 			// size	
-			$va_dimensions = IIIFService::calculateSize($vn_width, $vn_height, $ps_size);
-			$va_operations[] = ['SCALE' => $va_dimensions];
+			$dimensions = IIIFService::calculateSize($width, $height, $size);
+			$operations[] = ['SCALE' => $dimensions];
 			
 			// Can we use a pre-generated tilepic tile for this request?
-			$vn_tile_width = $va_tilepic_info['PROPERTIES']['tile_width'];
-			$vn_tile_height = $va_tilepic_info['PROPERTIES']['tile_height'];
+			$tile_width = $tilepic_info['PROPERTIES']['tile_width'];
+			$tile_height = $tilepic_info['PROPERTIES']['tile_height'];
 		
 			if (
-				in_array('tilepic', $va_versions)
+				in_array('tilepic', $versions)
 				&&
 				!$highlight
 				&&
 				(
-					(($va_dimensions['width'] == $vn_tile_width) && ($va_dimensions['height'] == $vn_tile_height))
+					(($dimensions['width'] == $tile_width) && ($dimensions['height'] == $tile_height))
 					||
-					((($va_dimensions['width'] <= $vn_tile_width) || ($va_dimensions['height'] <= $vn_tile_height))) // && ($va_dimensions['mode'] == 'incomplete'))
+					((($dimensions['width'] <= $tile_width) || ($dimensions['height'] <= $tile_height))) // && ($dimensions['mode'] == 'incomplete'))
 				)
 			) {
-				$vn_scale_factor = ceil($va_region['width']/$va_dimensions['width']);						// magnification = width of region requested/width of returned tile
-				$vn_level = floor($va_tilepic_info['PROPERTIES']['layers'] - log($vn_scale_factor,2));		// tilepic layer # = total # layers  - num of layer with relevant magnification (layers are stored from smallest to largest)
+				$scale_factor = ceil($region['width']/$dimensions['width']);						// magnification = width of region requested/width of returned tile
+				$level = floor($tilepic_info['PROPERTIES']['layers'] - log($scale_factor,2));		// tilepic layer # = total # layers  - num of layer with relevant magnification (layers are stored from smallest to largest)
 		
-				$x = floor(($va_region['x'])/($vn_scale_factor * $vn_tile_width)); 							// scaled x-origin of tile
-				$y = floor(($va_region['y'])/($vn_scale_factor * $vn_tile_height));							// scaled y-origin of tile
+				$x = floor(($region['x'])/($scale_factor * $tile_width)); 							// scaled x-origin of tile
+				$y = floor(($region['y'])/($scale_factor * $tile_height));							// scaled y-origin of tile
 				
-				$vn_num_tiles_per_row = ceil(($vn_width/$vn_scale_factor)/$vn_tile_width);					// number of tiles per row for this layer/magnification
+				$num_tiles_per_row = ceil(($width/$scale_factor)/$tile_width);					// number of tiles per row for this layer/magnification
 				
 				// calculate # of tiles in each layer of the image
 				if (!CompositeCache::contains($identifier.$highlight_md5, 'IIIFTileCounts')) {
-					$va_tile_counts = [];
-					$vn_layer_width = $vn_width;
-					$vn_layer_height = $vn_height;
-					for($vn_l=$va_tilepic_info['PROPERTIES']['layers']; $vn_l > 0; $vn_l--) {
-						$va_tile_counts[$vn_l] = ceil($vn_layer_width/$vn_tile_width) * ceil($vn_layer_height/$vn_tile_height);
-						$vn_layer_width = ceil($vn_layer_width/2);
-						$vn_layer_height = ceil($vn_layer_height/2);
+					$tile_counts = [];
+					$layer_width = $width;
+					$layer_height = $height;
+					for($l=$tilepic_info['PROPERTIES']['layers']; $l > 0; $l--) {
+						$tile_counts[$l] = ceil($layer_width/$tile_width) * ceil($layer_height/$tile_height);
+						$layer_width = ceil($layer_width/2);
+						$layer_height = ceil($layer_height/2);
 					}
-					CompositeCache::save($identifier.$highlight_md5, $va_tile_counts, 'IIIFTileCounts');
+					CompositeCache::save($identifier.$highlight_md5, $tile_counts, 'IIIFTileCounts');
 				} else {
-					$va_tile_counts = CompositeCache::fetch($identifier.$highlight_md5, 'IIIFTileCounts');
+					$tile_counts = CompositeCache::fetch($identifier.$highlight_md5, 'IIIFTileCounts');
 				}
 				
 				// calculate tile offset to required layer
-				$vn_tile_offset = 0;
-				for($vn_i=1; $vn_i < $vn_level; $vn_i++) {
-					$vn_tile_offset += $va_tile_counts[$vn_i];
+				$tile_offset = 0;
+				for($i=1; $i < $level; $i++) {
+					$tile_offset += $tile_counts[$i];
 				}
 				
 				// tile number = offset to layer + number of tiles in rows above region + number of tiles from left side of image
-				$vn_tile = ceil($y * $vn_num_tiles_per_row) + ceil($x) + 1;
-				$vn_tile_num = $vn_tile_offset + $vn_tile;
+				$tile = ceil($y * $num_tiles_per_row) + ceil($x) + 1;
+				$tile_num = $tile_offset + $tile;
 				
-				$response->setContentType($va_tilepic_info['PROPERTIES']['tile_mimetype']);
+				$response->setContentType($tilepic_info['PROPERTIES']['tile_mimetype']);
 				
-				$vs_tile = TilepicParser::getTileQuickly($va_media_paths['tilepic'], $vn_tile_num, true);
-				CompositeCache::save($vs_key, $vs_tile, 'IIIFTiles');
-				CompositeCache::save($vs_key, $va_tilepic_info['PROPERTIES']['tile_mimetype'], 'IIIFTileTypes');
-				$response->addContent($vs_tile);
+				$tile = TilepicParser::getTileQuickly($media_paths['tilepic'], $tile_num, true);
+				CompositeCache::save($key, $tile, 'IIIFTiles');
+				CompositeCache::save($ukey, 1, 'IIIFUserKeys');
+				CompositeCache::save($key, $tilepic_info['PROPERTIES']['tile_mimetype'], 'IIIFTileTypes');
+				$response->addContent($tile);
 				return true;
 			}
 			
 			// rotate
-			$va_rotation = IIIFService::calculateRotation($vn_width, $vn_height, $ps_rotation);
-			if ($va_rotation['angle'] != 0) {
-				$va_operations[] = ['ROTATE' => $va_rotation];
+			$rotation = IIIFService::calculateRotation($width, $height, $rotation);
+			if ($rotation['angle'] != 0) {
+				$operations[] = ['ROTATE' => $rotation];
 			}
-			if ($va_rotation['reflection']) {
-				$va_operations[] = ['FLIP' => ['direction' => 'horizontal']];
+			if ($rotation['reflection']) {
+				$operations[] = ['FLIP' => ['direction' => 'horizontal']];
 			}
 			
 			// quality
-			$vs_quality = IIIFService::calculateQuality($vn_width, $vn_height, $ps_quality);
+			$vs_quality = IIIFService::calculateQuality($width, $height, $quality);
 			if ($vs_quality && ($vs_quality != 'default')) {
-				$va_operations[] = ['SET' => ['colorspace' => $vs_quality]];
+				$operations[] = ['SET' => ['colorspace' => $vs_quality]];
 			}
 			
 			// format
-			if (!($vs_mimetype = IIIFService::calculateFormat($vn_width, $vn_height, $ps_format))) {
-				$response->setHTTPResponseCode(400, _t('Unsupported format %1', $ps_format));
+			if (!($vs_mimetype = IIIFService::calculateFormat($width, $height, $format))) {
+				$response->setHTTPResponseCode(400, _t('Unsupported format %1', $format));
 				return false;
 			}
 			
@@ -283,23 +284,23 @@ class IIIFService {
 			// find smallest size that is larger than the target width/height
 			// smaller file = less processing time
 			$vs_target_version = null;
-			$vn_d = null;
-			foreach($va_sizes as $vs_version => $va_size) {
-				$dw = $va_size['width'] - ($is_cropped ? $vn_width : $va_dimensions['width']);
-				$dh = $va_size['height'] - ($is_cropped ? $vn_height : $va_dimensions['height']);
+			$d = null;
+			foreach($sizes as $vs_version => $size) {
+				$dw = $size['width'] - ($is_cropped ? $width : $dimensions['width']);
+				$dh = $size['height'] - ($is_cropped ? $height : $dimensions['height']);
 				if (($dw < 0) || ($dh < 0)) { continue; }
 				$d = sqrt(pow($dw, 2) + pow($dh,2));
 				
-				if (is_null($vn_d) || ($d < $vn_d)) { $vn_d = $d; $vs_target_version = $vs_version; }
+				if (is_null($d) || ($d < $d)) { $d = $d; $vs_target_version = $vs_version; }
 			}
 			
 			if ($vs_target_version) {
-				$vs_image_path = $va_media_paths[$vs_target_version];
+				$vs_image_path = $media_paths[$vs_target_version];
 			} else {
-				$vs_image_path = caGetOption(['original', 'large', 'page_preview', 'large_preview'], $va_media_paths, null);
+				$vs_image_path = caGetOption(['original', 'large', 'page_preview', 'large_preview'], $media_paths, null);
 			}
 			
-			$vs_output_path = IIIFService::processImage($vs_image_path, $vs_mimetype, $va_operations, $request);
+			$vs_output_path = IIIFService::processImage($vs_image_path, $vs_mimetype, $operations, $request);
 			
 			// TODO: should we be caching output?
 			$response->setContentType($vs_mimetype);
@@ -322,14 +323,14 @@ class IIIFService {
 	/**
 	 *
 	 */
-	private static function processImage(string $ps_image_path, string $ps_mimetype, array $pa_operations, RequestHTTP $request) {
+	private static function processImage(string $image_path, string $mimetype, array $operations, RequestHTTP $request) {
 		$o_media  = new Media();
-		if (!$o_media->read($ps_image_path)) { 
+		if (!$o_media->read($image_path)) { 
 			throw new Exception("Cannot open file");
 		}
 		
-		foreach($pa_operations as $vn_i => $va_operation) {
-			foreach($va_operation as $vs_operation => $va_params) {
+		foreach($operations as $i => $operation) {
+			foreach($operation as $vs_operation => $params) {
 				switch($vs_operation) {
 					case 'SCALE':
 					case 'CROP':
@@ -337,109 +338,109 @@ class IIIFService {
 					case 'SET':
 					case 'FLIP':
 					case 'HIGHLIGHT':
-						$o_media->transform($vs_operation, $va_params);
+						$o_media->transform($vs_operation, $params);
 						break;
 				}
 			}
 		}
 		
-		$o_media->transform('SET', ['mimetype' => $ps_mimetype]);
+		$o_media->transform('SET', ['mimetype' => $mimetype]);
 		
-		return $o_media->write(caGetTempFileName("caIIIF"), $ps_mimetype);
+		return $o_media->write(caGetTempFileName("caIIIF"), $mimetype);
 	}
 	# -------------------------------------------------------
 	/**
 	 * Calculate target image size based upon IIIF {size} value
 	 *
-	 * @param int $pn_image_width Width of source image
-	 * @param int $pn_image_height Height of source image
-	 * @param $ps_size IIIF size value 
+	 * @param int $image_width Width of source image
+	 * @param int $image_height Height of source image
+	 * @param $size IIIF size value 
 	 *
 	 * @return array Array with 'width' and 'height' keys containing calculated width and height
 	 */
-	private static function calculateSize(int $pn_image_width, int $pn_image_height, string $ps_size) {
-		if (preg_match("!^([\d]+),$!", $ps_size, $va_matches)) {				// w,
-			$vn_width = (int)$va_matches[1];
-			$vn_height = (int)($pn_image_height * ($vn_width/$pn_image_width));
+	private static function calculateSize(int $image_width, int $image_height, string $size) {
+		if (preg_match("!^([\d]+),$!", $size, $matches)) {				// w,
+			$width = (int)$matches[1];
+			$height = (int)($image_height * ($width/$image_width));
 			$vs_mode = 'incomplete';
-		} elseif (preg_match("!^,([\d]+)$!", $ps_size, $va_matches)) {			// ,h
-			$vn_height = (int)$va_matches[1];
-			$vn_width = (int)($pn_image_width * ($vn_height/$pn_image_height));
+		} elseif (preg_match("!^,([\d]+)$!", $size, $matches)) {			// ,h
+			$height = (int)$matches[1];
+			$width = (int)($image_width * ($height/$image_height));
 			$vs_mode = 'incomplete';
-		} elseif (preg_match("!^([\d]+),([\d]+)$!", $ps_size, $va_matches)) {	// w,h
-			$vn_width = (int)$va_matches[1];
-			$vn_height = (int)$va_matches[2];
+		} elseif (preg_match("!^([\d]+),([\d]+)$!", $size, $matches)) {	// w,h
+			$width = (int)$matches[1];
+			$height = (int)$matches[2];
 			$vs_mode = 'full';
-		} elseif (preg_match("!^pct:([\d]+)$!", $ps_size, $va_matches)) {		// pct:n
-			$vn_pct = (int)$va_matches[1];
+		} elseif (preg_match("!^pct:([\d]+)$!", $size, $matches)) {		// pct:n
+			$pct = (int)$matches[1];
 			
-			$vn_width = (int)($pn_image_width * ($vn_pct/100));
-			$vn_height = (int)($pn_image_height * ($vn_pct/100));
+			$width = (int)($image_width * ($pct/100));
+			$height = (int)($image_height * ($pct/100));
 			$vs_mode = 'percent';
-		} elseif (preg_match("/^!([\d]+),([\d]+)$/", $ps_size, $va_matches)) {	// !w,h
-			$vn_scale_factor_w = (int)$va_matches[1]/$pn_image_width;
-			$vn_scale_factor_h = (int)$va_matches[2]/$pn_image_height;
-			$vn_width = (int)($pn_image_width * (($vn_scale_factor_w < $vn_scale_factor_h) ? $vn_scale_factor_w : $vn_scale_factor_h)); 
-			$vn_height = (int)($pn_image_height * (($vn_scale_factor_w < $vn_scale_factor_h) ? $vn_scale_factor_w : $vn_scale_factor_h));	
+		} elseif (preg_match("/^!([\d]+),([\d]+)$/", $size, $matches)) {	// !w,h
+			$scale_factor_w = (int)$matches[1]/$image_width;
+			$scale_factor_h = (int)$matches[2]/$image_height;
+			$width = (int)($image_width * (($scale_factor_w < $scale_factor_h) ? $scale_factor_w : $scale_factor_h)); 
+			$height = (int)($image_height * (($scale_factor_w < $scale_factor_h) ? $scale_factor_w : $scale_factor_h));	
 			$vs_mode = 'fit';
 		} else { 																// full
-			$vn_width = $pn_image_width;
-			$vn_height = $pn_image_height;
+			$width = $image_width;
+			$height = $image_height;
 			$vs_mode = 'full';
 		}
-		return ['width' => $vn_width, 'height' => $vn_height, 'mode' => $vs_mode];
+		return ['width' => $width, 'height' => $height, 'mode' => $vs_mode];
 	}
 	# -------------------------------------------------------
 	/**
 	 * Calculate target image region based upon IIIF {region} value
 	 *
-	 * @param int $pn_image_width Width of source image
-	 * @param int $pn_image_height Height of source image
-	 * @param $ps_region IIIF region value 
+	 * @param int $image_width Width of source image
+	 * @param int $image_height Height of source image
+	 * @param $region IIIF region value 
 	 *
 	 * @return array Array with 'x', 'y', 'width' and 'height' keys containing calculated offsets, width and height
 	 */
-	private static function calculateRegion(int $pn_image_width, int $pn_image_height, string $ps_region) {
-		if (preg_match("!^([\d]+),([\d]+),([\d]+),([\d]+)$!", $ps_region, $va_matches)) {				// x,y,w,h
-			$vn_x = $va_matches[1];
-			$vn_y = $va_matches[2];
-			$vn_w = $va_matches[3];
-			$vn_h = $va_matches[4];
-		} elseif (preg_match("!^pct:([\d]+),([\d]+),([\d]+),([\d]+)$!", $ps_region, $va_matches)) {		// pct:x,y,w,h
-			$vn_x = (int)(($va_matches[1]/100) * $pn_image_width);
-			$vn_y = (int)(($va_matches[2]/100) * $pn_image_height);
-			$vn_w = (int)(($va_matches[3]/100) * $pn_image_width);
-			$vn_h = (int)(($va_matches[4]/100) * $pn_image_height);
+	private static function calculateRegion(int $image_width, int $image_height, string $region) {
+		if (preg_match("!^([\d]+),([\d]+),([\d]+),([\d]+)$!", $region, $matches)) {				// x,y,w,h
+			$x = $matches[1];
+			$y = $matches[2];
+			$w = $matches[3];
+			$h = $matches[4];
+		} elseif (preg_match("!^pct:([\d]+),([\d]+),([\d]+),([\d]+)$!", $region, $matches)) {		// pct:x,y,w,h
+			$x = (int)(($matches[1]/100) * $image_width);
+			$y = (int)(($matches[2]/100) * $image_height);
+			$w = (int)(($matches[3]/100) * $image_width);
+			$h = (int)(($matches[4]/100) * $image_height);
 		} else { 																						// full
-			$vn_x = 0; $vn_w = $pn_image_width;															// full
-			$vn_y = 0; $vn_h = $pn_image_height;
+			$x = 0; $w = $image_width;															// full
+			$y = 0; $h = $image_height;
 		}
 		
-		return ['x' => $vn_x, 'y' => $vn_y, 'width' => $vn_w, 'height' => $vn_h];
+		return ['x' => $x, 'y' => $y, 'width' => $w, 'height' => $h];
 	}
 	# -------------------------------------------------------
 	/**
 	 * Calculate target image rotation and/or reflection based upon IIIF {rotation} value
 	 *
-	 * @param int $pn_image_width Width of source image
-	 * @param int $pn_image_height Height of source image
-	 * @param $ps_rotation IIIF rotation value 
+	 * @param int $image_width Width of source image
+	 * @param int $image_height Height of source image
+	 * @param $rotation IIIF rotation value 
 	 *
 	 * @return array Array with 'angle' and 'reflection' values
 	 */
-	private static function calculateRotation(int $pn_image_width, int $pn_image_height, ?string $ps_rotation) {
-		if (preg_match("!^([\d]+)$!", $ps_rotation, $va_matches)) {				// n
-			$vn_rotation = (float)$va_matches[1];
-			$vb_reflection = false;
-		} elseif (preg_match("/^!([\d]+)$/", $ps_rotation, $va_matches)) {		// !n
-			$vn_rotation = (float)$va_matches[1];
-			$vb_reflection = true;
+	private static function calculateRotation(int $image_width, int $image_height, ?string $rotation) {
+		if (preg_match("!^([\d]+)$!", $rotation, $matches)) {				// n
+			$rotation = (float)$matches[1];
+			$reflection = false;
+		} elseif (preg_match("/^!([\d]+)$/", $rotation, $matches)) {		// !n
+			$rotation = (float)$matches[1];
+			$reflection = true;
 		} else { 																// invalid/empty
-			$vn_rotation = 0;
-			$vb_reflection = false;
+			$rotation = 0;
+			$reflection = false;
 		}
 		
-		return ['angle' => (int)$vn_rotation, 'reflection' => (bool)$vb_reflection];
+		return ['angle' => (int)$rotation, 'reflection' => (bool)$reflection];
 	}
 	# -------------------------------------------------------
 	/**
@@ -447,46 +448,46 @@ class IIIFService {
 	 *
 	 * @param int $pn_image_width Width of source image
 	 * @param int $pn_image_height Height of source image
-	 * @param $ps_quality IIIF quality value 
+	 * @param $quality IIIF quality value 
 	 *
 	 * @return string Quality specifier; one of color, grey, bitonal, default
 	 */
-	private static function calculateQuality(int $pn_image_width, int $pn_image_height, string $ps_quality) {
-		$ps_quality = strtolower($ps_quality);
-		if (!in_array($ps_quality, ['color', 'grey', 'bitonal', 'default'])) { $ps_quality = 'default'; }
+	private static function calculateQuality(int $pn_image_width, int $pn_image_height, string $quality) {
+		$quality = strtolower($quality);
+		if (!in_array($quality, ['color', 'grey', 'bitonal', 'default'])) { $quality = 'default'; }
 		
-		return $ps_quality;
+		return $quality;
 	}
 	# -------------------------------------------------------
 	/**
 	 * Calculate target image format using IIIF {format} value
 	 *
-	 * @param int $pn_image_width Width of source image
-	 * @param int $pn_image_height Height of source image
-	 * @param $ps_format IIIF format value 
+	 * @param int $image_width Width of source image
+	 * @param int $image_height Height of source image
+	 * @param $format IIIF format value 
 	 *
 	 * @return string mimetype for format, or null if format is unsupported
 	 */
-	private static function calculateFormat(int $pn_image_width, int $pn_image_height, ?string $ps_format) {
-		$ps_format = strtolower($ps_format);
+	private static function calculateFormat(int $image_width, int $image_height, ?string $format) {
+		$format = strtolower($format);
 		
-		$vs_mimetype = null;
-		switch($ps_format) {
+		$mimetype = null;
+		switch($format) {
 			case 'jpg':
-				$vs_mimetype = 'image/jpeg';
+				$mimetype = 'image/jpeg';
 				break;
 			case 'tif':
-				$vs_mimetype = 'image/tiff';
+				$mimetype = 'image/tiff';
 				break;
 			case 'png':
-				$vs_mimetype = 'image/png';
+				$mimetype = 'image/png';
 				break;
 			case 'gif':
-				$vs_mimetype = 'image/gif';
+				$mimetype = 'image/gif';
 				break;
 		}
 		
-		return $vs_mimetype;
+		return $mimetype;
 	}
 	# -------------------------------------------------------
 	/**
@@ -494,37 +495,37 @@ class IIIFService {
 	 *
 	 * @param int $pn_image_width Width of source image
 	 * @param int $pn_image_height Height of source image
-	 * @param $ps_format IIIF format value 
+	 * @param $format IIIF format value 
 	 *
 	 * @return array IIIF image information response
 	 */
-	private static function imageInfo($pt_media, string $ps_fldname, RequestHTTP $request) {
-		$va_sizes = IIIFService::getAvailableSizes($pt_media, $ps_fldname);
-		$va_tilepic_info = $pt_media->getMediaInfo($ps_fldname, 'tilepic');
+	private static function imageInfo($pt_media, string $fldname, RequestHTTP $request) {
+		$sizes = IIIFService::getAvailableSizes($pt_media, $fldname);
+		$tilepic_info = $pt_media->getMediaInfo($fldname, 'tilepic');
 		
-		$va_scales = [];
-		for($i=0; $i < $va_tilepic_info['PROPERTIES']['layers']; $i++) {
-			$va_scales[] = pow(2,$i);
+		$scales = [];
+		for($i=0; $i < $tilepic_info['PROPERTIES']['layers']; $i++) {
+			$scales[] = pow(2,$i);
 		}
-		$va_tiles = ['width' => $va_tilepic_info['PROPERTIES']['tile_width'], 'height' => $va_tilepic_info['PROPERTIES']['tile_height'], 'scaleFactors' => $va_scales];
+		$tiles = ['width' => $tilepic_info['PROPERTIES']['tile_width'], 'height' => $tilepic_info['PROPERTIES']['tile_height'], 'scaleFactors' => $scales];
 
 		$vs_base_url = $request->config->get('site_host').$request->getFullUrlPath();
 		
-		$va_tmp = explode("/", $vs_base_url);
-		if ($vn_i = array_search("service.php", $va_tmp)) {
-			$va_tmp = array_slice($va_tmp, 0, $vn_i + 3);
-		} elseif ($vn_i = array_search("service", $va_tmp)) {
-			$va_tmp = array_slice($va_tmp, 0, $vn_i + 3);
+		$tmp = explode("/", $vs_base_url);
+		if ($i = array_search("service.php", $tmp)) {
+			$tmp = array_slice($tmp, 0, $i + 3);
+		} elseif ($i = array_search("service", $tmp)) {
+			$tmp = array_slice($tmp, 0, $i + 3);
 		}
 		
-		$vs_base_url = join('/', $va_tmp);
+		$vs_base_url = join('/', $tmp);
 		
-		$va_possible_formats = ['jpg', 'tif', 'tiff', 'png', 'gif'];
+		$possible_formats = ['jpg', 'tif', 'tiff', 'png', 'gif'];
 		$o_media  = new Media();
 		
 		$path = null;
 		foreach(['original', 'large', 'page_preview', 'large_preview'] as $version) {
-			if(($path = $pt_media->getMediaPath($ps_fldname, $version)) && file_exists($path)) { break; }
+			if(($path = $pt_media->getMediaPath($fldname, $version)) && file_exists($path)) { break; }
 		}
 		
 		if(!$path) { throw new ApplicationException(_t('No media path')); }
@@ -533,25 +534,25 @@ class IIIFService {
 			throw new Exception("Cannot open file");
 		}
 		
-		$va_formats = [];
+		$formats = [];
 		foreach($o_media->getOutputFormats() as $vs_mimetype => $vs_ext) {
-			if (in_array($vs_ext, $va_possible_formats)) { 
-				$va_formats[] = ($vs_ext === 'tiff') ? 'tif' : $vs_ext; 
+			if (in_array($vs_ext, $possible_formats)) { 
+				$formats[] = ($vs_ext === 'tiff') ? 'tif' : $vs_ext; 
 			}
 		}
-		$minfo = $pt_media->getMediaInfo($ps_fldname);
-		$va_resp = [
+		$minfo = $pt_media->getMediaInfo($fldname);
+		$resp = [
 			'@context' => 'http://iiif.io/api/image/2/context.json',
 			'@id' => $vs_base_url,
 			'protocol' => 'http://iiif.io/api/image',
 			'width' => (int)$minfo['INPUT']['WIDTH'],
 			'height' => (int)$minfo['INPUT']['HEIGHT'],
-			'sizes' => $va_sizes,
-			'tiles' => [$va_tiles],
+			'sizes' => $sizes,
+			'tiles' => [$tiles],
 			'profile' => [
 				"http://iiif.io/api/image/2/level2.json",
 				[
-					'formats' => $va_formats,
+					'formats' => $formats,
 					'qualities' =>  ['color', 'grey', 'bitonal'],
 					'supports' => [
 						'mirroring', 'rotationArbitrary', 'regionByPct', 'regionByPx', 'rotationBy90s',
@@ -562,62 +563,62 @@ class IIIFService {
 			],
 			"maxWidth" => (int)$minfo['INPUT']['WIDTH']
 		];
-		return $va_resp;
+		return $resp;
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
-	private static function getAvailableSizes($pt_media, string $ps_fldname, ?array $pa_options=null) {
-		$va_sizes = [];
-		foreach($pt_media->getMediaVersions($ps_fldname) as $vs_version) {
-			if ($vs_version == 'tilepic') { continue; }
-			$w = (int)$pt_media->getMediaInfo($ps_fldname, $vs_version, 'WIDTH');
-			$h = (int)$pt_media->getMediaInfo($ps_fldname, $vs_version, 'HEIGHT');
+	private static function getAvailableSizes($media, string $fldname, ?array $options=null) {
+		$sizes = [];
+		foreach($media->getMediaVersions($fldname) as $version) {
+			if ($version == 'tilepic') { continue; }
+			$w = (int)$media->getMediaInfo($fldname, $version, 'WIDTH');
+			$h = (int)$media->getMediaInfo($fldname, $version, 'HEIGHT');
 			if(($w <= 0) || ($h <= 0)) { continue; }
 			
-			$va_sizes[$vs_version] = ['width' => $w, 'height' => $h];
+			$sizes[$version] = ['width' => $w, 'height' => $h];
 		}
-		return caGetOption('indexByVersion', $pa_options, false) ? $va_sizes : array_values($va_sizes);
+		return caGetOption('indexByVersion', $options, false) ? $sizes : array_values($sizes);
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
 	public static function parseIdentifier(string $identifier) {
-		$pa_identifier = explode(':', $identifier);
+		$identifier_bits = explode(':', $identifier);
 		
-		if (sizeof($pa_identifier) > 1) {
-			$ps_type = $pa_identifier[0];
-			$pn_id = (int)$pa_identifier[1];
-			$page = isset($pa_identifier[2]) ? (int)$pa_identifier[2] : null;
+		if (sizeof($identifier_bits) > 1) {
+			$type = $identifier_bits[0];
+			$id = (int)$identifier_bits[1];
+			$page = isset($identifier_bits[2]) ? (int)$identifier_bits[2] : null;
 		} else{
-			$pn_id = (int)$pa_identifier[0];
-			$page = isset($pa_identifier[1]) ? (int)$pa_identifier[1] : null;
+			$id = (int)$identifier_bits[0];
+			$page = isset($identifier_bits[1]) ? (int)$identifier_bits[1] : null;
 		}
-		return [$ps_type, $pn_id, $page];
+		return [$type, $id, $page];
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
 	public static function getMediaInstance(string $identifier, RequestHTTP $request) {
-		list($ps_type, $pn_id, $page) = self::parseIdentifier($identifier);
+		list($type, $id, $page) = self::parseIdentifier($identifier);
 		
-		switch($ps_type) {
+		switch($type) {
 			case 'attribute':
 				if ($page) {
-					$t_attr_val = new ca_attribute_values($pn_id);
+					$t_attr_val = new ca_attribute_values($id);
 					$t_attr_val->useBlobAsMediaField(true);
 					$t_instance = new ca_attribute_value_multifiles();
-					$t_instance->load(['value_id' => $pn_id, 'resource_path' => $page]);
+					$t_instance->load(['value_id' => $id, 'resource_path' => $page]);
 					$t_attr = new ca_attributes($t_attr_val->get('attribute_id'));
-					$vs_fldname = 'media';
+					$fldname = 'media';
 				} 
 				if (!$t_instance || !$t_instance->getPrimaryKey()) {
-					$t_instance = new ca_attribute_values($pn_id);
+					$t_instance = new ca_attribute_values($id);
 					$t_instance->useBlobAsMediaField(true);
-					$vs_fldname = 'value_blob';
+					$fldname = 'value_blob';
 					
 					$t_attr = new ca_attributes($t_instance->get('attribute_id'));
 				}
@@ -641,12 +642,12 @@ class IIIFService {
 			case 'representation':
 				if ($page) {
 					$t_instance = new ca_object_representation_multifiles();
-					$t_instance->load(['representation_id' => $pn_id, 'resource_path' => $page]);
+					$t_instance->load(['representation_id' => $id, 'resource_path' => $page]);
 				}
 				if (!$t_instance || !$t_instance->getPrimaryKey()) {
-					$t_instance = new ca_object_representations($pn_id);
+					$t_instance = new ca_object_representations($id);
 				}
-				$vs_fldname = 'media';
+				$fldname = 'media';
 			
 				if (!$t_instance->getPrimaryKey()) {
 					// doesn't exist
@@ -658,8 +659,8 @@ class IIIFService {
 				} 
 				break;
 			default:
-				if($t_instance = Datamodel::getInstance($ps_type, true)) {
-					$t_instance->load($pn_id);
+				if($t_instance = Datamodel::getInstance($type, true)) {
+					$t_instance->load($id);
 					if (!$t_instance->getPrimaryKey()) {
 						// doesn't exist
 						throw new IIIFAccessException(_t('Invalid identifier'), 400);
@@ -669,14 +670,14 @@ class IIIFService {
 						throw new IIIFAccessException(_t('Access denied'), 403);
 					} 
 					
-					$vs_fldname = null;
+					$fldname = null;
 				} else {
 					throw new IIIFAccessException(_t('Invalid identifier type'), 400);
 				}
 				break;
 		}
 		
-		return ['instance' => $t_instance, 'field' => $vs_fldname, 'type' => $ps_type, 'id' => $pn_id, 'page' => $page];
+		return ['instance' => $t_instance, 'field' => $fldname, 'type' => $type, 'id' => $id, 'page' => $page];
 	}
 	# -------------------------------------------------------
 	/**

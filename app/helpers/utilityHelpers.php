@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2025 Whirl-i-Gig
+ * Copyright 2007-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -260,6 +260,7 @@ function caFileIsIncludable($ps_file) {
 		if(caGetOption('includeRoot', $pa_options, false)) {
 			$va_file_list[$dir] = true;
 		}
+		$pa_options['includeRoot'] = false;
 		$limit = caGetOption('limit', $pa_options, null);
 		
 		if($va_paths = @scandir($dir, 0)) {
@@ -289,7 +290,9 @@ function caFileIsIncludable($ps_file) {
 						$va_file_list["{$dir}/{$item}"] = true;
 					}
 					if ($pb_recursive && $vb_is_dir) {
-						$va_file_list = array_merge($va_file_list, array_flip(caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files, false, $pb_include_directories)));
+						foreach(caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files, false, $pb_include_directories, $pa_options) as $path) {
+							$va_file_list[$path] = true;
+						}
 					} else {
 						if (!$vb_is_dir) {
 							$va_file_list["{$dir}/{$item}"] = true;
@@ -373,7 +376,9 @@ function caFileIsIncludable($ps_file) {
 			while (false !== ($item = readdir($handle))) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item[0] !== '.'))) {
 					if (is_dir("{$dir}/{$item}")) {
-						$va_dir_list = array_merge($va_dir_list, caGetSubDirectoryList("{$dir}/{$item}", true, $pb_include_hidden_files));
+						foreach(caGetSubDirectoryList("{$dir}/{$item}", true, $pb_include_hidden_files) as $path => $count) {
+							$va_dir_list[$path] = $count;
+						}
 					}  else {
 						$vn_file_count++;
 					}
@@ -3314,31 +3319,31 @@ function caFileIsIncludable($ps_file) {
 	}
 	function caQueryExternalWebservice($ps_url) {
 		if(!isURL($ps_url)) { return false; }
-		$o_conf = Configuration::load();
+		$config = Configuration::load();
 
-		$vo_curl = curl_init();
-		curl_setopt($vo_curl, CURLOPT_URL, $ps_url);
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $ps_url);
 
-		if($vs_proxy = $o_conf->get('web_services_proxy_url')){ /* proxy server is configured */
-			curl_setopt($vo_curl, CURLOPT_PROXY, $vs_proxy);
+		if($vs_proxy = $config->get('web_services_proxy_url')){ /* proxy server is configured */
+			curl_setopt($ch, CURLOPT_PROXY, $vs_proxy);
 		}
 
-		curl_setopt($vo_curl, CURLOPT_SSL_VERIFYHOST, 0);
-		curl_setopt($vo_curl, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($vo_curl, CURLOPT_FOLLOWLOCATION, true);
-		curl_setopt($vo_curl, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($vo_curl, CURLOPT_AUTOREFERER, true);
-		curl_setopt($vo_curl, CURLOPT_CONNECTTIMEOUT, 120);
-		curl_setopt($vo_curl, CURLOPT_TIMEOUT, 120);
-		curl_setopt($vo_curl, CURLOPT_MAXREDIRS, 10);
-		curl_setopt($vo_curl, CURLOPT_USERAGENT, 'CollectiveAccess web service lookup');
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 120);
+		curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+		curl_setopt($ch, CURLOPT_USERAGENT, $config->get('external_webservice_useragent'));
 
-		$vs_content = curl_exec($vo_curl);
+		$vs_content = curl_exec($ch);
 
-		if(($code = curl_getinfo($vo_curl, CURLINFO_HTTP_CODE)) !== 200) {
-			throw new WebServiceError(_t('An error occurred while querying an external webservice'). _t(" at %1 [HTTP code was %2]", $ps_url, $code). " ". print_r(curl_getinfo($vo_curl), true));
+		if(($code = curl_getinfo($ch, CURLINFO_HTTP_CODE)) !== 200) {
+			throw new WebServiceError(_t('An error occurred while querying an external webservice'). _t(" at %1 [HTTP code was %2]", $ps_url, $code). " ". print_r(curl_getinfo($ch), true));
 		}
-		curl_close($vo_curl);
+		curl_close($ch);
 		return $vs_content;
 	}
 	# ----------------------------------------
@@ -4793,12 +4798,14 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $dest File path to write data to. If omitted a temporary file will be created. [Default is null]
 	 * @param array $options Options include:
 	 *		mimetypes = MIME type, or list of MIME types expected in response to URL. If content type of response does ot match the MIME type(s) specified here a UrlFetchException is thrown.
-	 * 
+	 * 		headers = Array of HTTP headers to set in request. [Default is null]
 	 * @throws UrlFetchException
 	 * @return string Path to file
 	 */
 	function caFetchFileFromUrl($url, $dest=null, array $options=null) {
 		$tmp_file = $dest ? $dest : tempnam(__CA_TEMP_DIR__, 'caUrlCopy');
+		$headers = caGetOption('headers', $options, null);
+		$config = Configuration::load();
 		
 		$r_outgoing_fp = @fopen($tmp_file, 'w');
 		if(!$r_outgoing_fp) {
@@ -4811,6 +4818,9 @@ function caFileIsIncludable($ps_file) {
 			$ch->setopt(CURLCMDOPT_METHOD, 'GET');
 			$ch->setopt(CURLCMDOPT_HEADER, false);
 			$ch->setopt(CURLCMDOPT_ENGINE, $curl_path);
+			$ch->setopt(CURLCMDOPT_USERAGENT, $config->get('external_webservice_useragent'));
+			
+			if(is_array($headers) && sizeof($headers)) { $ch->setopt(CURLCMDOPT_HTTPHEADER, $headers); }
 			
 			$ch->execStream();
 			
@@ -4820,12 +4830,13 @@ function caFileIsIncludable($ps_file) {
 			fclose($r_outgoing_fp);
 			return $tmp_file;
 		}
-
-
+		
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_FILE, $r_outgoing_fp);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 240);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($ch, CURLOPT_USERAGENT, $config->get('external_webservice_useragent'));
+		if(is_array($headers) && sizeof($headers)) { curl_setopt($ch, CURLOPT_HTTPHEADER, $headers); }
 		curl_exec($ch);	
  
 		if(curl_errno($ch)){
@@ -4987,7 +4998,9 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 */
 	function caGetHTMLPurifier(?array $options=null) : HTMLPurifier {
-		$config = HTMLPurifier_Config::createDefault();
+		#$config = HTMLPurifier_Config::createDefault();
+		# Swapping out config with html5 compatiable config
+		$config = HTMLPurifier_HTML5Config::createDefault();
 		$config->set('URI.DisableExternalResources', !Configuration::load()->get('purify_allow_external_references'));
 		$config->set('Cache.SerializerPath', Configuration::load()->get('purify_serializer_path'));
 		return new HTMLPurifier($config); 
@@ -5220,6 +5233,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caUrlExists(string $url, ?array $options=null) : bool { 
 		$allow_redirects = caGetOption('allowRedirects', $options, true);
+		$config = Configuration::load();
 		
 		if($curl_path = caCurlImpersonateInstalled()) {
 			$ch = new CurlImpersonate\CurlImpersonate();
@@ -5227,6 +5241,7 @@ function caFileIsIncludable($ps_file) {
 			$ch->setopt(CURLCMDOPT_METHOD, 'GET');
 			$ch->setopt(CURLCMDOPT_HEADER, false);
 			$ch->setopt(CURLCMDOPT_ENGINE, $curl_path);
+			$ch->setopt(CURLCMDOPT_USERAGENT, $config->get('external_webservice_useragent'));
 			
 			$headers = explode("\n", $ch->execStandard(['head' => true]));
 		} else {

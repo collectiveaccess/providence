@@ -438,6 +438,12 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		$qclass = get_class($query);
 		$term = ($qclass === 'Zend_Search_Lucene_Search_Query_Term') ? $query->getTerm() : $query;
 		
+		$force_strict = false;
+	 	if($term->text[0] === '~') {
+	 		$term->text = substr($term->text, 1);
+	 		$force_strict = true;
+	 	}
+	 	
 	 	$field = $term->field;
 	 	$field_lc = mb_strtolower($field);
 	 	$field_elements = explode('.', $field_lc);
@@ -1995,7 +2001,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if(is_array($indexing_info = $this->search_indexing_config->get(Datamodel::getTableName($subject_tablenum)))) {
 			$indexing_info = $indexing_info[$table]['fields'][$field] ?? null;
 		}
-		if (strtolower($field) == 'count') {
+		if((strtolower($field) == 'count') && !$t_table->hasElement($field)) {
 			if (!is_array($rel_type_ids) || !sizeof($rel_type_ids)) { $rel_type_ids = [0]; }	// for counts must pass "0" as relationship type to pull count for all reltypes in aggregate
 			return array(
 				'access_point' => "{$table}.{$field}",
@@ -2042,7 +2048,7 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 			$t_element = new ca_metadata_elements();
 			
 			$vb_is_count = false;
-			if(strtolower($subfield) == 'count') {
+			if((strtolower($subfield) == 'count') && !$t_table->hasElement($subfield)) {
 				$subfield = null;
 				$vb_is_count = true;
 				if (!is_array($rel_type_ids) || !sizeof($rel_type_ids)) { $rel_type_ids = [0]; }
@@ -2691,7 +2697,9 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 		if(!$lists) { return null; }
 		if(!is_array($lists)) { $lists = [$lists]; }
 		$key = join('-', $lists);
-		if(CompositeCache::contains($key, 'SqlSearch2SearchExpansionDict')) {
+		
+		$cache_timeout = caGetSearchConfig()->get('expand_search_using_lists_cache_timeout');
+		if(($cache_timeout > 0) && CompositeCache::contains($key, 'SqlSearch2SearchExpansionDict')) {
 			return CompositeCache::fetch($key, 'SqlSearch2SearchExpansionDict');
 		} else {
 			$t_list = new ca_lists();
@@ -2736,9 +2744,9 @@ class WLPlugSearchEngineSqlSearch2 extends BaseSearchPlugin implements IWLPlugSe
 				foreach($dict as $n => $list) {
 					$dict[$n] = array_unique($dict[$n]);
 				}
-				CompositeCache::save($key, $dict, 'SqlSearch2SearchExpansionDict');
-				return $dict;
 			}
+			CompositeCache::save($key, $dict, 'SqlSearch2SearchExpansionDict', $cache_timeout);
+			return $dict;
 		}
 	}
 	# -------------------------------------------------------

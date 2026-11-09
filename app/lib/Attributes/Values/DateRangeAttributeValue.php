@@ -336,7 +336,7 @@ class DateRangeAttributeValue extends AttributeValue implements IAttributeValue 
 				$vs_date_format = $o_date_config->get('dateFormat');
 			}
 		}
-		if ((bool)$va_settings['useDatePicker']) {
+		if ((bool)$va_settings['useDatePicker'] && !in_array(mb_strtolower($vs_date_format), ['delimited', 'iso8601', 'ymd', 'yearonly'], true)) {
 			$vs_date_format = 'delimited';
 		}
 		

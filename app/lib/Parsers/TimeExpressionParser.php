@@ -2184,9 +2184,13 @@ class TimeExpressionParser {
 		
 		// EXIF time
 		if (preg_match("/^([\d]{2}):([\d]{2}):([\d]{2}[\.]{0,1}[\d]*)$/", $vs_token, $va_matches)) {
-			// year-month
+			$tz_sep = $this->peekToken();
+			$tz = $this->peekToken(2);
+			
+			$tz_offset = ((($tz_sep['type'] ?? null) === TEP_TOKEN_RANGE_CONJUNCTION) && (($tz['type'] ?? null) === TEP_TOKEN_TIME)) ? $tz['value'] : null;
 			if ((($va_matches[1] >= 0) && ($va_matches[1] <= 23)) && (($va_matches[2] >= 0) && ($va_matches[2] <= 59))  && (($va_matches[3] >= 0) && ($va_matches[3] < 60))) {
-				return(array('value' => $vs_token, 'minutes' => $va_matches[2], 'seconds' => floor($va_matches[3]), 'hours' => $va_matches[1], 'type' => TEP_TOKEN_TIME));
+				if($tz_offset) { $this->skipToken(); $this->skipToken(); }
+				return(array('value' => $vs_token, 'minutes' => $va_matches[2], 'seconds' => floor($va_matches[3]), 'hours' => $va_matches[1], 'iso8601_tz' => $tz_offset, 'type' => TEP_TOKEN_TIME));
 			}
 		}
 		
@@ -4449,6 +4453,56 @@ class TimeExpressionParser {
 		return null;
 	}
  	# -------------------------------------------------------------------
+
+	/**
+	 * Returns the ordinal suffix for a given number based on language-specific rules.
+	 *
+	 * @param int $number The number for which to get the ordinal suffix.
+	 * @return string The corresponding ordinal suffix according to language rules.
+	 */
+	private function getOrdinalSuffix(int $number): string
+	{
+		$ordinal_rules = $this->opo_language_settings->getList("ordinalSuffixes")?? [];
+		$ordinal_exceptions = $this->opo_language_settings->getAssoc("ordinalSuffixExceptions")?? [];
+		$ordinal_default = $this->opo_language_settings->get("ordinalSuffixDefault")??"";
+		$ordinal_literal_exceptions = $this->opo_language_settings->getAssoc("ordinalSuffixLiteralExceptions")?? [];
+		$ordinal_recycle_base =  $this->opo_language_settings->get("ordinalSuffixRecycleBase")??10;//10,100
+
+
+
+
+		/* some exceptions are entirely literal, don't recycle, for instance dutch 0de (while 100ste) */
+		foreach($ordinal_literal_exceptions as $k=>$ordinal){
+			if ($number==$k)return $ordinal;
+		}
+
+		/* combine rules and exceptions */
+		$ordinals = $ordinal_rules + $ordinal_exceptions;//union instead of merge to preserve the keys
+
+		/* order desc so higher rules get preference, ie 18de on 8ste */
+		krsort($ordinals);
+
+		//return json_encode($ordinals);
+
+		/* early default */
+		if(is_array($ordinals) && count($ordinals)>0){
+
+			$highestIndex = max(array_keys($ordinals));
+			$recycleableStem = $number%$ordinal_recycle_base;
+			if($number>$highestIndex && $number<=$recycleableStem){
+				return $ordinal_default;
+			}
+
+			/* within the ruleset */
+			foreach	($ordinals as $k=>$ordinal){
+				if(str_ends_with((string)$number, (string)$k))return $ordinal;
+			}
+		}
+
+		return $ordinal_default;
+	}
+
+
  	/** 
  	 *
  	 */
@@ -4459,17 +4513,7 @@ class TimeExpressionParser {
  		$century = intval((int)$start_pieces['year']/100);
 		$century = ((int)$end_pieces['year'] > 0) ? ((int)$century + 1) : ((int)$century - 1);
 		
-		$ordinals = $this->opo_language_settings->getList("ordinalSuffixes");
-		$ordinal_exceptions = $this->opo_language_settings->get("ordinalSuffixExceptions");
-		$ordinal_default = $this->opo_language_settings->get("ordinalSuffixDefault");
-
-		$x = intval(substr((string)$century, -1));
-
-		if(is_array($ordinal_exceptions) && isset($ordinal_exceptions[$century])) {
-			$ordinal = $ordinal_exceptions[$century];
-		} else {
-			$ordinal = isset($ordinals[$x]) ? $ordinals[$x] : $ordinal_default;
-		}
+		$ordinal = $this->getOrdinalSuffix($century);
 
 		$century_indicators = $this->opo_language_settings->getList("centuryIndicator");
 

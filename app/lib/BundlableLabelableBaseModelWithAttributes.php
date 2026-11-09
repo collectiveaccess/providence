@@ -134,7 +134,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$this->initLabelDefinitions();
 		
 		if ($this->isHierarchical() && $this->opo_idno_plugin_instance) {
-			$this->opo_idno_plugin_instance->isChild($this->isChild());
+			$this->isChild();
 		}
 		return $vn_rc;
 	}
@@ -1677,7 +1677,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if (
 			($dictionary_entry = ca_metadata_dictionary_entries::getEntry($dict_bundle_spec = $bundle_name_proc, $this, $bundle_settings))
 			||
-			($dictionary_entry = ca_metadata_dictionary_entries::getEntry($dict_bundle_spec = $this->tableName().'.'.$bundle_name_proc, $this, $bundle_settings))
+			(
+				!Datamodel::tableExists($bundle_name_proc) 
+				&&
+				($dictionary_entry = ca_metadata_dictionary_entries::getEntry($dict_bundle_spec = $this->tableName().'.'.$bundle_name_proc, $this, $bundle_settings))
+			)
 		) {
 			# Grab definition out of dictionary entry settings: if it was created in a system with multiple locales the available definitions 
 			# will be key'ed by locale code or locale_id (argh). If it was created in an older system with only a single active locale it may
@@ -2118,6 +2122,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'ca_editor_ui_screen_type_restrictions':
 					case 'ca_editor_ui_type_restrictions':
 					case 'ca_relationship_type_restrictions':
+					case 'ca_set_type_restrictions':
 						$element .= $this->getTypeRestrictionsHTMLFormBundle($options['request'], $options['formName'], $placement_code, $options);
 						break;
 					# -------------------------------
@@ -3451,8 +3456,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
-		if ($object_collections_hierarchy_enabled) {
-			
+		if ($object_collections_hierarchy_enabled && sizeof($object_collection_rel_types ?? [])) {
 			$type_selector 	= trim($this->getTypeListAsHTMLFormElement(
 				"{$placement_code}type_id", 
 				['id' => "{$placement_code}{$form_name}typeList"], 
@@ -3464,7 +3468,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				]
 			));
 			
-			if($this->tableName() == 'ca_collections') {
+			if(($this->tableName() == 'ca_collections') && $t_rel_type) {
 				$rel_type_res = $t_rel_type->getTypeRestrictions() ?? [];
 				$restrict_to_types = [];
 				foreach($rel_type_res as $res) {
@@ -6466,6 +6470,7 @@ if (!$batch) {
 		$disable_sorts = caGetOption('disableSorts', $pa_settings, false);
 						
  		$va_rel_items = $this->getRelatedItems($ps_bundle_name, $pa_settings);
+ 		$rel_pk = Datamodel::primaryKey($ps_bundle_name);
  		
  		$va_rels_to_add = $va_rels_to_delete = [];
  if(!$batch) {	
@@ -6497,7 +6502,7 @@ if (!$batch) {
 				
 				$va_rels_to_delete[] = array('bundle' => $ps_bundle_name, 'relation_id' => $va_rel_item[$vs_key]);
 			} elseif(!$disable_sorts) {
-				$this->editRelationship($ps_bundle_name, $va_rel_item[$vs_key], $va_rel_item['row_id'], $va_rel_item['relationship_type_code'], null, null, $va_rel_item['direction'], $vn_rank, ['allowDuplicates' => true]);		
+				$this->editRelationship($ps_bundle_name, $va_rel_item[$vs_key], $va_rel_item[$rel_pk], $va_rel_item['relationship_type_code'], null, null, $va_rel_item['direction'], $vn_rank, ['allowDuplicates' => true]);		
 			}
 		}
 }
@@ -8054,6 +8059,12 @@ $pa_options["display_form_field_tips"] = true;
 		if (!isset($pa_options['instance']) || !($t_instance = $pa_options['instance'])) {
 			if (!($t_instance = Datamodel::getInstance($pm_rel_table_name_or_num, true))) { return null; }
 		}
+		
+		$start = caGetOption('start', $pa_options, 0);
+		$limit = caGetOption('limit', $pa_options, null);
+		unset($pa_options['start']);
+		unset($pa_options['limit']);
+		
 		$va_ids = [];
 		foreach($pa_ids as $vn_k => $vn_id) {
 			if (is_numeric($vn_id)) { 
@@ -8074,8 +8085,6 @@ $pa_options["display_form_field_tips"] = true;
 			$vo_sort = new BaseFindEngine($this->getDb());
 			$va_ids = $vo_sort->sortHits($va_ids, $t_instance->tableName(), join(';', $pa_sort), caGetOption('sortDirection', $pa_options, 'asc'), $pa_options);
 		} 
-		$start = caGetOption('start', $pa_options, 0);
-		$limit = caGetOption('limit', $pa_options, null);
 		if(($start > 0) || ($limit > 0)) {
 			$va_ids = array_slice($va_ids, $start, $limit);
 		}
@@ -10322,9 +10331,9 @@ side. For many self-relations the direction determines the nature and display te
 	 * @param string $bundle
 	 * @return bool
 	 */
-	public function valueDidChange(string $bundle) : ?bool {
+	public function valueDidChange(string $bundle, ?array $options=null) : ?bool {
 		// TODO: handle changes on relationship?
-		return parent::valueDidChange($bundle);
+		return parent::valueDidChange($bundle, $options );
 	}
 	# -------------------------------------------------------
 }

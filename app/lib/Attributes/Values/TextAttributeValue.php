@@ -229,7 +229,7 @@ $_ca_attribute_settings['TextAttributeValue'] = array(		// global
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
 		'default' => '',
-		'width' => 90, 'height' => 4,
+		'width' => '670px', 'height' => 12,
 		'label' => _t('Dependent value template'),
 		'validForNonRootOnly' => 1,
 		'description' => _t('Template to be used to format content for dependent values. Template should reference container values using their bare element code prefixed with a caret (^). Do not include the table or container codes.')
@@ -427,7 +427,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 					<script type=\"module\">
 						import {
 						 ClassicEditor, BlockQuote, BlockToolbar, Bold, Code, Essentials, FontBackgroundColor, Font, FontColor, FontFamily, 
-						 FontSize, GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, 
+						 FontSize, GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl,
 						 ImageTextAlternative, Indent, IndentBlock, Italic, Link, List, ListProperties, MediaEmbed, 
 						 Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, SpecialCharactersArrows, 
 						 SpecialCharactersCurrency, SpecialCharactersEssentials, SpecialCharactersLatin, SpecialCharactersMathematical, 
@@ -440,13 +440,27 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 							.create( document.querySelector( '#{fieldNamePrefix}{$element_info['element_id']}_{n}' ), {
 								plugins: [ 
 									BlockQuote, BlockToolbar, Bold, Code, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, 
-									GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, 
+									GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl,
 									ImageTextAlternative, Indent, IndentBlock, Italic, Link, List, ListProperties, MediaEmbed, 
 									Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, 
 									SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials, 
 									SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText, Strikethrough, 
 									Subscript, Superscript, TextTransformation, TodoList, Underline, Undo, LinkImage, ResizableHeight
 								],
+								htmlSupport: {
+									allow: [
+										{
+											name: 'a',
+											attributes: ['name', 'id'] 
+										},
+										{
+											name: /(div|p|h[1-6])/,
+											attributes: ['id', 'class']
+										},
+										{ name: 'details' },
+										{ name: 'summary' }
+									]
+								},
 								toolbar: {
 									items: ".json_encode(caGetCK5Toolbar()).",
 									shouldNotGroupWhenFull: true
@@ -456,12 +470,6 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									height: '{$height_w_suffix}',
 									minHeight: '50px',
 									maxHeight: '1500px'
-								},
-								htmlSupport: {
-									allow: [
-										{ name: 'details' },
-										{ name: 'summary' }
-									]
 								}
 							}).then(editor => {
 								// Add current instance to list of initialized editors

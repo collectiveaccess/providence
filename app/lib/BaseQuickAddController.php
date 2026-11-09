@@ -175,6 +175,7 @@ class BaseQuickAddController extends ActionController {
 		if (!is_array($va_prepopulate_quickadd_fields) || !sizeof($va_prepopulate_quickadd_fields) || in_array('preferred_labels', $va_prepopulate_quickadd_fields)) {		
 			global $g_ui_locale_id;
 			$v = caUcFirstUTF8Safe($this->view->getVar('q'));
+			$v = preg_replace('!^"+!', '', preg_replace('!"+$!', '', $v));
 			$va_force_new_label = [
 				'locale_id' => $g_ui_locale_id, 									// use default locale
 				$t_subject->getLabelDisplayField() => $v					// query text is used for display field
@@ -225,8 +226,7 @@ class BaseQuickAddController extends ActionController {
 		
 		$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $vn_type_id, array('editorPref' => 'quickadd'));
 		if (!$t_ui) {
-			$this->postError(1100, _t('No interface defined for %1', $this->ops_table_name), 'BaseQuickAddController->Form');
-			return;
+			throw new ApplicationException( _t('No interface defined for %1', $this->ops_table_name));
 		}
 		// Get default screen (this is all we show in quickadd, even if the UI has multiple screens)
 		$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
@@ -332,7 +332,13 @@ class BaseQuickAddController extends ActionController {
 		if ($t_subject->getAppConfig()->get('perform_type_access_checking')) {
 			$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__));
 		}
-		if (is_array($va_restrict_to_types) && !in_array($t_subject->get('type_id'), $va_restrict_to_types)) {
+		
+		if(!($type_id = $t_subject->get('type_id'))) {
+			if($type_id = $this->request->getParameter(['type_id', 'change_type_id'], pInteger)) {
+				$this->request->setParameter('type_id', $type_id);
+			}
+		}
+		if (is_array($va_restrict_to_types) && !in_array($type_id, $va_restrict_to_types)) {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
 			return;
 		}

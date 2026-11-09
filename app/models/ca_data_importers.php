@@ -4443,7 +4443,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public static function _extractIntrinsicValues($pa_values, $ps_table) {
 		$t_instance = Datamodel::getInstance($ps_table, true);
-		$va_form_fields = $t_instance->getFormFields();
+		$va_form_fields = $t_instance->getFormFields(true);
 		
 		$va_extracted_values = array();
 		foreach($va_form_fields as $vs_field => $va_field_info) {
@@ -4877,8 +4877,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		if(!($delimiters = $item['settings']['delimiter'] ?? null)) { return $row; }
 		if(!$delimiters) { return $row; }
 		if(!is_array($delimiters)) { $delimiters = [$delimiters]; }
-		
-		$values = preg_split('!('.join('|', array_map(function($v) { return preg_quote($v, '!'); }, $delimiters)).')!', $row[$source] ?? null);
+		$values = preg_split('!('.join('|', array_map(function($v) { return preg_quote($v, '!'); }, $delimiters)).')!', is_array($row[$source] ?? null) ? join($delimiters[0] ?? ';', $row[$source]) : $row[$source] ?? null);
 		
 		$row[$source] = $values[$index] ?? null;
 		

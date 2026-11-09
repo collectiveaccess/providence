@@ -517,7 +517,10 @@ class RequestHTTP extends Request {
 		return $this->ops_parsed_controller_url;
 	}
 	# -------------------------------------------------------
-	public function getRequestUrl($pb_absolute=false) {
+	/**
+	 *
+	 */
+	public function getRequestUrl($pb_absolute=false, $normalize=false) {
 		$va_url = array();
 		if ($vs_tmp = $this->getBaseUrlPath()) {
 			$va_url[] = trim($vs_tmp, '/');
@@ -526,16 +529,16 @@ class RequestHTTP extends Request {
 			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getModulePath()) {
-			$va_url[] = trim($vs_tmp, '/');
+			$va_url[] = trim($normalize ? ucfirst($vs_tmp) : $vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getController()) {
-			$va_url[] = trim($vs_tmp, '/');
+			$va_url[] = trim($normalize ? ucfirst($vs_tmp) : $vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getAction()) {
-			$va_url[] = trim($vs_tmp, '/');
+			$va_url[] = trim($normalize ? ucfirst($vs_tmp) : $vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getActionExtra()) {
-			$va_url[] = trim($vs_tmp, '/');
+			$va_url[] = trim($normalize ? ucfirst($vs_tmp) : $vs_tmp, '/');
 		}
 		
 		//foreach($this->opa_params['PATH'] as $vs_param => $vs_value) {
@@ -558,6 +561,17 @@ class RequestHTTP extends Request {
 		}
 		
 		return join('/', $va_url);
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getCanonicalUrl() {
+		$router = new \CA\Controller\Router();
+		if($route = $router->dispatch($this)) {
+			return caNavUrl($this, $route['to']['module'], $route['to']['controller'], $route['to']['action'], $route['to']['params'], ['absolute' => true]);
+		}
+		return $this->getRequestUrl(true, true);
 	}
 	# -------------------------------------------------------
 	/**
@@ -835,6 +849,8 @@ class RequestHTTP extends Request {
      */	
 	public function doAuthentication($pa_options) {	
 		global $AUTH_CURRENT_USER_ID;
+		
+		$redirect_after_login = null;
 
 		$vs_app_name = $this->config->get("app_name");
 		$vs_auth_login_url = $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path");
@@ -953,6 +969,7 @@ class RequestHTTP extends Request {
 					$vn_user_id = $this->user->getUserID();
 					
 					if (!defined('__CA_IS_SERVICE_REQUEST__')) { // service need to keep auth tokens around
+						$redirect_after_login = Session::getVar('redirect_after_login');
 		                Session::deleteSession();
 		            }
 				}
@@ -986,8 +1003,11 @@ class RequestHTTP extends Request {
 			Session::setVar($vs_app_name."_logintime",time());							// also set login time (unix timestamp) in session
 			Session::setVar($vs_app_name."_lastping",time());
 			
+			Session::setVar('redirect_after_login', $redirect_after_login);
+			
 			$this->user->setVar('last_login', time(), array('volatile' => true));
 			$this->user->setLastLogout($this->user->getLastPing(), array('volatile' => true));
+			
 			$this->user->update();
 			
 			$AUTH_CURRENT_USER_ID = $vn_user_id;

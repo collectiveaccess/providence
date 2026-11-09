@@ -60,7 +60,7 @@ def transcribe_audio(input, output, model, tmpdir, format, words):
             json.dump(transcribe, jsonFile, indent=4, ensure_ascii=False)
     else:
         print("Invalid format")
-        quite(3)
+        quit(3)
         
     return filename
 

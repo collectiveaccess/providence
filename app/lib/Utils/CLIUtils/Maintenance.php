@@ -29,7 +29,118 @@
  * 
  * ----------------------------------------------------------------------
  */
-trait CLIUtilsMaintenance { 
+trait CLIUtilsMaintenance {
+	# -------------------------------------------------------
+	/**
+	 * clean stale and expired logfiles
+	 */
+	public static function clean_expired_logfiles($opts=null) {
+
+		if (!$days_expired = (int)$opts->getOption('days') ) $days_expired = 100;
+		if (!$mode = $opts->getOption('mode')) $mode = "dry";
+		if (!$verbosity = $opts->getOption('verbose')) $verbosity= "quiet";
+
+		$directories = [__CA_LOG_DIR__, '/tmp'];
+		$vs_datetime_expired  = strtotime("-{$days_expired} days");
+		$vs_now   = date('Y-m-d H:i:s');
+
+		/* gather expired logfiles  */
+		$va_expired=[];
+		foreach ($directories as $dir) {
+			if (!is_dir($dir)) {
+				continue;
+			}
+
+			$files = glob($dir . '/log_*.txt');
+
+			if ($files === false) {
+				continue;
+			}
+
+			foreach ($files as $file) {
+				if (!is_file($file)) {
+					continue;
+				}
+
+				if (filemtime($file) > $vs_datetime_expired) {
+					continue;
+				}
+
+				$va_expired[] = $file;
+
+
+			}
+		}
+
+		if($mode=="dry"){
+
+			echo "running in dry mode:\n";
+			foreach ($va_expired as $file) {
+				echo $file . "\n";
+			}
+			echo "\nrun with --mode=delete for deletion\n";
+
+		}
+
+		if($mode=="delete"){
+
+			if($verbosity!="silent"){
+				if($verbosity=="quiet") {//quietly - minimal cron logs
+					foreach($va_expired as $file){
+						@unlink($file);
+					}
+					echo "cleaned ".count($va_expired)." ($days_expired days expired) logfiles at: " . date('Y-m-d H:i:s');
+				}
+				else{//full output
+					echo "running hot deletion:\n";
+					var_dump($va_expired);
+					foreach($va_expired as $file){
+						@unlink($file);
+					}
+					echo "cleaned ".count($va_expired)." ($days_expired days expired) logfiles at: " . date('Y-m-d H:i:s');
+				}
+			}
+			else{//silent - muted cron
+				foreach($va_expired as $file){
+					@unlink($file);
+				}
+			}
+		}
+
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function clean_expired_logfilesParamList() {
+		return array(
+			"days|d-i" => _t('Number of days expired.'),
+			"mode|m-s" => _t('Mode to run.'),
+			"verbose|v-s" => _t('Mode to run.'),
+		);
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function clean_expired_logfilesUtilityClass() {
+		return _t('Maintenance');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function clean_expired_logfilesHelp() {
+		return _t("Remove stale or expired logfiles from the system.");
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function clean_expired_logfilesShortHelp() {
+		return _t("Remove stale or expired logfiles from the system.");
+	}
+
 	# -------------------------------------------------------
 	/**
 	 * Rebuild sort values
@@ -335,7 +446,8 @@ trait CLIUtilsMaintenance {
 	public static function purge_deleted($opts=null) {
 		require_once(__CA_LIB_DIR__."/Logging/Downloadlog.php");
 	
-		CLIUtils::addMessage(_t("Are you sure you want to PERMANENTLY remove all deleted records? This cannot be undone.\n\nType 'y' to proceed or 'N' to cancel, then hit return ", $current_revision, __CollectiveAccess_Schema_Rev__));
+		CLIUtils::addMessage(_t("Are you sure you want to PERMANENTLY remove all deleted records? This cannot be undone.\n\nType 'y' to proceed or 'N' to cancel, then hit return \n\nConsider running remove-deleted-representations utility first, to physically remove the media files and avoid orphaned media on disk\n", $current_revision, __CollectiveAccess_Schema_Rev__));
+
 		flush();
 		ob_flush();
 		$confirmation  =  trim( fgets( STDIN ) );

@@ -45,6 +45,7 @@ trait CLIUtilsMedia {
 		$kinds = caGetOption('kinds', $opts, 'ca_object_representations', ['forceLowercase' => true, 'validValues' => ['all', 'ca_object_representations', 'ca_attributes', 'icons'], 'delimiter' => [',', ';']]);
 		
 		$unprocessed = (bool)$opts->getOption('unprocessed');
+		$missing = (bool)$opts->getOption('missing');
 		$oriented_only = (bool)$opts->getOption('oriented-only');
 		if($extract_metadata_only = (bool)$opts->getOption('extract-metadata-only')) {
 			$kinds = ['ca_object_representations'];
@@ -155,6 +156,20 @@ trait CLIUtilsMedia {
 							continue;
 						}
 					}
+					
+					$mversions = [];
+					if($missing) {
+						$cversions = $versions ?? $qr_reps->getMediaVersions('media');
+						foreach($cversions as $cv) {
+							if(!$qr_reps->getMediaInfo('media', $cv, 'MIMETYPE')) {
+								$mversions[] = $cv;
+							}
+						}
+						if(!sizeof($mversions)) { 
+							if (!$quiet) { print CLIProgressBar::next(1, $message); }
+							continue; 
+						}
+					}
 
 
 					if (!$quiet) {
@@ -176,9 +191,10 @@ trait CLIUtilsMedia {
 						$t_rep->updateExtractedMediaMetadata();
 					} else {
 						$t_rep->set('media', $qr_reps->getMediaPath('media', 'original'), array('original_filename' => $original_filename));
-	
-						if (is_array($versions) && sizeof($versions)) {
-							$t_rep->update(array('updateOnlyMediaVersions' =>$versions));
+						if(is_array($mversions) && sizeof($mversions)) {
+							$t_rep->update(['updateOnlyMediaVersions' => $mversions]);
+						} elseif(is_array($versions) && sizeof($versions)) {
+							$t_rep->update(['updateOnlyMediaVersions' => $versions]);
 						} else {
 							$t_rep->update();
 						}
@@ -190,6 +206,7 @@ trait CLIUtilsMedia {
 						}
 					}
 				}
+				$qr_reps->free();
 				$c += $inc;
 			} while($n > 0);
 			if (!$quiet) { print CLIProgressBar::finish(); }
@@ -302,6 +319,7 @@ trait CLIUtilsMedia {
 			"object_ids|o-s" => _t('Comma separated list of object ids to reload'),
 			"kinds|k-s" => _t('Comma separated list of kind of media to reprocess. Valid kinds are ca_object_representations (object representations), ca_attributes (metadata elements) and icons (icon graphics on list items, storage locations, editors, editor screens, tours and tour stops). You may also specify "all" to reprocess all kinds of media. Default is "all"'),
 			"unprocessed|u" => _t('Reprocess all unprocessed media'),
+			"missing|g" => _t('Reprocess all missing media versions'),
 			"oriented-only|y-i" => _t('Only reprocess image media having the EXIF orientation set to a value > 1'),
 			"extract-metadata-only|z-i" => _t('Only extract embedded metadata from media. Do not reprocess.'),
 		);
@@ -722,6 +740,99 @@ trait CLIUtilsMedia {
 	 *
 	 */
 	public static function update_media_class_valuesHelp() {
+		return _t("Sets media class values for object representations. A media class indicates the general type of media (image, video, audio, etc.) and should be set for each uploaded representation on upload. When migrating from an older system these values may not be set. This command will ensure all representations with associated media are assigned a media class.");
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function remove_all_records($opts=null) {
+		$quiet = $opts->getOption('quiet');
+		$table = $opts->getOption('table');
+		$auto_confirm = $opts->getOption('auto-confirm');
+		
+		if(!($t_instance = DataModel::getInstance($table))) {
+			CLIUtils::addError(_t('Invalid table %1', $table));
+			return;
+		}
+		
+		$table_display = $t_instance->getProperty('NAME_SINGULAR');
+		
+		if(!$auto_confirm) {
+			CLIUtils::addMessage(_t("Are you sure you want to PERMANENTLY remove all %1 records? This cannot be undone.\n\nType 'y' to proceed or 'N' to cancel, then hit return \n\n", $table_display));
+	
+			flush();
+			ob_flush();
+			$confirmation  =  trim( fgets( STDIN ) );
+			if ( $confirmation !== 'y' ) {
+				// The user did not say 'y'.
+				return false;
+			}
+		}
+		
+		$qr = $table::findAsSearchResult('*');
+		
+		print CLIProgressBar::start($qr->numHits(), _t('Remove all %1 records', $table_display));
+		
+		$errors = [];
+		$deleted = 0;
+		while($qr->nextHit()) {
+			$t_instance = $qr->getInstance();
+			if(!$t_instance->delete(false)) {
+				$errors[$t_instance->getPrimaryKey()] = $t_instance->getErrors();
+			} else {
+				$deleted++;
+			}
+			print CLIProgressBar::next(1);
+		}
+		
+		if(!$quiet) {
+			print CLIProgressBar::finish();
+			CLIUtils::addMessage(_t('Removed %1 records', $deleted));
+			if(sizeof($errors)) {
+				$error_list = array_reduce($errors, function($c, $i) {
+					foreach($i as $e) {
+						$c[$e]++;
+					}
+					return $c;
+				}, []);
+				$error_counts = [];
+				foreach($error_list as $e => $c) {
+					$error_counts[] = "{$e} ({$c})";
+				}
+				CLIUtils::addError(_t('%1 records could not be removed due to errors: %2', sizeof($errors), join(", ", $error_counts)));
+			}
+		}
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function remove_all_recordsParamList() {
+		return [
+			"table|t-s" => _t("Table to remove all records from."),
+			"auto-confirm|d" => _t("Perform removal without waiting for confirmation."),
+		];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function remove_all_recordsUtilityClass() {
+		return _t('Media');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function remove_all_recordsShortHelp() {
+		return _t("Delete all records of a specific table from the system. Typically used in development and debugging environments.");
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function removeAllRepresentationsHelp() {
 		return _t("Sets media class values for object representations. A media class indicates the general type of media (image, video, audio, etc.) and should be set for each uploaded representation on upload. When migrating from an older system these values may not be set. This command will ensure all representations with associated media are assigned a media class.");
 	}
 	# -------------------------------------------------------

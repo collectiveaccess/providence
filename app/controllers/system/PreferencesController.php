@@ -372,6 +372,7 @@ class PreferencesController extends ActionController {
 						switch($vs_pref) {
 							case 'duplicate_relationships':
 								$vm_val = $this->request->getParameter("pref_{$vs_current_table}_{$vs_pref}", pArray);
+								if(!$vm_val) { $vm_val = []; }
 								break;
 							default:
 								$vm_val = $this->request->getParameter("pref_{$vs_current_table}_{$vs_pref}", pString);

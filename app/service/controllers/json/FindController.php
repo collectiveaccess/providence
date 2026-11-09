@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,6 +31,10 @@ require_once(__CA_LIB_DIR__.'/Service/SearchJSONService.php');
 class FindController extends BaseServiceController {
 	# -------------------------------------------------------
 	public function __construct(&$po_request, &$po_response, $pa_view_paths) {
+		$config = Configuration::load();
+		if(!(bool)trim($config->get('rest_services_enabled'))) {
+			throw new ServiceException(_t('REST services are not enabled'));
+		}
 		parent::__construct($po_request, $po_response, $pa_view_paths);
 	}
 	# -------------------------------------------------------

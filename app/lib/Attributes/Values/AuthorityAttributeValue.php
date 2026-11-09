@@ -328,6 +328,17 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * 
+	 *
+	 * @return BaseModel 
+	 */
+	public function getAuthorityInstance() {
+		if(!$this->opn_id) { return null; }
+		$table = $this->ops_table_name;
+		return $table::findAsInstance($this->opn_id);
+	}
+	# ------------------------------------------------------------------
+	/**
 	 * Intercept calls to get*ID, where * = the singular name of the authority attribute (Eg. "Entity")
 	 * and reroute to getID(). The provides support for legacy table-specific getID() calls.
 	 */

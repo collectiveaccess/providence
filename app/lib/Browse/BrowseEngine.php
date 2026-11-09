@@ -4484,7 +4484,12 @@ class BrowseEngine extends BaseFindEngine {
 									$va_list_child_count_cache[$vn_parent_id]++;
 								}
 							}
-							$va_list_label_cache = $t_list_item->getPreferredDisplayLabelsForIDs($va_values);
+							
+							if($va_facet_info['template'] ?? null) {
+								$va_list_label_cache = caProcessTemplateForIds($va_facet_info['template'], "ca_list_items", $va_values, ['returnAsArray' => true, 'indexWithIDs' => true]);
+							} else {
+								$va_list_label_cache = $t_list_item->getPreferredDisplayLabelsForIDs($va_values);
+							}
 
 							// Translate value idnos to ids
 							if (is_array($va_suppress_values)) { $va_suppress_values = ca_lists::getItemIDsFromList($list_id, $va_suppress_values, ['noChildren' => true]); }
@@ -4884,7 +4889,14 @@ class BrowseEngine extends BaseFindEngine {
 										continue;
 									}
 							
-								if (!$row_id || !($vs_label = $qr_res->getWithTemplate($vs_template, $va_config))) { continue; }
+								$vs_label = null;
+								if($vs_template) {
+									$vs_label = trim($qr_res->getWithTemplate($vs_template, $va_config));
+								}
+								if(!$vs_label) {
+									$vs_label = trim(join(" → ", $qr_res->get("{$current_table_name}.hierarchy.preferred_labels", ['returnAsArray' => true])));
+								}
+								if (!$row_id || !$vs_label) { continue; }
 								$va_values[$vs_id = "{$current_table_num}:{$type_id}:{$row_id}"] = array(
 									'id' => $vs_id,
 									'label' => $vs_label,

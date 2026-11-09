@@ -1114,7 +1114,7 @@ if (!$for_current_value_reindex) {
 										//
 										// Hierarchical indexing in related tables
 										//
-										if (((isset($va_rel_field_info['INDEX_ANCESTORS']) && $va_rel_field_info['INDEX_ANCESTORS']) || in_array('INDEX_ANCESTORS', $va_rel_field_info, true))) {
+										if (((is_array($va_rel_field_info) && ($va_rel_field_info['INDEX_ANCESTORS'] ?? null)) || (is_array($va_rel_field_info) && in_array('INDEX_ANCESTORS', $va_rel_field_info ?? [], true)))) {
 											// is this current field a label?
 											$t_hier_rel = $t_rel;
 											$vn_fn = $t_rel->fieldNum($vs_rel_field);
