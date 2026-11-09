@@ -5559,6 +5559,7 @@ if (!$batch) {
 					case 'ca_editor_ui_screen_type_restrictions':
 					case 'ca_search_form_type_restrictions':
 					case 'ca_relationship_type_restrictions':
+					case 'ca_set_type_restrictions':
 						if ($batch) { break; } // not supported in batch mode
 						$this->saveTypeRestrictionsFromHTMLForm($po_request, $vs_form_prefix, $vs_placement_code);
 						break;
