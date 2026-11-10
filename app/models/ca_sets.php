@@ -4506,13 +4506,13 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		if (!($set_id = $this->getPrimaryKey())) { return null; }		// set must be loaded
 		if (!is_array($settings)) { $settings = []; }
 		
-		if (!($t_instance = Datamodel::getInstanceByTableNum($this->get('editor_type')))) { return false; }
+		if (!($t_instance = Datamodel::getInstanceByTableNum($this->get('table_num')))) { return false; }
 
 		$type_list = $t_instance->getTypeList();
 		if (!isset($type_list[$type_id])) { return false; }
 		
 		$t_restriction = new ca_set_type_restrictions();
-		$t_restriction->set('table_num', $this->get('editor_type'));
+		$t_restriction->set('table_num', $this->get('table_num'));
 		$t_restriction->set('type_id', $type_id);
 		$t_restriction->set('include_subtypes', caGetOption('includeSubtypes', $settings, 0));
 		$t_restriction->set('set_id', $this->getPrimaryKey());
@@ -4570,7 +4570,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 		}
 		
-		if (!($t_instance = Datamodel::getInstanceByTableNum($this->get('editor_type')))) { return false; }
+		if (!($t_instance = Datamodel::getInstanceByTableNum($this->get('table_num')))) { return false; }
 
 		if ($t_instance instanceof BaseRelationshipModel) { // interstitial type restrictions
 			$type_list = $t_instance->getRelationshipTypes();
