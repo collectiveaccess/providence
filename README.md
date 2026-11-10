@@ -19,19 +19,22 @@ Version 2.0.12 provides many bug fixes, minor improvements and a handful of new 
 * Updated Getty vocabularies support (AAT, TGN and ULAN) for operation with new-architecture Getty services.
 * Added integration with FotoWare DAMS application. FotoWare URLs entered into media representation bundle URL field will cause FotoWare-hosted media to be pulled into CollectiveAccess.
 * Whisper-generated transcriptions for audio and video files are now indexed with timecode for search, enabling the search engine to return audio/video matches cued to specified timecode.
-* Added additional fine-grain options to control where`prepopulate` plugin rules are applied.
+* Added additional fine-grain options to control where `prepopulate` plugin rules are applied.
 * Extended `prepopulate` plugin to support triggering of rules when related (dependent) records are modified.
 * Added support for HTML5 elements in HTMLPurifier-filtered content. (Thanks @Monica-Wood)
 * MP4 videos that are not encoded for playback in web browsers are now detected and transcoded.
 * Replication framework now supports simultaneous synchronization of multiple systems.
 * Expanded checks to prevent unintended multiple-submission of forms.
-* JWT signing keys are now automatically generated, removing need for configuration.
+* JWT signing keys used by the GraphQL API are now automatically generated, removing need for configuration.
+* Options to disable API services are now provided in `app.conf`. Services are now disabled by default.
 * Implemented support for Orbitvu 360 degree image format.
 * Implemented support for Japanese Gengo dates
 
 Thanks to @yelto, @monica-wood, @behnaz-zarriz, @peterjanssens, @mthsps, @mark1ewis and @wrockwood for contributions to version 2.0.12.
 
 Please note that updating to 2.0.12 will clear the search index and require a **full reindex**. For very large systems reindexing may take several hours during which search functionality will be degraded. Please plan the timing of your update accordingly.
+
+Also please note that the REST, GraphQL, replication and "Simple" service APIs are now disabled by default. If you are using any of these service interfaces you must set the relevant option in `app.conf`: `graphql_services_enabled`, `simple_services_enabled`, `replication_services_enabled` and/or `rest_services_enabled`.
 
 
 ### What's New in 2.0

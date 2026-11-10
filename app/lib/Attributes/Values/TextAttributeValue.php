@@ -427,7 +427,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 					<script type=\"module\">
 						import {
 						 ClassicEditor, BlockQuote, BlockToolbar, Bold, Code, Essentials, FontBackgroundColor, Font, FontColor, FontFamily, 
-						 FontSize, GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, 
+						 FontSize, GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl,
 						 ImageTextAlternative, Indent, IndentBlock, Italic, Link, List, ListProperties, MediaEmbed, 
 						 Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, SpecialCharactersArrows, 
 						 SpecialCharactersCurrency, SpecialCharactersEssentials, SpecialCharactersLatin, SpecialCharactersMathematical, 
@@ -440,7 +440,7 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 							.create( document.querySelector( '#{fieldNamePrefix}{$element_info['element_id']}_{n}' ), {
 								plugins: [ 
 									BlockQuote, BlockToolbar, Bold, Code, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, 
-									GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, 
+									GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl,
 									ImageTextAlternative, Indent, IndentBlock, Italic, Link, List, ListProperties, MediaEmbed, 
 									Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, 
 									SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials, 
@@ -451,15 +451,32 @@ class TextAttributeValue extends AttributeValue implements IAttributeValue {
 									allow: [
 										{
 											name: 'a',
-											attributes: ['name', 'id'] 
+											attributes: ['name', 'id'],
+											classes: true
 										},
 										{
 											name: /(div|p|h[1-6])/,
-											attributes: ['id', 'class']
+											attributes: ['id'],
+											classes: true
 										},
-										{ name: 'details' },
-										{ name: 'summary' }
+										{ name: 'details', classes: true },
+										{ name: 'summary', classes: true }
 									]
+								},
+								fontSize: {
+									options: [ 8, 9, 10, 11, 12, 'default', 14, 18, 24, 30 ]
+								},
+								link: {
+									decorators: {
+										openInNewTab: {
+											mode: 'manual',
+											label: 'Open in a new tab',
+											attributes: {
+												target: '_blank',
+												rel: 'noopener noreferrer'
+											}
+										}
+									}
 								},
 								toolbar: {
 									items: ".json_encode(caGetCK5Toolbar()).",

@@ -249,7 +249,7 @@ class IIIFService {
 				$tile = ceil($y * $num_tiles_per_row) + ceil($x) + 1;
 				$tile_num = $tile_offset + $tile;
 				
-				$response->setContentType($tilepic_info['PROPERTIES']['tile_mimetype']);
+				$response->setContentType($tilepic_info['PROPERTIES']['tile_mimetype'] ?? $tilepic_info['PROPERTIES']['output_mimetype'] ?? "image/jpeg");
 				
 				$tile = TilepicParser::getTileQuickly($media_paths['tilepic'], $tile_num, true);
 				CompositeCache::save($key, $tile, 'IIIFTiles');

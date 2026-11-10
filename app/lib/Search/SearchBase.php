@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2024 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -212,9 +212,18 @@ class SearchBase extends BaseFindEngine {
 			if (is_array($field_list)) {
 				foreach($field_list as $vs_f => $va_info) {
 					if (
-						((substr($vs_f, 0, 14) === '_ca_attribute_') && preg_match('!^_ca_attribute_([A-Za-z]+[A-Za-z0-9_]*)$!', $vs_f, $va_matches) && ($element_id = ca_metadata_elements::getElementID($va_matches[1])))
+						((substr($vs_f, 0, 14) === '_ca_attribute_') 
+						&& preg_match(
+							'!^_ca_attribute_([A-Za-z]+[A-Za-z0-9_]*)$!', 
+							$vs_f, 
+							$va_matches
+						) 
+						&& ($element_id = ca_metadata_elements::getElementID($va_matches[1])))
 						||
-						(!$t_subject->hasField($vs_f) && ($element_id = ca_metadata_elements::getElementID($vs_f)))
+						(
+							!$t_subject->hasField($vs_f) 
+							&& ($element_id = ca_metadata_elements::getElementID($vs_f))
+						)
 					) {
 						unset($field_list[$vs_f]);
 						
@@ -415,6 +424,34 @@ class SearchBase extends BaseFindEngine {
 					$field_data = $t_subject->getApplicableElementCodes(null, $include_non_root_elements, false);
 					foreach($field_data as $element_id => $element_code) {
 						$field_list['_ca_attribute_'.$element_id] = $data;
+					}
+				}
+				
+				// Convert specific attribute codes to element_ids
+				if (is_array($field_list)) {
+					foreach($field_list as $vs_f => $va_info) {
+						if (
+							(
+								(substr($vs_f, 0, 14) === '_ca_attribute_')
+								&& preg_match(
+									'!^_ca_attribute_([A-Za-z]+[A-Za-z0-9_]*)$!',
+									$vs_f,
+									$va_matches
+								)
+								&& ($element_id = ca_metadata_elements::getElementID($va_matches[1]))
+							)
+							||
+							(
+								!$t_subject->hasField($vs_f)
+								&& ($element_id = ca_metadata_elements::getElementID($vs_f))
+							)
+						) {
+							unset($field_list[$vs_f]);
+				
+							if (!caGetOption('DONT_INDEX', $va_info, false)) {
+								$field_list["_ca_attribute_{$element_id}"] = $va_info;
+							}
+						}
 					}
 				}
 				unset($field_list['_count']);

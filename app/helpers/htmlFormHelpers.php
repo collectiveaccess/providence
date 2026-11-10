@@ -215,7 +215,7 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 				<script type=\"module\">
 					import {
 					 ClassicEditor, BlockQuote, BlockToolbar, Bold, Code, Essentials, FontBackgroundColor, Font, FontColor, FontFamily, 
-					 FontSize, GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, 
+					 FontSize, GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl,
 					 ImageTextAlternative, Indent, IndentBlock, Italic, Link, List, ListProperties, MediaEmbed, 
 					 Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, SpecialCharactersArrows, 
 					 SpecialCharactersCurrency, SpecialCharactersEssentials, SpecialCharactersLatin, SpecialCharactersMathematical, 
@@ -226,7 +226,7 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 						.create( document.querySelector( '#{$name}' ), {
 							plugins: [ 
 								BlockQuote, BlockToolbar, Bold, Code, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, 
-								GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, 
+								GeneralHtmlSupport, Heading, Highlight, HtmlComment, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl,
 								ImageTextAlternative, Indent, IndentBlock, Italic, Link, List, ListProperties, MediaEmbed, 
 								Paragraph, PasteFromOffice, RemoveFormat, SelectAll, SourceEditing, SpecialCharacters, 
 								SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials, 
@@ -237,15 +237,32 @@ function caHTMLTextInput($name, $attributes=null, $options=null) {
 								allow: [
 									{
 										name: 'a',
-										attributes: ['name', 'id'] 
+										attributes: ['name', 'id'],
+										classes: true
 									},
 									{
 										name: /(div|p|h[1-6])/,
-										attributes: ['id', 'class']
+										attributes: ['id'],
+										classes: true
 									},
-									{ name: 'details' },
-									{ name: 'summary' }
+									{ name: 'details', classes: true },
+									{ name: 'summary', classes: true }
 								]
+							},
+							fontSize: {
+								options: [ 8, 9, 10, 11, 12, 'default', 14, 18, 24, 30 ]
+							},
+							link: {
+								decorators: {
+									openInNewTab: {
+										mode: 'manual',
+										label: 'Open in a new tab',
+										attributes: {
+											target: '_blank',
+											rel: 'noopener noreferrer'
+										}
+									}
+								}
 							},
 							toolbar: {
 								items: ".json_encode($toolbar).",
