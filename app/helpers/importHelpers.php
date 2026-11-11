@@ -1685,7 +1685,10 @@ function caPhpExcelGetDateCellContent($po_sheet, $pn_row_num, $pm_col, $pn_offse
 	$vs_val = trim((string)$o_val);
 
 	if(strlen($vs_val)>0) {
-		$vn_timestamp = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp(trim((string)$o_val->getValue())) + $pn_offset;
+		// Pass the default timezone so the wall-clock time in the file is converted relative to that zone;
+		// date-only values are then not skewed into the previous/next day when rendered in the default
+		// timezone. (See issue #1725)
+		$vn_timestamp = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp(trim((string)$o_val->getValue()), date_default_timezone_get()) + $pn_offset;
 		if (!($vs_return = caGetLocalizedDate($vn_timestamp, array('dateFormat' => 'iso8601', 'timeOmit' => false)))) {
 			$vs_return = $vs_val;
 		}

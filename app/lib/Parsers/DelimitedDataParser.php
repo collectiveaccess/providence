@@ -194,11 +194,16 @@ class DelimitedDataParser implements IDataParser {
 				$o_cells = $o_row->getCellIterator();
 				$o_cells->setIterateOnlyExistingCells(false); 
 	
+				// PhpSpreadsheet treats Excel date/time values as UTC when converting them to Unix timestamps.
+				// Passing the default timezone to excelToTimestamp() converts the wall-clock time in the file
+				// relative to that zone, so date-only values are not skewed into the previous/next day when
+				// rendered in the default timezone. (See issue #1725)
+				$vs_timezone = date_default_timezone_get();
 				$vn_col = 1;
 				$vn_last_col_set = null;
 				foreach ($o_cells as $o_cell) {
 					if (\PhpOffice\PhpSpreadsheet\Shared\Date::isDateTime($o_cell)) {
-						if (!($vs_val = caGetLocalizedDate(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp(trim((string)$o_cell->getValue()))))) {
+						if (!($vs_val = caGetLocalizedDate(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp(trim((string)$o_cell->getValue()), $vs_timezone)))) {
 							if (!($vs_val = trim(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::toFormattedString((string)$o_cell->getValue(),'YYYY-MM-DD')))) {
 								$vs_val = trim((string)$o_cell->getValue());
 							}
