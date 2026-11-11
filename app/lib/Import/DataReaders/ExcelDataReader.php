@@ -63,12 +63,7 @@ class ExcelDataReader extends BaseDataReader {
 	 * Assume end-of-file when a blank row is encountered after rows with data?
 	 */
 	private $assume_eof_on_blank_row = false;
-	
-	/**
-	 * Currently set timezone; use to restore timezone setting from UTC when decoding date/times
-	 */
-	private $current_timezone = null;
-	
+
 	/**
 	 * Column headers
 	 */
@@ -92,8 +87,6 @@ class ExcelDataReader extends BaseDataReader {
 	 */
 	public function __construct($source=null, $options=null){
 		parent::__construct($source, $options);
-		
-		$this->current_timezone = date_default_timezone_get();
 		
 		$this->ops_title = _t('Excel XLSX data reader');
 		$this->ops_display_name = _t('Excel XLS/XLSX');
@@ -184,15 +177,17 @@ class ExcelDataReader extends BaseDataReader {
 				// PhpSpreadsheet will automatically adjust times in date/time columns to the current timezone, assuming
 				// that the time encoded in the file is UTC. This means, if your timezone is, say, UTC -5 (aka. New York)
 				// your date/times will be skewed by five hours. This is never good, but especially noticable on date-only values
-				// which get pulled back into the previous day. To address this we use the in-elegant hack of temporarily setting
-				// the default timezone to UTC while processing the row
-				date_default_timezone_set('UTC');
+				// which get pulled back into the previous day. To address this we pass the default timezone to excelToTimestamp()
+				// below, which converts the wall-clock time in the file to a Unix timestamp relative to that zone. Earlier
+				// versions used temporarily setting the default timezone to UTC while processing the row; changing the default
+				// timezone globally skewed the timestamps of log entries written during import (See issue #1725).
+				$vs_timezone = date_default_timezone_get();
 				$vn_col = 1;
 				
 				$data_set = false;
 				foreach ($o_cells as $o_cell) {
 					if (\PhpOffice\PhpSpreadsheet\Shared\Date::isDateTime($o_cell)) {
-						if (!($vs_val = caGetLocalizedDate(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp(trim((string)$o_cell->getValue()))))) {
+						if (!($vs_val = caGetLocalizedDate(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp(trim((string)$o_cell->getValue()), $vs_timezone)))) {
 							if (!($vs_val = trim(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::toFormattedString((string)$o_cell->getValue(),'YYYY-MM-DD')))) {
 								$vs_val = trim((string)$o_cell->getValue());
 							}
@@ -213,8 +208,6 @@ class ExcelDataReader extends BaseDataReader {
 					// max columns; some Excel files have *thousands* of "phantom" columns
 					if ($vn_col > $this->opn_max_columns) { break; }
 				}
-				
-				date_default_timezone_set($this->current_timezone);
 				
 				if(!$data_set && $this->assume_eof_on_blank_row && ($this->opn_current_row >= 2)) {
 					return false;
