@@ -1668,6 +1668,7 @@ function caPhpExcelGetCellContentAsString($po_sheet, $pn_row_num, $pm_col) {
 # ---------------------------------------------------------------------
 /**
  * Get date from Excel sheet for given column and row. Convert Excel date to format acceptable by TimeExpressionParser if necessary.
+ * Cells that don't hold an Excel date/time value (eg. text or numbers) are returned as-is.
  * @param \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $po_sheet The work sheet
  * @param int $pn_row_num row number (zero indexed)
  * @param string|int $pm_col either column number (zero indexed) or column letter ('A', 'BC')
@@ -1685,8 +1686,17 @@ function caPhpExcelGetDateCellContent($po_sheet, $pn_row_num, $pm_col, $pn_offse
 	$vs_val = trim((string)$o_val);
 
 	if(strlen($vs_val)>0) {
-		$vn_timestamp = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp(trim((string)$o_val->getValue())) + $pn_offset;
-		if (!($vs_return = caGetLocalizedDate($vn_timestamp, array('dateFormat' => 'iso8601', 'timeOmit' => false)))) {
+		if (\PhpOffice\PhpSpreadsheet\Shared\Date::isDateTime($o_val)) {
+			// Pass the default timezone so the wall-clock time in the file is converted relative to that zone;
+			// date-only values are then not skewed into the previous/next day when rendered in the default
+			// timezone. (See issue #1725)
+			$vn_timestamp = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp(trim((string)$o_val->getValue()), date_default_timezone_get()) + $pn_offset;
+			if (!($vs_return = caGetLocalizedDate($vn_timestamp, array('dateFormat' => 'iso8601', 'timeOmit' => false)))) {
+				$vs_return = $vs_val;
+			}
+		} else {
+			// The cell does not hold an Excel date/time (eg. plain text or a number); return the cell
+			// content as-is rather than trying to convert it
 			$vs_return = $vs_val;
 		}
 	} else {
