@@ -691,4 +691,26 @@ class ImportHelpersTest extends TestCase {
         $this->assertSame('2019-01-22T00:00:01Z', caPhpExcelGetDateCellContent($sheet, 3, 'B'));
     }
 
+    # -------------------------------------------------------
+    /**
+     * Cells that do not hold an Excel date/time value must be returned as-is by
+     * caPhpExcelGetDateCellContent. Earlier versions passed the cell content straight to
+     * excelToTimestamp(), which throws a TypeError for non-numeric values such as text.
+     */
+    public function testCaPhpExcelGetDateCellContentWithNonDateCellReturnsCellContent() {
+        date_default_timezone_set('America/New_York');
+
+        $sheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(dirname(__DIR__) . '/lib/Import/data/test.xlsx')->getActiveSheet();
+
+        // A1 holds the text 'id', C2 holds the text 'Antonio Heredia'
+        $this->assertSame('id', caPhpExcelGetDateCellContent($sheet, 1, 'A'));
+        $this->assertSame('Antonio Heredia', caPhpExcelGetDateCellContent($sheet, 2, 'C'));
+
+        // D2 holds the number 11 without a date format
+        $this->assertSame('11', caPhpExcelGetDateCellContent($sheet, 2, 'D'));
+
+        // an empty cell returns null
+        $this->assertNull(caPhpExcelGetDateCellContent($sheet, 20, 'B'));
+    }
+
 }
