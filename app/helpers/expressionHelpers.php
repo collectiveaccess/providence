@@ -260,6 +260,7 @@ function caExpressionFunctionSumValues(...$args) : mixed {
 	foreach($context['params'] as $p) {
 		if($p['type'] === '_LITERAL_') {
 			$p['type'] = $type = __CA_ATTRIBUTE_VALUE_NUMERIC__;	
+			if(!is_numeric($p['value'])) { continue; }
 			$acc += $p['value'];
 			continue;
 		} elseif(!is_int($p['type'])) {		// is not attribute
