@@ -6268,7 +6268,7 @@ function caGetLoginLogo() {
  * @return string
  */
 function caGetReportLogo(?array $options=null) {
-	return caGetBrandingLogo(caGetOption('name', $options, 'report'), array_merge(['absolute' => true], $options));
+	return caGetBrandingLogo(caGetOption('name', $options, 'report'), array_merge(['absolute' => true], $options ?? []));
 }
 # ------------------------------------------------------------------
 /**
