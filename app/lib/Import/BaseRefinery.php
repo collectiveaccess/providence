@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2023 Whirl-i-Gig
+ * Copyright 2013-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -260,18 +260,19 @@ abstract class BaseRefinery {
 		// Get specific index for repeating value
 		if (is_array($mval) && !is_null($value_index)) {
 			// Set mapped value to value at index; if source data has only one value and ignoreIndexForNonRepeatingValues
-			$mval = isset($mval[$value_index]) ? [$mval[$value_index]] : ((sizeof($mval) === 1) ? $mval[0] : null);
-			
-			if (is_array($item['settings']['original_values']) && (($ix = array_search(mb_strtolower($mval[0]), $item['settings']['original_values'], true)) !== false)) {
-				$mval[0] = $item['settings']['replacement_values'][$ix];
-			}
-			if ($apply_import_item_settings) {
-				$mval[0] = caProcessImportItemSettingsForValue($mval[0], $item['settings'] ?? []);
-			}
-			// delimiter?
-			if(!is_null($get_at_index) && sizeof($delimiters)) {
-				$dvals = preg_split('!'.preg_quote(join('|', $delimiters), '!').'!', $mval[0]);
-				return $dvals[$get_at_index] ?? null;
+			$mval = isset($mval[$value_index]) ? [$mval[$value_index]] : ((sizeof($mval) === 1) ? [$mval[0]] : null);
+			if(!is_null($mval)) {
+				if (is_array($item['settings']['original_values']) && (($ix = array_search(mb_strtolower($mval[0]), $item['settings']['original_values'], true)) !== false)) {
+					$mval[0] = $item['settings']['replacement_values'][$ix];
+				}
+				if ($apply_import_item_settings) {
+					$mval[0] = caProcessImportItemSettingsForValue($mval[0], $item['settings'] ?? []);
+				}
+				// delimiter?
+				if(!is_null($get_at_index) && sizeof($delimiters)) {
+					$dvals = preg_split('!'.preg_quote(join('|', $delimiters), '!').'!', $mval[0]);
+					return $dvals[$get_at_index] ?? null;
+				}
 			}
 			return ($return_as_string && is_array($mval)) ? trim(join($delimiter, $mval)) : $mval;
 		}
