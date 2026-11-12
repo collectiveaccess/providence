@@ -1831,7 +1831,11 @@ itemOutput:
 
 				switch($context) {
 					case 'children':
-						$related = $t_rel->getHierarchyChildren();
+						$get_options = [];
+						if ($filter_types || $restrict_to_types) {
+							$get_options['restrictToTypes'] = $filter_types ?? $restrict_to_types;
+						}
+						$related = $t_rel->getHierarchyChildren(null, $get_options);
 						break;
 					case 'parent':
 						$related = [];
