@@ -626,6 +626,7 @@ class Installer {
 		$i = 0;
 		$num_lists = sizeof($lists);
 		foreach($lists as $list) {
+			gc_collect_cycles();
 			$list_code = $list['code'];
 			$this->logStatus(_t('Processing list with code %1', $list_code));
 			if(!($t_list = \ca_lists::find(array('list_code' => $list_code), array('returnAs' => 'firstModelInstance')))) {
@@ -693,6 +694,8 @@ class Installer {
 	protected  function processListItems($t_list, $items, $parent_id) {
 		$list_code = $t_list->get('list_code');
 		foreach($items as $item) {
+			gc_collect_cycles();
+			
 			$item_value = $item["value"];
 			$item_idno = $item["idno"];
 			$new_item_idno = $item["newidno"];
@@ -773,6 +776,7 @@ class Installer {
 		
 
 		foreach($elements as $element_code => $element) {
+			gc_collect_cycles();
 			if($element_id = $this->processMetadataElement($element, null)) {
 				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
 				// if we're updating, we expect the list of restrictions to include all restrictions!
@@ -1409,6 +1413,7 @@ class Installer {
 			$list_item_ids[trim(mb_strtolower($type_code))][trim(mb_strtolower($qr_list_item_result->get('item_value')))] = $qr_list_item_result->get('item_id');
 		}
 		foreach($relationship_types as $rel_table => $types) {
+			gc_collect_cycles();
 			$table_num = \Datamodel::getTableNum($rel_table);
 			$this->logStatus(_t('Processing relationship types for table %1', $rel_table));
 			ob_flush();
