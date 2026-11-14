@@ -625,7 +625,6 @@ class Installer {
 
 		$i = 0;
 		$num_lists = sizeof($lists);
-		$c = 0;
 		foreach($lists as $list) {
 			gc_collect_cycles();
 			$list_code = $list['code'];
@@ -681,7 +680,6 @@ class Installer {
 					}
 				}
 			}
-			$c++;
 		}
 		\CompositeCache::flush();
 		return true;
