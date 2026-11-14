@@ -8037,7 +8037,16 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 				$va_additional_table_wheres = $pa_options['additionalTableWheres'];
 			}
 		}
-			
+
+		// Restrict hierarchy children to specified types (accepts type IDs or type idnos)
+		if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
+			if ($vs_type_field = $this->getTypeFieldName()) {
+				if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table_name, $va_restrict_to_types)) && sizeof($va_restrict_to_types)) {
+					$va_additional_table_wheres[] = "({$vs_table_name}.{$vs_type_field} IN (".join(',', array_map('intval', $va_restrict_to_types))."))";
+				}
+			}
+		}
+
 		$va_additional_child_join_conditions = array();
 		if ($this->hasField('deleted') && (!isset($pa_options['returnDeleted']) || (!$pa_options['returnDeleted']))) {
 			$va_additional_table_wheres[] = "({$vs_table_name}.deleted = 0)";
