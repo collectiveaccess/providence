@@ -1303,6 +1303,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$is_repeat = caGetOption(['repeat_element_for_multiple_values', 'repeatElementForMultipleValues'], $settings, null);
 		$deduplicate = $settings['deduplicate'] ?? false;
 		$template = $settings['template'] ?? null;
+
+			$omit_if_template_empty = (bool)($settings['omitIfTemplateEmpty'] ?? false);
 		
 		// BEGIN evaluate skip criteria
 		//
@@ -1358,7 +1360,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					</unit>
 				"));
 
-				if($get_with_template) {
+				if($get_with_template || ($omit_if_template_empty && (string)$get_with_template === '0')) {
 					$item_info[] = [
 						'text' => $get_with_template,
 						'element' => $element,
@@ -1398,7 +1400,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					</unit>
 				"));
 
-				if($get_with_template) {
+				if($get_with_template || ($omit_if_template_empty && (string)$get_with_template === '0')) {
 					$item_info[] = [
 						'text' => $get_with_template,
 						'element' => $element,
@@ -1547,8 +1549,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				}
 			} else {
 				// Values
+                                $omit_template_result = false;
 				if($template) {//string or array
 					$values = caProcessTemplateForIDs($template, $table_num, [$record_id], []);
+                                        $omit_template_result = $omit_if_template_empty && (strlen(trim((string)$values)) === 0);
 					$delimiter = $settings['delimiter'] ?? null;
 					if($is_repeat && $delimiter) $values = explode($delimiter, $values);
 				}else {
@@ -1579,7 +1583,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				}
 				if(!is_array($values) && strlen($values)) { $values = [$values]; }
 				
-				if(is_array($values) && (sizeof($values) || !$skip_if_empty)) {
+				if(is_array($values) && (sizeof($values) || !$skip_if_empty) && !$omit_template_result) {
 					if(!$is_repeat) {
 						if($deduplicate) { $values = array_unique($values); } 
 	
@@ -1629,11 +1633,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			$o_log->logDebug(_t("Current mapping has no source but a template '%1'. Value from extracted via template processor is '%2'", $template, $vs_proc_template));
 
-			$item_info[] = [
-				'element' => $element,
-				'text' => $proc_template,
-				'template' => $template
-			];		
+                   if(!$omit_if_template_empty || strlen(trim((string)$proc_template)) > 0) {
+                       $item_info[] = [
+                           'element' => $element,
+                           'text' => $proc_template,
+                           'template' => $template
+                       ];
+                   }
 		} else { 
 			// no source, no template -> probably wrapper
 			$o_log->logDebug(_t("Current mapping has no source and no template and is probably an XML/MARC wrapper element"));
