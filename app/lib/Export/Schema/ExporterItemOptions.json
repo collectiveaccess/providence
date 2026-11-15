@@ -109,6 +109,10 @@
             "description": "Omit this item and all its children if this bundle specifier returns a non-empty result.",
             "type": ["boolean", "integer"]
         },
+        "omitIfTemplateEmpty": {
+            "description": "Omit this item if the processed template result is empty.",
+            "type": ["boolean", "integer"]
+        },
         "omitIfNoChildren": {
             "description": "Omit this item if it has no children.",
             "type": ["boolean", "integer"]
