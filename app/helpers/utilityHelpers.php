@@ -4995,15 +4995,27 @@ function caFileIsIncludable($ps_file) {
 	}
     # ----------------------------------------
 	/**
+	 * Return the HTML purifier used for the current request.
 	 *
+	 * The instance is created once and then reused.
+	 *
+	 * @param array $options Not used to configure the purifier.
+	 * @return HTMLPurifier
 	 */
 	function caGetHTMLPurifier(?array $options=null) : HTMLPurifier {
+		static $o_purifier = null;
+
+		if ($o_purifier instanceof HTMLPurifier) {
+			return $o_purifier;
+		}
+
 		#$config = HTMLPurifier_Config::createDefault();
 		# Swapping out config with html5 compatiable config
 		$config = HTMLPurifier_HTML5Config::createDefault();
 		$config->set('URI.DisableExternalResources', !Configuration::load()->get('purify_allow_external_references'));
 		$config->set('Cache.SerializerPath', Configuration::load()->get('purify_serializer_path'));
-		return new HTMLPurifier($config); 
+
+		return $o_purifier = new HTMLPurifier($config);
 	}
 	# ----------------------------------------
 	/**
