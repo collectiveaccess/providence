@@ -485,6 +485,21 @@ class ca_data_exporter_items extends BaseModel {
 			'description' => _t('Omit this item and all its children unless this CollectiveAccess bundle specifier returns a result.')
 		);
 
+
+            $va_settings['omitIfTemplateEmpty'] = array(
+                    'formatType' => FT_BIT,
+                    'displayType' => DT_SELECT,
+                    'width' => 40, 'height' => 1,
+                    'takesLocale' => false,
+                    'default' => 0,
+                    'options' => array(
+                            _t('yes') => 1,
+                            _t('no') => 0
+                    ),
+                    'label' => _t('Omit if template is empty'),
+                    'description' => _t('Omit this item if the processed template result is empty.')
+            );
+
 		$va_settings['omitIfNotEmpty'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
