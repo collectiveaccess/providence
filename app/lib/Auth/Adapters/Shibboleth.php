@@ -91,7 +91,6 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		if($this->debug) { $this->log->logDebug(_t("[Shibboleth::debug] Created new shib context %1", $shibSP)); }
         try{
             $this->opo_shibAuth = new \SimpleSAML\Auth\Simple($shibSP);
-            session_write_close();
         } catch (Exception $e) {
        		if($this->debug) { $this->log->logDebug(_t("Could not create SimpleSAML auth object: %1", $e->getMessage())); }
             throw new ShibbolethException(_t("Could not create SimpleSAML auth object: %1", $e->getMessage()));
@@ -121,6 +120,9 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 			if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] Received no attributes while attempting to authenticate with {$username}::{$password}")); }
 			return false; 	
 		}
+		\SimpleSAML\Session::getSessionFromRequest()->cleanup();
+		session_write_close();
+		
 		$uid = $this->mapAttribute('uid', $attrs);
 		
 		if($this->debug) { $this->log->logInfo(_t("[Shibboleth::debug] Got uid {$uid} while attempting to authenticate with {$username}::{$password}. Attributes were %1", print_R($attrs, true))); }
