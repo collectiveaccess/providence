@@ -3192,7 +3192,7 @@ class ca_users extends BaseModel {
 		if($this->hasPendingPasswordReset()) {
 			if(!$this->pendingPasswordResetIsExpired()) {
 				$vs_actual_token = $this->getVar("{$vs_app_name}_password_reset_token");
-				$vb_return = ($vs_actual_token === $ps_token);
+				$vb_return = strlen((string)$vs_actual_token) && hash_equals((string)$vs_actual_token, (string)$ps_token);
 			}
 		}
 
