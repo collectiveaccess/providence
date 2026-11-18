@@ -65,7 +65,12 @@ class AuthController extends \GraphQLServices\GraphQLServiceController {
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = new ca_users();
-						if ($u->authenticate($args["username"], $args["password"], ['noPublicUsers' => true])) {
+						if (
+							$u->authenticate($args["username"], $args["password"], ['noPublicUsers' => true])
+							&&
+							// Only issue tokens to users permitted to use services
+							($u->canDoAction('can_use_graphql_services') || (defined('__CA_APP_TYPE__') && (__CA_APP_TYPE__ === 'PAWTUCKET')))
+						) {
 							$user_id = $u->get('ca_users.user_id');
 						
 							$data = [
@@ -101,9 +106,16 @@ class AuthController extends \GraphQLServices\GraphQLServiceController {
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
-						if($d = self::decodeJWT($args['token'])) {
+						if(
+							($d = self::decodeJWT($args['token'], 'refresh')) && ($user_id = (int)($d->id ?? 0))
+							&&
+							// Don't issue new access tokens for users that have since been deactivated, deleted or lost service access
+							($u = ca_users::find(['user_id' => $user_id, 'active' => 1, 'userclass' => ['<>', 255]], ['returnAs' => 'firstModelInstance']))
+							&&
+							($u->canDoAction('can_use_graphql_services') || (defined('__CA_APP_TYPE__') && (__CA_APP_TYPE__ === 'PAWTUCKET')))
+						) {
 							return [
-								'jwt' => self::encodeJWT((array)$d)
+								'jwt' => self::encodeJWT(['id' => $user_id])
 							];
 						}
 						
