@@ -892,6 +892,9 @@ class RequestHTTP extends Request {
 
 				if ((!$this->user->isActive()) || ($this->user->numErrors()) || ($pa_options['noPublicUsers'] && $this->user->isPublicUser())) {			// error means user_id in session is invalid
 					$vb_login_successful = false;
+				} elseif (defined('__CA_IS_SERVICE_REQUEST__') && __CA_IS_SERVICE_REQUEST__ && ((int)Session::getVar($vs_app_name."_user_auth_type") === 2)) {
+					// sessions established by IP-based auth may not be used for service requests
+					$vb_login_successful = false;
 				} else {
 					$vb_login_successful = true;
 				}
@@ -993,7 +996,13 @@ class RequestHTTP extends Request {
 
 			caLogEvent('LOGIN', $msg, 'Auth');	// write logins to text log
 			if($this->user->get("active") == 0) return false;
-			
+
+			// Issue a fresh session id on every new login (password, external adapter or IP-based) to prevent session fixation
+			if (!defined('__CA_IS_SERVICE_REQUEST__')) { // service need to keep auth tokens around
+				$redirect_after_login = Session::getVar('redirect_after_login');
+				Session::deleteSession();
+			}
+
 			require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
 		    Eventlog::add(['CODE' => 'LOGN', 'MESSAGE' => $msg, 'SOURCE' => 'Auth']);	// Write logins to old table-based event log
 		    $this->session_id = Session::init($vs_app_name, isset($pa_options["dont_create_new_session"]) ? $pa_options["dont_create_new_session"] : false);
