@@ -3432,8 +3432,8 @@ class ca_users extends BaseModel {
                 return false;
             }
         }
-		// check ips
-		if (!isset($pa_options["dont_check_ips"]) || !$pa_options["dont_check_ips"]) {
+		// check ips (never for service requests, which must always authenticate with a login)
+		if ((!isset($pa_options["dont_check_ips"]) || !$pa_options["dont_check_ips"]) && !(defined('__CA_IS_SERVICE_REQUEST__') && __CA_IS_SERVICE_REQUEST__)) {
 			if ($vn_user_id = $this->ipAuthenticate()) {
 				if ($this->load(['user_id' => $vn_user_id])) {
 					$ps_username = $this->get("user_name");
