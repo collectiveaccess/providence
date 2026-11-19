@@ -970,11 +970,6 @@ class RequestHTTP extends Request {
 				} else {
 					$vb_login_successful = true;
 					$vn_user_id = $this->user->getUserID();
-					
-					if (!defined('__CA_IS_SERVICE_REQUEST__')) { // service need to keep auth tokens around
-						$redirect_after_login = Session::getVar('redirect_after_login');
-		                Session::deleteSession();
-		            }
 				}
 			}
 		}
