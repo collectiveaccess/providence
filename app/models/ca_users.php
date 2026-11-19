@@ -3328,12 +3328,109 @@ class ca_users extends BaseModel {
 	}
 	# ----------------------------------------
 	/**
-	 * This is a option-less authentication. Either your login works or it doesn't.
-	 * Other apps implementing this interface may need to know what you're trying to do 
+	 * Authenticate user, rate limiting attempts made with caller-supplied credentials. Failed attempts
+	 * are counted per username and per client IP address. Once either limit is reached further attempts
+	 * are rejected without checking credentials until the counting window ends. Logins via external
+	 * adapters (where no user name is supplied) and IP-based logins aren't password guesses and aren't limited.
+	 *
+	 * Limits are set in authentication.conf using login_rate_limit_window, login_rate_limit_max_failures_per_user
+	 * and login_rate_limit_max_failures_per_ip.
+	 *
+	 * @see ca_users::_authenticate()
+	 */
+	public function authenticate(&$ps_username, $ps_password="", $pa_options=null) {
+		if (!strlen((string)$ps_username)) { return $this->_authenticate($ps_username, $ps_password, $pa_options); }
+
+		$keys = self::_loginRateLimitKeys((string)$ps_username);
+		if ($limited_by = self::_loginRateLimitExceeded($keys)) {
+			caLogEvent('LOGF', _t('Rejected login attempt for %1: too many failed attempts per %2; IP=%3', $ps_username, $limited_by, RequestHTTP::ip()), 'Auth');
+			return false;
+		}
+
+		// Only password authentication counts as success; a fall through to IP-based auth (2) means the credentials were wrong
+		if (($rc = $this->_authenticate($ps_username, $ps_password, $pa_options)) === true) {
+			PersistentCache::delete($keys['user'], 'LoginRateLimit');
+		} else {
+			self::_loginRateLimitRecordFailure($keys);
+		}
+		return $rc;
+	}
+	# ----------------------------------------
+	/**
+	 * Return login rate limiting settings from authentication.conf. Unset limits use defaults; limits set to 0 are disabled.
+	 *
+	 * @return array
+	 */
+	private static function _loginRateLimitConfig() : array {
+		$config = Configuration::load('authentication.conf');
+		$settings = [];
+		foreach(['window' => 900, 'user' => 10, 'ip' => 50] as $k => $default) {
+			$v = $config->get(($k === 'window') ? 'login_rate_limit_window' : "login_rate_limit_max_failures_per_{$k}");
+			$settings[$k] = strlen((string)$v) ? (int)$v : $default;
+		}
+		if ($settings['window'] <= 0) { $settings['window'] = 900; }
+		return $settings;
+	}
+	# ----------------------------------------
+	/**
+	 * Return rate limiting counter keys for login attempt, keyed on limit type (user, ip)
+	 *
+	 * @param string $username
+	 *
+	 * @return array
+	 */
+	private static function _loginRateLimitKeys(string $username) : array {
+		$keys = ['user' => 'user:'.mb_strtolower(trim($username))];	// user names are matched case-insensitively
+		if (class_exists('RequestHTTP') && ($ip = RequestHTTP::ip())) { $keys['ip'] = "ip:{$ip}"; }
+		return $keys;
+	}
+	# ----------------------------------------
+	/**
+	 * Check if any login rate limit has been reached
+	 *
+	 * @param array $keys Counter keys from ca_users::_loginRateLimitKeys()
+	 *
+	 * @return string|null Type of limit reached (user, ip), or null if no limit has been reached
+	 */
+	private static function _loginRateLimitExceeded(array $keys) : ?string {
+		$config = self::_loginRateLimitConfig();
+		foreach($keys as $type => $key) {
+			if (($max = $config[$type]) <= 0) { continue; }
+			$entry = PersistentCache::fetch($key, 'LoginRateLimit');
+			if (is_array($entry) && ((time() - (int)$entry['start']) < $config['window']) && ((int)$entry['count'] >= $max)) {
+				return $type;
+			}
+		}
+		return null;
+	}
+	# ----------------------------------------
+	/**
+	 * Count failed login attempt against all applicable rate limits
+	 *
+	 * @param array $keys Counter keys from ca_users::_loginRateLimitKeys()
+	 *
+	 * @return void
+	 */
+	private static function _loginRateLimitRecordFailure(array $keys) : void {
+		$config = self::_loginRateLimitConfig();
+		foreach($keys as $type => $key) {
+			if ($config[$type] <= 0) { continue; }
+			$entry = PersistentCache::fetch($key, 'LoginRateLimit');
+			if (!is_array($entry) || ((time() - (int)$entry['start']) >= $config['window'])) {
+				$entry = ['start' => time(), 'count' => 0];
+			}
+			$entry['count']++;
+			PersistentCache::save($key, $entry, 'LoginRateLimit');
+		}
+	}
+	# ----------------------------------------
+	/**
+	 * This is an option-less authentication. Either your login works or it doesn't.
+	 * Other apps implementing this interface may need to know what you're trying to do
 	 * in order to make a decision; $pa_options is an associative array of User handler-specific
 	 * keys and values that can contain such information
 	 */
-	public function authenticate(&$ps_username, $ps_password="", $pa_options=null) {
+	private function _authenticate(&$ps_username, $ps_password="", $pa_options=null) {
 		$vs_username = $ps_username;
 		if ($vs_rewrite_username_with_regex = $this->opo_auth_config->get('rewrite_username_with_regex')) {
 			$vs_rewrite_username_to_regex = $this->opo_auth_config->get('rewrite_username_to_regex');
