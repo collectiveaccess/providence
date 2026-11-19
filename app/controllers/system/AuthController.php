@@ -46,6 +46,9 @@ class AuthController extends ActionController {
 		if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 			if(!initializeLocale($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) die("Error loading locale ".$g_ui_locale);
 		}
+		// Starting over abandons any login waiting for two-factor authentication
+		$this->request->cancelPendingMFALogin();
+
 		// Redirect to the default action
 		$vs_redirect = $this->_getRedirectUrl();
 
@@ -71,25 +74,83 @@ class AuthController extends ActionController {
 			}
 			$this->render('login_html.php');
 		} else {
-			//
-			// Reset locale globals
-			//
-			global $g_ui_locale_id, $g_ui_locale, $g_ui_units_pref, $_, $_locale;
-			$g_ui_locale_id = $this->request->user->getPreferredUILocaleID();			// get current UI locale as locale_id	 			(available as global)
-			$g_ui_locale = $this->request->user->getPreferredUILocale();				// get current UI locale as locale string 			(available as global)
-			$g_ui_units_pref = $this->request->user->getPreference('units');			// user's selected display units for measurements 	(available as global)
-							
-			if(!initializeLocale($g_ui_locale)) die("Error loading locale ".$g_ui_locale);
-			MemoryCache::flush('translation');
-			AppNavigation::clearMenuBarCache($this->request);	// want to clear menu bar on login
-			
-			// Notify the user of the good news
-			$this->notification->addNotification(_t("You are now logged in"), __NOTIFICATION_TYPE_INFO__);
-			
-			// Jump to redirect if set
-			if ($vs_redirect_url) $this->redirect($vs_redirect_url);
-			$this->render('welcome_html.php');
+			$this->_loginSucceeded($vs_redirect_url);
 		}
+	}
+	# -------------------------------------------------------
+	/**
+	 * Show form for entering second factor, after password has been accepted
+	 */
+	public function Verify() {
+		global $g_ui_locale;
+		if (!$this->request->getPendingMFALogin()) {
+			$this->notification->addNotification(_t("Your login has expired. Please log in again."), __NOTIFICATION_TYPE_ERROR__);
+			$this->view->setVar('notifications', $this->notification->getNotifications());
+			$this->Login();
+			return;
+		}
+		if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
+			if(!initializeLocale($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) die("Error loading locale ".$g_ui_locale);
+		}
+		$this->view->setVar('notifications', $this->notification->getNotifications());
+		$this->render('login_verify_html.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 * Check second factor and finish logging in
+	 */
+	public function DoVerify() {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+			$this->Verify();
+			return;
+		}
+		$pending = $this->request->getPendingMFALogin();
+
+		switch($this->request->completePendingMFALogin($this->request->getParameter('code', pString))) {
+			case UserMFA::RESULT_OK:
+				// Usually the request has already been redirected by this point
+				$this->_loginSucceeded($pending['redirect'] ?? null);
+				return;
+			case UserMFA::RESULT_RATE_LIMITED:
+				$this->notification->addNotification(_t("Too many incorrect codes. Please wait a while before logging in again."), __NOTIFICATION_TYPE_ERROR__);
+				$this->view->setVar('notifications', $this->notification->getNotifications());
+				$this->Login();
+				return;
+			case UserMFA::RESULT_NOT_ENABLED:
+				// No pending login (it expired) or two-factor authentication was turned off in the meantime
+				$this->Verify();
+				return;
+			default:
+				$this->notification->addNotification(_t("The code was not valid"), __NOTIFICATION_TYPE_ERROR__);
+				$this->Verify();
+				return;
+		}
+	}
+	# -------------------------------------------------------
+	/**
+	 * Set up UI for newly logged in user and show welcome page or redirect
+	 *
+	 * @param string|null $redirect_url
+	 */
+	private function _loginSucceeded(?string $redirect_url) {
+		//
+		// Reset locale globals
+		//
+		global $g_ui_locale_id, $g_ui_locale, $g_ui_units_pref, $_, $_locale;
+		$g_ui_locale_id = $this->request->user->getPreferredUILocaleID();			// get current UI locale as locale_id	 			(available as global)
+		$g_ui_locale = $this->request->user->getPreferredUILocale();				// get current UI locale as locale string 			(available as global)
+		$g_ui_units_pref = $this->request->user->getPreference('units');			// user's selected display units for measurements 	(available as global)
+
+		if(!initializeLocale($g_ui_locale)) die("Error loading locale ".$g_ui_locale);
+		MemoryCache::flush('translation');
+		AppNavigation::clearMenuBarCache($this->request);	// want to clear menu bar on login
+
+		// Notify the user of the good news
+		$this->notification->addNotification(_t("You are now logged in"), __NOTIFICATION_TYPE_INFO__);
+
+		// Jump to redirect if set
+		if ($redirect_url) $this->redirect($redirect_url);
+		$this->render('welcome_html.php');
 	}
 	# -------------------------------------------------------
 	public function Welcome() {
