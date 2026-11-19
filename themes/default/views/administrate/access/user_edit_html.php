@@ -84,6 +84,23 @@ $password_policies = $this->getVar('password_policies') ?? [];
 					break;
 			}
 		}
+		
+		// Two-factor authentication status (only changed here by resetting it; users set it up themselves in their preferences)
+		if (($user_id > 0) && UserMFA::isEnabled()) {
+			$mfa_status = UserMFA::getStatus((int)$user_id);
+?>
+					<div class="formLabel"><?= _t('Two-factor authentication'); ?><br/>
+<?php
+			if ($mfa_status['enabled']) {
+				print _t('On since %1; %2 unused recovery code(s)', caGetLocalizedDate($mfa_status['enabled_on'], ['dateFormat' => 'delimited', 'timeOmit' => true]), $mfa_status['recovery_codes']);
+				print ' &nbsp; '.caNavLink($this->request, _t('Reset').' &rsaquo;', '', 'administrate/access', 'Users', 'ResetMFA', ['user_id' => $user_id]);
+			} else {
+				print _t('Off');
+			}
+?>
+					</div>
+<?php
+		}
 ?>
 					<div class="roles">
 						<h2><?= _t('Roles'); ?></h2>

@@ -83,7 +83,7 @@ class AuthController extends ActionController {
 	 */
 	public function Verify() {
 		global $g_ui_locale;
-		if (!$this->request->getPendingMFALogin()) {
+		if (!($pending = $this->request->getPendingMFALogin())) {
 			$this->notification->addNotification(_t("Your login has expired. Please log in again."), __NOTIFICATION_TYPE_ERROR__);
 			$this->view->setVar('notifications', $this->notification->getNotifications());
 			$this->Login();
@@ -92,6 +92,7 @@ class AuthController extends ActionController {
 		if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 			if(!initializeLocale($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) die("Error loading locale ".$g_ui_locale);
 		}
+		$this->view->setVar('can_email_code', UserMFA::emailFallbackEnabled() && UserMFA::hasUsableEmail(new ca_users((int)$pending['user_id'])));
 		$this->view->setVar('notifications', $this->notification->getNotifications());
 		$this->render('login_verify_html.php');
 	}
@@ -125,6 +126,32 @@ class AuthController extends ActionController {
 				$this->Verify();
 				return;
 		}
+	}
+	# -------------------------------------------------------
+	/**
+	 * Email a code to user waiting to log in, when they don't have their authenticator app
+	 */
+	public function SendCode() {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+			$this->Verify();
+			return;
+		}
+		if (!($pending = $this->request->getPendingMFALogin())) {
+			$this->Verify();
+			return;
+		}
+		switch(UserMFA::sendEmailCode(new ca_users((int)$pending['user_id']))) {
+			case UserMFA::RESULT_OK:
+				$this->notification->addNotification(_t("A code was sent to the email address on your account. Enter it below."), __NOTIFICATION_TYPE_INFO__);
+				break;
+			case UserMFA::RESULT_RATE_LIMITED:
+				$this->notification->addNotification(_t("A code was sent recently. Please check your email or wait before requesting another."), __NOTIFICATION_TYPE_ERROR__);
+				break;
+			default:
+				$this->notification->addNotification(_t("A code could not be sent by email. Use a recovery code or contact your administrator."), __NOTIFICATION_TYPE_ERROR__);
+				break;
+		}
+		$this->Verify();
 	}
 	# -------------------------------------------------------
 	/**

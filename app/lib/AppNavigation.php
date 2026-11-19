@@ -963,6 +963,15 @@ class AppNavigation extends BaseObject {
 						$vs_value = false;
 					}
 					break;
+				case 'authconfiguration':
+					// setting in authentication.conf
+					$vs_pref = $va_tmp[1];
+					if ($vb_not = (substr($vs_pref, 0, 1) == '!') ? true : false) {
+						$vs_pref = substr($vs_pref, 1);
+					}
+					$vb_set = (bool)Configuration::load('authentication.conf')->get($vs_pref);
+					$vs_value = $vb_not ? !$vb_set : $vb_set;
+					break;
 				case 'checktypelimitinconfig':
 					$vs_pref = $va_tmp[1];
 					if ($vb_not = (substr($vs_pref, 0, 1) == '!') ? true : false) {

@@ -245,6 +245,29 @@ class UsersController extends ActionController {
 		$this->render('user_list_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 * Turn off two-factor authentication for a user who has lost access to their authenticator app and recovery codes
+	 */
+	public function ResetMFA() {
+		$t_user = $this->getUserObject();
+		if (!($user_id = (int)$t_user->getPrimaryKey())) {
+			$this->ListUsers();
+			return;
+		}
+		if ((strtoupper((string)$this->request->getRequestMethod()) === 'POST') && $this->request->getParameter('confirm', pInteger)) {
+			if (caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				if (UserMFA::disable($user_id, ['reason' => _t('reset by administrator %1', $this->request->user->get('user_name'))])) {
+					$this->notification->addNotification(_t("Two-factor authentication was turned off for %1", $t_user->get('user_name')), __NOTIFICATION_TYPE_INFO__);
+				} else {
+					$this->notification->addNotification(_t("Could not reset two-factor authentication"), __NOTIFICATION_TYPE_ERROR__);
+				}
+			}
+			$this->redirect(caNavUrl($this->request, 'administrate/access', 'Users', 'Edit', ['user_id' => $user_id]));
+			return;
+		}
+		$this->render('user_reset_mfa_html.php');
+	}
+	# -------------------------------------------------------
 	public function Delete() {
 		$t_user = $this->getUserObject();
 		if ($this->request->getParameter('confirm', pInteger)) {

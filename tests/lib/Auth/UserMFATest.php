@@ -151,6 +151,45 @@ class UserMFATest extends TestCase {
 		$this->assertEquals(UserMFA::RESULT_RATE_LIMITED, UserMFA::verify($user_id, $good), 'Valid codes should be rejected once the limit is reached');
 	}
 	# -------------------------------------------------------
+	public function testEmailCodes() {
+		$user_id = (int)$this->user->getPrimaryKey();
+		$this->setUpTOTP();
+
+		$first = UserMFA::generateEmailCode($user_id);
+		$this->assertMatchesRegularExpression('!^[0-9]{8}$!', $first);
+		$second = UserMFA::generateEmailCode($user_id);
+		if ($first !== $second) {
+			$this->assertEquals(UserMFA::RESULT_INVALID, UserMFA::verify($user_id, $first), 'A new emailed code should replace the earlier one');
+		}
+		$this->assertEquals(UserMFA::RESULT_OK, UserMFA::verify($user_id, $second));
+		$this->assertEquals(UserMFA::RESULT_INVALID, UserMFA::verify($user_id, $second), 'Emailed code should only work once');
+	}
+	# -------------------------------------------------------
+	public function testStatusAndPendingSecret() {
+		$user_id = (int)$this->user->getPrimaryKey();
+		$this->assertEquals(['enabled' => false, 'enabled_on' => null, 'recovery_codes' => 0], UserMFA::getStatus($user_id));
+
+		$secret = UserMFA::beginTOTPSetup($user_id);
+		$this->assertEquals($secret, UserMFA::getPendingTOTPSecret($user_id));
+		$this->assertFalse(UserMFA::getStatus($user_id)['enabled']);
+
+		UserMFA::confirmTOTPSetup($user_id, TOTP::codeForStep($secret, TOTP::timeStep()));
+		$this->assertNull(UserMFA::getPendingTOTPSecret($user_id), 'Confirmed secret should not be returned');
+		$status = UserMFA::getStatus($user_id);
+		$this->assertTrue($status['enabled']);
+		$this->assertEquals(10, $status['recovery_codes']);
+
+		$this->assertStringStartsWith('otpauth://totp/', UserMFA::provisioningUri($this->user, $secret));
+	}
+	# -------------------------------------------------------
+	public function testHasUsableEmail() {
+		$this->assertTrue(UserMFA::hasUsableEmail($this->user));
+		$this->user->set('email', 'someone@unknown.org');
+		$this->assertFalse(UserMFA::hasUsableEmail($this->user));
+		$this->user->set('email', 'not an email');
+		$this->assertFalse(UserMFA::hasUsableEmail($this->user));
+	}
+	# -------------------------------------------------------
 	public function testDisable() {
 		$user_id = (int)$this->user->getPrimaryKey();
 		$this->setUpTOTP();

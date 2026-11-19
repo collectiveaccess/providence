@@ -27,6 +27,7 @@
  */
 require_once(__CA_LIB_DIR__.'/Service/GraphQLServiceController.php');
 require_once(__CA_APP_DIR__.'/service/schemas/AuthSchema.php');
+require_once(__CA_LIB_DIR__.'/Auth/MFA/UserMFA.php');
 
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\Type;
@@ -61,12 +62,22 @@ class AuthController extends \GraphQLServices\GraphQLServiceController {
 							'type' => Type::string(),
 							'description' => _t('User password'),
 							'defaultValue' => null
+						],
+						[
+							'name' => 'code',
+							'type' => Type::string(),
+							'description' => _t('Two-factor authentication code (authenticator app code or recovery code). Required only for users who have turned on two-factor authentication.'),
+							'defaultValue' => null
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
 						$u = new ca_users();
 						if (
-							$u->authenticate($args["username"], $args["password"], ['noPublicUsers' => true])
+							// Only password logins (not IP-based ones) can be used to issue tokens
+							($u->authenticate($args["username"], $args["password"], ['noPublicUsers' => true, 'dont_check_ips' => true]) === true)
+							&&
+							// Users who turned on two-factor authentication must also supply a valid code
+							(!\UserMFA::isEnabledForUser((int)$u->getPrimaryKey()) || (\UserMFA::verify((int)$u->getPrimaryKey(), (string)($args['code'] ?? '')) === \UserMFA::RESULT_OK))
 							&&
 							// Only issue tokens to users permitted to use services
 							($u->canDoAction('can_use_graphql_services') || (defined('__CA_APP_TYPE__') && (__CA_APP_TYPE__ === 'PAWTUCKET')))

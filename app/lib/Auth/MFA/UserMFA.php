@@ -50,6 +50,9 @@ class UserMFA {
 	// Recovery code characters. Easily confused characters (0/O, 1/I/L) are left out.
 	const RECOVERY_CODE_ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
 	const RECOVERY_CODE_LENGTH = 10;
+
+	// Emailed codes are longer than authenticator app codes so the two can be told apart
+	const EMAIL_CODE_LENGTH = 8;
 	# -------------------------------------------------------
 	/**
 	 * Is two-factor authentication turned on in authentication.conf?
@@ -87,6 +90,46 @@ class UserMFA {
 			SELECT mfa_id FROM ca_user_mfa WHERE user_id = ? AND mfa_type = ? AND enabled_on IS NOT NULL
 		", [$user_id, self::TYPE_TOTP]);
 		return $qr && $qr->nextRow();
+	}
+	# -------------------------------------------------------
+	/**
+	 * Return summary of user's two-factor authentication settings
+	 *
+	 * @param int $user_id
+	 *
+	 * @return array Array with keys enabled (bool), enabled_on (Unix timestamp or null) and recovery_codes (number of unused codes)
+	 */
+	public static function getStatus(int $user_id) : array {
+		$row = self::getTOTPRow($user_id);
+		$enabled = self::isEnabled() && $row && !is_null($row['enabled_on']);
+		return [
+			'enabled' => $enabled,
+			'enabled_on' => $enabled ? $row['enabled_on'] : null,
+			'recovery_codes' => $enabled ? self::numRecoveryCodes($user_id) : 0
+		];
+	}
+	# -------------------------------------------------------
+	/**
+	 * Can users receive codes by email when they don't have their authenticator app? Set with
+	 * "mfa_email_fallback" in authentication.conf (default is yes).
+	 *
+	 * @return bool
+	 */
+	public static function emailFallbackEnabled() : bool {
+		$v = Configuration::load('authentication.conf')->get('mfa_email_fallback');
+		return strlen((string)$v) ? (bool)$v : true;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Does user have an email address codes can be sent to?
+	 *
+	 * @param ca_users $user
+	 *
+	 * @return bool
+	 */
+	public static function hasUsableEmail(ca_users $user) : bool {
+		$email = (string)$user->get('email');
+		return (bool)filter_var($email, FILTER_VALIDATE_EMAIL) && !preg_match('!@unknown\.org$!i', $email);	// placeholder set for users created by auth adapters
 	}
 	# -------------------------------------------------------
 	# Setup
@@ -157,6 +200,37 @@ class UserMFA {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Return secret for authenticator app setup that has been started but not yet confirmed
+	 *
+	 * @param int $user_id
+	 *
+	 * @return string|null Base32-encoded secret, or null if no setup is in progress
+	 */
+	public static function getPendingTOTPSecret(int $user_id) : ?string {
+		if(!($row = self::getTOTPRow($user_id)) || !is_null($row['enabled_on'])) { return null; }
+		return self::decrypt($row['secret'], $user_id);
+	}
+	# -------------------------------------------------------
+	/**
+	 * Render QR code for an otpauth:// URI as inline SVG. Requires the bacon/bacon-qr-code package.
+	 *
+	 * @param string $uri
+	 * @param int $size Width and height in pixels
+	 *
+	 * @return string|null SVG markup, or null if the QR code library is not installed
+	 */
+	public static function qrCodeSvg(string $uri, int $size=200) : ?string {
+		if(!class_exists('\BaconQrCode\Writer')) { return null; }
+
+		$renderer = new \BaconQrCode\Renderer\ImageRenderer(
+			new \BaconQrCode\Renderer\RendererStyle\RendererStyle($size),
+			new \BaconQrCode\Renderer\Image\SvgImageBackEnd()
+		);
+		$svg = (new \BaconQrCode\Writer($renderer))->writeString($uri);
+		return preg_replace('!^<\?xml[^>]*\?>\s*!', '', $svg);	// strip XML declaration for inline use
+	}
+	# -------------------------------------------------------
+	/**
 	 * Turn off two-factor authentication for user, removing their authenticator app secret and recovery codes
 	 *
 	 * @param int $user_id
@@ -173,6 +247,7 @@ class UserMFA {
 
 		if($ok) {
 			self::clearFailures($user_id);
+			PersistentCache::delete("user:{$user_id}", 'MFAEmailCodes');
 			if($was_enabled) {
 				$reason = caGetOption('reason', $options, null);
 				self::log('MFA', $user_id, _t('Two-factor authentication turned off').($reason ? " ({$reason})" : ''));
@@ -248,6 +323,9 @@ class UserMFA {
 		if(preg_match('!^[0-9]{'.TOTP::DIGITS.'}$!', $normalized)) {
 			$ok = self::verifyTOTP($user_id, $normalized);
 			$method = _t('authenticator app');
+		} elseif(preg_match('!^[0-9]{'.self::EMAIL_CODE_LENGTH.'}$!', $normalized)) {
+			$ok = self::verifyEmailCode($user_id, $normalized);
+			$method = _t('emailed code');
 		} elseif(strlen($normalized) === self::RECOVERY_CODE_LENGTH) {
 			$ok = self::verifyRecoveryCode($user_id, $normalized);
 			$method = _t('recovery code');
@@ -310,6 +388,110 @@ class UserMFA {
 			}
 		}
 		return false;
+	}
+	# -------------------------------------------------------
+	# Emailed codes
+	# -------------------------------------------------------
+	/**
+	 * Email a single-use code to user, as a fallback for when they don't have their authenticator app.
+	 * Codes expire after mfa_email_code_lifetime seconds (default 600). Sending a new code replaces any
+	 * earlier one. Sends are limited to one a minute and mfa_max_email_codes_per_user per login_rate_limit_window.
+	 *
+	 * @param ca_users $user
+	 *
+	 * @return string UserMFA::RESULT_OK if a code was sent; RESULT_RATE_LIMITED if too many codes have been sent;
+	 *		RESULT_NOT_ENABLED if email codes can't be used for this user; RESULT_INVALID if the email could not be sent
+	 */
+	public static function sendEmailCode(ca_users $user) : string {
+		$user_id = (int)$user->getPrimaryKey();
+		if(!self::emailFallbackEnabled() || !self::isEnabledForUser($user_id) || !self::hasUsableEmail($user)) {
+			return self::RESULT_NOT_ENABLED;
+		}
+
+		// Limit sends, so this can't be used to flood a user's inbox
+		$config = self::rateLimitConfig();
+		$max = Configuration::load('authentication.conf')->get('mfa_max_email_codes_per_user');
+		$max = strlen((string)$max) ? (int)$max : 5;
+		$sends = PersistentCache::fetch("user:{$user_id}", 'MFAEmailSends');
+		if(!is_array($sends) || ((time() - (int)$sends['start']) >= $config['window'])) {
+			$sends = ['start' => time(), 'count' => 0, 'last' => 0];
+		}
+		if((($max > 0) && ($sends['count'] >= $max)) || ((time() - (int)$sends['last']) < 60)) {
+			self::log('MFA', $user_id, _t('Did not send two-factor authentication code by email: too many requests'));
+			return self::RESULT_RATE_LIMITED;
+		}
+		$sends['count']++;
+		$sends['last'] = time();
+		PersistentCache::save("user:{$user_id}", $sends, 'MFAEmailSends');
+
+		$code = self::generateEmailCode($user_id);
+		$lifetime = self::emailCodeLifetime();
+
+		require_once(__CA_APP_DIR__.'/helpers/mailHelpers.php');
+		global $g_request;
+		$app_name = Configuration::load()->get('app_display_name');
+		$sent = caSendMessageUsingView(
+			$g_request,
+			$user->get('email'),
+			__CA_ADMIN_EMAIL__,
+			"[{$app_name}] "._t("Your login code"),
+			'mfa_email_code.tpl',
+			[
+				'code' => $code,
+				'minutes' => (int)ceil($lifetime / 60),
+				'ip' => class_exists('RequestHTTP') ? RequestHTTP::ip() : null
+			], null, null, ['source' => 'Two-factor authentication']
+		);
+		if(!$sent) {
+			self::log('SYS', $user_id, _t('Could not send two-factor authentication code by email'));
+			return self::RESULT_INVALID;
+		}
+		self::log('MFA', $user_id, _t('Sent two-factor authentication code by email'));
+		return self::RESULT_OK;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Generate and store a new emailed code for user, replacing any earlier one
+	 *
+	 * @param int $user_id
+	 *
+	 * @return string Code
+	 */
+	public static function generateEmailCode(int $user_id) : string {
+		$code = str_pad((string)random_int(0, (10 ** self::EMAIL_CODE_LENGTH) - 1), self::EMAIL_CODE_LENGTH, '0', STR_PAD_LEFT);
+		PersistentCache::save("user:{$user_id}", [
+			'hash' => password_hash($code, PASSWORD_DEFAULT),
+			'expires' => time() + self::emailCodeLifetime()
+		], 'MFAEmailCodes');
+		return $code;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Check emailed code, removing it if it matches
+	 *
+	 * @param int $user_id
+	 * @param string $code
+	 *
+	 * @return bool
+	 */
+	private static function verifyEmailCode(int $user_id, string $code) : bool {
+		if(!self::emailFallbackEnabled()) { return false; }
+		$entry = PersistentCache::fetch("user:{$user_id}", 'MFAEmailCodes');
+		if(!is_array($entry) || (time() > (int)$entry['expires'])) { return false; }
+		if(!password_verify($code, (string)$entry['hash'])) { return false; }
+
+		PersistentCache::delete("user:{$user_id}", 'MFAEmailCodes');
+		return true;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Number of seconds emailed codes are valid for
+	 *
+	 * @return int
+	 */
+	private static function emailCodeLifetime() : int {
+		$lifetime = (int)Configuration::load('authentication.conf')->get('mfa_email_code_lifetime');
+		return ($lifetime > 0) ? $lifetime : 600;
 	}
 	# -------------------------------------------------------
 	# Rate limiting

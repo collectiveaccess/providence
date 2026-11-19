@@ -148,6 +148,66 @@ trait CLIUtilsAccessControl {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Turn off two-factor authentication for a user
+	 */
+	public static function reset_mfa($po_opts=null) {
+		require_once(__CA_LIB_DIR__.'/Auth/MFA/UserMFA.php');
+
+		if (!($user_name = (string)$po_opts->getOption('user')) && !($user_name = (string)$po_opts->getOption('username'))) {
+			$user_name = readline("User: ");
+		}
+		if (!$user_name) {
+			CLIUtils::addError(_t("You must specify a user"));
+			return false;
+		}
+
+		$t_user = new ca_users();
+		if (!$t_user->load(['user_name' => $user_name])) {
+			CLIUtils::addError(_t("User name %1 does not exist", $user_name));
+			return false;
+		}
+		$user_id = (int)$t_user->getPrimaryKey();
+
+		if (!UserMFA::disable($user_id, ['reason' => _t('reset from command line')])) {
+			CLIUtils::addError(_t("Could not reset two-factor authentication for user %1", $user_name));
+			return false;
+		}
+		CLIUtils::addMessage(_t('Two-factor authentication is off for user %1. They can now log in with only their password.', $user_name), ['color' => 'bold_green']);
+		return true;
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function reset_mfaParamList() {
+		return [
+			"username|n=s" => _t("User name to reset two-factor authentication for."),
+			"user|u=s" => _t("User name to reset two-factor authentication for.")
+		];
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function reset_mfaUtilityClass() {
+		return _t('Access control');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function reset_mfaShortHelp() {
+		return _t('Turn off two-factor authentication for a user');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function reset_mfaHelp() {
+		return _t('Turns off two-factor authentication for a user who has lost access to their authenticator app and recovery codes, removing their authenticator app setup and recovery codes. The user can then log in with only their password and set up two-factor authentication again. Also works when two-factor authentication is turned off in authentication.conf.');
+	}
+	# -------------------------------------------------------
+	/**
 	 * Reset user password
 	 */
 	public static function add_account($po_opts=null) {

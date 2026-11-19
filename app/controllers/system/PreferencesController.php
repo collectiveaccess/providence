@@ -264,6 +264,152 @@ class PreferencesController extends ActionController {
 		$this->render('preferences_html.php');
 	}
 	# -------------------------------------------------------
+	# Two-factor authentication
+	# -------------------------------------------------------
+	/**
+	 * Show user's two-factor authentication status, with options to set it up or manage it
+	 */
+	public function EditMFAPrefs() {
+		$this->_renderMFA('status');
+	}
+	# -------------------------------------------------------
+	/**
+	 * Start setting up an authenticator app: generate a secret and show it as a QR code
+	 */
+	public function MFABeginSetup() {
+		if (!$this->_checkMFARequest()) { return; }
+		$user = $this->request->user;
+
+		if (UserMFA::emailFallbackEnabled() && !UserMFA::hasUsableEmail($user)) {
+			$this->notification->addNotification(_t("Add an email address to your user profile before setting up two-factor authentication."), __NOTIFICATION_TYPE_ERROR__);
+			$this->_renderMFA('status');
+			return;
+		}
+		try {
+			UserMFA::beginTOTPSetup((int)$user->getPrimaryKey());
+		} catch (ApplicationException $e) {
+			$this->notification->addNotification($e->getMessage(), __NOTIFICATION_TYPE_ERROR__);
+			$this->_renderMFA('status');
+			return;
+		}
+		$this->_renderMFA('setup');
+	}
+	# -------------------------------------------------------
+	/**
+	 * Finish setting up an authenticator app, once user has entered a code from it, and show recovery codes
+	 */
+	public function MFAConfirmSetup() {
+		if (!$this->_checkMFARequest()) { return; }
+		$user_id = (int)$this->request->user->getPrimaryKey();
+
+		if (is_null(UserMFA::getPendingTOTPSecret($user_id))) {
+			$this->_renderMFA('status');
+			return;
+		}
+		if (!is_array($codes = UserMFA::confirmTOTPSetup($user_id, $this->request->getParameter('code', pString)))) {
+			$this->notification->addNotification(_t("The code was not valid. Check that the time on your device is correct and try again."), __NOTIFICATION_TYPE_ERROR__);
+			$this->_renderMFA('setup');
+			return;
+		}
+		$this->notification->addNotification(_t("Two-factor authentication is now on."), __NOTIFICATION_TYPE_INFO__);
+		$this->_renderMFA('codes', ['recovery_codes' => $codes]);
+	}
+	# -------------------------------------------------------
+	/**
+	 * Replace recovery codes. Requires current password and a current code.
+	 */
+	public function MFARegenerateCodes() {
+		if (!$this->_checkMFARequest(true)) { return; }
+
+		$codes = UserMFA::generateRecoveryCodes((int)$this->request->user->getPrimaryKey());
+		$this->notification->addNotification(_t("New recovery codes were generated. Your old codes no longer work."), __NOTIFICATION_TYPE_INFO__);
+		$this->_renderMFA('codes', ['recovery_codes' => $codes]);
+	}
+	# -------------------------------------------------------
+	/**
+	 * Turn off two-factor authentication. Requires current password and a current code.
+	 */
+	public function MFADisable() {
+		if (!$this->_checkMFARequest(true)) { return; }
+
+		UserMFA::disable((int)$this->request->user->getPrimaryKey(), ['reason' => _t('turned off by user')]);
+		$this->notification->addNotification(_t("Two-factor authentication is now off."), __NOTIFICATION_TYPE_INFO__);
+		$this->_renderMFA('status');
+	}
+	# -------------------------------------------------------
+	/**
+	 * Check that a two-factor authentication form submission may proceed
+	 *
+	 * @param bool $require_credentials Require current password and a current code (for changes to existing settings)
+	 *
+	 * @return bool
+	 */
+	private function _checkMFARequest(bool $require_credentials=false) : bool {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification]) || !UserMFA::isAvailable()) {
+			$this->_renderMFA('status');
+			return false;
+		}
+		if (!$require_credentials) { return true; }
+
+		$user = $this->request->user;
+		$user_id = (int)$user->getPrimaryKey();
+		if (!UserMFA::isEnabledForUser($user_id)) {
+			$this->_renderMFA('status');
+			return false;
+		}
+
+		// Check password through the configured authentication adapter (rate limited like a login)
+		$user_name = (string)$user->get('user_name');
+		$t_check = new ca_users();
+		if (($t_check->authenticate($user_name, $this->request->getParameter('password', pString), ['dont_check_ips' => true]) !== true) || ((int)$t_check->getPrimaryKey() !== $user_id)) {
+			$this->notification->addNotification(_t("Your password was not correct."), __NOTIFICATION_TYPE_ERROR__);
+			$this->_renderMFA('status');
+			return false;
+		}
+		switch(UserMFA::verify($user_id, $this->request->getParameter('code', pString))) {
+			case UserMFA::RESULT_OK:
+				return true;
+			case UserMFA::RESULT_RATE_LIMITED:
+				$this->notification->addNotification(_t("Too many incorrect codes. Please wait a while and try again."), __NOTIFICATION_TYPE_ERROR__);
+				break;
+			default:
+				$this->notification->addNotification(_t("The code was not valid."), __NOTIFICATION_TYPE_ERROR__);
+				break;
+		}
+		$this->_renderMFA('status');
+		return false;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Render two-factor authentication preferences screen
+	 *
+	 * @param string $mode One of status, setup (show QR code and confirmation form) or codes (show new recovery codes)
+	 * @param array $vars Additional view variables
+	 */
+	private function _renderMFA(string $mode, array $vars=[]) {
+		$user = $this->request->user;
+		$user_id = (int)$user->getPrimaryKey();
+
+		$this->view->setVar('t_user', $user);
+		$this->view->setVar('mode', $mode);
+		$this->view->setVar('available', UserMFA::isAvailable());
+		$this->view->setVar('uses_external_login', AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__));
+		$this->view->setVar('status', UserMFA::getStatus($user_id));
+		$this->view->setVar('email_fallback', UserMFA::emailFallbackEnabled());
+
+		if (($mode === 'setup') && ($secret = UserMFA::getPendingTOTPSecret($user_id))) {
+			$uri = UserMFA::provisioningUri($user, $secret);
+			$this->view->setVar('secret', trim(chunk_split($secret, 4, ' ')));
+			$this->view->setVar('qr_code', UserMFA::qrCodeSvg($uri));
+		} elseif ($mode === 'setup') {
+			$this->view->setVar('mode', 'status');
+		}
+		foreach($vars as $k => $v) {
+			$this->view->setVar($k, $v);
+		}
+		$this->render('preferences_mfa_html.php');
+	}
+	# -------------------------------------------------------
 	/**
 	 *
 	 */

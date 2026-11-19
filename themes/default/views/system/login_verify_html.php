@@ -61,14 +61,24 @@
 				</div><!-- end  systemTitle -->
 				<div id="loginForm">
 					<?= caFormTag($this->request, 'DoVerify', 'verify'); ?>
-						<div class="loginFormElement"><?= _t("Enter the 6-digit code from your authenticator app"); ?>:<br/>
+						<div class="loginFormElement"><?= _t("Enter the code from your authenticator app"); ?>:<br/>
 							<input id="mfaCode" type="text" name="code" size="25" autocomplete="one-time-code" inputmode="numeric" />
 						</div>
-						<div class="loginFormElement" style="font-size: 11px;"><?= _t("No access to your app? Enter one of your recovery codes instead."); ?></div>
+						<div class="loginFormElement" style="font-size: 11px;"><?= $this->getVar('can_email_code') ? _t("No access to your app? Enter one of your recovery codes, or have a code sent to your email.") : _t("No access to your app? Enter one of your recovery codes instead."); ?></div>
 						<input name="local" type="hidden" value="<?= (bool)($_REQUEST['local'] ?? null) ? 1 : 0; ?>" />
 						<div class="loginSubmitButton"><?= caFormSubmitButton($this->request, __CA_NAV_ICON_LOGIN__, _t("Verify"), "verify", array('icon_position' => __CA_NAV_ICON_ICON_POS_RIGHT__)); ?></div>
 					</form>
-					<div id="forgotLink"><?= caNavLink($this->request, _t("Cancel"), 'forgotLink', 'system/auth', 'login', ''); ?></div>
+<?php if($this->getVar('can_email_code')) { ?>
+					<?= caFormTag($this->request, 'SendCode', 'sendCode'); ?>
+						<input name="local" type="hidden" value="<?= (bool)($_REQUEST['local'] ?? null) ? 1 : 0; ?>" />
+					</form>
+<?php } ?>
+					<div id="forgotLink">
+<?php if($this->getVar('can_email_code')) { ?>
+						<a href="#" onclick="jQuery('#sendCode').submit(); return false;"><?= _t("Email me a code"); ?></a> &nbsp;|&nbsp;
+<?php } ?>
+						<?= caNavLink($this->request, _t("Cancel"), '', 'system/auth', 'login', ''); ?>
+					</div>
 				</div><!-- end loginForm -->
 			</div><!-- end loginBox -->
 		</div><!-- end center -->
