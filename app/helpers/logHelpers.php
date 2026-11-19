@@ -148,7 +148,8 @@ function caLogLevelStringToNumber($log_level) {
  */
 function caLogEvent(string $code, string $message, ?string$source=null, ?array $options=null) : bool {
 	$log = caGetLogger($options);
-	$log->logInfo("[{$code}] {$message}".(strlen($source) ? " ({$source})" : ""));
+	$request_id_prefix = isset($_SERVER['HTTP_X_REQUEST_ID']) ? "{$_SERVER['HTTP_X_REQUEST_ID']} " : '';
+	$log->logInfo("[{$code}] {$request_id_prefix}{$message}".(strlen($source) ? " ({$source})" : ""));
 	
 	return true;  
 }
