@@ -391,32 +391,38 @@ class ca_users extends BaseModel {
 	 *
 	 * Required fields are user_name, password, fname and lname.
 	 *
+	 * @param array $options Options include:
+	 *		dontApplyPasswordPolicy  = Accept password without validation using configured password policy. [Default is false]
+	 *		useRawPasswordValue = Set password value in row to value set in model rather than value returned by authentication adapter. [Default is false]
+	 *
 	 * @access public 
 	 * @return bool Returns true if no error, false if error occurred
 	 */	
-	public function insert($pa_options=null) {
+	public function insert($options=null) {
 		if(!caCheckEmailAddress($this->get('email'))) {
 			$this->postError(922, _t("Invalid email address"), 'ca_users->insert()');
 			return false;
 		}
 		
-		// check password policy	
-		if (!self::applyPasswordPolicy($this->get('password'))) {
-			$this->postError(922, _t("Password must %1", self::getPasswordPolicyAsText()), 'ca_users->insert()');
-			return false;
-		}
-		
-		// check password complexity	
-		if (!self::checkPasswordComplexity($this->get('password'))) {
-			$this->postError(922, _t("Password is too easy to guess and was not set"), 'ca_users->insert()');
-			return false;
+		if(!caGetOption('dontApplyPasswordPolicy', $options, false)) {
+			// check password policy	
+			if (!self::applyPasswordPolicy($this->get('password'))) {
+				$this->postError(922, _t("Password must %1", self::getPasswordPolicyAsText()), 'ca_users->insert()');
+				return false;
+			}
+			
+			// check password complexity	
+			if (!self::checkPasswordComplexity($this->get('password'))) {
+				$this->postError(922, _t("Password is too easy to guess and was not set"), 'ca_users->insert()');
+				return false;
+			}
 		}
 		
 
-		# Confirmation key is an md5 hash than can be used as a confirmation token. The idea
+		# Confirmation key is an md5 hash that can be used as a confirmation token. The idea
 		# is that you create a new user record with the 'active' field set to false. You then
-		# send the confirmation key to the new user (usually via e-mail) and ask them to respond
-		# with the key. If they do, you know that the e-mail address is valid.
+		# send the confirmation key to the new user (typically via e-mail) and ask them to respond
+		# with the key. If they do you know that the e-mail address is valid.
 		if(function_exists('mcrypt_create_iv')) {
 			$vs_confirmation_key = md5(mcrypt_create_iv(24, MCRYPT_DEV_URANDOM));
 		} else {
@@ -427,7 +433,7 @@ class ca_users extends BaseModel {
 
 		try {
 			$vs_backend_password = AuthenticationManager::createUserAndGetPassword($this->get('user_name'), $this->get('password'));
-			$this->set('password', $vs_backend_password);
+			$this->set('password', caGetOption('useRawPasswordValue', $options, false) ? $this->get('password') : $vs_backend_password);
 		} catch(AuthClassFeatureException $e) { // auth class does not implement creating users at all
 			$this->postError(925, _t("Current authentication adapter does not support creating new users."), 'ca_users->insert()');
 			return false;
@@ -441,8 +447,8 @@ class ca_users extends BaseModel {
 		$this->set("vars",$this->opa_user_vars);
 		$this->set("volatile_vars",$this->opa_volatile_user_vars);
 		
-		if ($vn_rc = parent::insert($pa_options)) {
-			$this->setGUID($pa_options);
+		if ($vn_rc = parent::insert($options)) {
+			$this->setGUID($options);
 		}
 		return $vn_rc;
 	}
@@ -570,10 +576,14 @@ class ca_users extends BaseModel {
 	 *
 	 * If you do not call this method at the end of your request changed user vars will not be saved! If you are also using the Auth class, the Auth->close() method will call this for you.
 	 *
+	 * @param array $options Options include:
+	 *		dontApplyPasswordPolicy = Accept password without validation using configured password policy. [Default is false]
+	 *		useRawPasswordValue = Set password value in row to value set in model rather than value returned by authentication adapter. [Default is false]
+	 *
 	 * @access public
 	 * @return bool Returns true if no error, false if error occurred
 	 */	
-	public function update($pa_options=null) {
+	public function update($options=null) {
 		$this->clearErrors();
 
 		if($this->changed('email')) {
@@ -584,20 +594,22 @@ class ca_users extends BaseModel {
 		}
 	
 		if($password_has_changed = $this->changed('password')) {
-			if (!self::applyPasswordPolicy($this->get('password'))) {
-				$this->postError(922, _t("Password must %1", self::getPasswordPolicyAsText()), 'ca_users->update()');
-				return false;
-			}
-					
-			// check password complexity	
-			if (!self::checkPasswordComplexity($this->get('password'))) {
-				$this->postError(922, _t("Password is too easy to guess and was not set"), 'ca_users->update()');
-				return false;
+			if(!caGetOption('dontApplyPasswordPolicy', $options, false)) {
+				if (!self::applyPasswordPolicy($this->get('password'))) {
+					$this->postError(922, _t("Password must %1", self::getPasswordPolicyAsText()), 'ca_users->update()');
+					return false;
+				}
+						
+				// check password complexity	
+				if (!self::checkPasswordComplexity($this->get('password'))) {
+					$this->postError(922, _t("Password is too easy to guess and was not set"), 'ca_users->update()');
+					return false;
+				}
 			}
 			
 			try {
 				$vs_backend_password = AuthenticationManager::updatePassword($this->get('user_name'), $this->get('password'));
-				$this->set('password', $vs_backend_password);
+				$this->set('password', caGetOption('useRawPasswordValue', $options, false) ? $this->get('password') : $vs_backend_password);
 				$this->removePendingPasswordReset(true);
 			} catch(AuthClassFeatureException $e) {
 				$this->postError(922, $e->getMessage(), 'ca_users->update()');
@@ -618,7 +630,7 @@ class ca_users extends BaseModel {
 		unset($va_changed_fields['volatile_vars']);
 		
 		if (sizeof($va_changed_fields) == 0) {
-			$pa_options['dontLogChange'] = true;
+			$options['dontLogChange'] = true;
 		}
 		
 		unset(ca_users::$s_user_role_cache[$this->getPrimaryKey()]);
@@ -626,7 +638,7 @@ class ca_users extends BaseModel {
 		
 		if($password_has_changed) { Session::invalidateSessionsForUser($this->getPrimaryKey()); }
 		
-		return parent::update($pa_options);
+		return parent::update($options);
 	}
 	# ----------------------------------------
 	/**

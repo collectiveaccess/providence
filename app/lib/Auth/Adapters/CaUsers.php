@@ -36,8 +36,10 @@ require_once(__CA_MODELS_DIR__.'/ca_users.php');
 
 class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	# --------------------------------------------------------------------------------
+	/**
+	 *
+	 */
 	public function authenticate($ps_username, $ps_password = '', $pa_options=null) {
-
 		$t_user = new ca_users();
 		$t_user->load(['user_name' => $ps_username]);
 
@@ -50,11 +52,12 @@ class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 				$vb_valid = validate_password($ps_password, $vs_hash);
 			}
 
-			// Move legacy (md5, PBKDF2) and outdated hashes over to the current scheme. The new hash is written directly
-			// rather than via ca_users::update() so password policy checks, which apply when choosing a password,
-			// can't block upgrading the hash of an existing one.
+			// Move legacy (md5, PBKDF2) and outdated hashes over to the current scheme. 
 			if ($vb_valid && hash_needs_upgrade($vs_hash)) {
-				$t_user->getDb()->query("UPDATE ca_users SET password = ? WHERE user_id = ?", [create_hash($ps_password), (int)$t_user->getPrimaryKey()]);
+				$t_user->set('password', create_hash($ps_password));
+				if(!$t_user->update(['dontApplyPasswordPolicy' => true, 'useRawPasswordValue' => true])) {
+					throw new CaUsersException(_t('Could not record password: %1', join('; ', $t_user->getErrors())));
+				}
 			}
 			return $vb_valid;
 		} else {
@@ -62,11 +65,17 @@ class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		}
 	}
 	# --------------------------------------------------------------------------------
+	/**
+	 *
+	 */
 	public function createUserAndGetPassword($ps_username, $ps_password) {
 		// ca_users takes care of creating the backend record for us. There's nothing else to do here
 		return create_hash($ps_password);
 	}
 	# --------------------------------------------------------------------------------
+	/**
+	 *
+	 */
 	public function supports($pn_feature) {
 		switch($pn_feature){
 			case __CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__:
@@ -78,11 +87,17 @@ class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		}
 	}
 	# --------------------------------------------------------------------------------
+	/**
+	 *
+	 */
 	public function updatePassword($ps_username, $ps_password) {
 		// ca_users takes care of creating the backend record for us. There's nothing else to do here
 		return create_hash($ps_password);
 	}
 	# --------------------------------------------------------------------------------
+	/**
+	 *
+	 */
 	public function deleteUser($ps_username) {
 		// ca_users takes care of deleting the db row for us. Nothing else to do here.
 		return true;
