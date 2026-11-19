@@ -45,20 +45,18 @@ class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 
 			$vs_hash = $t_user->get('password');
 			if(preg_match('/^[a-f0-9]{32}$/', $vs_hash)) { // old-style md5 passwords
-
-				//throw new CaUsersException(_t('The stored password for this user seems to be in legacy format. Please update the user account by resetting the password.'));
-
-				if (md5($ps_password) == $vs_hash) { // if the md5 hash matches, authenticate successfully and move the user over to pbkdf2 key
-					// ca_users::update takes care of the hashing by calling AuthenticationManager::updatePassword()
-					$t_user->set('password', $ps_password);
-					$t_user->update();
-					return true;
-				} else {
-					return false;
-				}
+				$vb_valid = hash_equals($vs_hash, md5((string)$ps_password));
+			} else {
+				$vb_valid = validate_password($ps_password, $vs_hash);
 			}
 
-			return validate_password($ps_password, $vs_hash);
+			// Move legacy (md5, PBKDF2) and outdated hashes over to the current scheme. The new hash is written directly
+			// rather than via ca_users::update() so password policy checks, which apply when choosing a password,
+			// can't block upgrading the hash of an existing one.
+			if ($vb_valid && hash_needs_upgrade($vs_hash)) {
+				$t_user->getDb()->query("UPDATE ca_users SET password = ? WHERE user_id = ?", [create_hash($ps_password), (int)$t_user->getPrimaryKey()]);
+			}
+			return $vb_valid;
 		} else {
 			return false;
 		}
