@@ -42,6 +42,7 @@ class ImportHelpersTest extends TestCase {
     protected $attributes;
     protected $parents;
     protected $groups;
+    protected $backup_timezone = null;
 
     static $opa_valid_tables = array('ca_objects', 'ca_entities', 'ca_occurrences', 'ca_movements', 'ca_loans', 'ca_object_lots', 'ca_storage_locations', 'ca_places', 'ca_item_comments');
 
@@ -162,6 +163,9 @@ class ImportHelpersTest extends TestCase {
     );
 
     protected function setUp(): void {
+        // Save the default timezone so that tests changing it can restore it in tearDown()
+        $this->backup_timezone = date_default_timezone_get();
+
         $this->data = [
                 1 => "Verdun",
                 2 => ['Cambrai', 'Arras'],
@@ -205,6 +209,8 @@ class ImportHelpersTest extends TestCase {
      * Delete all records we created for this test to avoid side effects with other tests
      */
     protected function tearDown(): void {
+        date_default_timezone_set($this->backup_timezone);
+
         if ($this->opb_care_about_side_effects) {
             foreach ($this->opa_record_map as $vs_table => &$va_records) {
                 $t_instance = Datamodel::getInstance($vs_table);
@@ -646,6 +652,65 @@ class ImportHelpersTest extends TestCase {
             $t_instance->setMode(ACCESS_WRITE);
             $t_instance->delete(true, array('hard' => true));
         }
+    }
+
+    # -------------------------------------------------------
+    /**
+     * caPhpExcelGetDateCellContent must return the wall-clock date encoded in the file, no matter
+     * what default timezone is in effect during the read. Earlier versions treated the Excel date
+     * as UTC when converting it to a Unix timestamp, skewing date-only values into the previous
+     * or next day depending upon the timezone. (See issue #1725)
+     */
+    public function testCaPhpExcelGetDateCellContentIsNotSkewedByDefaultTimezone() {
+        // B2 in the test file is January 22 2018; the default offset of one second forces
+        // the time to be included in the iso8601 output
+        $expected = '2018-01-22T00:00:01Z';
+
+        foreach (array('America/New_York', 'Europe/Berlin', 'Pacific/Kiritimati') as $timezone) {
+            date_default_timezone_set($timezone);
+
+            $sheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(dirname(__DIR__) . '/lib/Import/data/test.xlsx')->getActiveSheet();
+
+            $this->assertSame($expected, caPhpExcelGetDateCellContent($sheet, 2, 'B'), "Date read with default timezone {$timezone}");
+        }
+    }
+
+    # -------------------------------------------------------
+    /**
+     * The offset argument of caPhpExcelGetDateCellContent must be applied on top of the converted
+     * timestamp. B3 in the test file is January 22 2019; with a zero offset the exactly-midnight
+     * date is rendered without a time component, with the default offset of one second the time
+     * is included.
+     */
+    public function testCaPhpExcelGetDateCellContentAppliesOffset() {
+        date_default_timezone_set('America/New_York');
+
+        $sheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(dirname(__DIR__) . '/lib/Import/data/test.xlsx')->getActiveSheet();
+
+        $this->assertSame('2019-01-22', caPhpExcelGetDateCellContent($sheet, 3, 'B', 0));
+        $this->assertSame('2019-01-22T00:00:01Z', caPhpExcelGetDateCellContent($sheet, 3, 'B'));
+    }
+
+    # -------------------------------------------------------
+    /**
+     * Cells that do not hold an Excel date/time value must be returned as-is by
+     * caPhpExcelGetDateCellContent. Earlier versions passed the cell content straight to
+     * excelToTimestamp(), which throws a TypeError for non-numeric values such as text.
+     */
+    public function testCaPhpExcelGetDateCellContentWithNonDateCellReturnsCellContent() {
+        date_default_timezone_set('America/New_York');
+
+        $sheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(dirname(__DIR__) . '/lib/Import/data/test.xlsx')->getActiveSheet();
+
+        // A1 holds the text 'id', C2 holds the text 'Antonio Heredia'
+        $this->assertSame('id', caPhpExcelGetDateCellContent($sheet, 1, 'A'));
+        $this->assertSame('Antonio Heredia', caPhpExcelGetDateCellContent($sheet, 2, 'C'));
+
+        // D2 holds the number 11 without a date format
+        $this->assertSame('11', caPhpExcelGetDateCellContent($sheet, 2, 'D'));
+
+        // an empty cell returns null
+        $this->assertNull(caPhpExcelGetDateCellContent($sheet, 20, 'B'));
     }
 
 }
