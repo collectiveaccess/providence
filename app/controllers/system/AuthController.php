@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2021 Whirl-i-Gig
+ * Copyright 2007-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,15 +32,21 @@ class AuthController extends ActionController {
 	# -------------------------------------------------------
 	
 	# -------------------------------------------------------
-	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-		parent::__construct($po_request, $po_response, $pa_view_paths);
+	/**
+	 *
+	 */
+	public function __construct(&$request, &$response, $view_paths=null) {
+		parent::__construct($request, $response, $view_paths);
 		if (AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__) && !in_array($this->request->getAction(), ['logout', 'callback'])) {
-			$po_response->setRedirect($po_request->getBaseUrlPath().'/'.$po_request->getScriptName().'/'.$po_request->config->get("auth_login_welcome_path"));
-			$po_response->sendResponse();
+			$response->setRedirect($request->getBaseUrlPath().'/'.$request->getScriptName().'/'.$request->config->get("auth_login_welcome_path"));
+			$response->sendResponse();
 			exit;
 		}
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function Login() {
 		global $g_ui_locale;
 		if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
@@ -50,12 +56,15 @@ class AuthController extends ActionController {
 		$this->request->cancelPendingMFALogin();
 
 		// Redirect to the default action
-		$vs_redirect = $this->_getRedirectUrl();
+		$redirect = $this->_getRedirectUrl();
 
-		$this->getView()->setVar('redirect', $vs_redirect);
+		$this->getView()->setVar('redirect', $redirect);
 		$this->render('login_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function DoLogin() {
 		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
 			$this->view->setVar('notifications', $this->notification->getNotifications());
@@ -64,8 +73,8 @@ class AuthController extends ActionController {
 		}
 		global $g_ui_locale;
 		
-		$vs_redirect_url = $this->_getRedirectUrl();
-		if (!$this->request->doAuthentication(array('dont_redirect_to_login' => true, 'redirect' => $vs_redirect_url, 'noPublicUsers' => true, 'user_name' => $this->request->getParameter('username', pString), 'password' => $this->request->getParameter('password', pString)))) {
+		$redirect_url = $this->_getRedirectUrl();
+		if (!$this->request->doAuthentication(array('dont_redirect_to_login' => true, 'redirect' => $redirect_url, 'noPublicUsers' => true, 'user_name' => $this->request->getParameter('username', pString), 'password' => $this->request->getParameter('password', pString)))) {
 			$this->notification->addNotification(_t("Login was invalid"), __NOTIFICATION_TYPE_ERROR__);
 			
 			$this->view->setVar('notifications', $this->notification->getNotifications());
@@ -74,7 +83,7 @@ class AuthController extends ActionController {
 			}
 			$this->render('login_html.php');
 		} else {
-			$this->_loginSucceeded($vs_redirect_url);
+			$this->_loginSucceeded($redirect_url);
 		}
 	}
 	# -------------------------------------------------------
@@ -180,12 +189,18 @@ class AuthController extends ActionController {
 		$this->render('welcome_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function Welcome() {
 		AppNavigation::clearMenuBarCache($this->request);	// clear menu bar cache on welcome (stealth debugging tool)
 		
 		$this->render('welcome_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function Logout() {
 		$this->request->deauthenticate();
 		
@@ -195,6 +210,9 @@ class AuthController extends ActionController {
 		$this->render('logged_out_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function Forgot() {
 		if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
 
@@ -204,10 +222,10 @@ class AuthController extends ActionController {
 	public function RequestPassword() {
 		if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
 		if (caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
-			$vs_username = $this->getRequest()->getParameter('username',pString);
+			$username = $this->getRequest()->getParameter('username',pString);
 			$t_user = new ca_users();
 
-			if($t_user->load($vs_username)) {
+			if($t_user->load($username)) {
 				$t_user->requestPasswordReset();
 			} else {
 				sleep(2);
@@ -218,27 +236,33 @@ class AuthController extends ActionController {
 		$this->render('password_reset_instructions_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function InitReset() {
 		if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
 
-		$vs_token = $this->getRequest()->getParameter('token',pString);
-		$vs_username = $this->getRequest()->getParameter('username',pString);
+		$token = $this->getRequest()->getParameter('token',pString);
+		$username = $this->getRequest()->getParameter('username',pString);
 		$t_user = new ca_users();
 
 		$vb_render_form = false;
-		if($t_user->load($vs_username)) {
-			if($t_user->isValidToken($vs_token)) {
+		if($t_user->load($username)) {
+			if($t_user->isValidToken($token)) {
 				$vb_render_form = true;
 			}
 		}
 
 		$this->view->setVar('renderForm', $vb_render_form);
-		$this->view->setVar('token', $vs_token);
-		$this->view->setVar('username', $vs_username);
+		$this->view->setVar('token', $token);
+		$this->view->setVar('username', $username);
 
 		$this->render('password_reset_form_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function DoReset() {
 		if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
 		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
@@ -246,28 +270,28 @@ class AuthController extends ActionController {
 			return;
 		}
 
-		$vs_token = $this->getRequest()->getParameter('token',pString);
-		$vs_username = $this->getRequest()->getParameter('username',pString);
+		$token = $this->getRequest()->getParameter('token',pString);
+		$username = $this->getRequest()->getParameter('username',pString);
 		$t_user = new ca_users();
 
-		$vs_pw = $this->getRequest()->getParameter('password',pString);
-		$vs_pw_check = $this->getRequest()->getParameter('password2',pString);
+		$pw = $this->getRequest()->getParameter('password',pString);
+		$pw_check = $this->getRequest()->getParameter('password2',pString);
 
-		if($t_user->load($vs_username)) {
-			if($t_user->isValidToken($vs_token)) {
+		if($t_user->load($username)) {
+			if($t_user->isValidToken($token)) {
 				// no password match
-				if($vs_pw !== $vs_pw_check) {
+				if($pw !== $pw_check) {
 
 					$this->notification->addNotification(_t("Passwords did not match. Please try again."), __NOTIFICATION_TYPE_ERROR__);
 					$this->view->setVar('notifications', $this->notification->getNotifications());
 
 					$this->view->setVar('renderForm', true);
-					$this->view->setVar('token', $vs_token);
-					$this->view->setVar('username', $vs_username);
+					$this->view->setVar('token', $token);
+					$this->view->setVar('username', $username);
 
 					$this->render('password_reset_form_html.php');
 				} else {
-					$t_user->set('password', $vs_pw);
+					$t_user->set('password', $pw);
 					$t_user->setMode(ACCESS_WRITE);
 					$t_user->update();
 
