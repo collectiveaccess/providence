@@ -29,15 +29,19 @@ $t_user = $this->getVar('t_user');
 $user_id = (int)$this->getVar('user_id');
 ?>
 <div class="sectionBox">
-	<div class="delete-control-box">
-		<h2><?= _t("Reset two-factor authentication for %1?", htmlspecialchars($t_user->getName().' ('.$t_user->get('user_name').')')); ?></h2>
-		<p><?= _t("This turns off two-factor authentication for this user and removes their authenticator app setup and recovery codes. They will be able to log in with only their password until they set it up again."); ?></p>
-		<p><?= _t("Only do this after confirming the user's identity, for example when they have lost their phone and their recovery codes."); ?></p>
-		<?= caFormTag($this->request, 'ResetMFA', 'resetMFAForm'); ?>
+		<div class='delete-control-box'>
+			<?= caFormTag($this->request, 'ResetMFA', 'resetMFAForm'); ?>
+<?php
+			print caFormControlBox(
+				"<div class='delete_warning_box'>"._t('Disable two-factor authentication?')."</div>".
+				 _t("Two-factor authentication will be disabled for <strong>%1</strong> (%2).<br>Their authenticator app setup and recovery codes will be removed. They will continue to be able to log in using their password.", $t_user->getName(), $t_user->get('user_name')),
+				'',
+				caFormSubmitButton($this->request, __CA_NAV_ICON_DISABLE__, _t("Disable"), 'resetMFAForm').
+				caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/access', 'Users', 'Edit', ['user_id' => $user_id])
+			)."\n";
+?>
 			<input type="hidden" name="user_id" value="<?= $user_id; ?>"/>
 			<input type="hidden" name="confirm" value="1"/>
-			<?= caFormSubmitButton($this->request, __CA_NAV_ICON_DELETE__, _t("Reset two-factor authentication"), 'resetMFAForm'); ?>
-			<?= caNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/access', 'Users', 'Edit', ['user_id' => $user_id]); ?>
 		</form>
 	</div>
 </div>

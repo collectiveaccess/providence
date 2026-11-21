@@ -20,11 +20,11 @@ a:hover{
 	width:485px;
 	background-color: #FFFFFF;
 	text-align:left;
-	margin:100px 0px 50px 0px;
+	margin: 100px 0px 50px 0px;
 	-moz-box-shadow: 0 0 5px #888;
 	-webkit-box-shadow: 0 0 5px#888;
 	box-shadow: 0 0 5px #888;
-	padding-top: 25px;
+	padding: 25px 5px 5px 5px;
 	position: relative;
 }
 #loginForm{
@@ -64,6 +64,9 @@ a:hover{
 }
 
 .notificationContent {
+    width: 100%;
+    margin: 10px 0 0 0;
+    padding: 0px;
     font-size: 18px;
     font-weight: bold;
     color: darkred;

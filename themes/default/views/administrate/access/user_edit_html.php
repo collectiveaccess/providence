@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -89,15 +89,20 @@ $password_policies = $this->getVar('password_policies') ?? [];
 		if (($user_id > 0) && UserMFA::isEnabled()) {
 			$mfa_status = UserMFA::getStatus((int)$user_id);
 ?>
-					<div class="formLabel"><?= _t('Two-factor authentication'); ?><br/>
+					<div class="mfaEnableStatus">
+						<h2><?= _t('Two-factor authentication'); ?></h2>
+						
 <?php
 			if ($mfa_status['enabled']) {
-				print _t('On since %1; %2 unused recovery code(s)', caGetLocalizedDate($mfa_status['enabled_on'], ['dateFormat' => 'delimited', 'timeOmit' => true]), $mfa_status['recovery_codes']);
-				print ' &nbsp; '.caNavLink($this->request, _t('Reset').' &rsaquo;', '', 'administrate/access', 'Users', 'ResetMFA', ['user_id' => $user_id]);
+				
+				print "<p>"._t('Two-factor authentication is <strong>on</strong> (since %1).', caGetLocalizedDate($mfa_status['enabled_on'], ['dateFormat' => 'delimited', 'timeOmit' => true]), $mfa_status['recovery_codes']).' ';
+				print (($mfa_status['recovery_codes'] == 1) ? _t("User has %1 unused recovery code.", $mfa_status['recovery_codes']): _t("User has %1 unused recovery codes.", $mfa_status['recovery_codes']))."</p>\n";
+				print "<p>"._t('%1 for this user.', caNavLink($this->request, _t('Disable two-factor authentication'), '', 'administrate/access', 'Users', 'ResetMFA', ['user_id' => $user_id]))."</p>\n";
 			} else {
 				print _t('Off');
 			}
 ?>
+						</div>
 					</div>
 <?php
 		}

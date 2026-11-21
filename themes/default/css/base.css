@@ -2123,13 +2123,13 @@ div.delete-control-box {
     margin-top: 32px;
 }
 div.delete_warning_box {
-    text-indent: 42px;
     font-size: 14px;
 	color: #EB0000;
     padding-top: 10px;
-    width: 400px;
     height: 26px;
     font-family:'din-regular';
+    width: 100%;
+    text-align: center;
 }
 
 div.delete_remapping_controls {

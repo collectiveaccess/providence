@@ -64,10 +64,11 @@ AppController::getInstance()->removeAllPlugins();
 						<div class="loginFormElement"><?= _t("Enter the code from your authenticator app"); ?>:<br/>
 							<input id="mfaCode" type="text" name="code" size="25" autocomplete="one-time-code" inputmode="numeric" placeholder="<?= htmlspecialchars(_t('Authenticator code')); ?>"/>
 						</div>
-						<div class="loginFormElementNote"><?= $this->getVar('can_email_code') ? _t("No access to your app? Enter one of your recovery codes, or have a code sent to your email.") : _t("No access to your app? Enter one of your recovery codes instead."); ?></div>
+						<div class="loginFormElementNote"><?= $this->getVar('can_email_code') ? _t("No access to your app? Enter one of your recovery codes or have a code sent to your email.") : _t("No access to your app? Enter one of your recovery codes instead."); ?></div>
 						<input name="local" type="hidden" value="<?= (bool)($_REQUEST['local'] ?? null) ? 1 : 0; ?>" />
 						<div class="loginSubmitButton"><?= caFormSubmitButton($this->request, __CA_NAV_ICON_LOGIN__, _t("Verify"), "verify", ['icon_position' => __CA_NAV_ICON_ICON_POS_RIGHT__]); ?></div>
 					</form>
+					
 <?php if($this->getVar('can_email_code')) { ?>
 					<?= caFormTag($this->request, 'SendCode', 'sendCode'); ?>
 						<input name="local" type="hidden" value="<?= (bool)($_REQUEST['local'] ?? null) ? 1 : 0; ?>" />
@@ -75,7 +76,7 @@ AppController::getInstance()->removeAllPlugins();
 <?php } ?>
 					<div id="forgotLink">
 <?php if($this->getVar('can_email_code')) { ?>
-						<?= caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_EMAIL__, '12px').' '._t("Send code"), 'sendCode', ['size' => '12px', 'icon_position' => __CA_NAV_ICON_ICON_POS_RIGHT__]); ?>
+						<?= caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_EMAIL__, '12px').' '._t("Send code"), 'sendCodeButton', 'sendCode', ['size' => '12px', 'icon_position' => __CA_NAV_ICON_ICON_POS_RIGHT__]); ?>
 <?php } ?>
 						<?= caNavLink($this->request, caNavIcon(__CA_NAV_ICON_CANCEL__, '12px').' '._t("Cancel"), '', 'system/auth', 'login', ''); ?>
 					</div>

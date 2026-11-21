@@ -114,6 +114,7 @@ define('__CA_NAV_ICON_AUTO_DELETE__', 76);
 define('__CA_NAV_ICON_NO_AUTO_DELETE__', 77);
 define('__CA_NAV_ICON_SET_ACCESS__', 78);
 define('__CA_NAV_ICON_EMAIL__', 79);
+define('__CA_NAV_ICON_DISABLE__', 80);
 
 /**
  * Icon position constants
@@ -958,6 +959,9 @@ function _caNavIconTypeToName($pn_type) {
 			break;					
 		case __CA_NAV_ICON_EMAIL__:
 			$vs_fa_class = 'far fa-envelope';
+			break;				
+		case __CA_NAV_ICON_DISABLE__:
+			$vs_fa_class = 'fas fa-toggle-off';
 			break;														
 		default:
 			print "INVALID CONSTANT $pn_type<br>\n";
