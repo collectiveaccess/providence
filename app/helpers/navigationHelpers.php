@@ -113,6 +113,8 @@ define('__CA_NAV_ICON_TRASH__', 75);
 define('__CA_NAV_ICON_AUTO_DELETE__', 76);
 define('__CA_NAV_ICON_NO_AUTO_DELETE__', 77);
 define('__CA_NAV_ICON_SET_ACCESS__', 78);
+define('__CA_NAV_ICON_EMAIL__', 79);
+
 /**
  * Icon position constants
  */ 
@@ -953,6 +955,9 @@ function _caNavIconTypeToName($pn_type) {
 			break;				
 		case __CA_NAV_ICON_SET_ACCESS__:
 			$vs_fa_class = 'fas fa-broadcast-tower';
+			break;					
+		case __CA_NAV_ICON_EMAIL__:
+			$vs_fa_class = 'far fa-envelope';
 			break;														
 		default:
 			print "INVALID CONSTANT $pn_type<br>\n";
