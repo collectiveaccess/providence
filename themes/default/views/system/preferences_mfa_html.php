@@ -97,7 +97,7 @@ $available = $this->getVar('available');
 		);
 ?>
 		<h1><?= _t("Preferences").": "._t("Two-factor authentication"); ?></h1>
-		<p class="mfaStatus"><?= _t("Two-factor authentication is <strong>on</strong> (since %1). When you log in with your password, you will also be asked for a code from your authenticator app.", caGetLocalizedDate($status['enabled_on'], ['dateFormat' => 'delimited', 'timeOmit' => true])); ?></p>
+		<p class="mfaStatus"><?= _t("Two-factor authentication is <strong>ON</strong> (since %1). When you log in with your password, you will also be asked for a code from your authenticator app.", caGetLocalizedDate($status['enabled_on'], ['dateFormat' => 'delimited', 'timeOmit' => true])); ?></p>
 <?php
 		if ($status['recovery_codes'] < 3) {
 ?>
@@ -129,7 +129,7 @@ $available = $this->getVar('available');
 		);
 ?>
 		<h1><?= _t("Preferences").": "._t("Two-factor authentication"); ?></h1>
-		<p class="mfaStatus"><?= _t("Two-factor authentication is <strong>off</strong>."); ?></p>
+		<p class="mfaStatus"><?= _t("Two-factor authentication is <strong>OFF</strong>."); ?></p>
 		<p><?= _t("With two-factor authentication, logging in requires both your password and a code from an authenticator app on your personal device (typically a phone or tablet). Someone who learns your password still cannot log in without your device."); ?></p>
 <?php
 		if ($this->getVar('email_fallback')) {

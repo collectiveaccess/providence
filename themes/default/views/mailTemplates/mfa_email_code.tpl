@@ -33,4 +33,4 @@
 <p><?= _t("Your login code is:"); ?></p>
 <p style="font-size: 24px; font-weight: bold; letter-spacing: 4px;"><?= htmlspecialchars((string)$this->getVar('code')); ?></p>
 <p><?= _t("It can be used once and expires in %1 minutes.", (int)$this->getVar('minutes')); ?></p>
-<p><?= _t("This code was requested after your password was entered correctly (IP address %1). If this wasn't you, change your password and contact your CollectiveAccess administrator at %2.", htmlspecialchars((string)$this->getVar('ip')), __CA_ADMIN_EMAIL__); ?></p>
+<p><?= _t("This code was requested after your password was entered correctly (IP address %1). If this wasn't you, change your password and contact your %3 administrator at %2.", htmlspecialchars((string)$this->getVar('ip')), __CA_ADMIN_EMAIL__, __CA_APP_DISPLAY_NAME__); ?></p>

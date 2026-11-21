@@ -168,11 +168,11 @@ trait CLIUtilsAccessControl {
 		}
 		$user_id = (int)$t_user->getPrimaryKey();
 
-		if (!UserMFA::disable($user_id, ['reason' => _t('reset from command line')])) {
-			CLIUtils::addError(_t("Could not reset two-factor authentication for user %1", $user_name));
+		if (!UserMFA::disable($user_id, ['reason' => _t('disabled from command line')])) {
+			CLIUtils::addError(_t("Could not disable two-factor authentication for user %1", $user_name));
 			return false;
 		}
-		CLIUtils::addMessage(_t('Two-factor authentication is off for user %1. They can now log in with only their password.', $user_name), ['color' => 'bold_green']);
+		CLIUtils::addMessage(_t('Two-factor authentication is off for user %1. They can now log in using solely their password.', $user_name), ['color' => 'bold_green']);
 		return true;
 	}
 	# -------------------------------------------------------
@@ -181,8 +181,8 @@ trait CLIUtilsAccessControl {
 	 */
 	public static function reset_mfaParamList() {
 		return [
-			"username|n=s" => _t("User name to reset two-factor authentication for."),
-			"user|u=s" => _t("User name to reset two-factor authentication for.")
+			"username|n=s" => _t("User name to disable two-factor authentication for."),
+			"user|u=s" => _t("User name to disable two-factor authentication for.")
 		];
 	}
 	# -------------------------------------------------------
@@ -197,14 +197,14 @@ trait CLIUtilsAccessControl {
 	 *
 	 */
 	public static function reset_mfaShortHelp() {
-		return _t('Turn off two-factor authentication for a user');
+		return _t('Disable two-factor authentication for a user');
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
 	public static function reset_mfaHelp() {
-		return _t('Turns off two-factor authentication for a user who has lost access to their authenticator app and recovery codes, removing their authenticator app setup and recovery codes. The user can then log in with only their password and set up two-factor authentication again. Also works when two-factor authentication is turned off in authentication.conf.');
+		return _t('Disable two-factor authentication for a user, removing their authenticator app setup and recovery codes. The user can continue to log in with their password and set up two-factor authentication again if desired. This command is useful when a user has lost access to their authenticator app and recovery codes. Resetting their two-factor authentication will allow the user to log in using only their password and re-establish two-factor authentication with a new authenticator and recovery codes.');
 	}
 	# -------------------------------------------------------
 	/**
