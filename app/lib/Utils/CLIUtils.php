@@ -64,5 +64,6 @@ class CLIUtils extends CLIBaseUtils {
 	use CLIUtilsBanHammer;
 	use CLIUtilsLocalization;
 	use CLIUtilsAccessControl;
+	use CLIUtilsMigration;
 	use CLIUtilsSitemap;
 }
