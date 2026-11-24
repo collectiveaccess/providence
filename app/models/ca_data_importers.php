@@ -1079,7 +1079,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		// Remove any existing mapping
 		if ($t_importer->load(array('importer_code' => $va_settings['code']))) {
 			if ((!(bool)$t_importer->get('deleted'))) { $is_new = false; }
-			$t_importer->delete(true, array('hard' => true));
+			$t_importer->delete(true, ['hard' => true]);
 			if ($t_importer->numErrors()) {
 				$pa_errors[] = _t("Could not delete existing mapping for %1: %2", $va_settings['code'], join("; ", $t_importer->getErrors()))."\n";
 				if ($o_log) { $o_log->logError(_t("[loadImporterFromFile:%1] Could not delete existing mapping for %2: %3", $ps_source, $va_settings['code'], join("; ", $t_importer->getErrors()))); }
@@ -2061,7 +2061,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							['returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans]]
 						);
 						if (is_array($ids) && (sizeof($ids) > 0)) {
-							$t_subject->delete(true, array('hard' => true));
+							$t_subject->delete(true, ['hard' => false]);
 							if ($t_subject->numErrors()) {
 								$this->logImportError(_t('[%1] Could not delete existing record matched on primary key %2 for %3 by policy %4', $vs_idno, $vn_mapped_primary_key_value, $t_subject->tableName(), $vs_existing_record_policy), $va_log_import_error_opts);
 								// Don't stop?
@@ -2176,7 +2176,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			foreach($ids as $id) {	
 				$t_subject->load($id);		
 				if($t_subject->isLoaded() && in_array($vs_existing_record_policy, ['overwrite_on_preferred_labels', 'overwrite_on_idno_and_preferred_labels', 'overwrite_on_idno'])) {
-					$t_subject->delete(true, ['hard' => true]);
+					$t_subject->delete(true, ['hard' => false]);
 					if ($t_subject->numErrors()) {
 						$this->logImportError(_t('[%1] Could not delete existing record matched on label by policy %2: %3', $vs_idno, $vs_existing_record_policy, join('; ', $t_subject->getErrors())), $va_log_import_error_opts);
 						// Don't stop?
@@ -3595,7 +3595,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										
 												if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add preferred label to %2. Record was deleted because no preferred label could be applied: ", $vs_idno, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 													$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => 'preferred_labels', 'notes' => null]));
-													$t_subject->delete(true, array('hard' => false));
+													$t_subject->delete(true, ['hard' => false]);
 											
 													if ($vs_import_error_policy == 'stop') {
 														$o_log->logAlert(_t('Import stopped due to import error policy %1', $vs_import_error_policy));
