@@ -1381,7 +1381,7 @@ function caEditorInspector($view, $options=null) {
 					TooltipManager::add("#inspectorChangeType", _t('Change Record Type'));
 				}
 
-				if ($t_item->getPrimaryKey() && $view->request->config->get("{$table_name}_show_add_child_control_in_inspector")) {
+				if ($t_item->getPrimaryKey() && $view->request->config->get("{$table_name}_show_add_child_control_in_inspector") && $view->request->user->canDoAction("can_create_{$table_name}")) {
 					$show_add_child_control = true;
 					if (is_array($va_restrict_add_child_control_to_types = $view->request->config->getList($table_name.'_restrict_child_control_in_inspector_to_types')) && sizeof($va_restrict_add_child_control_to_types)) {
 						$t_type_instance = $t_item->getTypeInstance();
