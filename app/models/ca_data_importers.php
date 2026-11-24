@@ -3595,7 +3595,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										
 												if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add preferred label to %2. Record was deleted because no preferred label could be applied: ", $vs_idno, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 													$this->logImportError($vs_error, array_merge($va_log_import_error_opts, ['bundle' => 'preferred_labels', 'notes' => null]));
-													$t_subject->delete(true, ['hard' => false]);
+													$t_subject->delete(true, ['hard' => true]);
 											
 													if ($vs_import_error_policy == 'stop') {
 														$o_log->logAlert(_t('Import stopped due to import error policy %1', $vs_import_error_policy));
