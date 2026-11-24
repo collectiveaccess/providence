@@ -633,7 +633,7 @@ class BrowseEngine extends BaseFindEngine {
 				if (!($t_table = Datamodel::getInstanceByTableName($va_facet_info['table'], true))) { break; }
 				if (!$t_table->load($pn_row_id)) { return '???'; }
 				if($t_table->get('parent_id')) { 
-					return $t_table->get($t_table->tableName().".hierarchy.preferred_labels", ['delimiter' => ' ➜ ']);
+					return $t_table->get(($va_facet_info['template'] ?? null) ? $va_facet_info['template'] : $t_table->tableName().".hierarchy.preferred_labels", ($va_facet_info['template'] ?? null) ? [] : ['delimiter' => ' ➜ ']);
 				}
 				return $t_table->getLabelForDisplay();
 				break;
@@ -5115,8 +5115,14 @@ class BrowseEngine extends BaseFindEngine {
 						}
 
 						$vs_order_by = (sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
+						// Count distinct browse subjects for related facets to avoid
+						// counting the same object multiple times through joined records.
+						$vs_count = !empty($va_facet_info['relative_to'])
+							? 'COUNT(DISTINCT '.$t_subject->primaryKey(true).')'
+							: 'COUNT(*)';
+
 						$vs_sql = "
-							SELECT COUNT(*) _count, lil.item_id, lil.name_singular, lil.name_plural, lil.name_sort, lil.locale_id, li.`rank`, li.idno_sort, li.parent_id
+							SELECT {$vs_count} _count, lil.item_id, lil.name_singular, lil.name_plural, lil.name_sort, lil.locale_id, li.`rank`, li.idno_sort, li.parent_id
 							FROM ca_list_items li
 							INNER JOIN ca_list_item_labels AS lil ON lil.item_id = li.item_id
 							{$vs_join_sql}

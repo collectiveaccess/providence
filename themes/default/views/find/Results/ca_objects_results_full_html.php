@@ -87,15 +87,16 @@ $item_count = 0;
 			if ( in_array( $info['bundle_name'], [ 'ca_objects.preferred_labels', 'ca_object_labels.name' ] ) ) {
 				continue;
 			}
-			if ( $display_text = $t_display->getDisplayValue( $result,
-				( $placement_id > 0 ) ? $placement_id : $info['bundle_name'],
-				array_merge( array( 'request' => $this->request ),
-					is_array( $info['settings'] ) ? $info['settings'] : array() ) )
-			) {
+			if ( ($display_text = $t_display->getDisplayValue( $result,
+					( $placement_id > 0 ) ? $placement_id : $info['bundle_name'],
+					array_merge( array( 'request' => $this->request ),
+						is_array( $info['settings'] ) ? $info['settings'] : array() ) )
+			     ) || (bool)$t_display->getSetting('show_empty_values') ) {
 				print "<div class='objectFullTextTextBlock'><span class='formLabel'>" . $info['display'] . "</span>: "
 				      . $display_text . "</div>\n";
 			}
 		}
+
 		print "</div><!-- END objectFullText -->";
 
 		$item_count ++;
