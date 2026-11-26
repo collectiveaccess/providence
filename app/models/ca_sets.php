@@ -2638,7 +2638,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 						INNER JOIN ca_attributes as a ON av.attribute_id = a.attribute_id
 						INNER JOIN ca_set_items as si ON si.item_id = a.row_id
 						WHERE a.table_num = ? AND av.item_id = ? AND si.set_id = ?					
-						", array($t_set_item->tableNum(), $vn_is_primary_item_id, $vn_set_id));
+						", [$t_set_item->tableNum(), $vn_is_primary_item_id, $vn_set_id]);
 					if($qr_primary_items->numRows()){
 						$va_tmp = array();
 						while($qr_primary_items->nextRow()){
@@ -2646,16 +2646,16 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 						}
 						$va_primary_set_item_ids_for_set[$vn_set_id] = $va_tmp;
 					} else {
-						$va_tmp = array();
+						$va_tmp = [];
 						$qr_any = $o_db->query("
 							SELECT si.item_id, si.row_id
 							FROM ca_set_items si 
 							INNER JOIN ca_objects as o on o.object_id = si.row_id
 							INNER JOIN ca_objects_x_object_representations as oxr on oxr.object_id = o.object_id
 							INNER JOIN ca_object_representations as r on r.representation_id = oxr.representation_id
-							WHERE si.set_id = ?		AND r.access = 1
-							ORDER BY rand()
-							", array($vn_set_id));
+							WHERE si.set_id = ?		AND r.access = 1 AND o.access = 1
+							ORDER BY rand() LIMIT 1
+							", [$vn_set_id]);
 						if($qr_any && $qr_any->nextRow()) {
 							$va_tmp[] = $qr_any->get("item_id");
 						}
@@ -2667,7 +2667,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$t_set = new ca_sets();
 		foreach($pa_set_ids as $vn_set_id) {
 			if ($t_set->load($vn_set_id)) {
-				if(is_array($va_primary_set_item_ids_for_set[$vn_set_id])){
+				if(is_array($va_primary_set_item_ids_for_set[$vn_set_id]) && sizeof($va_primary_set_item_ids_for_set[$vn_set_id])){
 					$pa_options["item_ids"] = $va_primary_set_item_ids_for_set[$vn_set_id];
 					$pa_options["limit"] = null;
 				}else{
