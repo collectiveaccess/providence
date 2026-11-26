@@ -437,6 +437,10 @@ trait ModelSettings {
 				}
 				break;
 			# --------------------------------------------
+			case DT_PASSWORD:
+				$vs_return .= '<input name="'.$vs_input_name.'" type="password" size="'.$va_properties["width"].'" value="'.htmlspecialchars($vs_value).'" />'."\n";
+				break;
+			# --------------------------------------------
 			case DT_CHECKBOXES:
 				$va_attributes = array('value' => '1', 'id' => $vs_input_id, 'class' => $input_class);
 				if ((int)$vs_value === 1) {
