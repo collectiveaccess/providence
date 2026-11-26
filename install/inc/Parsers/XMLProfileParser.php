@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2021-2025 Whirl-i-Gig
+ * Copyright 2021-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -532,7 +532,7 @@ class XMLProfileParser extends BaseProfileParser {
 				
 				$user_access = self::processAccessRestrictions('user', $ui->userAccess);
 				$group_access = self::processAccessRestrictions('group', $ui->groupAccess);
-				$role_access = self::processAccessRestrictions('role', $ui->userAccess);
+				$role_access = self::processAccessRestrictions('role', $ui->roleAccess);
 			
 				$this->data['userInterfaces'][$ui_code] = [
 					'labels' => $labels,
@@ -577,7 +577,7 @@ class XMLProfileParser extends BaseProfileParser {
 			
 			$user_access = self::processAccessRestrictions('user', $screen->userAccess);
 			$group_access = self::processAccessRestrictions('group', $screen->groupAccess);
-			$role_access = self::processAccessRestrictions('role', $screen->userAccess);
+			$role_access = self::processAccessRestrictions('role', $screen->roleAccess);
 			
 			$values[$idno] = [
 				'idno' => $idno,
@@ -696,7 +696,7 @@ class XMLProfileParser extends BaseProfileParser {
 				
 				$user_access = self::processAccessRestrictions('user', $display->userAccess);
 				$group_access = self::processAccessRestrictions('group', $display->groupAccess);
-				$role_access = self::processAccessRestrictions('role', $display->userAccess);
+				$role_access = self::processAccessRestrictions('role', $display->roleAccess);
 			
 				$this->data['displays'][$display_code] = [
 					'labels' => $labels,
@@ -945,7 +945,7 @@ class XMLProfileParser extends BaseProfileParser {
 				
 				$user_access = self::processAccessRestrictions('user', $form->userAccess);
 				$group_access = self::processAccessRestrictions('group', $form->groupAccess);
-				$role_access = self::processAccessRestrictions('role', $form->userAccess);
+				$role_access = self::processAccessRestrictions('role', $form->roleAccess);
 			
 				$this->data['searchForms'][$form_code] = [
 					'labels' => $labels,
@@ -1013,7 +1013,7 @@ class XMLProfileParser extends BaseProfileParser {
 				
 				$user_access = self::processAccessRestrictions('user', $alert->userAccess);
 				$group_access = self::processAccessRestrictions('group', $alert->groupAccess);
-				$role_access = self::processAccessRestrictions('role', $alert->userAccess);
+				$role_access = self::processAccessRestrictions('role', $alert->roleAccess);
 			
 				$this->data['metadataAlerts'][$alert_code] = [
 					'labels' => $labels,
