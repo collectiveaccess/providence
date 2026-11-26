@@ -42,10 +42,43 @@ class OAIController extends BaseServiceController {
 	/**
 	 * Dispatch the request to the OAI-PMH service object
 	 */
+
 	public function __call($ps_provider, $pa_args){
+		$config = Configuration::load('oai_provider.conf');
+		$providers = $config->getAssoc('providers');
+		$provider_config = $providers[$ps_provider] ?? null;
+		$allowed_ips = is_array($provider_config) ? ($provider_config['allowed_ips'] ?? null) : null;
+
+		if ($allowed_ips !== null) {
+			if (!is_array($allowed_ips)) {
+				$this->response->setHTTPResponseCode(403, 'Forbidden');
+				return;
+			}
+
+			if (sizeof($allowed_ips)) {
+				$client_ip = $this->request->getClientIP();
+				$client_ip_binary = filter_var($client_ip, FILTER_VALIDATE_IP) ? @inet_pton($client_ip) : false;
+				$allowed = false;
+
+				if ($client_ip_binary !== false) {
+					foreach($allowed_ips as $allowed_ip) {
+						if (filter_var($allowed_ip, FILTER_VALIDATE_IP) && @inet_pton($allowed_ip) === $client_ip_binary) {
+							$allowed = true;
+							break;
+						}
+					}
+				}
+
+				if (!$allowed) {
+					$this->response->setHTTPResponseCode(403, 'Forbidden');
+					return;
+				}
+			}
+		}
+
 		$this->service = new OAIPMHService($this->request, $ps_provider);
 		$this->view->setVar('oaiData', $this->service->dispatch());
-		
+
 		$this->response->setContentType("application/xml");
 		$this->render('oai/oai_xml.php');
 	}

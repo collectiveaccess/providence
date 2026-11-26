@@ -1549,13 +1549,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				}
 			} else {
 				// Values
-                                $omit_template_result = false;
-				if($template) {//string or array
-					$values = caProcessTemplateForIDs($template, $table_num, [$record_id], []);
-                                        $omit_template_result = $omit_if_template_empty && (strlen(trim((string)$values)) === 0);
+                $omit_template_result = false;
+				if($template) { //string or array
+					$values = caProcessTemplateForIDs($template, $table_num, [$record_id], ['returnAsArray' => true]);
+                    $omit_template_result = $omit_if_template_empty && (strlen(trim((string)$values)) === 0);
 					$delimiter = $settings['delimiter'] ?? null;
 					if($is_repeat && $delimiter) $values = explode($delimiter, $values);
-				}else {
+				} else {
 					$values = $t_instance->get($source, array_merge(
 						$get_options,
 						['returnAsArray' => true]
@@ -1565,7 +1565,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 				// TODO: handle this more centrally?
 				if($omit_if_empty) {
-					$values = array_filter($values, 'strlen');
+					$values = array_filter($values ?? [], 'strlen');
 					$omit_check_values = $t_instance->get($omit_if_empty, array_merge($get_options, ['returnAsArray' => true]));
 					if(is_array($omit_check_values)) { $omit_check_values = array_filter($omit_check_values, 'strlen'); }
 					if(!$omit_check_values || (is_array($omit_check_values) && !sizeof($omit_check_values))) { $values = []; }

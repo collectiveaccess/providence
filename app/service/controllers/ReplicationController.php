@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2022 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,13 +30,13 @@ require_once(__CA_LIB_DIR__.'/Service/ReplicationService.php');
 
 class ReplicationController extends BaseServiceController {
 	# -------------------------------------------------------
-	public function __construct(&$po_request, &$po_response, $pa_view_paths) {
-		parent::__construct($po_request, $po_response, $pa_view_paths);
+	public function __construct(&$request, &$response, $view_paths) {
+		parent::__construct($request, $response, $view_paths);
 	}
 	# -------------------------------------------------------
-	public function __call($ps_endpoint, $pa_args) {
+	public function __call($endpoint, $args) {
 		try {
-			$va_content = ReplicationService::dispatch($ps_endpoint, $this->getRequest());
+			$content = ReplicationService::dispatch($endpoint, $this->getRequest());
 		} catch(Exception $e) {
 			$this->getView()->setVar('errors', array($e->getMessage()));
 			$this->render('json/json_error.php');
@@ -47,7 +47,7 @@ class ReplicationController extends BaseServiceController {
 			$this->getView()->setVar('pretty_print', true);
 		}
 
-		$this->getView()->setVar('content', $va_content);
+		$this->getView()->setVar('content', $content);
 		$this->render('json/json.php');
 	}
 	# -------------------------------------------------------

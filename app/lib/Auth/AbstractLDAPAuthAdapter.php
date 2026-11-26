@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2018 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -220,6 +220,14 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 	 * @return mixed
 	 */
     protected function getProcessedConfigValue($pa_config, $ps_key, $ps_user_group_name, $ps_user_ou, $ps_base_dn) {
+        // User and group names are escaped for the context they're substituted into to prevent LDAP injection.
+        // Bind names are left as-is: they aren't always DNs (Eg. Active Directory "DOMAIN\user" and UPN forms)
+        // and binding requires the password for whatever name results anyway.
+        if (in_array($ps_key, ['ldap_bind_rdn_filter', 'ldap_user_search_filter_format', 'ldap_group_search_filter_format'], true)) {
+            $ps_user_group_name = ldap_escape((string)$ps_user_group_name, '', LDAP_ESCAPE_FILTER);
+        } elseif (in_array($ps_key, ['ldap_user_search_dn_format', 'ldap_group_search_dn_format'], true)) {
+            $ps_user_group_name = ldap_escape((string)$ps_user_group_name, '', LDAP_ESCAPE_DN);
+        }
         $result = $pa_config[$ps_key];
         $result = str_replace('{username}', $ps_user_group_name, $result);
         $result = str_replace('{groupname}', $ps_user_group_name, $result);

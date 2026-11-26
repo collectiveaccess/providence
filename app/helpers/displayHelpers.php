@@ -1383,7 +1383,7 @@ function caEditorInspector($view, $options=null) {
 					TooltipManager::add("#inspectorChangeType", _t('Change Record Type'));
 				}
 
-				if ($t_item->getPrimaryKey() && $view->request->config->get("{$table_name}_show_add_child_control_in_inspector")) {
+				if ($t_item->getPrimaryKey() && $view->request->config->get("{$table_name}_show_add_child_control_in_inspector") && $view->request->user->canDoAction("can_create_{$table_name}")) {
 					$show_add_child_control = true;
 					if (is_array($va_restrict_add_child_control_to_types = $view->request->config->getList($table_name.'_restrict_child_control_in_inspector_to_types')) && sizeof($va_restrict_add_child_control_to_types)) {
 						$t_type_instance = $t_item->getTypeInstance();
@@ -1491,16 +1491,6 @@ function caEditorInspector($view, $options=null) {
 		
 					TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($type_name, 'UTF-8')));
 				}
-			}
-			
-			if (method_exists($t_item, 'getTypeCode') && caHomeLocationsEnabled($t_item->tableName(), $t_item->getTypeCode()) && $view->request->user->canDoAction("can_set_home_location_".$table_name)) {	
-				$tools[] = "<div id='inspectorSetHomeLocation' class='inspectorActionButton'><div id='inspectorSetHomeLocationButton'><a href='#' onclick='_initSetHomeLocationHierarchyBrowser(); return false;'>".caNavIcon(__CA_NAV_ICON_HOME__, '20px', array('title' => _t('Set home location')))."</a></div></div>\n";
-	
-				$change_type_view = new View($view->request, $view->request->getViewsDirectoryPath()."/bundles/");
-				$change_type_view->setVar('t_item', $t_item);
-	
-				FooterManager::add($change_type_view->render("set_home_location_html.php"));
-				TooltipManager::add("#inspectorSetHomeLocation", _t('Set home location'));
 			}
 	
 			// Download media in lot ($num_objects is only set for object lots)

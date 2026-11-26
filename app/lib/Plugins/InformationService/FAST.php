@@ -117,7 +117,7 @@ class WLPlugInformationServiceFAST extends BaseInformationServicePlugin implemen
 
 		$n = $xml->numberOfRecords;
 		$records = $xml->records->record;
-        $return = [];
+        $return = ['results' => []];
         $primary = null;
     
     	$search_lc = mb_strtolower($search);

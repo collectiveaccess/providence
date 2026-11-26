@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,6 +41,9 @@ class UsersController extends ActionController {
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function Edit() {
 		AssetLoadManager::register("bundleableEditor");
 		$t_user = $this->getUserObject();
@@ -63,6 +66,9 @@ class UsersController extends ActionController {
 		$this->render('user_edit_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function Save() {
 		AssetLoadManager::register('tableList');
 		
@@ -215,6 +221,9 @@ class UsersController extends ActionController {
 		}
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function ListUsers() {
 		AssetLoadManager::register('tableList');
 		if (!strlen($userclass = $this->request->getParameter('userclass', pString))) {
@@ -245,6 +254,32 @@ class UsersController extends ActionController {
 		$this->render('user_list_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 * Disable two-factor authentication for a user who has lost access to their authenticator app and recovery codes
+	 */
+	public function ResetMFA() {
+		$t_user = $this->getUserObject();
+		if (!($user_id = (int)$t_user->getPrimaryKey())) {
+			$this->ListUsers();
+			return;
+		}
+		if ((strtoupper((string)$this->request->getRequestMethod()) === 'POST') && $this->request->getParameter('confirm', pInteger)) {
+			if (caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+				if (UserMFA::disable($user_id, ['reason' => _t('Disabled by administrator %1', $this->request->user->get('user_name'))])) {
+					$this->notification->addNotification(_t("Two-factor authentication was disabled for %1", $t_user->get('user_name')), __NOTIFICATION_TYPE_INFO__);
+				} else {
+					$this->notification->addNotification(_t("Could not disable two-factor authentication"), __NOTIFICATION_TYPE_ERROR__);
+				}
+			}
+			$this->redirect(caNavUrl($this->request, 'administrate/access', 'Users', 'Edit', ['user_id' => $user_id]));
+			return;
+		}
+		$this->render('user_reset_mfa_html.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function Delete() {
 		$t_user = $this->getUserObject();
 		if ($this->request->getParameter('confirm', pInteger)) {
@@ -264,6 +299,9 @@ class UsersController extends ActionController {
 		}
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function DownloadUserReport() {
 		$download_format = $this->request->getParameter("download_format", pString);
 		if(!$download_format){
@@ -398,6 +436,9 @@ class UsersController extends ActionController {
 		}
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function Approve() {
 		$errors = [];
 		$user_ids = $this->request->getParameter('user_id', pArray);
@@ -464,6 +505,9 @@ class UsersController extends ActionController {
 	# -------------------------------------------------------
 	# Utilities
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	private function getUserObject($set_view_vars=true, $user_id=null) {
 		$user_id = null;
 		if (!($t_user = $this->pt_user)) {

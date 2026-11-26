@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2021 Whirl-i-Gig
+ * Copyright 2007-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,27 +32,39 @@ class AuthController extends ActionController {
 	# -------------------------------------------------------
 	
 	# -------------------------------------------------------
-	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-		parent::__construct($po_request, $po_response, $pa_view_paths);
+	/**
+	 *
+	 */
+	public function __construct(&$request, &$response, $view_paths=null) {
+		parent::__construct($request, $response, $view_paths);
 		if (AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__) && !in_array($this->request->getAction(), ['logout', 'callback'])) {
-			$po_response->setRedirect($po_request->getBaseUrlPath().'/'.$po_request->getScriptName().'/'.$po_request->config->get("auth_login_welcome_path"));
-			$po_response->sendResponse();
+			$response->setRedirect($request->getBaseUrlPath().'/'.$request->getScriptName().'/'.$request->config->get("auth_login_welcome_path"));
+			$response->sendResponse();
 			exit;
 		}
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function Login() {
 		global $g_ui_locale;
 		if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 			if(!initializeLocale($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) die("Error loading locale ".$g_ui_locale);
 		}
-		// Redirect to the default action
-		$vs_redirect = $this->_getRedirectUrl();
+		// Starting over abandons any login waiting for two-factor authentication
+		$this->request->cancelPendingMFALogin();
 
-		$this->getView()->setVar('redirect', $vs_redirect);
+		// Redirect to the default action
+		$redirect = $this->_getRedirectUrl();
+
+		$this->getView()->setVar('redirect', $redirect);
 		$this->render('login_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function DoLogin() {
 		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
 			$this->view->setVar('notifications', $this->notification->getNotifications());
@@ -61,8 +73,8 @@ class AuthController extends ActionController {
 		}
 		global $g_ui_locale;
 		
-		$vs_redirect_url = $this->_getRedirectUrl();
-		if (!$this->request->doAuthentication(array('dont_redirect_to_login' => true, 'redirect' => $vs_redirect_url, 'noPublicUsers' => true, 'user_name' => $this->request->getParameter('username', pString), 'password' => $this->request->getParameter('password', pString)))) {
+		$redirect_url = $this->_getRedirectUrl();
+		if (!$this->request->doAuthentication(array('dont_redirect_to_login' => true, 'redirect' => $redirect_url, 'noPublicUsers' => true, 'user_name' => $this->request->getParameter('username', pString), 'password' => $this->request->getParameter('password', pString)))) {
 			$this->notification->addNotification(_t("Login was invalid"), __NOTIFICATION_TYPE_ERROR__);
 			
 			$this->view->setVar('notifications', $this->notification->getNotifications());
@@ -71,33 +83,124 @@ class AuthController extends ActionController {
 			}
 			$this->render('login_html.php');
 		} else {
-			//
-			// Reset locale globals
-			//
-			global $g_ui_locale_id, $g_ui_locale, $g_ui_units_pref, $_, $_locale;
-			$g_ui_locale_id = $this->request->user->getPreferredUILocaleID();			// get current UI locale as locale_id	 			(available as global)
-			$g_ui_locale = $this->request->user->getPreferredUILocale();				// get current UI locale as locale string 			(available as global)
-			$g_ui_units_pref = $this->request->user->getPreference('units');			// user's selected display units for measurements 	(available as global)
-							
-			if(!initializeLocale($g_ui_locale)) die("Error loading locale ".$g_ui_locale);
-			MemoryCache::flush('translation');
-			AppNavigation::clearMenuBarCache($this->request);	// want to clear menu bar on login
-			
-			// Notify the user of the good news
-			$this->notification->addNotification(_t("You are now logged in"), __NOTIFICATION_TYPE_INFO__);
-			
-			// Jump to redirect if set
-			if ($vs_redirect_url) $this->redirect($vs_redirect_url);
-			$this->render('welcome_html.php');
+			$this->_loginSucceeded($redirect_url);
 		}
 	}
 	# -------------------------------------------------------
+	/**
+	 * Show form for entering second factor, after password has been accepted
+	 */
+	public function Verify() {
+		global $g_ui_locale;
+		if (!($pending = $this->request->getPendingMFALogin())) {
+			$this->notification->addNotification(_t("Your login has expired. Please log in again."), __NOTIFICATION_TYPE_ERROR__);
+			$this->view->setVar('notifications', $this->notification->getNotifications());
+			$this->Login();
+			return;
+		}
+		if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
+			if(!initializeLocale($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) die("Error loading locale ".$g_ui_locale);
+		}
+		$this->view->setVar('can_email_code', UserMFA::emailFallbackEnabled() && UserMFA::hasUsableEmail(new ca_users((int)$pending['user_id'])));
+		$this->view->setVar('notifications', $this->notification->getNotifications());
+		$this->render('login_verify_html.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 * Check second factor and finish logging in
+	 */
+	public function DoVerify() {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+			$this->Verify();
+			return;
+		}
+		$pending = $this->request->getPendingMFALogin();
+
+		switch($this->request->completePendingMFALogin($this->request->getParameter('code', pString))) {
+			case UserMFA::RESULT_OK:
+				// Usually the request has already been redirected by this point
+				$this->_loginSucceeded($pending['redirect'] ?? null);
+				return;
+			case UserMFA::RESULT_RATE_LIMITED:
+				$this->notification->addNotification(_t("Too many incorrect codes. Please wait a while before logging in again."), __NOTIFICATION_TYPE_ERROR__);
+				$this->view->setVar('notifications', $this->notification->getNotifications());
+				$this->Login();
+				return;
+			case UserMFA::RESULT_NOT_ENABLED:
+				// No pending login (it expired) or two-factor authentication was turned off in the meantime
+				$this->Verify();
+				return;
+			default:
+				$this->notification->addNotification(_t("The code was not valid"), __NOTIFICATION_TYPE_ERROR__);
+				$this->Verify();
+				return;
+		}
+	}
+	# -------------------------------------------------------
+	/**
+	 * Email a code to user waiting to log in, when they don't have their authenticator app
+	 */
+	public function SendCode() {
+		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
+			$this->Verify();
+			return;
+		}
+		if (!($pending = $this->request->getPendingMFALogin())) {
+			$this->Verify();
+			return;
+		}
+		switch(UserMFA::sendEmailCode(new ca_users((int)$pending['user_id']))) {
+			case UserMFA::RESULT_OK:
+				$this->notification->addNotification(_t("A code was sent to the email address on your account. Enter it below."), __NOTIFICATION_TYPE_INFO__);
+				break;
+			case UserMFA::RESULT_RATE_LIMITED:
+				$this->notification->addNotification(_t("A code was sent recently. Please check your email or wait before requesting another."), __NOTIFICATION_TYPE_ERROR__);
+				break;
+			default:
+				$this->notification->addNotification(_t("A code could not be sent by email. Use a recovery code or contact your administrator."), __NOTIFICATION_TYPE_ERROR__);
+				break;
+		}
+		$this->Verify();
+	}
+	# -------------------------------------------------------
+	/**
+	 * Set up UI for newly logged in user and show welcome page or redirect
+	 *
+	 * @param string|null $redirect_url
+	 */
+	private function _loginSucceeded(?string $redirect_url) {
+		//
+		// Reset locale globals
+		//
+		global $g_ui_locale_id, $g_ui_locale, $g_ui_units_pref, $_, $_locale;
+		$g_ui_locale_id = $this->request->user->getPreferredUILocaleID();			// get current UI locale as locale_id	 			(available as global)
+		$g_ui_locale = $this->request->user->getPreferredUILocale();				// get current UI locale as locale string 			(available as global)
+		$g_ui_units_pref = $this->request->user->getPreference('units');			// user's selected display units for measurements 	(available as global)
+
+		if(!initializeLocale($g_ui_locale)) die("Error loading locale ".$g_ui_locale);
+		MemoryCache::flush('translation');
+		AppNavigation::clearMenuBarCache($this->request);	// want to clear menu bar on login
+
+		// Notify the user of the good news
+		$this->notification->addNotification(_t("You are now logged in"), __NOTIFICATION_TYPE_INFO__);
+
+		// Jump to redirect if set
+		if ($redirect_url) $this->redirect($redirect_url);
+		$this->render('welcome_html.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function Welcome() {
 		AppNavigation::clearMenuBarCache($this->request);	// clear menu bar cache on welcome (stealth debugging tool)
 		
 		$this->render('welcome_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function Logout() {
 		$this->request->deauthenticate();
 		
@@ -107,6 +210,9 @@ class AuthController extends ActionController {
 		$this->render('logged_out_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function Forgot() {
 		if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
 
@@ -116,10 +222,10 @@ class AuthController extends ActionController {
 	public function RequestPassword() {
 		if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
 		if (caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
-			$vs_username = $this->getRequest()->getParameter('username',pString);
+			$username = $this->getRequest()->getParameter('username',pString);
 			$t_user = new ca_users();
 
-			if($t_user->load($vs_username)) {
+			if($t_user->load($username)) {
 				$t_user->requestPasswordReset();
 			} else {
 				sleep(2);
@@ -130,27 +236,33 @@ class AuthController extends ActionController {
 		$this->render('password_reset_instructions_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function InitReset() {
 		if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
 
-		$vs_token = $this->getRequest()->getParameter('token',pString);
-		$vs_username = $this->getRequest()->getParameter('username',pString);
+		$token = $this->getRequest()->getParameter('token',pString);
+		$username = $this->getRequest()->getParameter('username',pString);
 		$t_user = new ca_users();
 
 		$vb_render_form = false;
-		if($t_user->load($vs_username)) {
-			if($t_user->isValidToken($vs_token)) {
+		if($t_user->load($username)) {
+			if($t_user->isValidToken($token)) {
 				$vb_render_form = true;
 			}
 		}
 
 		$this->view->setVar('renderForm', $vb_render_form);
-		$this->view->setVar('token', $vs_token);
-		$this->view->setVar('username', $vs_username);
+		$this->view->setVar('token', $token);
+		$this->view->setVar('username', $username);
 
 		$this->render('password_reset_form_html.php');
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function DoReset() {
 		if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
 		if (!caValidateCSRFToken($this->request, null, ['notifications' => $this->notification])) {
@@ -158,28 +270,28 @@ class AuthController extends ActionController {
 			return;
 		}
 
-		$vs_token = $this->getRequest()->getParameter('token',pString);
-		$vs_username = $this->getRequest()->getParameter('username',pString);
+		$token = $this->getRequest()->getParameter('token',pString);
+		$username = $this->getRequest()->getParameter('username',pString);
 		$t_user = new ca_users();
 
-		$vs_pw = $this->getRequest()->getParameter('password',pString);
-		$vs_pw_check = $this->getRequest()->getParameter('password2',pString);
+		$pw = $this->getRequest()->getParameter('password',pString);
+		$pw_check = $this->getRequest()->getParameter('password2',pString);
 
-		if($t_user->load($vs_username)) {
-			if($t_user->isValidToken($vs_token)) {
+		if($t_user->load($username)) {
+			if($t_user->isValidToken($token)) {
 				// no password match
-				if($vs_pw !== $vs_pw_check) {
+				if($pw !== $pw_check) {
 
 					$this->notification->addNotification(_t("Passwords did not match. Please try again."), __NOTIFICATION_TYPE_ERROR__);
 					$this->view->setVar('notifications', $this->notification->getNotifications());
 
 					$this->view->setVar('renderForm', true);
-					$this->view->setVar('token', $vs_token);
-					$this->view->setVar('username', $vs_username);
+					$this->view->setVar('token', $token);
+					$this->view->setVar('username', $username);
 
 					$this->render('password_reset_form_html.php');
 				} else {
-					$t_user->set('password', $vs_pw);
+					$t_user->set('password', $pw);
 					$t_user->setMode(ACCESS_WRITE);
 					$t_user->update();
 

@@ -30,6 +30,7 @@
  * ----------------------------------------------------------------------
  */
 require_once(__CA_LIB_DIR__."/Controller/Request.php");
+require_once(__CA_LIB_DIR__."/Auth/MFA/UserMFA.php");
 
 # ----------------------------------------
 # Authorization constants
@@ -849,8 +850,6 @@ class RequestHTTP extends Request {
      */	
 	public function doAuthentication($pa_options) {	
 		global $AUTH_CURRENT_USER_ID;
-		
-		$redirect_after_login = null;
 
 		$vs_app_name = $this->config->get("app_name");
 		$vs_auth_login_url = $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path");
@@ -875,9 +874,11 @@ class RequestHTTP extends Request {
 			$pa_options["dont_redirect_to_welcome"] = true;
 		}
 		
+		$credentials_from_http_auth = false;
 		if(isset($_SERVER['PHP_AUTH_USER']) && !$pa_options["user_name"]) {
 			$pa_options["user_name"] = $_SERVER['PHP_AUTH_USER'];
 			$pa_options["password"] = $_SERVER['PHP_AUTH_PW'];
+			$credentials_from_http_auth = true;
 		}
 		
 		$vb_login_successful = false;
@@ -891,6 +892,9 @@ class RequestHTTP extends Request {
 				$this->user = new ca_users($vn_user_id);		// add user object
 
 				if ((!$this->user->isActive()) || ($this->user->numErrors()) || ($pa_options['noPublicUsers'] && $this->user->isPublicUser())) {			// error means user_id in session is invalid
+					$vb_login_successful = false;
+				} elseif (defined('__CA_IS_SERVICE_REQUEST__') && __CA_IS_SERVICE_REQUEST__ && ((int)Session::getVar($vs_app_name."_user_auth_type") === 2)) {
+					// sessions established by IP-based auth may not be used for service requests
 					$vb_login_successful = false;
 				} else {
 					$vb_login_successful = true;
@@ -967,16 +971,39 @@ class RequestHTTP extends Request {
 				} else {
 					$vb_login_successful = true;
 					$vn_user_id = $this->user->getUserID();
-					
-					if (!defined('__CA_IS_SERVICE_REQUEST__')) { // service need to keep auth tokens around
-						$redirect_after_login = Session::getVar('redirect_after_login');
-		                Session::deleteSession();
-		            }
 				}
 			}
 		}
 	
-		if (!$vb_login_successful) {	
+		//
+		// two-factor authentication
+		//
+		if ($vb_login_successful && UserMFA::isEnabledForUser((int)$this->user->getPrimaryKey())) {
+			$user_name = $this->user->get('user_name');
+			if ((int)$vn_auth_type === 2) {
+				// IP-based logins would skip the second factor entirely
+				caLogEvent('LOGF', "Rejected IP-based login for '{$user_name}': two-factor authentication is turned on for this user; IP=".RequestHTTP::ip(), 'Auth');
+				$vb_login_successful = false;
+			} elseif ($pa_options["user_name"]) {
+				// Password was accepted; a second factor is needed. Requests that can't show the
+				// verification form (services, HTTP basic auth) can't log in with a password at all.
+				if ($credentials_from_http_auth || $pa_options['no_headers'] || (defined('__CA_IS_SERVICE_REQUEST__') && __CA_IS_SERVICE_REQUEST__)) {
+					caLogEvent('LOGF', "Rejected password-only login for '{$user_name}': two-factor authentication is turned on for this user; IP=".RequestHTTP::ip(), 'Auth');
+					$vb_login_successful = false;
+				} else {
+					$this->startPendingMFALogin((int)$this->user->getPrimaryKey(), (int)$vn_auth_type, $pa_options);
+					$this->user = new ca_users();
+
+					if ($pa_options['dont_redirect']) { return false; }
+					$this->opo_response->setRedirect($this->getBaseUrlPath().'/'.$this->getScriptName().'/system/auth/Verify'.(($_REQUEST['local'] ?? null) ? '?local=1' : ''));
+					$this->opo_response->sendResponse();
+					exit;
+				}
+			}
+			// Otherwise the login came from a single-sign-on adapter, which is responsible for its own multi-factor authentication
+		}
+
+		if (!$vb_login_successful) {
 			$this->user = new ca_users();															// auth failed
 																								// throw user to login screen
 			if ($pa_options["user_name"]) {
@@ -986,48 +1013,158 @@ class RequestHTTP extends Request {
 				$this->opo_response->addHeader("Location", $vs_auth_login_url);
 			}
 			return false;
-		} else {		
-			$user_name = ($this->user && $this->user->getUserID()) ? $this->user->get('user_name') : ($pa_options["user_name"] ?? null);
-			$msg = "Successful login for '{$user_name}'; IP=".RequestHTTP::ip()."; user agent=".($_SERVER['HTTP_USER_AGENT'] ?? null);
-			if($this->user->get("active") == 0) $msg .= "; but user is not active";
-
-			caLogEvent('LOGIN', $msg, 'Auth');	// write logins to text log
-			if($this->user->get("active") == 0) return false;
-			
-			require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
-		    Eventlog::add(['CODE' => 'LOGN', 'MESSAGE' => $msg, 'SOURCE' => 'Auth']);	// Write logins to old table-based event log
-		    $this->session_id = Session::init($vs_app_name, isset($pa_options["dont_create_new_session"]) ? $pa_options["dont_create_new_session"] : false);
-			
-			Session::setVar($vs_app_name."_user_auth_type",$vn_auth_type);				// type of auth used: 1=username/password; 2=ip-base auth
-			Session::setVar($vs_app_name."_user_id",$vn_user_id);						// auth succeeded; set user_id in session
-			Session::setVar($vs_app_name."_logintime",time());							// also set login time (unix timestamp) in session
-			Session::setVar($vs_app_name."_lastping",time());
-			
-			Session::setVar('redirect_after_login', $redirect_after_login);
-			
-			$this->user->setVar('last_login', time(), array('volatile' => true));
-			$this->user->setLastLogout($this->user->getLastPing(), array('volatile' => true));
-			
-			$this->user->update();
-			
-			$AUTH_CURRENT_USER_ID = $vn_user_id;
-
-			if ($pa_options['redirect']) {
-				// redirect to specified URL
-				$this->opo_response->setRedirect($pa_options['redirect']);
-				$this->opo_response->sendResponse();
-				exit;
-			}
-
-			if ((!$pa_options["dont_redirect_to_welcome"]) && !AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__)) {
-				// redirect to "welcome" page
-				$this->opo_response->setRedirect($this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_welcome_path"));
-				$this->opo_response->sendResponse();
-				exit;
-			}
-			
-			return true;
 		}
+		return $this->completeLogin((int)$vn_user_id, (int)$vn_auth_type, $pa_options);
+	}
+	# ----------------------------------------
+	/**
+	 * Finish logging in user loaded into $this->user: issue a new session, attach user to it and record the login.
+	 * Redirects (and exits) when the "redirect" option is set, or to the welcome page unless the "dont_redirect_to_welcome" option is set.
+	 *
+	 * @param int $vn_user_id
+	 * @param int $vn_auth_type Type of authentication used: 1=username/password; 2=ip-based
+	 * @param array $pa_options Options passed to doAuthentication()
+	 *
+	 * @return bool
+	 */
+	private function completeLogin(int $vn_user_id, int $vn_auth_type, array $pa_options) : bool {
+		global $AUTH_CURRENT_USER_ID;
+		$vs_app_name = $this->config->get("app_name");
+		$redirect_after_login = null;
+		$user_name = ($this->user && $this->user->getUserID()) ? $this->user->get('user_name') : ($pa_options["user_name"] ?? null);
+		$msg = "Successful login for '{$user_name}'; IP=".RequestHTTP::ip()."; user agent=".($_SERVER['HTTP_USER_AGENT'] ?? null);
+		if($this->user->get("active") == 0) $msg .= "; but user is not active";
+
+		caLogEvent('LOGIN', $msg, 'Auth');	// write logins to text log
+		if($this->user->get("active") == 0) return false;
+
+		// Issue a fresh session id on every new login (password, external adapter or IP-based) to prevent session fixation
+		if (!defined('__CA_IS_SERVICE_REQUEST__')) { // service need to keep auth tokens around
+			$redirect_after_login = Session::getVar('redirect_after_login');
+			Session::deleteSession();
+		}
+
+		require_once(__CA_LIB_DIR__."/Logging/Eventlog.php");
+	    Eventlog::add(['CODE' => 'LOGN', 'MESSAGE' => $msg, 'SOURCE' => 'Auth']);	// Write logins to old table-based event log
+	    $this->session_id = Session::init($vs_app_name, isset($pa_options["dont_create_new_session"]) ? $pa_options["dont_create_new_session"] : false);
+		
+		Session::setVar($vs_app_name."_user_auth_type",$vn_auth_type);				// type of auth used: 1=username/password; 2=ip-base auth
+		Session::setVar($vs_app_name."_user_id",$vn_user_id);						// auth succeeded; set user_id in session
+		Session::setVar($vs_app_name."_logintime",time());							// also set login time (unix timestamp) in session
+		Session::setVar($vs_app_name."_lastping",time());
+		
+		Session::setVar('redirect_after_login', $redirect_after_login);
+		
+		$this->user->setVar('last_login', time(), array('volatile' => true));
+		$this->user->setLastLogout($this->user->getLastPing(), array('volatile' => true));
+		
+		$this->user->update();
+		
+		$AUTH_CURRENT_USER_ID = $vn_user_id;
+
+		if (!empty($pa_options['redirect'])) {
+			// redirect to specified URL
+			$this->opo_response->setRedirect($pa_options['redirect']);
+			$this->opo_response->sendResponse();
+			exit;
+		}
+
+		if (empty($pa_options["dont_redirect_to_welcome"]) && !AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__)) {
+			// redirect to "welcome" page
+			$this->opo_response->setRedirect($this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_welcome_path"));
+			$this->opo_response->sendResponse();
+			exit;
+		}
+
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * Start two-factor authentication step after a user's password has been accepted. Issues a new session
+	 * holding only the pending login; the user is not attached to the session until the second factor is verified.
+	 *
+	 * @param int $user_id
+	 * @param int $auth_type
+	 * @param array $options Options passed to doAuthentication()
+	 *
+	 * @return void
+	 */
+	private function startPendingMFALogin(int $user_id, int $auth_type, array $options) : void {
+		$app_name = $this->config->get("app_name");
+		$redirect_after_login = Session::getVar('redirect_after_login');
+		$force_user_auth = Session::getVar('forceUserAuth');	// keep SSO bypass, so the verification form uses the same adapter
+
+		Session::deleteSession();
+		$this->session_id = Session::init($app_name);
+
+		if ($force_user_auth) { Session::setVar('forceUserAuth', $force_user_auth); }
+		Session::setVar("{$app_name}_mfa_pending", [
+			'user_id' => $user_id,
+			'auth_type' => $auth_type,
+			'started' => time(),
+			'redirect' => $options['redirect'] ?? null
+		]);
+		Session::setVar('redirect_after_login', $redirect_after_login);
+
+		caLogEvent('LOGIN', "Password accepted for user_id={$user_id}; waiting for two-factor authentication; IP=".RequestHTTP::ip(), 'Auth');
+	}
+	# ----------------------------------------
+	/**
+	 * Return login waiting for two-factor authentication in the current session, if any. Pending logins expire
+	 * after mfa_pending_login_timeout seconds (set in authentication.conf; default is 300).
+	 *
+	 * @return array|null Array with keys user_id, auth_type, started and redirect; null if there is no pending login
+	 */
+	public function getPendingMFALogin() : ?array {
+		$app_name = $this->config->get("app_name");
+		$pending = Session::getVar("{$app_name}_mfa_pending");
+		if (!is_array($pending) || ((int)($pending['user_id'] ?? 0) <= 0)) { return null; }
+
+		$timeout = (int)Configuration::load('authentication.conf')->get('mfa_pending_login_timeout');
+		if ($timeout <= 0) { $timeout = 300; }
+		if ((time() - (int)$pending['started']) > $timeout) {
+			$this->cancelPendingMFALogin();
+			return null;
+		}
+		return $pending;
+	}
+	# ----------------------------------------
+	/**
+	 * Check second factor for the pending login in the current session and, if it is valid, finish logging in.
+	 * On success the user is redirected (and execution ends) as for a regular login, unless no redirect applies.
+	 *
+	 * @param string $code Passcode from authenticator app, or recovery code
+	 *
+	 * @return string One of the UserMFA::RESULT_* constants
+	 */
+	public function completePendingMFALogin(string $code) : string {
+		if (!($pending = $this->getPendingMFALogin())) { return UserMFA::RESULT_NOT_ENABLED; }
+
+		$user_id = (int)$pending['user_id'];
+		$result = UserMFA::verify($user_id, $code);
+		if ($result === UserMFA::RESULT_RATE_LIMITED) { $this->cancelPendingMFALogin(); }
+		if ($result !== UserMFA::RESULT_OK) { return $result; }
+
+		$this->cancelPendingMFALogin();
+
+		// User may have been deactivated since entering their password
+		$this->user = new ca_users($user_id);
+		if (!$this->user->getPrimaryKey() || !$this->user->isActive() || $this->user->isPublicUser()) {
+			$this->user = new ca_users();
+			return UserMFA::RESULT_INVALID;
+		}
+
+		$this->completeLogin($user_id, (int)$pending['auth_type'], ['redirect' => $pending['redirect'] ?? null]);
+		return UserMFA::RESULT_OK;
+	}
+	# ----------------------------------------
+	/**
+	 * Remove pending two-factor login from current session
+	 *
+	 * @return void
+	 */
+	public function cancelPendingMFALogin() : void {
+		Session::delete($this->config->get("app_name")."_mfa_pending");
 	}
 	# ----------------------------------------
 	/**
@@ -1043,7 +1180,8 @@ class RequestHTTP extends Request {
 	public function deauthenticate() {
 		$app_name = $this->config->get("app_name");
     
-        AuthenticationManager::deauthenticate();    
+        AuthenticationManager::deauthenticate();
+		$this->cancelPendingMFALogin();
 		if ($this->isLoggedIn()) {
 			Session::setVar("{$app_name}_user_id", '');
 			//Session::deleteSession();

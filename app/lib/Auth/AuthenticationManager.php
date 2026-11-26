@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2025 Whirl-i-Gig
+ * Copyright 2014-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -76,7 +76,8 @@ class AuthenticationManager {
 				$auth_adapter = $auth_adapter_for_services;
 			}
             
-		    if ($is_local = (isset($_REQUEST['local']) && $_REQUEST['local'])) { $auth_adapter = 'CaUsers'; }
+			// "local" login bypasses the configured adapter, so is only allowed when forcing native auth is explicitly enabled
+		    if ($o_auth_config->get('allow_force_to_ca_users_auth') && isset($_REQUEST['local']) && $_REQUEST['local']) { $auth_adapter = 'CaUsers'; }
 		
 			$auth_adapter_file = __CA_LIB_DIR__."/Auth/Adapters/".$auth_adapter.".php";
 			if(file_exists($auth_adapter_file)) {
@@ -119,7 +120,7 @@ class AuthenticationManager {
 			self::init('CaUsers');
 		}
 		
-		if ($rc = self::$g_authentication_adapter->authenticate($username, $password, $options)) {
+		if (($rc = self::$g_authentication_adapter->authenticate($username, $password, $options)) && self::adapterIdentityMatches($username, $password)) {
 			return $rc;
 		}
 
@@ -267,6 +268,26 @@ class AuthenticationManager {
 		return null;
 	}
 	
+	/**
+	 * Adapters that authenticate with an external UI (Eg. Shibboleth) report success based upon their own
+	 * session state, regardless of the user name passed. Verify that the identity the adapter established
+	 * is the user actually being logged in.
+	 *
+	 * @param string $username
+	 * @param string $password
+	 * @return bool
+	 */
+	private static function adapterIdentityMatches($username, $password) : bool {
+		if (!strlen((string)$username) || !self::$g_authentication_adapter->supports(__CA_AUTH_ADAPTER_FEATURE_USE_ADAPTER_LOGIN_FORM__)) { return true; }
+
+		try {
+			$info = self::$g_authentication_adapter->getUserInfo($username, $password, ['minimal' => true]);
+		} catch (Exception $e) {
+			return false;
+		}
+		return is_array($info) && isset($info['user_name']) && ((string)$info['user_name'] === (string)$username);
+	}
+
 	/**
 	 *
 	 */

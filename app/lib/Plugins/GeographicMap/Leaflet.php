@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2018-2024 Whirl-i-Gig
+ * Copyright 2018-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -416,18 +416,22 @@ class WLPlugGeographicMapLeaflet Extends BaseGeographicMapPlugIn Implements IWLP
 
 		if(!caGetOption('hideGeocodeUI', $pa_options, false)) {
 			$vs_element .= 	"
-				map.addControl(new L.Control.OSMGeocoder({ text: '"._t('Go')."', 'collapsed': false, callback: function(results) {
-					var bbox = results[0].boundingbox,
-						mid = new L.LatLng((parseFloat(bbox[0]) + parseFloat(bbox[1]))/2, (parseFloat(bbox[2]) + parseFloat(bbox[3]))/2),
-						bounds = new L.LatLngBounds([new L.LatLng(bbox[0], bbox[2]), new L.LatLng(bbox[1], bbox[3])]);
-					if({$autoDropPin}) {	// drop pin at center of search location if option is set
-						var marker = L.marker(mid);
-						g.addLayer(marker);
-						map_{$vs_id}_update_coord_list();
-					}
-					this._map.fitBounds(bounds);
-				}}));
+				map.addControl(new GeoSearch.GeoSearchControl({
+				  provider: new GeoSearch.OpenStreetMapProvider(),
+				  showMarker: ".($autoDropPin ? "true" : "false")."
+				}));
 			";
+			
+			$vs_element .= "map.on('geosearch/showlocation', ({ location, marker, provider }) => {
+				var bbox = location.bounds,
+					mid = new L.LatLng(location.y, location.x);
+				let bounds = new L.LatLngBounds([new L.LatLng(bbox[0][0], bbox[0][1]), new L.LatLng(bbox[1][0], bbox[1][1])]);
+				if({$autoDropPin}) {	// drop pin at center of search location if option is set
+					var mmarker = L.marker(mid);
+					g.addLayer(mmarker);
+					map_{$vs_id}_update_coord_list();
+				}
+});\n";
 		}
 		
 		$vs_element .= 	"	

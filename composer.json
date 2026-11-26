@@ -38,6 +38,7 @@
     "ext-simplexml": "*",
     "phpseclib/phpseclib": ">=2.0.47",
     "ankitpokhrel/tus-php": "^2.0",
+    "bacon/bacon-qr-code": "^3.0",
     "tedivm/stash": "^1.0",
     "cache/predis-adapter": "^1.1",
     "firebase/php-jwt": "^7.0",

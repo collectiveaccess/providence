@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2024 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -66,6 +66,9 @@ final class GarbageCollection {
 			PersistentCache::clean(time() - 86400, 'SessionVars');
 			PersistentCache::clean(time() - 86400, 'SessionIDToServiceAuthTokens');
 			PersistentCache::clean(time() - 86400, 'ServiceAuthTokensToSessionID');
+
+			// Purge login rate limiting counters that haven't been updated for at least a day
+			PersistentCache::clean(time() - 86400, 'LoginRateLimit');
 		}
 	}
 	# -------------------------------------------------------

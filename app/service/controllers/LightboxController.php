@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2020-2023 Whirl-i-Gig
+ * Copyright 2020-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -114,14 +114,10 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
-						try {
-							if (!($u = self::authenticate($args['jwt']))) {
-								throw new \ServiceException(_t('Invalid JWT'));
-							}
-						} catch(Exception $e) {
-						
+						if (!($u = self::authenticate($args['jwt']))) {
+							throw new \ServiceException(_t('Invalid JWT'));
 						}
-						$t_set = new \ca_sets($args['id']);
+						$t_set = self::getLightboxForUser($args['id'], $u, __CA_SET_READ_ACCESS__);
 						
 						
 						// Get configured sorts
@@ -154,7 +150,6 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 							}, $raw_comments));
 						}
 						
-						// TODO: check access
 						$lightbox = [
 							'id' => $t_set->get('ca_sets.set_id'),
 							'title' => $t_set->get('ca_sets.preferred_labels.name'),
@@ -234,12 +229,10 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 						]
 					],
 					'resolve' => function ($rootValue, $args) {
-						$set_id = $this->request->getParameter('set_id', pInteger);
-						
-						$jwt_data = self::decodeJWT($args['jwt']);
-						if (!($user_id = $jwt_data->id)) {
-							throw new \ServiceException(_t('Invalid user'));
+						if (!($u = self::authenticate($args['jwt']))) {
+							throw new \ServiceException(_t('Invalid JWT'));
 						}
+						$user_id = (int)$u->getPrimaryKey();
 
 						if (($t_set = ca_sets::find(['set_id' => $args['id']], ['returnAs' => 'firstModelInstance'])) && $t_set->haveAccessToSet($user_id, __CA_SET_READ_ACCESS__)) {
 							$access = (($t_set->haveAccessToSet($user_id, __CA_SET_EDIT_ACCESS__)) ? 2 : 1);
@@ -287,14 +280,17 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 							throw new ServiceException(_t('Invalid JWT'));
 						}
 					
-						// TOOD: check access; use user's locale
+						// TOOD: use user's locale
 						$name = $args['data']['name'];
 						$code = mb_substr(caGetOption('code', $args['data'], md5($name.time().rand(0,10000))),0 , 32);
 						
 						if (!caGetListItemID('set_types', $type_id = Configuration::load()->get('user_set_type'))) {
 							$type_id = caGetDefaultItemID('set_types');
 						}
-						
+
+						// Check items before creating lightbox so nothing is created if any are unreadable
+						$add_item_ids = self::getReadableItemIDs($args['items']['ids'] ?? null, $args['table'] ?? 'ca_objects', $u);
+
 						$t_set = new ca_sets();
 						$t_set->set([
 							'type_id' => $type_id,
@@ -312,7 +308,7 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 						}
 						
 						$n = 0;
-						if (is_array($add_item_ids = preg_split('![&,;]+!', $args['items']['ids'])) && sizeof($add_item_ids)) {
+						if (sizeof($add_item_ids)) {
 							$n = $t_set->addItems($add_item_ids);
 						}
 						return ['id' => $t_set->getPrimaryKey(), 'name' => $t_set->get('ca_sets.preferred_labels.name'), 'count' => $n, 'list' => \GraphQLServices\Helpers\Lightbox\getLightboxList($t_set, $u)];
@@ -345,11 +341,11 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 							throw new ServiceException(_t('Invalid JWT'));
 						}
 					
-						// TOOD: check access; use user's locale; valid input
+						// TOOD: use user's locale; valid input
 						$id = $args['id'];
 						$name = $args['data']['name'];
-						
-						$t_set = new ca_sets($id);
+
+						$t_set = self::getLightboxForUser($id, $u, __CA_SET_EDIT_ACCESS__);
 						$t_set->replaceLabel(['name' => $name], ca_locales::getDefaultCataloguingLocaleID(), null, true);
 						
 						return ['id' => $t_set->getPrimaryKey(), 'name' => $t_set->get('ca_sets.preferred_labels.name'), 'list' => \GraphQLServices\Helpers\Lightbox\getLightboxList($t_set, $u)];
@@ -377,8 +373,7 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 							throw new ServiceException(_t('Invalid JWT'));
 						}
 					
-						// TOOD: check access
-						$t_set = new ca_sets($args['id']);
+						$t_set = self::getLightboxForUser($args['id'], $u, __CA_SET_EDIT_ACCESS__);
 						if(!$t_set->delete(true)) {
 							throw new ServiceException(_t('Could not delete lightbox: %1', join($t_set->getErrors())));
 						}
@@ -413,11 +408,7 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 							throw new ServiceException(_t('Invalid JWT'));
 						}
 					
-						// TOOD: check access
-						$t_set = new ca_sets($args['id']);
-						if(!$t_set->isLoaded()) {
-							throw new ServiceException(_t('Could not load lightbox: %1', join($t_set->getErrors())));
-						}
+						$t_set = self::getLightboxForUser($args['id'], $u, __CA_SET_EDIT_ACCESS__);
 
 						$sorted_id_str = $args['data']['sorted_ids'];
 						$sorted_id_arr = preg_split('![&;,]!', $sorted_id_str);
@@ -462,16 +453,15 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 							throw new ServiceException(_t('Invalid JWT'));
 						}
 						
-						if (!is_array($add_item_ids = preg_split('![&,;]+!', $args['items']['ids'])) || !sizeof($add_item_ids)) {
+						// Check lightbox and items before creating a new lightbox so nothing is created if any are unreadable
+						$t_set = ($set_id = $args['id']) ? self::getLightboxForUser($set_id, $u, __CA_SET_EDIT_ACCESS__) : null;
+						if (!sizeof($add_item_ids = self::getReadableItemIDs($args['items']['ids'] ?? null, ($t_set ? $t_set->get('table_num') : null) ?: 'ca_objects', $u))) {
 							throw new ServiceException(_t('No item ids set'));
 						}
-					
-						// TOOD: check access
-						if ($set_id = $args['id']) {
-							$t_set = new ca_sets($set_id);
-						} else {
+
+						if (!$t_set) {
 							// create new set
-							// TOOD: check access; use user's locale
+							// TOOD: use user's locale
 							$name = $args['lightbox']['name'];
 							$code = mb_substr(caGetOption('code', $args['lightbox'], md5($name.time().rand(0,10000))),0 , 32);
 						
@@ -483,7 +473,7 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 							$t_set->set([
 								'type_id' => $type_id,
 								'set_code' => $code,
-								//'table_num' => (int)Datamodel::getTableNum('ca_objects'),
+								'table_num' => (int)Datamodel::getTableNum('ca_objects'),
 								'user_id' => $u->getPrimaryKey()
 							]);
 							$t_set->insert();
@@ -534,11 +524,7 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 							throw new ServiceException(_t('No item ids set'));
 						}
 					
-						// TOOD: check access
-						$t_set = new ca_sets($args['id']);
-						if(!$t_set->isLoaded()) {
-							throw new ServiceException(_t('Could not load lightbox: %1', join($t_set->getErrors())));
-						}
+						$t_set = self::getLightboxForUser($args['id'], $u, __CA_SET_EDIT_ACCESS__);
 						
 						if (!$t_set->removeItems($item_ids, $u->getPrimaryKey())) {
 							throw new ServiceException(_t('Could not remove items from lightbox: %1', join($t_set->getErrors())));
@@ -584,11 +570,7 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 							throw new ServiceException(_t('No item ids set'));
 						}
 					
-						// TOOD: check access
-						$t_set = new ca_sets($args['id']);
-						if(!$t_set->isLoaded()) {
-							throw new ServiceException(_t('Could not load lightbox: %1', join($t_set->getErrors())));
-						}
+						$t_set = self::getLightboxForUser($args['id'], $u, __CA_SET_EDIT_ACCESS__);
 						
 						$t_set->transferItemsTo($args['toId'], $item_ids, $u->getPrimaryKey());
 						
@@ -622,11 +604,7 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 							throw new ServiceException(_t('Invalid JWT'));
 						}
 						
-						// TOOD: check access
-						$t_set = new ca_sets($args['id']);
-						if(!$t_set->isLoaded()) {
-							throw new ServiceException(_t('Could not load lightbox: %1', join($t_set->getErrors())));
-						}
+						$t_set = self::getLightboxForUser($args['id'], $u, __CA_SET_EDIT_ACCESS__);
 						
 						// TODO:
 						
@@ -660,11 +638,7 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 							throw new ServiceException(_t('Invalid JWT'));
 						}
 						
-						// TOOD: check access
-						$t_set = new ca_sets($args['id']);
-						if(!$t_set->isLoaded()) {
-							throw new ServiceException(_t('Could not load lightbox: %1', join($t_set->getErrors())));
-						}
+						$t_set = self::getLightboxForUser($args['id'], $u, __CA_SET_READ_ACCESS__);
 						
 						$comment = [];
 						if ($t_comment = $t_set->addComment($args['comment']['content'], null, $u->getPrimaryKey(), null, null, null, 0, null, [])){
@@ -686,6 +660,53 @@ class LightboxController extends \GraphQLServices\GraphQLServiceController {
 		]);
 		
 		return self::resolve($qt, $mt);
+	}
+	# -------------------------------------------------------
+	/**
+	 * Load lightbox, verifying that user has the required level of access to it. Nonexistent lightboxes
+	 * and lightboxes the user may not access are reported identically to avoid disclosing which exist.
+	 *
+	 * @param int $set_id
+	 * @param ca_users $u
+	 * @param int $access Required access level: __CA_SET_READ_ACCESS__ or __CA_SET_EDIT_ACCESS__
+	 *
+	 * @return ca_sets
+	 * @throws ServiceException
+	 */
+	private static function getLightboxForUser($set_id, ca_users $u, int $access) : ca_sets {
+		$t_set = new ca_sets((int)$set_id);
+		if (!$t_set->isLoaded() || !$t_set->haveAccessToSet((int)$u->getPrimaryKey(), $access)) {
+			throw new ServiceException(_t('Lightbox does not exist or access is denied'));
+		}
+		return $t_set;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Parse list of item ids, verifying that all exist and are readable by user. Lists containing any
+	 * item the user may not read are rejected entirely, so no partial changes are made.
+	 *
+	 * @param string $ids Item ids, separated by ampersands, commas or semicolons
+	 * @param string|int $table Name or number of table items belong to
+	 * @param ca_users $u
+	 *
+	 * @return array List of item ids; empty if none were specified
+	 * @throws ServiceException
+	 */
+	private static function getReadableItemIDs(?string $ids, $table, ca_users $u) : array {
+		$ids = array_values(array_unique(array_filter(array_map('intval', preg_split('![&,;]+!', (string)$ids)), function($v) { return $v > 0; })));
+		if (!sizeof($ids)) { return []; }
+
+		if (!($table = Datamodel::getTableName($table)) || !($pk = Datamodel::primaryKey($table))) {
+			throw new ServiceException(_t('Invalid content type'));
+		}
+
+		// find() omits deleted rows; caCanRead() applies type and item-level access restrictions
+		$existing = $table::find([$pk => ['IN', $ids]], ['returnAs' => 'ids']);
+		$readable = (is_array($existing) && (sizeof($existing) === sizeof($ids))) ? caCanRead((int)$u->getPrimaryKey(), $table, $existing, null, ['returnAsArray' => true]) : null;
+		if (!is_array($readable) || (sizeof(array_unique($readable)) !== sizeof($ids))) {
+			throw new ServiceException(_t('One or more items do not exist or access is denied'));
+		}
+		return $ids;
 	}
 	# -------------------------------------------------------
 }

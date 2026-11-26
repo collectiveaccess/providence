@@ -141,13 +141,17 @@ class GraphQLServiceController extends \BaseServiceController {
 		
 		$config = \Configuration::load();
 		$key = \GraphQLServices\Helpers\caGetGraphQLServicesJWTKey();
-		$exp_offset = caGetOption('refresh', $options, false) ? 
-			(int)$config->get('graphql_services_jwt_refresh_token_lifetime') 
-			: 
+		$is_refresh = caGetOption('refresh', $options, false);
+		$exp_offset = $is_refresh ?
+			(int)$config->get('graphql_services_jwt_refresh_token_lifetime')
+			:
 			(int)$config->get('graphql_services_jwt_access_token_lifetime');
-			
+
 		if ($exp_offset <= 0) { $exp_offset = 900; }
-		
+
+		// Tag token type so access and refresh tokens can't be used in place of one another
+		$data['token_type'] = $is_refresh ? 'refresh' : 'access';
+
 		return \Session::encodeJWT($data, $key, array_merge($options, ['lifetime' => $exp_offset]));
 	}
 	# ------------------------------------------------------
@@ -162,14 +166,17 @@ class GraphQLServiceController extends \BaseServiceController {
 	 * Decode JWT and return contents
 	 *
 	 * @param string $jwt
+	 * @param string $type Required token type: "access" or "refresh". Tokens of any other type are rejected. [Default is access]
 	 *
 	 * @return array
 	 */
-	public static function decodeJWT(?string $jwt) {
+	public static function decodeJWT(?string $jwt, string $type='access') {
 		if(!$jwt) { return false; }
 		$key = \GraphQLServices\Helpers\caGetGraphQLServicesJWTKey();
-		
-		return \Session::decodeJWT($jwt, $key);
+
+		$d = \Session::decodeJWT($jwt, $key);
+		if(!$d || (($d->token_type ?? null) !== $type)) { return false; }
+		return $d;
 	}
 	# -------------------------------------------------------
 	/**

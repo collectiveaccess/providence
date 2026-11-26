@@ -373,12 +373,11 @@ class MediaUploadManager {
 			$session = MediaUploadManager::findSession($key, $user_id);
 			
 			$fp = self::_partialToFinalPath($fileMeta['file_path']);
-			$ext = pathinfo($fp, PATHINFO_EXTENSION);
 			
 			$log = caGetLogger();
 			$log->logInfo("Delete ".print_r($fileMeta, true));
 			
-			if(in_array(strtolower($ext), ['php', 'exe', 'py', 'rb', 'pl', 'sh'])) {
+			if(caUsesExcludedFileExtension($fp)) {
 				@unlink($fileMeta['file_path']);
 				if($session) {
 					$session->setFile($fp, [

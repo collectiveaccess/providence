@@ -1936,7 +1936,7 @@ final class ConfigurationExporter {
 			case 2:
 				return 'edit';
 			default:
-				return false;
+				return 'none';
 		}
 	}
 	# --------------------------------------------------

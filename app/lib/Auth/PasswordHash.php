@@ -4,6 +4,8 @@
  * Copyright (c) 2013, Taylor Hornby
  * All rights reserved.
  *
+ * Modified 2026 to add BCRYPT support
+ *
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
  *
@@ -27,41 +29,42 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-// These constants may be changed without breaking existing hashes.
-define("PBKDF2_HASH_ALGORITHM", "sha256");
-define("PBKDF2_ITERATIONS", 1000);
-define("PBKDF2_SALT_BYTE_SIZE", 24);
-define("PBKDF2_HASH_BYTE_SIZE", 24);
+// New hashes use bcrypt. It is pinned explicitly (rather than PASSWORD_DEFAULT) so hashes always fit the
+// 100 character ca_users.password column, and the cost is fixed so servers running different PHP versions
+// don't repeatedly rehash each other's passwords. Raising the cost upgrades existing hashes on next login.
+define("CA_PASSWORD_BCRYPT_COST", 12);
 
+// Legacy PBKDF2 hashes (format: algorithm:iterations:salt:hash) are still accepted, and upgraded on next login
 define("HASH_SECTIONS", 4);
 define("HASH_ALGORITHM_INDEX", 0);
 define("HASH_ITERATION_INDEX", 1);
 define("HASH_SALT_INDEX", 2);
 define("HASH_PBKDF2_INDEX", 3);
 
+// bcrypt ignores input past 72 bytes, so longer passwords are pre-hashed to keep every byte significant
+function prepare_password_for_bcrypt($password)
+{
+    return (strlen($password) > 72) ? base64_encode(hash('sha384', $password, true)) : $password;
+}
+
 function create_hash($password)
 {
+    return password_hash(prepare_password_for_bcrypt((string)$password), PASSWORD_BCRYPT, ['cost' => CA_PASSWORD_BCRYPT_COST]);
+}
 
-    if(function_exists('mcrypt_create_iv')) {
-		$salt = base64_encode(mcrypt_create_iv(PBKDF2_SALT_BYTE_SIZE, MCRYPT_DEV_URANDOM));
-	} else if(function_exists('openssl_random_pseudo_bytes')) {
-		$salt = base64_encode(openssl_random_pseudo_bytes(PBKDF2_SALT_BYTE_SIZE));
-	}
-
-	// format: algorithm:iterations:salt:hash
-    return PBKDF2_HASH_ALGORITHM . ":" . PBKDF2_ITERATIONS . ":" .  $salt . ":" . 
-        base64_encode(pbkdf2(
-            PBKDF2_HASH_ALGORITHM,
-            $password,
-            $salt,
-            PBKDF2_ITERATIONS,
-            PBKDF2_HASH_BYTE_SIZE,
-            true
-        ));
+// Returns true if hash is in a legacy format or uses outdated parameters, and should be replaced on next login
+function hash_needs_upgrade($hash)
+{
+    return (password_get_info((string)$hash)['algoName'] !== 'bcrypt') || password_needs_rehash($hash, PASSWORD_BCRYPT, ['cost' => CA_PASSWORD_BCRYPT_COST]);
 }
 
 function validate_password($password, $correct_hash)
 {
+    if (password_get_info((string)$correct_hash)['algoName'] !== 'unknown') {
+        return password_verify(prepare_password_for_bcrypt((string)$password), $correct_hash);
+    }
+
+    // legacy PBKDF2
     $params = explode(":", $correct_hash);
     if(count($params) < HASH_SECTIONS)
        return false; 

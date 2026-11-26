@@ -531,7 +531,10 @@ class MediaImportController extends ActionController {
 		} else {
 			foreach($_FILES as $param => $file) {
 				foreach($file['name'] as $i => $name) {
-					if (!in_array(strtolower(pathinfo($name, PATHINFO_EXTENSION)), $extensions)) {
+					if(caUsesExcludedFileExtension($name)) { continue; }
+					
+					$ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+					if (!in_array($ext, $extensions, true)) {
 						$response['skipped'][$name] = true;
 						continue;
 					}
