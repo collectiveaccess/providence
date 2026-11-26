@@ -79,5 +79,10 @@ define("__CA_SITE_PROTOCOL__", "http");
 define("__CA_SITE_HOSTNAME__", "develop");
 define("__CA_URL_ROOT__", "");
 
+// Fixed encryption key for two-factor authentication secrets. For tests only; never use in a real installation.
+if (!defined("__CA_MFA_ENCRYPTION_KEY__")) {
+	define("__CA_MFA_ENCRYPTION_KEY__", 'dW5pdC10ZXN0cy1vbmx5LW1mYS1lbmNyeXB0aW9uLWs=');
+}
+
 // Use remaining settings from main config.
 require_once(__CA_BASE_DIR__ . '/setup.php-dist');

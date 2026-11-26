@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2025 Whirl-i-Gig
+ * Copyright 2008-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -84,25 +84,41 @@ $password_policies = $this->getVar('password_policies') ?? [];
 					break;
 			}
 		}
+		
+		// Two-factor authentication status (only changed here by resetting it; users set it up themselves in their preferences)
+		if (($user_id > 0) && UserMFA::isEnabled()) {
+			$mfa_status = UserMFA::getStatus((int)$user_id);
+?>
+					<div class="mfaEnableStatus">
+						<h2><?= _t('Two-factor authentication'); ?></h2>
+						
+<?php
+			if ($mfa_status['enabled']) {
+				
+				print "<p>"._t('Two-factor authentication is <strong>ON</strong> (since %1).', caGetLocalizedDate($mfa_status['enabled_on'], ['dateFormat' => 'delimited', 'timeOmit' => true]), $mfa_status['recovery_codes']).' ';
+				print (($mfa_status['recovery_codes'] == 1) ? _t("User has %1 unused recovery code.", $mfa_status['recovery_codes']): _t("User has %1 unused recovery codes.", $mfa_status['recovery_codes']))."</p>\n";
+				print "<p>"._t('%1 for this user.', caNavLink($this->request, _t('Disable two-factor authentication'), '', 'administrate/access', 'Users', 'ResetMFA', ['user_id' => $user_id]))."</p>\n";
+			} else {
+				print _t('Two-factor authentication is <strong>OFF</strong>');
+			}
+?>
+						</div>
+					</div>
+<?php
+		}
 ?>
 					<div class="roles">
 						<h2><?= _t('Roles'); ?></h2>
 						
 						<div class="roleList">
-<?php
-		// roles
-		print $t_user->roleListAsHTMLFormElement(['name' => 'roles', 'size' => 6, 'renderAs' => DT_CHECKBOXES, 'includeLabel' => false]);
-?>
+							<?= $t_user->roleListAsHTMLFormElement(['name' => 'roles', 'size' => 6, 'renderAs' => DT_CHECKBOXES, 'includeLabel' => false]); ?>
 						</div>
 					</div>
 					<div class="groups">
 						<h2><?= _t('Groups'); ?></h2>
 						
 						<div class="groupList">
-<?php
-		// Groups
-		print $t_user->groupListAsHTMLFormElement(['name' => 'groups', 'size' => 6, 'renderAs' => DT_CHECKBOXES, 'includeLabel' => false]);
-?>
+						<?= $t_user->groupListAsHTMLFormElement(['name' => 'groups', 'size' => 6, 'renderAs' => DT_CHECKBOXES, 'includeLabel' => false]); ?>
 						</div>
 					</div>
 					<h2><?= _t('User profile'); ?></h2>

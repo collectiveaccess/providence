@@ -4716,6 +4716,11 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 							$vb_renamed_tmpfile = true;
 						}
 					}
+					
+					if(caUsesExcludedFileExtension($this->_SET_FILES[$ps_field]['tmp_name'] ?? null, $this->_SET_FILES[$ps_field]['original_filename'] ?? null)) { 
+						$this->postError(1605, _t("File type is not allowed"),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
+						return false;	
+					}
 				
 					$input_mimetype = $m->divineFileFormat($this->_SET_FILES[$ps_field]['tmp_name']);
 					if (!($input_type = $o_media_proc_settings->canAccept($input_mimetype))) {
@@ -6026,6 +6031,10 @@ if ((!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSet
 				if(!is_array($properties = $ff->getProperties())) { $properties = array(); }
 				
 				if (($properties['dangerous'] ?? 0) > 0) { $vn_dangerous = 1; }
+				if(caUsesExcludedFileExtension($ffname, $this->_SET_FILES[$field]['original_filename'] ?? null)) { 
+					$this->postError(1605, _t("File type is not allowed"),"BaseModel->_processFiles()", $this->tableName().'.'.$field);
+					return false;	
+				}
 
 				if (($dirhash = $this->_getDirectoryHash($vi["absolutePath"] ?? null, $this->getPrimaryKey())) === false) {
 					$this->postError(1600, _t("Could not create subdirectory for uploaded file in %1. Please ask your administrator to check the permissions of your media directory.", $vi["absolutePath"]),"BaseModel->_processFiles()", $this->tableName().'.'.$field);

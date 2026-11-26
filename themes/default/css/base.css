@@ -2123,13 +2123,13 @@ div.delete-control-box {
     margin-top: 32px;
 }
 div.delete_warning_box {
-    text-indent: 42px;
     font-size: 14px;
 	color: #EB0000;
     padding-top: 10px;
-    width: 400px;
     height: 26px;
     font-family:'din-regular';
+    width: 100%;
+    text-align: center;
 }
 
 div.delete_remapping_controls {
@@ -8389,4 +8389,33 @@ button.passwordView {
 
 .select2-container {
     z-index: 44000;
+}
+
+/* Two-factor authentication */
+.mfaField { 
+    margin: 0 0 10px 0; 
+}
+.mfaField input { 
+    width: 200px; 
+}
+.mfaSecret { 
+    font-family: monospace; font-size: 14px; letter-spacing: 1px; 
+}
+.mfaQRCode { 
+    margin: 10px 0; 
+}
+.mfaQRCode svg { 
+    background: #fff; padding: 8px; 
+}
+.mfaRecoveryCodes { 
+    font-family: monospace; 
+    font-size: 15px; 
+    columns: 2; max-width: 
+    320px; margin: 10px 0; 
+    padding: 10px; 
+    border: 1px solid #ccc; 
+}
+
+.mfaStatus {
+    font-size: 18px;
 }

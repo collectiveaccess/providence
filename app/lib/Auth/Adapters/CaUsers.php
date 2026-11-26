@@ -36,8 +36,10 @@ require_once(__CA_MODELS_DIR__.'/ca_users.php');
 
 class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	# --------------------------------------------------------------------------------
+	/**
+	 *
+	 */
 	public function authenticate($ps_username, $ps_password = '', $pa_options=null) {
-
 		$t_user = new ca_users();
 		$t_user->load(['user_name' => $ps_username]);
 
@@ -45,30 +47,35 @@ class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 
 			$vs_hash = $t_user->get('password');
 			if(preg_match('/^[a-f0-9]{32}$/', $vs_hash)) { // old-style md5 passwords
-
-				//throw new CaUsersException(_t('The stored password for this user seems to be in legacy format. Please update the user account by resetting the password.'));
-
-				if (md5($ps_password) == $vs_hash) { // if the md5 hash matches, authenticate successfully and move the user over to pbkdf2 key
-					// ca_users::update takes care of the hashing by calling AuthenticationManager::updatePassword()
-					$t_user->set('password', $ps_password);
-					$t_user->update();
-					return true;
-				} else {
-					return false;
-				}
+				$vb_valid = hash_equals($vs_hash, md5((string)$ps_password));
+			} else {
+				$vb_valid = validate_password($ps_password, $vs_hash);
 			}
 
-			return validate_password($ps_password, $vs_hash);
+			// Move legacy (md5, PBKDF2) and outdated hashes over to the current scheme. 
+			if ($vb_valid && hash_needs_upgrade($vs_hash)) {
+				$t_user->set('password', create_hash($ps_password));
+				if(!$t_user->update(['dontApplyPasswordPolicy' => true, 'useRawPasswordValue' => true])) {
+					throw new CaUsersException(_t('Could not record password: %1', join('; ', $t_user->getErrors())));
+				}
+			}
+			return $vb_valid;
 		} else {
 			return false;
 		}
 	}
 	# --------------------------------------------------------------------------------
+	/**
+	 *
+	 */
 	public function createUserAndGetPassword($ps_username, $ps_password) {
 		// ca_users takes care of creating the backend record for us. There's nothing else to do here
 		return create_hash($ps_password);
 	}
 	# --------------------------------------------------------------------------------
+	/**
+	 *
+	 */
 	public function supports($pn_feature) {
 		switch($pn_feature){
 			case __CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__:
@@ -80,11 +87,17 @@ class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		}
 	}
 	# --------------------------------------------------------------------------------
+	/**
+	 *
+	 */
 	public function updatePassword($ps_username, $ps_password) {
 		// ca_users takes care of creating the backend record for us. There's nothing else to do here
 		return create_hash($ps_password);
 	}
 	# --------------------------------------------------------------------------------
+	/**
+	 *
+	 */
 	public function deleteUser($ps_username) {
 		// ca_users takes care of deleting the db row for us. Nothing else to do here.
 		return true;

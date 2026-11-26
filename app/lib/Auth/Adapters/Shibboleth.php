@@ -197,7 +197,7 @@ class ShibbolethAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
            	}
             
             $ret = [
-                'user_name' => $username ? $username : $uid,
+                'user_name' => $uid,	// use IdP-asserted identity, not caller-supplied user name
 				'email' => $email,
 				'fname' => $fname,
 				'lname' => $lname ? $lname : $email,

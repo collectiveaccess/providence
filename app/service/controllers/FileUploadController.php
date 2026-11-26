@@ -28,7 +28,6 @@
 require_once(__CA_LIB_DIR__.'/Service/GraphQLServiceController.php');
 require_once(__CA_LIB_DIR__.'/Service/BaseServiceController.php');
 
-
 class FileUploadController extends BaseServiceController {
 	# -------------------------------------------------------
 	/**
@@ -98,7 +97,7 @@ class FileUploadController extends BaseServiceController {
 			$errors = $notices = $copied = [];
 			$is_primary = true;
 			if(is_array($_FILES) && is_array($_FILES['file'])) {
-				$excluded_extensions = $request->getAppConfig()->getList('media_uploader_exclude_file_extensions');
+				$excluded_extensions = caGetExcludedFileExtensions();
 				
 				foreach($_FILES['file'] as $k => $v) {
 					if(!is_array($v)) {
@@ -108,11 +107,10 @@ class FileUploadController extends BaseServiceController {
 			
 				foreach($_FILES['file']['name'] as $i => $n) {
 					$name = preg_replace("![^A-Z0-9_\-\.]+!i", "_", $n);
-					$ext = pathinfo($name, PATHINFO_EXTENSION);
 					
 					$rpath = preg_replace("!^".__CA_BASE_DIR__."!i", "", "{$path}/{$name}");
-					if(in_array($ext, $excluded_extensions, true)) {
-						$errors[$rpath] = _t('File extension "%1" not allowed', $ext);
+					if(caUsesExcludedFileExtension($name)) {
+						$errors[$rpath] = _t('File extension is not allowed');
 						continue;
 					}
 					$tmp_name = $_FILES['file']['tmp_name'][$i];

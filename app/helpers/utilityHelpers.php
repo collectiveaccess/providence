@@ -5325,3 +5325,40 @@ function caFileIsIncludable($ps_file) {
 			return $sheet->getCell($coordinate);
 		};
 	# ----------------------------------------
+	/**
+	 * Returns list of file extensions that are not allowed for upload, as configured in the 
+	 * media_uploader_exclude_file_extensions list in app.conf. All extensions are returned as
+	 * lowercase, regardless how they are recorded in app.conf.
+	 *
+	 * @return array List of file extensions.
+	 */
+	function caGetExcludedFileExtensions() : array {
+		static $excluded_extensions = null;
+		
+		if(is_null($excluded_extensions)) {
+			$config = Configuration::load();
+			$excluded_extensions = $config->getList('media_uploader_exclude_file_extensions') ?? [];
+			$excluded_extensions = array_map('trim', array_map('strtolower', $excluded_extensions));
+		}
+		return $excluded_extensions;
+	}
+	# ----------------------------------------
+	/**
+	 * Check the extensions on one or more file names or paths and return false if any of them
+	 * use extensions that are not allowed for upload. Files/paths are passed as function parameters. Any
+	 * number of parameters may be passed.
+	 *
+	 * @return bool True if at least one file or path uses an exclused file extension.
+	 */
+	function caUsesExcludedFileExtension() : bool {
+		$files = func_get_args();
+		if(!is_array($files)) { return false; }
+		
+		$excluded_extensions = caGetExcludedFileExtensions();
+		foreach($files as $f) {
+			$e = trim(strtolower(pathinfo($f, PATHINFO_EXTENSION)));
+			if(in_array($e, $excluded_extensions, true)) { return true; }
+		}
+		return false;
+	}
+	# ----------------------------------------

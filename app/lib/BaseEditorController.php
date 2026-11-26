@@ -2762,6 +2762,11 @@ class BaseEditorController extends ActionController {
 				if(!strlen($f)) { continue; }
 				
 				$dest_filename = caEscapeFilenameForDownload(isset($_FILES['files']['name'][$i]) ? $_FILES['files']['name'][$i] : pathinfo($f, PATHINFO_FILENAME));
+				
+				if(caUsesExcludedFileExtension($f, $dest_filename)) { 
+					continue; 
+				}
+				
 				if(!@copy($f, $dest_path = "{$user_dir}/{$dest_filename}")) { continue; }
 
 				$stored_files[$dest_filename] = caGetUserDirectoryName($this->request->getUserID())."/{$dest_filename}"; // only return the user directory and file name, not the entire path
@@ -2773,6 +2778,11 @@ class BaseEditorController extends ActionController {
 				if(!is_array($info) || !array_key_exists('tmp_name', $info) || !strlen($info['tmp_name'])) { continue; }
 				
 				$dest_filename = isset($info['name']) ? $info['name'] : pathinfo($info['tmp_name'], PATHINFO_FILENAME);
+				
+				if(caUsesExcludedFileExtension($info['tmp_name'], $dest_filename)) { 
+					continue; 
+				}
+				
 				if(!@copy($info['tmp_name'], $dest_path = "{$user_dir}/{$dest_filename}")) { continue; }
 
 				$stored_files[$k] = caGetUserDirectoryName($this->request->getUserID())."/{$dest_filename}"; // only return the user directory and file name, not the entire path

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015-2024 Whirl-i-Gig
+ * Copyright 2015-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -106,7 +106,7 @@ class ReplicationService {
 				$va_return = self::setCurrentValueForBundle($po_request);
 				break;
 			default:
-				throw new Exception('Unknown endpoint '.$ps_endpoint);
+				throw new Exception(_t('Unknown endpoint %1', $ps_endpoint));
 
 		}
 		return $va_return;
@@ -286,7 +286,7 @@ class ReplicationService {
 	 */
 	public static function getLastReplicatedLogID($po_request) {
 		$vs_guid = trim($po_request->getParameter('system_guid', pString));
-		if(!strlen($vs_guid)) { throw new Exception('must provide a system guid'); }
+		if(!strlen($vs_guid)) { throw new Exception(_t('Must provide a system guid')); }
 
 		return array('replicated_log_id' => ca_replication_log::getLastReplicatedLogID($vs_guid));
 	}
@@ -298,10 +298,10 @@ class ReplicationService {
 	 */
 	public static function getLogIDForTimestamp($po_request) {
 		$vn_timestamp = trim($po_request->getParameter('timestamp', pInteger));
-		if(!strlen($vn_timestamp)) { throw new Exception('must provide a timestamp'); }
+		if(!strlen($vn_timestamp)) { throw new Exception(_t('Must provide a timestamp')); }
 
 		$vn_log_id = ca_change_log::getLogIDForTimestamp($vn_timestamp);
-		if(!$vn_log_id) { throw new Exception('could not figure out log_id for given timestamp'); }
+		if(!$vn_log_id) { throw new Exception(_t('Could not figure out log_id for given timestamp')); }
 
 		return array('log_id' => $vn_log_id);
 	}
@@ -313,7 +313,7 @@ class ReplicationService {
 	 */
 	public static function setLastLogID($po_request) {
 		$vs_source_system_guid = trim($po_request->getParameter('system_guid', pString));
-		if(!strlen($vs_source_system_guid)) { throw new Exception('Must provide a system guid'); }
+		if(!strlen($vs_source_system_guid)) { throw new Exception(_t('Must provide a system guid')); }
 		$log_id = $po_request->getParameter('log_id', pInteger);
 		if($log_id > 0) {
 			$t_replication_log = new ca_replication_log();
@@ -337,8 +337,8 @@ class ReplicationService {
 	 */
 	public static function applyLog($po_request) {
 		$vs_source_system_guid = trim($po_request->getParameter('system_guid', pString));
-		if(!strlen($vs_source_system_guid)) { throw new Exception('must provide a system guid'); }
-		if($po_request->getRequestMethod() !== 'POST') { throw new Exception('must be a post request'); }
+		if(!strlen($vs_source_system_guid)) { throw new Exception(_t('Must provide a system guid')); }
+		if($po_request->getRequestMethod() !== 'POST') { throw new Exception(_t('Must be a post request')); }
 
 		$pa_entry_options = array();
 		if($ps_set_intrinsics = $po_request->getParameter('setIntrinsics', pString, null, array('retainBackslashes' => false))) {
@@ -476,11 +476,11 @@ class ReplicationService {
 	 */
 	public static function pushMedia($po_request) {
 		if(!isset($_FILES['file'])) {
-			throw new Exception('No file specified');
+			throw new Exception(_t('No file specified'));
 		}
 
 		if(!($vs_checksum = $po_request->getParameter('url_checksum', pString))) {
-			throw new Exception('No checksum specified');
+			throw new Exception(_t('No checksum specified'));
 		}
 
 		$o_app_vars = new ApplicationVars();
@@ -490,11 +490,13 @@ class ReplicationService {
 		$o_file_vols = new FileVolumes();
 		$vs_workspace_path = $o_file_vols->getVolumeInformation('workspace')['absolutePath'];
 		$vs_new_file_path = $vs_workspace_path . DIRECTORY_SEPARATOR . $_FILES['file']['name'];
-
-		if(!@rename($_FILES['file']['tmp_name'], $vs_new_file_path)) {
-			throw new Exception('Could not move temporary file. Please check the permissions for the workspace directory.');
+		
+		if(caUsesExcludedFileExtension($_FILES['file']['tmp_name'], $vs_new_file_path)) { 
+			throw new Exception(_t('Invalid file type'));
 		}
-
+		if(!@rename($_FILES['file']['tmp_name'], $vs_new_file_path)) {
+			throw new Exception(_t('Could not move temporary file. Please check the permissions for the workspace directory.'));
+		}
 
 		// only stash 2000 files tops
 		if(sizeof($va_files) > 2000) {

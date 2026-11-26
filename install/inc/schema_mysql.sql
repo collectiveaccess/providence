@@ -7947,15 +7947,104 @@ create table ca_persistent_cache (
 
 
 /*==========================================================================*/
+/* Two-factor authentication. Secrets are encrypted at rest; recovery codes are hashed. */
+/* No BaseModel classes on purpose, so this data never ends up in the change log, search or exports */
+create table ca_user_mfa (
+   mfa_id                         int unsigned                   not null AUTO_INCREMENT,
+   user_id                        int unsigned                   not null,
+   mfa_type                       varchar(20)                    not null,
+   secret                         varchar(255)                   not null,
+   created_on                     int unsigned                   not null,
+   enabled_on                     int unsigned                   null,
+   last_used_step                 bigint unsigned                not null default 0,
+   primary key (mfa_id),
+   
+   unique index u_user_type (user_id, mfa_type),
+   constraint fk_ca_user_mfa_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+create table ca_user_mfa_recovery_codes (
+   code_id                        int unsigned                   not null AUTO_INCREMENT,
+   user_id                        int unsigned                   not null,
+   code_hash                      varchar(255)                   not null,
+   created_on                     int unsigned                   not null,
+   primary key (code_id),
+   
+   index i_user_id (user_id),
+   constraint fk_ca_user_mfa_recovery_codes_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+
+/*==========================================================================*/
+/* Browsers remembered after two-factor authentication. Only a hash of each token is stored. */
+create table ca_user_mfa_devices (
+   device_id                      int unsigned                   not null AUTO_INCREMENT,
+   user_id                        int unsigned                   not null,
+   selector                       char(24)                       not null,
+   validator_hash                 char(64)                       not null,
+   user_agent                     varchar(255)                   not null default '',
+   ip_addr                        varchar(39)                    not null default '',
+   created_on                     int unsigned                   not null,
+   expires_on                     int unsigned                   not null,
+   last_used_on                   int unsigned                   null,
+   primary key (device_id),
+   
+   unique index u_selector (selector),
+   index i_user_id (user_id),
+   constraint fk_ca_user_mfa_devices_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+/*==========================================================================*/
+/* Passkeys (WebAuthn credentials) usable as a second factor */
+create table ca_user_mfa_passkeys (
+   passkey_id                     int unsigned                   not null AUTO_INCREMENT,
+   user_id                        int unsigned                   not null,
+   name                           varchar(255)                   not null,
+   credential_id                  varchar(512)                   not null,
+   public_key                     text                           not null,
+   sign_count                     int unsigned                   not null default 0,
+   created_on                     int unsigned                   not null,
+   last_used_on                   int unsigned                   null,
+   primary key (passkey_id),
+   
+   unique index u_credential_id (credential_id(255)),
+   index i_user_id (user_id),
+   constraint fk_ca_user_mfa_passkeys_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+
+/*==========================================================================*/
+/* Per-user API keys for scripts and integrations. Only a hash of each key is stored. */
+create table ca_user_api_keys (
+   key_id                         int unsigned                   not null AUTO_INCREMENT,
+   user_id                        int unsigned                   not null,
+   name                           varchar(255)                   not null,
+   key_prefix                     char(12)                       not null,
+   key_hash                       char(64)                       not null,
+   created_on                     int unsigned                   not null,
+   expires_on                     int unsigned                   null,
+   last_used_on                   int unsigned                   null,
+   primary key (key_id),
+   
+   unique index u_key_prefix (key_prefix),
+   index i_user_id (user_id),
+   constraint fk_ca_user_api_keys_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+
+/*==========================================================================*/
 create table if not exists ca_ip_bans (
    ban_id                    int unsigned                   not null AUTO_INCREMENT,
    reason                    varchar(255)                   not null,
    created_on                int unsigned                   not null,
    expires_on                int unsigned                   null,
    details                   text                           not null,
-   
    ip_addr		             varchar(39)                    not null,
-   
    primary key (ban_id),
 
    index i_created_on			    (created_on),
@@ -8048,4 +8137,4 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-INSERT IGNORE INTO ca_schema_updates (version_num, modifier, datetime, schema_name) VALUES (216, 0, unix_timestamp(), 'CORE');
+INSERT IGNORE INTO ca_schema_updates (version_num, modifier, datetime, schema_name) VALUES (218, 0, unix_timestamp(), 'CORE');
