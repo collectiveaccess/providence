@@ -889,7 +889,7 @@ function caTranslateBundlesForAccessChecking($ps_table_name, $ps_bundle_name) {
 }
 # ---------------------------------------------------------------------------------------------
 /*
- * Determine if source access control is enabled system wide, or for a specific row
+ * Determine if user action is defined by application
  *
  * @param string $action User action
  * 
