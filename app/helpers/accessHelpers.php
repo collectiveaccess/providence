@@ -888,6 +888,31 @@ function caTranslateBundlesForAccessChecking($ps_table_name, $ps_bundle_name) {
 	return array($ps_table_name, $ps_bundle_name); 
 }
 # ---------------------------------------------------------------------------------------------
+/*
+ * Determine if source access control is enabled system wide, or for a specific row
+ *
+ * @param string $action User action
+ * 
+ * @return bool True if user action is defined by application
+ */
+function caIsValidUserAction(string $action) : bool {
+	static $action_list = null;
+	
+	if(is_null($action_list)) {
+		$user_actions = Configuration::load('user_actions.conf');
+		if($user_actions && is_array($actions = $user_actions->getAssoc('user_actions'))) {
+			foreach($actions as $category => $category_contents) {
+				foreach($category_contents['actions'] ?? [] as $a => $ainfo) {
+					$action_list[$a] = true;
+				}
+			}
+		}
+	}
+	
+	if(array_key_exists($action, $action_list)) { return true; }
+	return false;
+}
+# ---------------------------------------------------------------------------------------------
 /**
  * Determine if ACL is enabled system wide, or for a specific row. Default to returning back-end ACL availability only.
  * To check if ACL is enabled for front-end (Pawtucket) use set the 'forPawtucket' option.
@@ -992,7 +1017,6 @@ function caSuspendCheckAccessChecks($t_item) : bool {
 # ---------------------------------------------------------------------------------------------
 /**
  * 
- *
  * 
  * @return bool
  */

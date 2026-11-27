@@ -122,6 +122,35 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 		}
 		return $params;
 	}
+	 # -------------------------------------------------------
+ 	/**
+	 * Privileges required to see a history menu item. 
+	 *
+	 * @param string $table_name 
+	 */
+	private function getMenuItemRequirements(string $table_name) : array {
+		$requires = [];
+		switch($table_name) {
+			case 'ca_list_items':
+				$requires['action:can_edit_ca_lists'] = 'OR';
+				break;
+			case 'ca_tour_stops':
+				$requires['action:can_edit_ca_tours'] = 'OR';
+				break;
+			case 'ca_sets':
+				$requires['action:can_edit_sets'] = 'OR';
+				break;
+			default:
+				foreach(["can_edit_{$table_name}", "can_search_{$table_name}", "can_browse_{$table_name}"] as $p) {
+					if(caIsValidUserAction($p)) { 
+						$requires["action:{$p}"] = 'OR';
+					}
+				}
+				break;
+		}
+		
+		return $requires;
+	}
 	# -------------------------------------------------------
 	/**
 	 * Insert activity menu
@@ -148,24 +177,6 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 				
 				$t_instance = Datamodel::getInstanceByTableName($table_name, true);
 				
-				switch($table_name) {
-					case 'ca_list_items':
-						$priv_name = 'can_edit_ca_lists';
-						break;
-					case 'ca_object_representations':
-						$priv_name = 'can_edit_ca_objects';
-						break;
-					case 'ca_tour_stops':
-						$priv_name = 'can_edit_ca_tours';
-						break;
-					case 'ca_sets':
-						$priv_name = 'can_edit_sets';
-						break;
-					default:
-						$priv_name = 'can_edit_'.$table_name;
-						break;
-				}
-				
 				if (in_array($table_name, $breakout_by_type ?? [], true)) {
 					// Output grouped by type with types as top-level menu items
 					$types = $t_instance->getTypeList();
@@ -187,9 +198,7 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 									'default' => $editor_url_info,
 									'displayName' => $info['label'],
 									'is_enabled' => 1,
-									'requires' => array(
-										'action:'.$priv_name => 'OR'
-									),
+									'requires' => $this->getMenuItemRequirements($table_name),
 									'parameters' => array(
 										$editor_url_info['_pk'] => $id
 									)
@@ -217,9 +226,7 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 							'default' => $editor_url_info,
 							'displayName' => $info['label'],
 							'is_enabled' => 1,
-							'requires' => array(
-								'action:'.$priv_name => 'OR'
-							),
+							'requires' => $this->getMenuItemRequirements($table_name),
 							'parameters' => array(
 								$editor_url_info['_pk'] => $id
 							)
