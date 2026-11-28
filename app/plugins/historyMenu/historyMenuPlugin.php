@@ -122,6 +122,35 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 		}
 		return $params;
 	}
+	 # -------------------------------------------------------
+ 	/**
+	 * Privileges required to see a history menu item. 
+	 *
+	 * @param string $table_name 
+	 */
+	private function getMenuItemRequirements(string $table_name) : array {
+		$requires = [];
+		switch($table_name) {
+			case 'ca_list_items':
+				$requires['action:can_edit_ca_lists'] = 'OR';
+				break;
+			case 'ca_tour_stops':
+				$requires['action:can_edit_ca_tours'] = 'OR';
+				break;
+			case 'ca_sets':
+				$requires['action:can_edit_sets'] = 'OR';
+				break;
+			default:
+				foreach(["can_edit_{$table_name}", "can_search_{$table_name}", "can_browse_{$table_name}"] as $p) {
+					if(caIsValidUserAction($p)) { 
+						$requires["action:{$p}"] = 'OR';
+					}
+				}
+				break;
+		}
+		
+		return $requires;
+	}
 	# -------------------------------------------------------
 	/**
 	 * Insert activity menu
@@ -196,7 +225,7 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 							];
 						}
 					}
-				} else
+				} else {
 					switch($table_name) {
 						case 'ca_list_items':
 							$priv_name = 'can_edit_ca_lists';
@@ -207,97 +236,90 @@ class historyMenuPlugin extends BaseApplicationPlugin {
 						case 'ca_tour_stops':
 							$priv_name = 'can_edit_ca_tours';
 							break;
-						case 'ca_sets':
-							$priv_name = 'can_edit_sets';
-							break;
 						default:
 							$priv_name = 'can_edit_'.$table_name;
 							break;
 					}
-				
-				if (in_array($table_name, $breakout_by_type ?? [], true)) {
-					// Output grouped by type with types as top-level menu items
-					$types = $t_instance->getTypeList();
-					
-					// sort occurrences by type
-					$sorted_by_type_id = [];
-					$keys = array_reverse(array_keys($activity_list));
-					foreach($keys as $id) {
-						$info = $activity_list[$id];
-						$sorted_by_type_id[$info['type_id']][$id] = $info;
-					}
-					foreach($types as $type_id => $type_info) {
-						$activity_menu_list = [];
-						if (isset($sorted_by_type_id[$type_id]) && is_array($sorted_by_type_id[$type_id])) {
-							foreach($sorted_by_type_id[$type_id] as $id => $info) {
-								$editor_url_info = caEditorUrl($req, $table_name, $id, true);
-								
-								$activity_menu_list[$table_name.'_'.$type_id.'_'.$id] = array(
-									'default' => $editor_url_info,
-									'displayName' => $info['label'],
-									'is_enabled' => 1,
-									'requires' => array(
-										'action:'.$priv_name => 'OR'
-									),
-									'parameters' => array(
-										$editor_url_info['_pk'] => $id
+					if (in_array($table_name, $breakout_by_type ?? [], true)) {
+						// Output grouped by type with types as top-level menu items
+						$types = $t_instance->getTypeList();
+						
+						// sort occurrences by type
+						$sorted_by_type_id = [];
+						$keys = array_reverse(array_keys($activity_list));
+						foreach($keys as $id) {
+							$info = $activity_list[$id];
+							$sorted_by_type_id[$info['type_id']][$id] = $info;
+						}
+						foreach($types as $type_id => $type_info) {
+							$activity_menu_list = [];
+							if (isset($sorted_by_type_id[$type_id]) && is_array($sorted_by_type_id[$type_id])) {
+								foreach($sorted_by_type_id[$type_id] as $id => $info) {
+									$editor_url_info = caEditorUrl($req, $table_name, $id, true);
+									
+									$activity_menu_list[$table_name.'_'.$type_id.'_'.$id] = array(
+										'default' => $editor_url_info,
+										'displayName' => $info['label'],
+										'is_enabled' => 1,
+										'requires' => $this->getMenuItemRequirements($table_name),
+										'parameters' => array(
+											$editor_url_info['_pk'] => $id
+										)
+									);
+								}
+							}
+							
+							if (sizeof($activity_menu_list) > 0) {
+								$activity_lists[$table_name.'_'.$type_id] = array(
+									'displayName' => caUcFirstUTF8Safe($type_info['name_plural']),
+									'submenu' => array(
+										"type" => 'static',
+										'navigation' => $activity_menu_list
 									)
 								);
 							}
 						}
-						
-						if (sizeof($activity_menu_list) > 0) {
-							$activity_lists[$table_name.'_'.$type_id] = array(
-								'displayName' => caUcFirstUTF8Safe($type_info['name_plural']),
-								'submenu' => array(
-									"type" => 'static',
-									'navigation' => $activity_menu_list
+					} else {
+						// Grouped by their table
+						$keys = array_reverse(array_keys($activity_list));
+						foreach($keys as $id) {
+							$info = $activity_list[$id];
+							$editor_url_info = caEditorUrl($req, $table_name, $id, true);
+							$activity_menu_list[$table_name.'_'.$id] = array(
+								'default' => $editor_url_info,
+								'displayName' => $info['label'],
+								'is_enabled' => 1,
+								'requires' => $this->getMenuItemRequirements($table_name),
+								'parameters' => array(
+									$editor_url_info['_pk'] => $id
 								)
 							);
 						}
-					}
-				} else {
-					// Grouped by their table
-					$keys = array_reverse(array_keys($activity_list));
-					foreach($keys as $id) {
-						$info = $activity_list[$id];
-						$editor_url_info = caEditorUrl($req, $table_name, $id, true);
-						$activity_menu_list[$table_name.'_'.$id] = array(
-							'default' => $editor_url_info,
-							'displayName' => $info['label'],
-							'is_enabled' => 1,
-							'requires' => array(
-								'action:'.$priv_name => 'OR'
-							),
-							'parameters' => array(
-								$editor_url_info['_pk'] => $id
+	
+						if(is_array($menu_item_names) && isset($menu_item_names[$table_name])){
+							$display_name = $menu_item_names[$table_name];
+						} else {
+							$display_name = caUcFirstUTF8Safe(_t($t_instance->getProperty('NAME_PLURAL')));
+						}
+					
+						$activity_lists[$table_name] = array(
+							'displayName' => $display_name,
+							'submenu' => array(
+								"type" => 'static',
+								'navigation' => $activity_menu_list
 							)
 						);
 					}
-
-					if(is_array($menu_item_names) && isset($menu_item_names[$table_name])){
-						$display_name = $menu_item_names[$table_name];
-					} else {
-						$display_name = caUcFirstUTF8Safe(_t($t_instance->getProperty('NAME_PLURAL')));
-					}
-				
-					$activity_lists[$table_name] = array(
-						'displayName' => $display_name,
-						'submenu' => array(
-							"type" => 'static',
-							'navigation' => $activity_menu_list
-						)
-					);
+				}
+				if(sizeof($activity_lists)) {	// only show history menu if there's some history...
+					$activity_menu = [
+						'displayName' => _t('History'),
+						'navigation' => $activity_lists
+					];
+					$menu_bar['activity_menu'] = $activity_menu;
 				}
 			}
-			if(sizeof($activity_lists)) {	// only show history menu if there's some history...
-				$activity_menu = [
-					'displayName' => _t('History'),
-					'navigation' => $activity_lists
-				];
-				$menu_bar['activity_menu'] = $activity_menu;
-			}
-		} 
+		}
 		return $menu_bar;
 	}
 	# -------------------------------------------------------

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2010 Whirl-i-Gig
+ * Copyright 2009-2026 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,25 +24,23 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
- 	require_once(__CA_MODELS_DIR__."/ca_storage_locations.php");
- 	require_once(__CA_LIB_DIR__."/BaseEditorController.php");
- 
- 	class StorageLocationEditorController extends BaseEditorController {
- 		# -------------------------------------------------------
- 		protected $ops_table_name = 'ca_storage_locations';		// name of "subject" table (what we're editing)
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
- 		# -------------------------------------------------------
- 		# Sidebar info handler
- 		# -------------------------------------------------------
- 		public function info($pa_parameters) {
- 			parent::info($pa_parameters);
- 			return $this->render('widget_storage_location_info_html.php', true);
- 		}
- 		# -------------------------------------------------------
- 	}
- ?>
+ */ 
+require_once(__CA_MODELS_DIR__."/ca_storage_locations.php");
+require_once(__CA_LIB_DIR__."/BaseEditorController.php");
+
+class StorageLocationEditorController extends BaseEditorController {
+	# -------------------------------------------------------
+	protected $ops_table_name = 'ca_storage_locations';		// name of "subject" table (what we're editing)
+	# -------------------------------------------------------
+	public function __construct(&$request, &$response, $view_paths=null) {
+		parent::__construct($request, $response, $view_paths);
+	}
+	# -------------------------------------------------------
+	# Sidebar info handler
+	# -------------------------------------------------------
+	public function info($parameters) {
+		parent::info($parameters);
+		return $this->render('widget_storage_location_info_html.php', true);
+	}
+	# -------------------------------------------------------
+}
